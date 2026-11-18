@@ -4,6 +4,7 @@ import type { ContractDef, MailDef, MailKey, ProgramDef } from '../content/schem
 import { NO_COMPANIES } from '../content/companies';
 import type { HardwareDef } from '../content/hardware';
 import type { SkillDef } from '../content/skills';
+import type { ModuleDef } from '../content/modules';
 import type { PeopleDef } from '../content/people';
 import type { Content, Rules } from './world';
 
@@ -173,6 +174,8 @@ export const testRules: Rules = {
   linksAfterRating: 4,
   skillPointRating: 3,
   unlearnPrice: 1000,
+  buildSeconds: 10,
+  workbenchAfter: 50,
 };
 
 const part = (slot: HardwareDef['slot'], tier: number, price: number, values: Partial<HardwareDef>): HardwareDef => ({
@@ -231,6 +234,7 @@ export const testMail: Record<MailKey, MailDef> = {
   jobs: letter('jobs'),
   links: letter('links'),
   skills: letter('skills'),
+  workbench: letter('workbench'),
   hardwareLost: { from: 'Fixer', subject: 'Lost {part}', body: 'now {now}' },
 };
 
@@ -278,6 +282,19 @@ export const testSkills: readonly SkillDef[] = [
   skill('cold', 'ghost', 3, 'coldTrail', 0.5, { cost: 2, needs: 'sweep' }),
   skill('slip', 'ghost', 3, 'slipAway', 1, { cost: 3, needs: 'long' }),
   skill('tuned', 'engineering', 1, 'hardwareSpeed', 0.5, { ranks: 2 }),
+  skill('slot', 'engineering', 2, 'secondSlot', 1),
+  skill('tight', 'engineering', 2, 'tightBuilds', 0.25, { ranks: 2 }),
+  skill('refine', 'engineering', 3, 'refine', 1, { needs: 'slot' }),
+];
+
+const grades = (speed: number[], size: number[]) => speed.map((value, i) => ({ speed: value, size: size[i]!, price: 100 * (i + 1) }));
+
+/** Round numbers: Swift doubles speed and size, Compact halves size, Quiet and Tidy halve speed. */
+export const testModules: readonly ModuleDef[] = [
+  { id: 'swift', name: 'Swift', blurb: 'b', fits: ['breakPassword', 'bypassProxy', 'bypassFirewall', 'copyFile', 'deleteFile', 'deleteLog', 'decrypt'], grades: grades([2, 3, 4], [2, 2, 2]) },
+  { id: 'compact', name: 'Compact', blurb: 'b', fits: ['breakPassword', 'bypassProxy', 'copyFile'], grades: grades([1, 1, 1], [0.5, 0.25, 0.25]) },
+  { id: 'quiet', name: 'Quiet', blurb: 'b', trait: 'quiet', fits: ['breakPassword', 'bypassProxy', 'bypassFirewall', 'copyFile'], grades: grades([0.5, 0.5, 1], [1, 1, 1]) },
+  { id: 'tidy', name: 'Tidy', blurb: 'b', trait: 'tidy', fits: ['copyFile', 'deleteFile'], grades: grades([0.5, 0.5, 1], [1, 1, 1]) },
 ];
 
 export const content: Content = {
@@ -295,5 +312,6 @@ export const content: Content = {
   hardware: testHardware,
   companies: NO_COMPANIES,
   skills: testSkills,
+  modules: testModules,
   rules: testRules,
 };

@@ -3,7 +3,7 @@
  * "action": a small plain object. The UI never changes GameState itself.
  * That keeps the rules in one place and makes them testable.
  */
-import { MAX_HOPS, SPEEDS, isConnected, type Connection, type GameState, type Speed, type TaskTarget } from './state';
+import { MAX_HOPS, SPEEDS, isConnected, type Connection, type Fitted, type GameState, type Speed, type TaskTarget } from './state';
 import {
   abandonContract,
   acceptContract,
@@ -18,6 +18,7 @@ import { scheduleReview } from './forensics';
 import { buyHardware, loseHardware, maxConnections } from './hardware';
 import { modelRead, rentModel } from './model';
 import { readFile, sendPhish } from './phish';
+import { preferProgram, refineModule, returnModules, scrapBuild } from './crafting';
 import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
 import { hopUnderTrace, intruding, newTrace, noteIntrusion, reroute } from './trace';
@@ -76,7 +77,15 @@ export type Action =
   /** Spend skill points on the next rank of a skill. */
   | { readonly type: 'learnSkill'; readonly skillId: string }
   /** Pay the board you are logged in to to forget every skill and get the points back. */
-  | { readonly type: 'unlearnSkills'; readonly connectionId: string };
+  | { readonly type: 'unlearnSkills'; readonly connectionId: string }
+  /** Start building a crafted program at the Workbench. */
+  | { readonly type: 'buildProgram'; readonly base: string; readonly modules: readonly Fitted[] }
+  /** Take a crafted program apart and get its modules back. */
+  | { readonly type: 'scrapProgram'; readonly programId: string }
+  /** Melt two modules of one grade into one of the next. */
+  | { readonly type: 'refineModule'; readonly moduleId: string; readonly grade: number }
+  /** Pick which installed program runs for its kind. */
+  | { readonly type: 'preferProgram'; readonly programId: string };
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
@@ -281,7 +290,9 @@ export function applyAction(state: GameState, action: Action, content: Content):
     }
 
     case 'cancelProgram': {
-      if (!state.tasks.some((task) => task.id === action.taskId)) return refuse('That program has already stopped.');
+      const stopped = state.tasks.find((task) => task.id === action.taskId);
+      if (!stopped) return refuse('That program has already stopped.');
+      returnModules(state, stopped);
       state.tasks = state.tasks.filter((task) => task.id !== action.taskId);
       return OK;
     }
@@ -297,6 +308,8 @@ export function applyAction(state: GameState, action: Action, content: Content):
     case 'buyProgram':
       return answer(buyProgram(state, content, action.connectionId, action.programId));
     case 'uninstallProgram':
+      // A crafted program comes apart into its modules rather than vanishing.
+      if (state.player.builds.some((build) => build.id === action.programId)) return answer(scrapBuild(state, action.programId));
       return answer(uninstallProgram(state, action.programId));
     case 'deleteStoredFile':
       return answer(deleteStoredFile(state, action.name));
@@ -304,6 +317,14 @@ export function applyAction(state: GameState, action: Action, content: Content):
       return answer(learnSkill(state, content, action.skillId));
     case 'unlearnSkills':
       return answer(unlearnSkills(state, content, action.connectionId));
+    case 'buildProgram':
+      return answer(startTask(state, content, null, { kind: 'build', base: action.base, modules: action.modules.map((fitted) => ({ ...fitted })) }));
+    case 'scrapProgram':
+      return answer(scrapBuild(state, action.programId));
+    case 'refineModule':
+      return answer(refineModule(state, content, action.moduleId, action.grade));
+    case 'preferProgram':
+      return answer(preferProgram(state, content, action.programId));
 
     case 'readMessage': {
       const message = state.messages.find((item) => item.id === action.messageId);

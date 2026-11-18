@@ -88,5 +88,10 @@
     "from": "Wren",
     "subject": "Habits",
     "body": "{handle}, you have been at this long enough to have habits, and habits are worth choosing.\n\nSome people get faster at breaking in. Some get better at not being seen. Some would rather build their own tools than buy them. Nobody does all three well. Open Skills on your bar and pick what you want to be good at. You will get another choice every few steps up the board.\n\nIf you pick wrong, the Backroom will help you forget. For a fee, naturally.\n\nWren"
+  },
+  "workbench": {
+    "from": "Wren",
+    "subject": "Something for your bench",
+    "body": "{handle}, everyone buys the same programs from the same market, which means every monitor in the city knows what they look like.\n\nI have put two modules on your gateway. One makes a program quicker. The other makes it quiet enough that a monitor looks straight past it. Open the Workbench on your bar, pick a program you own, fit a module and build. Your original stays as it was; the new one sits beside it. If you change your mind, scrap the build and you get the module back.\n\nBuilds take room on your drive. Choose what you carry.\n\nWren"
   }
 }

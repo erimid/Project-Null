@@ -57,5 +57,7 @@
   "jobsAfter": 1,
   "linksAfterRating": 4,
   "skillPointRating": 3,
-  "unlearnPrice": 1500
+  "unlearnPrice": 1500,
+  "buildSeconds": 8,
+  "workbenchAfter": 2
 }

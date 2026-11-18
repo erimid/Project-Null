@@ -9,6 +9,8 @@ export type { Rng, RngState } from './rng';
 export { stream } from './streams';
 export { MAX_HOPS, SPEEDS, STATE_VERSION, createGame, isConnected } from './state';
 export type {
+  Build,
+  Fitted,
   ClockState,
   Connection,
   EchoPuzzle,
@@ -40,6 +42,7 @@ export {
   findProgram,
   findServer,
   gatewayOf,
+  installedOfKind,
   ownedProgram,
   sendMail,
   sourceAddress,
@@ -49,6 +52,19 @@ export type { Content, Rules } from './world';
 export { effectiveSpeed, gameDate, tick } from './clock';
 export type { GameDate } from './clock';
 export { MAX_LEVEL_GAP, blindSeconds, canLogIn, checkTask, layerSeconds, freeStorageGb, programStorageGq, ringAngle, ringTolerance, usedStorageGq } from './tasks';
+export {
+  addParts,
+  buildBases,
+  checkBuild,
+  findBuilt,
+  findModule,
+  hasTrait,
+  moduleSlots,
+  partCount,
+  partKey,
+} from './crafting';
+export { describeBuild, tightness } from './builds';
+export type { BuiltProgram } from './builds';
 export {
   effect,
   findSkill,

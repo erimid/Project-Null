@@ -11,6 +11,8 @@ import type { HardwareDef } from '../content/hardware';
 import type { ModelDef } from '../content/models';
 import type { PeopleDef } from '../content/people';
 import type { SkillDef } from '../content/skills';
+import type { ModuleDef } from '../content/modules';
+import { builtProgram } from './builds';
 import type { Connection, GameState, ServerState } from './state';
 
 /** Numbers that tune the rules. The real ones come from content/tuning.json. */
@@ -81,6 +83,10 @@ export interface Rules {
   readonly skillPointRating: number;
   /** Credits to unlearn every skill the first time; each time after costs this much more. */
   readonly unlearnPrice: number;
+  /** Seconds the Workbench takes to fit one module, on a stock processor. */
+  readonly buildSeconds: number;
+  /** Delivered contracts before the fixer writes about the Workbench and sends the first modules. */
+  readonly workbenchAfter: number;
 }
 
 export interface Content {
@@ -103,6 +109,8 @@ export interface Content {
   readonly companies: CompanyPools;
   /** The skill tree. */
   readonly skills: readonly SkillDef[];
+  /** Modules that are fitted to programs at the Workbench. */
+  readonly modules: readonly ModuleDef[];
   readonly rules: Rules;
 }
 
@@ -146,6 +154,15 @@ export function noteProgress(state: GameState, content: Content): void {
   if (state.player.bestRating >= content.rules.skillPointRating && content.skills.length > 0) {
     once(state, 'skills', () => sendMail(state, content, 'skills'));
   }
+  if (state.contracts.completed.length >= content.rules.workbenchAfter && content.modules.length > 0) {
+    once(state, 'workbench', () => {
+      // A first pair to try: one that makes a program faster, one that keeps it out of sight.
+      for (const id of ['swift', 'quiet']) {
+        if (content.modules.some((module) => module.id === id)) state.player.parts[`${id}:1`] = (state.player.parts[`${id}:1`] ?? 0) + 1;
+      }
+      sendMail(state, content, 'workbench');
+    });
+  }
   if (state.contracts.completed.length >= content.rules.modelsAfter && content.models.length > 0) {
     once(state, 'models', () => sendMail(state, content, 'models'));
   }
@@ -158,16 +175,27 @@ export function once(state: GameState, name: string, action: () => void): void {
   action();
 }
 
-export function findProgram(content: Content, id: string): ProgramDef | undefined {
-  return content.programs.find((program) => program.id === id);
+/** A program from the market, or (given the game) one the player built at the Workbench. */
+export function findProgram(content: Content, id: string, state?: GameState): ProgramDef | undefined {
+  const program = content.programs.find((item) => item.id === id);
+  if (program || !state) return program;
+  const build = state.player.builds.find((item) => item.id === id);
+  return build && builtProgram(state, content, build);
 }
 
-/** The best program of a kind that the player owns, if any. */
-export function ownedProgram(state: GameState, content: Content, kind: ProgramKind): ProgramDef | undefined {
+/** Every installed program of a kind, strongest first. A market program comes before a crafted one of the same version. */
+export function installedOfKind(state: GameState, content: Content, kind: ProgramKind): ProgramDef[] {
+  const crafted = (program: ProgramDef) => Number(!content.programs.includes(program));
   return state.player.programs
-    .map((id) => findProgram(content, id))
+    .map((id) => findProgram(content, id, state))
     .filter((program): program is ProgramDef => program?.kind === kind)
-    .sort((a, b) => b.version - a.version)[0];
+    .sort((a, b) => b.version - a.version || crafted(a) - crafted(b));
+}
+
+/** The program of a kind that runs when the player uses one: the one they picked, or else the strongest. */
+export function ownedProgram(state: GameState, content: Content, kind: ProgramKind): ProgramDef | undefined {
+  const all = installedOfKind(state, content, kind);
+  return all.find((program) => program.id === state.player.preferred[kind]) ?? all[0];
 }
 
 /** What opening a file shows, if anything was written for it. `serverId` is where the file is, or came from. */
@@ -223,7 +251,9 @@ export function syncWithContent(state: GameState, content: Content): GameState {
   }
   // A player always owns something; an empty list means a new game or a save from before programs existed.
   if (state.player.programs.length === 0) state.player.programs = [...content.startingPrograms];
-  state.player.programs = state.player.programs.filter((id) => findProgram(content, id) !== undefined);
+  // Builds from modules or programs that no longer exist go, and so do installed ids with nothing behind them.
+  state.player.builds = state.player.builds.filter((build) => builtProgram(state, content, build) !== undefined);
+  state.player.programs = state.player.programs.filter((id) => findProgram(content, id, state) !== undefined);
 
   // Recordings were added to servers after some saves were made; give those saves the files once.
   once(state, 'recordings-added', () => {
@@ -269,7 +299,7 @@ export function syncWithContent(state: GameState, content: Content): GameState {
   );
   state.tasks = state.tasks.filter(
     (task) =>
-      (task.connectionId === null || findConnection(state, task.connectionId)) && findProgram(content, task.programId),
+      (task.connectionId === null || findConnection(state, task.connectionId)) && findProgram(content, task.programId, state),
   );
   return state;
 }

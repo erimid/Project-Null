@@ -6,6 +6,7 @@ import type { ProgramDef, ProgramKind, ServerDef } from '../content/schema';
 import type { Connection, EchoPuzzle, GameState, RingPuzzle, Task, TaskTarget } from './state';
 import { cpuSpeed, fileSpeed, maxPrograms, rackStorageGb, storageGb } from './hardware';
 import { heldBy } from './link';
+import { checkBuild, finishBuild, hasTrait, takeModules } from './crafting';
 import { effect } from './skills';
 import { stream } from './streams';
 import { noteIntrusion } from './trace';
@@ -14,7 +15,7 @@ import { findAccount, findConnection, findProgram, findServer, ownedProgram, typ
 /** A program this many levels below a layer can't touch it at all. */
 export const MAX_LEVEL_GAP = 2;
 
-const PROGRAM_FOR: Record<TaskTarget['kind'], ProgramKind> = {
+const PROGRAM_FOR: Record<Exclude<TaskTarget['kind'], 'build'>, ProgramKind> = {
   password: 'breakPassword',
   proxy: 'bypassProxy',
   firewall: 'bypassFirewall',
@@ -46,7 +47,7 @@ export const ringTolerance = (state: GameState, content: Content): number =>
 
 /** Room taken on the gateway by installed programs. */
 export function programStorageGq(state: GameState, content: Content): number {
-  return state.player.programs.reduce((sum, id) => sum + (findProgram(content, id)?.sizeGq ?? 0), 0);
+  return state.player.programs.reduce((sum, id) => sum + (findProgram(content, id, state)?.sizeGq ?? 0), 0);
 }
 
 /** Room taken on the gateway: installed programs, a hosted model's weights, and stored files. */
@@ -89,9 +90,17 @@ export function checkTask(state: GameState, content: Content, connection: Connec
 
 /** checkTask on a stock gateway. */
 function baseCheck(state: GameState, content: Content, connection: Connection | null, target: TaskTarget): Check {
+  const most = maxPrograms(state, content);
+  if (target.kind === 'build') {
+    if (state.tasks.length >= most) return no(`Your gateway can run ${most} programs at once.`);
+    if (state.tasks.some((task) => task.target.kind === 'build')) return no('The Workbench is already building something.');
+    const build = checkBuild(state, content, target.base, target.modules);
+    if (!build.ok) return build;
+    if (build.preview.sizeGq > freeStorageGb(state, content)) return no('Not enough room on your gateway for the build.');
+    return { ok: true, seconds: build.seconds, program: findProgram(content, target.base)! };
+  }
   const program = ownedProgram(state, content, PROGRAM_FOR[target.kind]);
   if (!program) return no('You do not own a program for that.');
-  const most = maxPrograms(state, content);
   if (state.tasks.length >= most) return no(`Your gateway can run ${most} programs at once.`);
   const same = (task: Task) =>
     task.connectionId === (connection?.id ?? null) && JSON.stringify(task.target) === JSON.stringify(target);
@@ -218,6 +227,7 @@ export function echoCell(state: GameState, content: Content, connectionId: strin
 /** Applies a finished program that ran on the gateway itself. */
 function finishLocal(state: GameState, task: Task): void {
   const target = task.target;
+  if (target.kind === 'build') return finishBuild(state, task);
   if (target.kind !== 'decrypt') return;
   const file = state.player.files.find((item) => item.name === target.file);
   if (file) delete file.encrypted;
@@ -225,11 +235,14 @@ function finishLocal(state: GameState, task: Task): void {
 
 function finish(state: GameState, content: Content, connection: Connection, task: Task): void {
   const serverState = state.servers[connection.serverId];
-  const program = findProgram(content, task.programId);
+  const program = findProgram(content, task.programId, state);
   if (!serverState || !program) return;
   const target = task.target;
+  // A Tidy build leaves no trace of what it did to files.
+  const tidy = hasTrait(state, content, program.id, 'tidy');
   switch (target.kind) {
     case 'decrypt':
+    case 'build':
       return;
     case 'monitor': {
       const level = findServer(content, connection.serverId)?.security.monitor ?? 0;
@@ -258,13 +271,13 @@ function finish(state: GameState, content: Content, connection: Connection, task
         from: connection.serverId,
         ...(file.encrypted ? { encrypted: file.encrypted } : {}),
       });
-      serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file copied: ${file.name}`, byPlayer: true });
+      if (!tidy) serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file copied: ${file.name}`, byPlayer: true });
       return;
     }
     case 'deleteFile': {
       if (!serverState.files.some((item) => item.name === target.file)) return;
       serverState.files = serverState.files.filter((item) => item.name !== target.file);
-      serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file deleted: ${target.file}`, byPlayer: true });
+      if (!tidy) serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file deleted: ${target.file}`, byPlayer: true });
       return;
     }
     case 'deleteLog':
@@ -331,7 +344,8 @@ export function lockRing(state: GameState, content: Content, taskId: string, rin
 /** Starts a program, over a connection or (connectionId null) on the gateway. Returns a reason if it can't start. */
 export function startTask(state: GameState, content: Content, connectionId: string | null, target: TaskTarget): string | null {
   const connection = findConnection(state, connectionId) ?? null;
-  if ((connection === null) !== (target.kind === 'decrypt')) {
+  const atHome = target.kind === 'decrypt' || target.kind === 'build';
+  if ((connection === null) !== atHome) {
     return connection ? 'That runs on your gateway, not over a connection.' : 'That connection is closed.';
   }
   const check = checkTask(state, content, connection, target);
@@ -348,8 +362,11 @@ export function startTask(state: GameState, content: Content, connectionId: stri
     durationMs: check.seconds * 1000 * open,
     ...(puzzle ? { puzzle } : {}),
   });
-  // Monitors notice programs working on their server. They don't notice being blinded, or work done at home.
-  if (connection && target.kind !== 'monitor') noteIntrusion(state, content, connection);
+  if (target.kind === 'build') takeModules(state, target.modules);
+  // Monitors notice programs working on their server. They don't notice being blinded, work done at home, or a Quiet build.
+  if (connection && target.kind !== 'monitor' && !hasTrait(state, content, check.program.id, 'quiet')) {
+    noteIntrusion(state, content, connection);
+  }
   return null;
 }
 

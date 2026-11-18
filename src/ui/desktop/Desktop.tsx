@@ -13,6 +13,7 @@ import { MapWindow } from './windows/MapWindow';
 import { MessagesWindow } from './windows/MessagesWindow';
 import { ProgramsWindow } from './windows/ProgramsWindow';
 import { SkillsWindow } from './windows/SkillsWindow';
+import { WorkbenchWindow } from './windows/WorkbenchWindow';
 import { ViewerWindow } from './windows/ViewerWindow';
 import { SavesWindow } from './windows/SavesWindow';
 import { ServerWindow } from './windows/ServerWindow';
@@ -76,6 +77,7 @@ export function Desktop() {
         <MessagesWindow />
         <ContractWindow />
         <SkillsWindow />
+        <WorkbenchWindow />
         <BrowserWindow net="web" />
         <BrowserWindow net="dark" />
         <ViewerWindow />

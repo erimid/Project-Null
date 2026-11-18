@@ -25,6 +25,9 @@ export const SKILL_EFFECTS = [
   'coldTrail',
   'slipAway',
   'hardwareSpeed',
+  'secondSlot',
+  'tightBuilds',
+  'refine',
 ] as const;
 /**
  * What a skill does. `amount` is per rank, and ranks add up.
@@ -39,6 +42,9 @@ export const SKILL_EFFECTS = [
  * - coldTrail: log reviews come 1 + amount times as late, and their fines are (1 - amount) as big.
  * - slipAway: this many more reroutes per connection, and each sends the trace back this many more relays.
  * - hardwareSpeed: the processor and modem run 1 + amount times as fast.
+ * - secondSlot: crafted programs take this many more modules.
+ * - tightBuilds: crafted programs take (1 - amount) of the room.
+ * - refine: two modules of one grade can be melted into one of the next grade.
  */
 export type SkillEffect = (typeof SKILL_EFFECTS)[number];
 
@@ -117,7 +123,7 @@ export function parseSkills(data: unknown, file = 'skills.json'): SkillDef[] {
     }
   }
   // Fractions of 1 that shrink something can't reach 1, or it would vanish.
-  for (const effect of ['steadyHand', 'coldTrail'] as const) {
+  for (const effect of ['steadyHand', 'coldTrail', 'tightBuilds'] as const) {
     for (const skill of skills.filter((item) => item.effect === effect)) {
       if (skill.amount * skill.ranks >= 1) throw new ContentError(file, `skill "${skill.id}": ${effect} must stay below 1 at full rank`);
     }
