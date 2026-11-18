@@ -5044,3 +5044,207 @@ body {
 .pdock .alarm {
   padding: 8px 16px 10px;
 }
+
+/* ---- phone: the other windows (mobile step 4) ---- */
+
+/* Skills: one branch at a time, picked with big tabs. */
+.skills__tabs {
+  display: none;
+}
+
+.is-phone .skills__tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.skills__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: 6px 4px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: none;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.skills__tab .skills__mark {
+  width: 20px;
+  height: 20px;
+}
+
+.skills__tab--intrusion {
+  --hue: 95, 212, 255;
+}
+
+.skills__tab--ghost {
+  --hue: 185, 162, 255;
+}
+
+.skills__tab--engineering {
+  --hue: 255, 196, 107;
+}
+
+.skills__tab.is-open {
+  border-color: rgba(var(--hue), 0.8);
+  background: rgba(var(--hue), 0.12);
+  color: rgb(var(--hue));
+}
+
+.is-phone .skills {
+  display: block;
+}
+
+.is-phone .skills__branch:not(.is-open) {
+  display: none;
+}
+
+.is-phone .skills__motto {
+  white-space: normal;
+}
+
+.is-phone .skill__foot {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.is-phone .skill__head {
+  flex-wrap: wrap;
+}
+
+.is-phone .skills__bank {
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 8px;
+}
+
+/* Messages: sender and date on one line, the subject under it. The list scrolls so the message stays in view. */
+.is-phone .message {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  min-height: 44px;
+  padding: 8px 10px;
+}
+
+.is-phone .message__subject {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.is-phone .message__time {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.is-phone .rows--scroll {
+  max-height: 34vh;
+}
+
+.is-phone .heading__note {
+  display: block;
+  margin: 2px 0 0;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.is-phone .lead,
+.is-phone .chip,
+.is-phone .fact,
+.is-phone .files__head {
+  min-height: 44px;
+}
+
+.is-phone .chips {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Saved games: the slot's label and details on top, its buttons wrapping underneath. */
+.is-phone .slot {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  padding: 12px 8px;
+}
+
+.is-phone .slot__label {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.is-phone .slot__info {
+  white-space: normal;
+}
+
+.is-phone .slot__actions {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.is-phone .slot__actions .btn {
+  flex: 1 1 auto;
+}
+
+/* File viewer: a hex dump is small enough to show a whole row. */
+.is-phone .doc {
+  padding: 10px;
+  font-size: 11px;
+}
+
+.is-phone .doc--raw {
+  font-size: 10px;
+}
+
+/* The two browsers: links are easier to hit with some air around them. */
+.is-phone .page__links {
+  gap: 4px;
+}
+
+.is-phone .page__link {
+  display: inline-block;
+  padding: 8px 0;
+}
+
+.is-phone .page__list {
+  padding-left: 20px;
+}
+
+.is-phone .browser__bar {
+  gap: 8px;
+}
+
+/* The game menu keeps its place above the bar; its rows get thumb-sized. */
+.desktop--phone .menu__item {
+  min-height: 48px;
+  justify-content: center;
+}
+
+/* Contract and Workbench buttons get a full-width, thumb-sized row. */
+.is-phone .skills__unlearn .btn {
+  width: 100%;
+}
+
+/* A phone on its side has width to spare and no height: keep the skill bank to one row. */
+@media (min-width: 560px) {
+  .is-phone .skills__bank {
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    padding: 8px 14px;
+    margin-bottom: 10px;
+  }
+
+  .is-phone .skills__tab {
+    min-height: 44px;
+    flex-direction: row;
+    gap: 8px;
+  }
+}
