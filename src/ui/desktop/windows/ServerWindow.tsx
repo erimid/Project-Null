@@ -306,7 +306,7 @@ function Files({ game, state, connection, run }: View) {
         return (
           <li key={file.name} class="row row--file">
             <span class="row__main">{file.name}</span>
-            <span class="row__dim">{file.sizeGq} Gq</span>
+            <span class="row__dim">{file.sizeGq} GB</span>
             <span class="row__dim">{file.access === 'admin' ? 'restricted' : 'public'}</span>
             <span class="row__actions">
               {copying ? (

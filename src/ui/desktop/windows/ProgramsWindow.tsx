@@ -55,7 +55,7 @@ export function ProgramsWindow() {
       <h3 class="map__heading section-gap">
         Stored files{' '}
         <span class="data heading__note">
-          {used} / {content.rules.storageGq} Gq
+          {used} of {content.rules.storageGq} GB
         </span>
       </h3>
       {game.player.files.length === 0 ? (
@@ -65,7 +65,7 @@ export function ProgramsWindow() {
           {game.player.files.map((file) => (
             <li key={file.name} class="row row--stored">
               <span class="row__main">{file.name}</span>
-              <span class="row__dim">{file.sizeGq} Gq</span>
+              <span class="row__dim">{file.sizeGq} GB</span>
               <span class="row__dim">{serverName(file.from)}</span>
             </li>
           ))}

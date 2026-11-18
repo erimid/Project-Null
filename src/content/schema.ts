@@ -82,7 +82,7 @@ export interface ProgramDef {
   readonly version: number;
   /** Seconds one run takes against a level 1 layer (or, for file programs, before the per-size time). */
   readonly baseSeconds: number;
-  /** Extra seconds per gigaquad of file size. 0 for programs that don't handle files. */
+  /** Extra seconds per gigabyte of file size ("Gq" in field names is the old name of the unit). 0 for programs that don't handle files. */
   readonly secondsPerGq: number;
   /** What it costs on the market. 0 = not for sale. */
   readonly price: number;
@@ -150,7 +150,7 @@ export interface AccountDef {
 
 export interface FileDef {
   readonly name: string;
-  /** Size in gigaquads, the game's storage unit. */
+  /** Size in gigabytes. ("Gq" in field names is the old name of the unit; saves use it, so it stays.) */
   readonly sizeGq: number;
   /** Lowest role that can see the file. */
   readonly access: Role;
@@ -185,7 +185,7 @@ export interface Tuning {
   readonly monitorGraceSeconds: readonly number[];
   /** How many programs can run at once. */
   readonly maxRunningPrograms: number;
-  /** How much the gateway can store, in gigaquads. */
+  /** How much the gateway can store, in gigabytes. */
   readonly storageGq: number;
   /** With no relays, the trace takes this fraction of the server's per-hop time. */
   readonly directTraceFactor: number;

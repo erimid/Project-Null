@@ -22,6 +22,7 @@ import {
   type SaveSummary,
 } from '../core';
 import { contracts, gameInfo, mail, programs, servers, tuning } from '../content';
+import { diff, snapshot, type GameEvent, type Snapshot } from './events';
 import { createMemoryStore, openSaveStore, type SaveStore } from './storage/saveStore';
 
 /** The data files, in the form the simulation takes them. */
@@ -112,6 +113,19 @@ function changed(): void {
   emit(gameListeners);
 }
 
+/** Told about each thing that happens in the game (see events.ts). */
+const eventListeners = new Set<(event: GameEvent) => void>();
+let lastSnapshot: Snapshot | null = null;
+
+/** Compares the game with how it was last time and tells the event listeners what happened. */
+function announce(byClock: boolean): void {
+  const now = snapshot(state);
+  if (lastSnapshot) {
+    for (const event of diff(lastSnapshot, now, content, byClock)) eventListeners.forEach((listener) => listener(event));
+  }
+  lastSnapshot = now;
+}
+
 const saveListeners = new Set<Listener>();
 const emit = (listeners: Set<Listener>) => listeners.forEach((listener) => listener());
 
@@ -142,6 +156,8 @@ const loadGame = (text: string): GameState => syncWithContent(deserializeGame(te
 
 function replaceGame(next: GameState): void {
   state = next;
+  // A different game: nothing "happened", so start comparing afresh.
+  lastSnapshot = snapshot(state);
   changed();
 }
 
@@ -195,8 +211,10 @@ function startLoop(): void {
     const before = shape();
     if (tick(state, elapsed, content) > 0) {
       // A program finishing or a trace moving on changes what screens show, not just the clock.
-      if (shape() !== before) changed();
-      else emit(gameListeners);
+      if (shape() !== before) {
+        announce(true);
+        changed();
+      } else emit(gameListeners);
     }
     requestAnimationFrame(frame);
   };
@@ -235,6 +253,7 @@ export const session = {
       }
     }
     state = loaded ?? freshGame();
+    lastSnapshot = snapshot(state);
     await refreshSlots();
     // Only write a brand-new game if the slot is really empty, never over a save that failed to load.
     if (text === null) await writeSlot(activeSlot).catch(() => undefined);
@@ -262,8 +281,16 @@ export const session = {
 
   dispatch(action: Action): ActionResult {
     const result = applyAction(state, action, content);
-    if (result.ok) changed();
+    if (result.ok) {
+      announce(false);
+      changed();
+    }
     return result;
+  },
+
+  subscribeEvents(listener: (event: GameEvent) => void): () => void {
+    eventListeners.add(listener);
+    return () => eventListeners.delete(listener);
   },
 
   /** Saves the current game into a slot and makes that the autosave slot. */

@@ -19,7 +19,7 @@ interface Props {
 
 /**
  * A floating window. Drag it by its title bar; click anywhere on it to
- * bring it to the front; × closes it (its bottom-bar pill reopens it).
+ * bring it to the front; × closes it (its bottom-bar tab reopens it).
  */
 export function Window({ id, title, note, actions, children }: Props) {
   const layout = useWindows()[id];
