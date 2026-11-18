@@ -63,6 +63,19 @@ export const testServers: ServerDef[] = [
     security: { password: 1, proxy: 1, firewall: 1, monitor: 1 },
     records: { title: 'People', columns: ['Id', 'Name'], rows: [['1', 'Ann'], ['2', 'Bo']] },
   },
+  {
+    ...base,
+    id: 'vault',
+    name: 'Test Vault',
+    kind: 'company',
+    hostname: 'VAULT',
+    address: '10.0.0.7',
+    listed: false,
+    accounts: [{ user: 'admin', role: 'admin', name: 'V. Admin' }],
+    files: [{ name: 'sealed.dat', sizeGq: 2, access: 'admin', encrypted: 1 }],
+    // The monitor traces from the moment you connect.
+    security: { password: 0, proxy: 0, firewall: 0, monitor: 3 },
+  },
   { ...base, id: 'hidden', name: 'Unlisted', kind: 'board', hostname: 'H', address: '10.0.0.6', listed: false, accounts: [{ user: 'member', role: 'guest', name: 'Member' }], files: [] },
 ];
 
@@ -87,6 +100,8 @@ export const testPrograms: ProgramDef[] = [
   program('deleter', 'deleteFile', 2, 0.5),
   program('logs', 'deleteLog', 3),
   program('tracker', 'traceTracker', 0),
+  program('blinder', 'bypassMonitor', 4),
+  program('decrypter', 'decrypt', 6, 1),
 ];
 
 export const testRules: Rules = {
@@ -103,6 +118,10 @@ export const testRules: Rules = {
   reviewFineFactor: 0.5,
   ringToleranceDegrees: 20,
   ringMissSeconds: 2,
+  monitorBlindSeconds: 30,
+  echoBonusFactor: 1.5,
+  echoPenaltyFactor: 0.5,
+  harderSecurityAfter: 3,
 };
 
 /** Two extra programs that are only for sale, never owned at the start. */
@@ -127,6 +146,7 @@ export const testMail: Record<MailKey, MailDef> = {
   contractFailed: { from: '{client}', subject: 'Withdrawn: {title}', body: '{target}' },
   caught: { from: 'Fixer', subject: 'Traced by {target}', body: 'fine {fine}, {hours} hours' },
   review: { from: 'Fixer', subject: 'Logs read at {target}', body: '{lines}, fine {fine}' },
+  harderSecurity: letter('harderSecurity'),
 };
 
 export const content: Content = {

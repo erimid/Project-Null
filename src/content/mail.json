@@ -33,5 +33,10 @@
     "from": "Wren",
     "subject": "They read their logs",
     "body": "{target} went through its access log after you left and found {lines} that should not have been there. It was enough to put a name to.\n\nThey have fined you {fine} credits. No trace this time, so the Backroom still has work for you.\n\nBefore you disconnect, open Logs and scrub your login and anything that says a file was copied, deleted or a record changed. The lines that only say a connection opened or closed prove nothing.\n\nWren"
+  },
+  "harderSecurity": {
+    "from": "Wren",
+    "subject": "Harder doors",
+    "body": "{handle}, you have enough work behind you that the board will start showing you jobs with better locks on them. Two things you have not met yet.\n\nSome monitors are quick, and the best start tracing the moment you connect. The Market now sells a Monitor Bypass. Run it from the security strip before you log in. While the monitor is blind, nothing you do is noticed and a trace that is already running stands still. It works once per connection and it does not last, so know what you are there to do before you start it. When it lands, you are shown the monitor's check-in pattern. Repeat it and you stay hidden longer. Get it wrong and you lose some of the time, so leave it alone if you did not catch it.\n\nSome files are encrypted. You can copy one like any other, but you cannot read it and no client will pay for it until it is open. Buy the Decrypter and run it on the file from Programs, on your own gateway. It takes a while. It keeps working after you disconnect.\n\nWren"
   }
 }

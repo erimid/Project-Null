@@ -5,7 +5,7 @@
 import type { Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 5;
+export const STATE_VERSION = 6;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -51,6 +51,8 @@ export interface StoredFile {
   sizeGq: number;
   /** Id of the server it was copied from. */
   from: string;
+  /** Level of the encryption on it. Missing = readable. */
+  encrypted?: number;
 }
 
 /**
@@ -91,6 +93,34 @@ export interface Connection {
   trace: TraceState;
   /** How many times this connection has been rerouted around a trace. */
   reroutes: number;
+  monitor: MonitorState;
+}
+
+/**
+ * What a Monitor Bypass has done to the far end's monitor on one
+ * connection. While `blindMs` is above 0 the monitor notices nothing and
+ * a trace that is already running stands still.
+ */
+export interface MonitorState {
+  /** Time the monitor stays blind for. */
+  blindMs: number;
+  /** True once a bypass has finished on this connection. It works once per connection. */
+  used: boolean;
+  /** The hands-on way to stretch the blind time, while it is on offer. */
+  echo: EchoPuzzle | null;
+}
+
+/**
+ * Echo the handshake: the monitor's check-in pattern is shown once on a
+ * 3 by 3 grid, and the player repeats it. Getting it all right stretches
+ * the blind time; one wrong cell shortens it.
+ */
+export interface EchoPuzzle {
+  /** The pattern, as cell numbers 0 to 8, in order. */
+  cells: number[];
+  /** How many cells the player has repeated correctly so far. */
+  entered: number;
+  result: 'open' | 'won' | 'lost';
 }
 
 /** What a running program is working on. */
@@ -98,16 +128,20 @@ export type TaskTarget =
   | { kind: 'password'; user: string }
   | { kind: 'proxy' }
   | { kind: 'firewall' }
+  /** Blind the monitor for a while. */
+  | { kind: 'monitor' }
+  /** Decrypt a file stored on the gateway. Runs at home, not over a connection. */
+  | { kind: 'decrypt'; file: string }
   | { kind: 'copyFile'; file: string }
   | { kind: 'deleteFile'; file: string }
   /** Remove one or more lines from the access log in a single run. */
   | { kind: 'deleteLog'; logIds: number[] };
 
-/** A program that is running against a connection. */
+/** A program that is running, against a connection or (connectionId null) on the gateway itself. */
 export interface Task {
   id: string;
   programId: string;
-  connectionId: string;
+  connectionId: string | null;
   target: TaskTarget;
   /** Simulated time it has run so far. */
   progressMs: number;
@@ -153,6 +187,8 @@ export interface FileState {
   name: string;
   sizeGq: number;
   access: Role;
+  /** Level of the encryption on it. Missing = readable. */
+  encrypted?: number;
 }
 
 export interface LogEntry {

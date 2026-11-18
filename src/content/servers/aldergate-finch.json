@@ -1,0 +1,84 @@
+{
+  "id": "aldergate-finch",
+  "name": "Aldergate & Finch",
+  "kind": "company",
+  "owner": "Aldergate & Finch LLP",
+  "hostname": "AF-MATTERS-02",
+  "address": "81.2.69.160",
+  "city": "London",
+  "country": "United Kingdom",
+  "lat": 51.51,
+  "lon": -0.09,
+  "blurb": "Client matters and sealed documents.",
+  "listed": true,
+  "security": {
+    "password": 2,
+    "proxy": 0,
+    "firewall": 1,
+    "monitor": 1
+  },
+  "traceSecondsPerHop": 14,
+  "relayDelay": 1.0,
+  "banner": [
+    "ALDERGATE & FINCH LLP",
+    "Matter Management · Document Store 02",
+    "Privileged and confidential. Access is logged against the matter number.",
+    "Sealed documents are encrypted at rest."
+  ],
+  "accounts": [
+    {
+      "user": "admin",
+      "role": "admin",
+      "name": "R. Finch, Records Partner"
+    }
+  ],
+  "files": [
+    {
+      "name": "matter_index_2034.dat",
+      "sizeGq": 4,
+      "access": "admin"
+    },
+    {
+      "name": "harlow_v_tessera_settlement.txt",
+      "sizeGq": 2,
+      "access": "admin",
+      "encrypted": 1,
+      "content": {
+        "kind": "text",
+        "text": "SETTLEMENT AGREEMENT (SEALED BY ORDER)\nHarlow and others v. Tessera Water Services plc\nMatter AF-2033-0417\n\n1. Tessera will pay the claimants 11,400,000 in three instalments. No admission of liability is made.\n\n2. The claimants will not speak or write about the Brackley Reservoir test results of June 2032, or about the letters sent to Tessera before that date.\n\n3. The results themselves stay with Tessera. The claimants' copies are to be destroyed and a certificate of destruction sent to this firm.\n\n4. Any claimant who breaks clause 2 repays their share in full.\n\nSigned for the claimants by nineteen of the twenty-three households. Four did not sign and are not bound.\n\nNote to file (R. Finch): the four who did not sign have been asking who the others' solicitor was. Do not answer."
+      }
+    },
+    {
+      "name": "client_billing_march.dat",
+      "sizeGq": 3,
+      "access": "admin"
+    },
+    {
+      "name": "note_to_partners.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "Partners,\n\nA reminder that sealed documents are stored encrypted. If you take a copy home it will be of no use to you without the office key, and of no use to anyone else either. That is the point.\n\nPlease stop asking IT to turn it off.\n\nR. Finch"
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 1510,
+      "text": "login admin from 81.2.69.14"
+    },
+    {
+      "minutesAgo": 1502,
+      "text": "document sealed: harlow_v_tessera_settlement.txt"
+    },
+    {
+      "minutesAgo": 1498,
+      "text": "logout admin"
+    },
+    {
+      "minutesAgo": 320,
+      "text": "backup completed"
+    }
+  ]
+}

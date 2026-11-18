@@ -3,6 +3,7 @@ import { fileContent } from '../../../core';
 import type { CueDef, FileContent, Scene } from '../../../core/content';
 import { seeded } from '../../audio';
 import { playRecording, type Playing } from '../../recording';
+import { useGame } from '../../hooks';
 import { content } from '../../session';
 import { useViewer, type OpenFile } from '../viewerStore';
 import { Window } from '../Window';
@@ -14,13 +15,37 @@ const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.fl
 export function ViewerWindow() {
   const file = useViewer();
   const open = useWindows().viewer.open;
+  // A copy on the gateway is what gets opened if there is one; it may have been decrypted since.
+  const level = useGame((game) => {
+    if (!file) return 0;
+    const own = game.player.files.find((item) => item.name === file.name && item.from === file.serverId);
+    return (own ?? game.servers[file.serverId]?.files.find((item) => item.name === file.name))?.encrypted ?? 0;
+  });
   if (!file) return null;
   const inside = fileContent(content, file.serverId, file.name);
   return (
     <Window id="viewer" title={file.name} note={`${file.sizeGq} GB`}>
       {/* Closing the window unmounts the player, which stops the sound. */}
-      {open && <Inside key={`${file.serverId}/${file.name}`} file={file} inside={inside} />}
+      {open && level > 0 && <Sealed name={file.name} level={level} />}
+      {open && level === 0 && <Inside key={`${file.serverId}/${file.name}`} file={file} inside={inside} />}
     </Window>
+  );
+}
+
+/** An encrypted file: nothing to read until a Decrypter has run on a copy. */
+function Sealed({ name, level }: { name: string; level: number }) {
+  const noise = seeded(`sealed/${name}`);
+  const rows = Array.from({ length: 10 }, () =>
+    Array.from({ length: 8 }, () => Math.floor(noise() * 0x10000).toString(16).padStart(4, '0')).join(' '),
+  );
+  return (
+    <>
+      <p class="viewer__note viewer__note--sealed">
+        Encrypted, level <span class="data">{level}</span>. Copy it to your gateway and run a Decrypter on it from Programs to
+        read it.
+      </p>
+      <pre class="doc doc--raw doc--sealed">{rows.join('\n')}</pre>
+    </>
   );
 }
 

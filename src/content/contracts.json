@@ -135,5 +135,37 @@
       "kind": "destroy",
       "file": "fraud_watchlist.dat"
     }
+  },
+  {
+    "id": "aldergate-settlement",
+    "title": "Sealed terms",
+    "client": "Four households",
+    "targetId": "aldergate-finch",
+    "pay": 2800,
+    "rating": 2,
+    "minRating": 5,
+    "summary": "Copy a sealed settlement from Aldergate & Finch and decrypt it.",
+    "brief": "Nineteen of our neighbours signed something and now will not talk to us. We want to know what they were paid to keep quiet about.\n\nCopy harlow_v_tessera_settlement.txt from Aldergate & Finch. It is encrypted, so the copy is no use to us as it is. Run a Decrypter on it at home, then deliver.",
+    "objective": {
+      "kind": "steal",
+      "file": "harlow_v_tessera_settlement.txt"
+    }
+  },
+  {
+    "id": "sunderby-clinic",
+    "title": "Keep the lights on",
+    "client": "A district nurse",
+    "targetId": "sunderby-kraft",
+    "pay": 3000,
+    "rating": 2,
+    "minRating": 5,
+    "summary": "Mark a health station's account as paid at Sunderby Kraft.",
+    "brief": "The power company is cutting off our health station on Thursday over a bill the county already paid. Nobody can find the payment and nobody will stop the order.\n\nIn the customer accounts, set the Status of SK-40118 to Paid. Their monitor traces every connection from the second it opens. Take plenty of relays and something to blind it with.",
+    "objective": {
+      "kind": "record",
+      "key": "SK-40118",
+      "column": "Status",
+      "value": "Paid"
+    }
   }
 ]

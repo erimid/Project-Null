@@ -26,11 +26,26 @@ export function newTrace(content: Content, target: ServerDef, route: readonly st
  * one isn't already under way.
  */
 export function noteIntrusion(content: Content, connection: Connection): void {
-  if (connection.trace.status !== 'none') return;
+  if (connection.trace.status !== 'none' || connection.monitor.blindMs > 0) return;
   const monitor = findServer(content, connection.serverId)?.security.monitor ?? 0;
   const graceSeconds = content.rules.monitorGraceSeconds[monitor] ?? 0;
   connection.trace.status = graceSeconds > 0 ? 'pending' : 'active';
   connection.trace.graceMs = graceSeconds * 1000;
+}
+
+/**
+ * Counts down the time a monitor stays blind. Returns how much of `simMs`
+ * is left over for the trace: nothing while the monitor is blind.
+ */
+export function advanceMonitor(connection: Connection, simMs: number): number {
+  const monitor = connection.monitor;
+  if (monitor.blindMs <= 0) return simMs;
+  const left = simMs - monitor.blindMs;
+  monitor.blindMs = Math.max(0, monitor.blindMs - simMs);
+  if (monitor.blindMs > 0) return 0;
+  // The monitor is back. The chance to stretch the time has gone with it.
+  monitor.echo = null;
+  return left;
 }
 
 /** Moves a trace forward. Returns true if it has just reached the gateway. */
@@ -82,7 +97,12 @@ export function traceReport(trace: TraceState): TraceReport {
 export function mostUrgentTrace(state: GameState): Connection | undefined {
   return state.connections
     .filter((connection) => connection.trace.status === 'active')
-    .sort((a, b) => traceReport(a.trace).remainingMs - traceReport(b.trace).remainingMs)[0];
+    // A held trace is not closing in, so one that is moving comes first.
+    .sort(
+      (a, b) =>
+        Number(a.monitor.blindMs > 0) - Number(b.monitor.blindMs > 0) ||
+        traceReport(a.trace).remainingMs - traceReport(b.trace).remainingMs,
+    )[0];
 }
 
 /** Index in the route of the relay the trace is working on right now. -1 if there is none. */

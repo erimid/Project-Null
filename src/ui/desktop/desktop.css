@@ -2368,3 +2368,126 @@ button.tabbar__contract--live:hover {
     animation: none;
   }
 }
+
+/* ---- harder security: blind monitors, the handshake, encrypted files ---- */
+
+.layer.is-blind {
+  box-shadow: 0 0 14px rgba(78, 230, 200, 0.25);
+  animation: blind-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes blind-pulse {
+  50% {
+    box-shadow: 0 0 4px rgba(78, 230, 200, 0.1);
+  }
+}
+
+.alarm.is-held {
+  border-color: var(--mint);
+  background: linear-gradient(rgba(8, 44, 40, 0.96), rgba(5, 22, 22, 0.98));
+  box-shadow:
+    0 0 40px rgba(78, 230, 200, 0.25),
+    inset 0 0 24px rgba(78, 230, 200, 0.1);
+  animation: alarm-rise 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.alarm.is-held .alarm__label {
+  color: var(--mint);
+}
+
+.alarm.is-held .alarm__time {
+  color: var(--text-dim);
+  text-shadow: none;
+}
+
+.alarm.is-held .alarm__bar {
+  background: rgba(78, 230, 200, 0.16);
+}
+
+.alarm.is-held .alarm__fill {
+  background: var(--mint);
+  box-shadow: none;
+}
+
+.echo__grid {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  grid-auto-rows: 52px;
+  gap: 8px;
+  padding: 4px;
+}
+
+.echo__cell {
+  border: 1px solid rgba(95, 212, 255, 0.35);
+  border-radius: 10px;
+  background: rgba(95, 212, 255, 0.06);
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    box-shadow 0.18s,
+    border-color 0.18s;
+}
+
+.echo__cell:disabled {
+  cursor: default;
+}
+
+.echo__cell:not(:disabled):hover {
+  border-color: var(--cyan);
+  background: rgba(95, 212, 255, 0.16);
+}
+
+.echo__cell.is-lit {
+  border-color: var(--cyan);
+  background: var(--cyan);
+  box-shadow: 0 0 22px rgba(95, 212, 255, 0.8);
+  transition: none;
+}
+
+.echo__cell.is-right {
+  border-color: var(--mint);
+  background: rgba(78, 230, 200, 0.45);
+  box-shadow: 0 0 14px rgba(78, 230, 200, 0.5);
+}
+
+.echo__cell.is-wrong {
+  border-color: var(--red);
+  background: rgba(255, 59, 78, 0.5);
+  box-shadow: 0 0 14px rgba(255, 59, 78, 0.5);
+}
+
+.echo.is-won .echo__cell {
+  border-color: rgba(78, 230, 200, 0.6);
+}
+
+.echo.is-lost .lineup__status {
+  color: var(--red-text);
+}
+
+.echo .btn {
+  margin-top: 8px;
+}
+
+.sealed {
+  color: #ffc46b;
+}
+
+.viewer__note--sealed {
+  color: #ffc46b;
+}
+
+.doc--sealed {
+  opacity: 0.55;
+  filter: blur(0.6px);
+}
+
+.row__decrypt {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: start;
+}
+
+.row__decrypt .progress {
+  width: 200px;
+}

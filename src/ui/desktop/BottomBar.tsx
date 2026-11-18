@@ -49,13 +49,29 @@ function TraceAlarm() {
     const connection = mostUrgentTrace(game);
     return connection ? Math.ceil(traceReport(connection.trace).remainingMs / 1000) : 0;
   });
+  const held = useGame((game) => {
+    const connection = mostUrgentTrace(game);
+    return connection ? clockText(connection.monitor.blindMs) : '';
+  });
+  const isHeld = useGame((game) => (mostUrgentTrace(game)?.monitor.blindMs ?? 0) > 0);
   const others = useGame((game) => game.connections.filter((c) => c.trace.status === 'active').length - 1);
   if (server === null) return null;
 
   return (
-    <button type="button" class={`alarm${tracker && seconds <= 10 ? ' is-critical' : ''}`} onClick={showTrace}>
+    <button
+      type="button"
+      class={`alarm${isHeld ? ' is-held' : tracker && seconds <= 10 ? ' is-critical' : ''}`}
+      title={isHeld ? `The monitor is blind for ${held}. The trace stands still until it wakes.` : undefined}
+      onClick={showTrace}
+    >
       <span class="alarm__label">
-        Trace in progress
+        {isHeld ? (
+          <>
+            Trace held <span class="data">{held}</span>
+          </>
+        ) : (
+          'Trace in progress'
+        )}
         {others > 0 && <span class="alarm__more data">+{others}</span>}
       </span>
       {tracker ? (

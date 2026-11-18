@@ -1,0 +1,115 @@
+{
+  "id": "sunderby-kraft",
+  "name": "Sunderby Kraft",
+  "kind": "company",
+  "owner": "Sunderby Kraft AB",
+  "hostname": "SK-KUND-01",
+  "address": "130.240.19.77",
+  "city": "Luleå",
+  "country": "Sweden",
+  "lat": 65.58,
+  "lon": 22.15,
+  "blurb": "Customer accounts for a northern power company.",
+  "listed": true,
+  "security": {
+    "password": 1,
+    "proxy": 1,
+    "firewall": 0,
+    "monitor": 3
+  },
+  "traceSecondsPerHop": 10,
+  "relayDelay": 1.0,
+  "banner": [
+    "SUNDERBY KRAFT AB",
+    "Kundsystem · Customer Accounts",
+    "This system is watched at all times. Every connection is traced from the moment it opens.",
+    "Authorised staff only."
+  ],
+  "accounts": [
+    {
+      "user": "admin",
+      "role": "admin",
+      "name": "L. Engström, Billing"
+    }
+  ],
+  "files": [
+    {
+      "name": "disconnection_orders_week11.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "DISCONNECTION ORDERS, WEEK 11\n\nSK-40118  Norrfjärden Health Station  3 months unpaid  Thursday 16 March, 07:00\nSK-40377  Storsand Sawmill (closed)   7 months unpaid  Thursday 16 March, 07:00\n\nNote from L. Engström: the health station says the county pays its bill and the county says it has. I cannot find the payment. The order stands until someone shows me one. I do not like it either."
+      }
+    },
+    {
+      "name": "meter_readings_0313.dat",
+      "sizeGq": 6,
+      "access": "admin"
+    },
+    {
+      "name": "tariff_table_2034.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 980,
+      "text": "login admin from 130.240.19.5"
+    },
+    {
+      "minutesAgo": 975,
+      "text": "record updated: SK-40118"
+    },
+    {
+      "minutesAgo": 970,
+      "text": "logout admin"
+    },
+    {
+      "minutesAgo": 140,
+      "text": "monitor self-test passed"
+    }
+  ],
+  "records": {
+    "title": "Customer accounts",
+    "columns": [
+      "Account",
+      "Customer",
+      "Owed",
+      "Status"
+    ],
+    "rows": [
+      [
+        "SK-40102",
+        "Bergnäs Bakery",
+        "0",
+        "Paid"
+      ],
+      [
+        "SK-40118",
+        "Norrfjärden Health Station",
+        "48,200",
+        "Disconnect 16 March"
+      ],
+      [
+        "SK-40236",
+        "A. Lindqvist",
+        "1,120",
+        "Reminder sent"
+      ],
+      [
+        "SK-40377",
+        "Storsand Sawmill",
+        "96,400",
+        "Disconnect 16 March"
+      ],
+      [
+        "SK-40391",
+        "Kallax Flying Club",
+        "0",
+        "Paid"
+      ]
+    ]
+  }
+}

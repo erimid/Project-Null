@@ -148,7 +148,7 @@ describe('security and program checks', () => {
   });
 
   it('ship one program for every job, and no layer the starting programs cannot beat', () => {
-    for (const kind of ['breakPassword', 'bypassProxy', 'bypassFirewall', 'copyFile', 'deleteFile', 'deleteLog', 'traceTracker']) {
+    for (const kind of ['breakPassword', 'bypassProxy', 'bypassFirewall', 'bypassMonitor', 'decrypt', 'copyFile', 'deleteFile', 'deleteLog', 'traceTracker']) {
       expect(programs.some((program) => program.kind === kind), kind).toBe(true);
     }
     for (const server of servers) {

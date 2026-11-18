@@ -9,7 +9,7 @@ import { caught } from './actions';
 import { runReviews } from './forensics';
 import { isConnected, type GameState, type Speed } from './state';
 import { advanceTasks } from './tasks';
-import { advanceTrace } from './trace';
+import { advanceMonitor, advanceTrace } from './trace';
 import type { Content } from './world';
 
 /** The speed the clock is actually running at right now. */
@@ -27,9 +27,13 @@ export function tick(state: GameState, realMs: number, content: Content): number
   const simMs = realMs * effectiveSpeed(state);
   state.clock.gameTimeMs += simMs * 60 * content.rules.gameMinutesPerRealSecond;
 
+  const sighted = state.connections.filter((connection) => connection.monitor.blindMs <= 0);
   advanceTasks(state, content, simMs);
   for (const connection of [...state.connections]) {
-    if (advanceTrace(connection.trace, simMs)) caught(state, content, connection);
+    // A monitor blinded during this tick starts its blind time on the next one.
+    if (connection.monitor.blindMs > 0 && sighted.includes(connection)) continue;
+    const traceMs = advanceMonitor(connection, simMs);
+    if (traceMs > 0 && advanceTrace(connection.trace, traceMs)) caught(state, content, connection);
   }
   if (state.reviews.length > 0) runReviews(state, content);
   return simMs;

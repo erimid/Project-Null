@@ -32,6 +32,14 @@ export interface Rules {
   readonly ringToleranceDegrees: number;
   /** Seconds a missed lock adds to the task. */
   readonly ringMissSeconds: number;
+  /** Seconds a Monitor Bypass as strong as the monitor keeps it blind. */
+  readonly monitorBlindSeconds: number;
+  /** Echoing the handshake right multiplies the blind time left by this. */
+  readonly echoBonusFactor: number;
+  /** One wrong cell multiplies the blind time left by this. */
+  readonly echoPenaltyFactor: number;
+  /** Delivered contracts before the fixer writes about harder security. */
+  readonly harderSecurityAfter: number;
 }
 
 export interface Content {
@@ -63,6 +71,13 @@ export function sendMail(state: GameState, content: Content, key: MailKey, fill:
     timeMs: state.clock.gameTimeMs,
     read: false,
   });
+}
+
+/** Sends the messages that depend on how far the player has got. Safe to call any time. */
+export function noteProgress(state: GameState, content: Content): void {
+  if (state.contracts.completed.length >= content.rules.harderSecurityAfter) {
+    once(state, 'harderSecurity', () => sendMail(state, content, 'harderSecurity'));
+  }
 }
 
 /** Does `name` the first time it is called for this game, and nothing after that. */
@@ -106,7 +121,12 @@ export function findAccount(server: ServerDef, user: string): AccountDef | undef
 function initialServerState(server: ServerDef, state: GameState): ServerState {
   return {
     // What is inside a file stays in the data files; the game only tracks which files exist.
-    files: server.files.map((file) => ({ name: file.name, sizeGq: file.sizeGq, access: file.access })),
+    files: server.files.map((file) => ({
+      name: file.name,
+      sizeGq: file.sizeGq,
+      access: file.access,
+      ...(file.encrypted ? { encrypted: file.encrypted } : {}),
+    })),
     logs: server.logs
       .map((log) => ({ timeMs: state.clock.gameTimeMs - log.minutesAgo * 60_000, text: log.text }))
       .sort((a, b) => a.timeMs - b.timeMs)
@@ -148,6 +168,7 @@ export function syncWithContent(state: GameState, content: Content): GameState {
   });
 
   once(state, 'welcome', () => sendMail(state, content, 'welcome'));
+  noteProgress(state, content);
   // A contract that was removed from the game can't be finished.
   const isContract = (id: string) => content.contracts.some((contract) => contract.id === id);
   if (state.contracts.activeId !== null && !isContract(state.contracts.activeId)) state.contracts.activeId = null;
@@ -159,7 +180,8 @@ export function syncWithContent(state: GameState, content: Content): GameState {
     (connection) => exists(connection.serverId) && connection.route.every(exists),
   );
   state.tasks = state.tasks.filter(
-    (task) => findConnection(state, task.connectionId) && findProgram(content, task.programId),
+    (task) =>
+      (task.connectionId === null || findConnection(state, task.connectionId)) && findProgram(content, task.programId),
   );
   return state;
 }
@@ -170,6 +192,6 @@ export function sourceAddress(content: Content, connection: Connection): string 
   return (lastHop === undefined ? gatewayOf(content) : (findServer(content, lastHop) ?? gatewayOf(content))).address;
 }
 
-export function findConnection(state: GameState, id: string): Connection | undefined {
+export function findConnection(state: GameState, id: string | null): Connection | undefined {
   return state.connections.find((connection) => connection.id === id);
 }

@@ -93,6 +93,14 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
       task.target.kind === 'deleteLog' ? { ...task, target: { kind: 'deleteLog', logIds: [task.target.logId] } } : task,
     ),
   }),
+  // 5 -> 6: Monitor Bypass. No monitor was blind before it existed.
+  5: (old) => ({
+    ...old,
+    connections: (old.connections as object[]).map((connection) => ({
+      ...connection,
+      monitor: { blindMs: 0, used: false, echo: null },
+    })),
+  }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -192,20 +200,31 @@ const isConnection = (c: unknown): c is Obj =>
   isNum(c.trace.graceMs) &&
   isNum(c.trace.elapsedMs) &&
   isList(c.trace.hopMs, isNum) &&
-  isNum(c.reroutes);
+  isNum(c.reroutes) &&
+  isObj(c.monitor) &&
+  isNum(c.monitor.blindMs) &&
+  typeof c.monitor.used === 'boolean' &&
+  (c.monitor.echo === null ||
+    (isObj(c.monitor.echo) &&
+      isList(c.monitor.echo.cells, isNum) &&
+      isNum(c.monitor.echo.entered) &&
+      ['open', 'won', 'lost'].includes(c.monitor.echo.result as string)));
 
-const TARGET_KINDS = ['password', 'proxy', 'firewall', 'copyFile', 'deleteFile', 'deleteLog'];
+const isLevel = (value: unknown) => value === undefined || isNum(value);
+
+const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'deleteLog'];
 
 const isTask = (t: unknown): t is Obj =>
   isObj(t) &&
   isText(t.id) &&
   isText(t.programId) &&
-  isText(t.connectionId) &&
+  (t.connectionId === null || isText(t.connectionId)) &&
   isNum(t.progressMs) &&
   isNum(t.durationMs) &&
   isObj(t.target) &&
   TARGET_KINDS.includes(t.target.kind as string) &&
   (t.target.kind !== 'deleteLog' || isList(t.target.logIds, isNum)) &&
+  (t.target.kind !== 'decrypt' || (isText(t.target.file) && t.connectionId === null)) &&
   (t.puzzle === undefined ||
     (isObj(t.puzzle) &&
       isList(t.puzzle.startAngles, isNum) &&
@@ -223,7 +242,7 @@ const isMessage = (m: unknown): m is Obj =>
 
 const isServerState = (s: unknown): s is Obj =>
   isObj(s) &&
-  isList(s.files, (f): f is Obj => isObj(f) && isText(f.name) && isNum(f.sizeGq) && isRole(f.access)) &&
+  isList(s.files, (f): f is Obj => isObj(f) && isText(f.name) && isNum(f.sizeGq) && isRole(f.access) && isLevel(f.encrypted)) &&
   isList(
     s.logs,
     (l): l is Obj => isObj(l) && isNum(l.id) && isNum(l.timeMs) && isText(l.text) && typeof l.byPlayer === 'boolean',
@@ -243,7 +262,7 @@ function checkState(raw: Obj): GameState {
   }
   if (
     !isList(player.programs, isText) ||
-    !isList(player.files, (f): f is Obj => isObj(f) && isText(f.name) && isNum(f.sizeGq) && isText(f.from)) ||
+    !isList(player.files, (f): f is Obj => isObj(f) && isText(f.name) && isNum(f.sizeGq) && isText(f.from) && isLevel(f.encrypted)) ||
     !isObj(player.passwords) ||
     !Object.values(player.passwords).every((users) => isList(users, isText))
   ) {

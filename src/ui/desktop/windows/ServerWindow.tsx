@@ -1,13 +1,15 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import {
   usedStorageGq,
   activeContract,
   availableContracts,
   canLogIn,
   isLyingLow,
+  ownedProgram,
   ringAngle,
   type Action,
   type Connection,
+  type EchoPuzzle,
   type GameState,
   type ServerState,
   type TaskTarget,
@@ -191,6 +193,8 @@ function Security({ game, server, connection, run }: View) {
   };
 
   const lineup = findTask(game, connection, { kind: 'firewall' });
+  const blinding = findTask(game, connection, { kind: 'monitor' });
+  const blind = connection.monitor.blindMs > 0;
 
   return (
     <>
@@ -205,15 +209,118 @@ function Security({ game, server, connection, run }: View) {
       {bypassable('proxy', proxy, 'Blocks changes to logs and records')}
       {bypassable('firewall', firewall, 'Blocks copying and deleting files')}
       {monitor > 0 && (
-        <li class="layer" title="Watches for intruders. A higher level starts its trace sooner.">
+        <li
+          class={`layer${blind ? ' is-open is-blind' : ''}`}
+          title={
+            monitor >= content.rules.monitorGraceSeconds.length
+              ? 'Watches for intruders. This one traces every connection from the moment it opens.'
+              : 'Watches for intruders. A higher level starts its trace sooner.'
+          }
+        >
           <span class="layer__name">Monitor</span>
           <span class="layer__level data">{monitor}</span>
-          <span class="layer__state">watching</span>
+          {blind ? (
+            <BlindTime connectionId={connection.id} />
+          ) : blinding ? (
+            <TaskProgress taskId={blinding.id} label="Blinding" />
+          ) : ownedProgram(game, content, 'bypassMonitor') && !connection.monitor.used ? (
+            <button type="button" class="btn" onClick={() => run({ kind: 'monitor' })}>
+              Blind
+            </button>
+          ) : (
+            <span class="layer__state" title={connection.monitor.used ? 'It has seen that trick. Reconnect to blind it again.' : undefined}>
+              {connection.monitor.used ? 'watching again' : 'watching'}
+            </span>
+          )}
         </li>
       )}
     </ul>
+    {connection.monitor.echo && <Handshake key={connection.id} connectionId={connection.id} echo={connection.monitor.echo} />}
     {lineup?.puzzle && <PortLineup taskId={lineup.id} rings={lineup.puzzle.locked.length} />}
     </>
+  );
+}
+
+const blindClock = (game: GameState, connectionId: string) => {
+  const seconds = Math.ceil((game.connections.find((item) => item.id === connectionId)?.monitor.blindMs ?? 0) / 1000);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+};
+
+/** How long the monitor stays blind, counting down. */
+function BlindTime({ connectionId }: { connectionId: string }) {
+  const left = useGame((game) => blindClock(game, connectionId));
+  return (
+    <span class="layer__state">
+      blind <span class="data">{left}</span>
+    </span>
+  );
+}
+
+const ECHO_STEP_MS = 520;
+
+/**
+ * The hands-on way to stay hidden longer: the monitor's check-in pattern
+ * lights up cell by cell, then the player clicks the same cells in order.
+ */
+function Handshake({ connectionId, echo }: { connectionId: string; echo: EchoPuzzle }) {
+  // Which step of the pattern is lit while it plays; past the end = the player's turn.
+  const [step, setStep] = useState(0);
+  const [wrong, setWrong] = useState<number | null>(null);
+  const playing = step < echo.cells.length;
+  const left = useGame((game) => blindClock(game, connectionId));
+
+  useEffect(() => {
+    if (!playing) return;
+    const timer = setTimeout(() => setStep((value) => value + 1), ECHO_STEP_MS);
+    return () => clearTimeout(timer);
+  }, [step, playing]);
+
+  const press = (cell: number) => {
+    if (playing || echo.result !== 'open') return;
+    if (echo.cells[echo.entered] !== cell) setWrong(cell);
+    session.dispatch({ type: 'echoCell', connectionId, cell });
+  };
+  const bonus = Math.round((content.rules.echoBonusFactor - 1) * 100);
+  const penalty = Math.round((1 - content.rules.echoPenaltyFactor) * 100);
+  const lit = playing ? echo.cells[step] : undefined;
+  const last = echo.result !== 'lost' && !playing && echo.entered > 0 ? echo.cells[echo.entered - 1] : undefined;
+
+  return (
+    <div class={`lineup echo is-${echo.result}`}>
+      <div class="echo__grid" role="group" aria-label="Handshake pattern">
+        {Array.from({ length: 9 }, (_, cell) => (
+          <button
+            key={cell}
+            type="button"
+            class={`echo__cell${cell === lit ? ' is-lit' : ''}${cell === last ? ' is-right' : ''}${cell === wrong ? ' is-wrong' : ''}`}
+            aria-label={`Cell ${cell + 1}`}
+            disabled={playing || echo.result !== 'open'}
+            onClick={() => press(cell)}
+          />
+        ))}
+      </div>
+      <div class="lineup__text">
+        <h3 class="map__heading">Echo the handshake</h3>
+        {echo.result === 'open' && (
+          <p>
+            The monitor checks in with a pattern of {echo.cells.length} cells. {playing ? 'Watch it.' : 'Now click the same cells in the same order.'}{' '}
+            Get it right and the monitor stays blind {bonus}% longer. One wrong cell costs {penalty}% of the time left. Or leave it
+            alone.
+          </p>
+        )}
+        {echo.result === 'won' && <p>Pattern matched. The monitor thinks all is well and stays blind longer.</p>}
+        {echo.result === 'lost' && <p>Wrong cell. The monitor is suspicious and will wake sooner.</p>}
+        <p class="lineup__status data">
+          {echo.result === 'open' ? `${echo.entered} / ${echo.cells.length} repeated` : echo.result === 'won' ? 'matched' : 'missed'} · blind for{' '}
+          {left}
+        </p>
+        {echo.result === 'open' && !playing && echo.entered === 0 && (
+          <button type="button" class="btn" onClick={() => setStep(0)}>
+            Show it again
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -311,7 +418,9 @@ function Files({ game, state, connection, run }: View) {
           <li key={file.name} class="row row--file">
             <span class="row__main">{file.name}</span>
             <span class="row__dim">{file.sizeGq} GB</span>
-            <span class="row__dim">{file.access === 'admin' ? 'restricted' : 'public'}</span>
+            <span class={file.encrypted ? 'sealed' : 'row__dim'} title={file.encrypted ? `Encrypted, level ${file.encrypted}. A copy needs a Decrypter before it can be read.` : undefined}>
+              {file.encrypted ? 'encrypted' : file.access === 'admin' ? 'restricted' : 'public'}
+            </span>
             <span class="row__actions">
               {copying ? (
                 <TaskProgress taskId={copying.id} label="Copying" />

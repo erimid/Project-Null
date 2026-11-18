@@ -2,9 +2,9 @@ import type { Connection, GameState, Task, TaskTarget } from '../../core';
 import { useGame } from '../hooks';
 
 /** The running program working on this target over this connection, if there is one. */
-export function findTask(game: GameState, connection: Connection, target: TaskTarget): Task | undefined {
+export function findTask(game: GameState, connection: Connection | null, target: TaskTarget): Task | undefined {
   const wanted = JSON.stringify(target);
-  return game.tasks.find((task) => task.connectionId === connection.id && JSON.stringify(task.target) === wanted);
+  return game.tasks.find((task) => task.connectionId === (connection?.id ?? null) && JSON.stringify(task.target) === wanted);
 }
 
 /** What a running program is doing, in a few words. */
@@ -16,6 +16,10 @@ export function describeTarget(target: TaskTarget): string {
       return 'proxy';
     case 'firewall':
       return 'firewall';
+    case 'monitor':
+      return 'monitor';
+    case 'decrypt':
+      return 'decrypting';
     case 'copyFile':
       return `copying ${target.file}`;
     case 'deleteFile':

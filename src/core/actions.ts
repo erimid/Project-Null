@@ -15,7 +15,7 @@ import {
   uninstallProgram,
 } from './contracts';
 import { scheduleReview } from './forensics';
-import { canLogIn, lockRing, startTask } from './tasks';
+import { canLogIn, echoCell, lockRing, startTask } from './tasks';
 import { hopUnderTrace, newTrace, noteIntrusion, reroute } from './trace';
 import { findAccount, findConnection, findServer, gatewayOf, sendMail, sourceAddress, type Content } from './world';
 
@@ -53,6 +53,10 @@ export type Action =
   | { readonly type: 'buyProgram'; readonly connectionId: string; readonly programId: string }
   /** Remove an installed program from the gateway to free its room. */
   | { readonly type: 'uninstallProgram'; readonly programId: string }
+  /** Repeat one cell of the monitor's handshake pattern. */
+  | { readonly type: 'echoCell'; readonly connectionId: string; readonly cell: number }
+  /** Decrypt a file stored on the gateway. */
+  | { readonly type: 'decryptFile'; readonly name: string }
   /** Delete a file stored on the gateway. */
   | { readonly type: 'deleteStoredFile'; readonly name: string };
 
@@ -154,6 +158,7 @@ export function applyAction(state: GameState, action: Action, content: Content):
         bypassed: { proxy: false, firewall: false },
         trace: newTrace(content, server, state.route),
         reroutes: 0,
+        monitor: { blindMs: 0, used: false, echo: null },
       };
       state.connections.push(connection);
       logConnection(state, content, connection, true);
@@ -215,6 +220,11 @@ export function applyAction(state: GameState, action: Action, content: Content):
       const reason = startTask(state, content, action.connectionId, action.target);
       return reason === null ? OK : refuse(reason);
     }
+
+    case 'echoCell':
+      return answer(echoCell(state, content, action.connectionId, action.cell));
+    case 'decryptFile':
+      return answer(startTask(state, content, null, { kind: 'decrypt', file: action.name }));
 
     case 'lockRing':
       return answer(lockRing(state, content, action.taskId, action.ring));

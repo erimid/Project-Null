@@ -237,7 +237,7 @@ describe('save and load', () => {
       },
     };
     const loaded = syncWithContent(deserializeGame(JSON.stringify(v1)).state, content);
-    expect(loaded.version).toBe(5);
+    expect(loaded.version).toBe(6);
     expect(loaded.player).toEqual({ handle: 'OLD', balance: 1200, maxConnections: 1, ...fullPlayer });
     expect(loaded.clock).toEqual({ gameTimeMs: 2025936000000, speed: 2 });
     expect(loaded.rngStreams).toEqual({ world: 12345 });

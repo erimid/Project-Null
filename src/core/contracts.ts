@@ -8,7 +8,7 @@ import { baseFine, closeCase } from './forensics';
 import type { Connection, GameState } from './state';
 import { usedStorageGq } from './tasks';
 import { noteIntrusion } from './trace';
-import { findConnection, findProgram, findServer, once, sendMail, type Content } from './world';
+import { findConnection, findProgram, findServer, noteProgress, once, sendMail, type Content } from './world';
 
 export function findContract(content: Content, id: string | null): ContractDef | undefined {
   return id === null ? undefined : content.contracts.find((contract) => contract.id === id);
@@ -24,7 +24,8 @@ export function objectiveMet(state: GameState, content: Content, contract: Contr
   const goal = contract.objective;
   switch (goal.kind) {
     case 'steal':
-      return state.player.files.some((file) => file.name === goal.file && file.from === contract.targetId);
+      // A client can't use a file they can't read.
+      return state.player.files.some((file) => file.name === goal.file && file.from === contract.targetId && !file.encrypted);
     case 'destroy':
       return target !== undefined && !target.files.some((file) => file.name === goal.file);
     case 'record': {
@@ -104,6 +105,7 @@ export function deliverContract(state: GameState, content: Content): string | nu
   state.contracts.activeId = null;
   sendMail(state, content, 'paid', { client: contract.client, title: contract.title, pay: String(contract.pay) });
   once(state, 'firstDelivery', () => sendMail(state, content, 'firstDelivery'));
+  noteProgress(state, content);
   return null;
 }
 
@@ -160,6 +162,9 @@ export function uninstallProgram(state: GameState, programId: string): string | 
 /** Deletes a file from the gateway. A contract that wanted it has to be done again. */
 export function deleteStoredFile(state: GameState, name: string): string | null {
   if (!state.player.files.some((file) => file.name === name)) return 'You have no such file.';
+  if (state.tasks.some((task) => task.target.kind === 'decrypt' && task.target.file === name)) {
+    return 'That file is being decrypted. Stop the program first.';
+  }
   state.player.files = state.player.files.filter((file) => file.name !== name);
   return null;
 }
