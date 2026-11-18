@@ -4,6 +4,9 @@ import {
   activeContract,
   availableContracts,
   canLogIn,
+  hasSkill,
+  isEvidence,
+  rentedModel,
   isLyingLow,
   ownedProgram,
   ringAngle,
@@ -402,13 +405,30 @@ function PortLineup({ taskId, rings }: { taskId: string; rings: number }) {
   );
 }
 
-function Files({ game, state, connection, run }: View) {
+function Files({ game, state, connection, run, act }: View) {
+  const [read, setRead] = useState('');
   const admin = connection.role === 'admin';
   const files = state.files.filter((file) => admin || file.access === 'guest');
   if (files.length === 0) return <p class="empty">No files.</p>;
   // A firewall keeps files shut as well as stopping copies.
   const walled = (findServer(content, connection.serverId)?.security.firewall ?? 0) > 0 && !connection.bypassed.firewall;
+  const reader = hasSkill(game, content, 'read') ? rentedModel(game, content) : undefined;
+  const readAll = () => {
+    const before = game.player.contacts.length + game.player.facts.length;
+    if (!act({ type: 'modelRead', connectionId: connection.id })) return;
+    const after = session.getState().player.contacts.length + session.getState().player.facts.length;
+    setRead(after === before ? 'Nothing new in these files.' : `Noted ${after - before} new ${after - before === 1 ? 'thing' : 'things'}. See Write to someone in Messages.`);
+  };
   return (
+    <>
+    {reader && (
+      <div class="scrub">
+        <span class="scrub__hint">{read || `${reader.name} can read every file you can open here and note the people and details.`}</span>
+        <button type="button" class="btn" disabled={walled} title={walled ? 'The firewall is blocking file access' : undefined} onClick={readAll}>
+          Have {reader.name} read them
+        </button>
+      </div>
+    )}
     <ul class="rows data">
       {files.map((file) => {
         const copying = findTask(game, connection, { kind: 'copyFile', file: file.name });
@@ -456,12 +476,14 @@ function Files({ game, state, connection, run }: View) {
         );
       })}
     </ul>
+    </>
   );
 }
 
 function Logs({ game, state, connection, run }: View) {
   // Lines picked for removal. Picking is the hands-on part: knowing which lines are yours.
   const [picked, setPicked] = useState<readonly number[]>([]);
+  const scrubber = hasSkill(game, content, 'scrub') ? rentedModel(game, content) : undefined;
   if (state.logs.length === 0) return <p class="empty">The access log is empty.</p>;
 
   const running = game.tasks.find((task) => task.connectionId === connection.id && task.target.kind === 'deleteLog');
@@ -479,6 +501,16 @@ function Logs({ game, state, connection, run }: View) {
           <TaskProgress taskId={running.id} label="Scrubbing" />
         ) : (
           <>
+            {scrubber && (
+                <button
+                  type="button"
+                  class="btn btn--go"
+                  title="Picks the lines that would give you away in a log review"
+                  onClick={() => setPicked(state.logs.filter(isEvidence).map((entry) => entry.id))}
+                >
+                  Have {scrubber.name} pick
+                </button>
+              )}
             {chosen.length < state.logs.length ? (
               <button type="button" class="btn" onClick={() => setPicked(state.logs.map((entry) => entry.id))}>
                 Select all
@@ -652,7 +684,9 @@ function Market({ game, connection, act }: View) {
     (program) => program.price > 0 || (content.startingPrograms.includes(program.id) && !game.player.programs.includes(program.id)),
   );
   const free = content.rules.storageGq - usedStorageGq(game, content);
+  const rented = rentedModel(game, content);
   return (
+    <>
     <ul class="rows">
       {forSale.map((program) => {
         const owned = game.player.programs.includes(program.id);
@@ -681,6 +715,34 @@ function Market({ game, connection, act }: View) {
         );
       })}
     </ul>
+    <h3 class="map__heading section-gap">
+      Models for rent <span class="heading__note">by the day, from Lowlight Compute</span>
+    </h3>
+    <ul class="rows">
+      {content.models.map((model) => {
+        const mine = rented?.id === model.id;
+        return (
+          <li key={model.id} class="row row--contract row--market">
+            <span class="row__main">
+              <strong>{model.name}</strong>
+              {mine && game.player.model && <span class="row__done"> · yours until {formatGameTime(game.player.model.untilMs)}</span>}
+              <span class="contract__summary">{model.blurb}</span>
+            </span>
+            <span class="data row__dim">{content.rules.modelRentHours} h</span>
+            <span class="data contract__pay">{formatMoney(model.price)}</span>
+            <button
+              type="button"
+              class="btn btn--go"
+              disabled={game.player.balance < model.price}
+              onClick={() => act({ type: 'rentModel', connectionId: connection.id, modelId: model.id })}
+            >
+              {mine ? 'Add a day' : 'Rent'}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+    </>
   );
 }
 

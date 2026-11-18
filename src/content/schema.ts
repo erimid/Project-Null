@@ -131,7 +131,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -258,6 +258,12 @@ export interface Tuning {
   readonly phishWaryHours: number;
   /** Times someone can see through a message before they report it and stop answering. */
   readonly phishStrikes: number;
+  /** Delivered contracts before the fixer writes about renting a model. */
+  readonly modelsAfter: number;
+  /** In-game hours one rental of a model lasts. */
+  readonly modelRentHours: number;
+  /** A watching model cuts the connection when a trace has this many seconds left. */
+  readonly modelWatchSeconds: number;
 }
 
 export interface GameInfo {
@@ -650,6 +656,9 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     phishMaxDetails: num(file, 'tuning', data, 'phishMaxDetails', 1, 10),
     phishWaryHours: num(file, 'tuning', data, 'phishWaryHours', 0, 24 * 365),
     phishStrikes: num(file, 'tuning', data, 'phishStrikes', 1, 20),
+    modelsAfter: num(file, 'tuning', data, 'modelsAfter', 0, 1000),
+    modelRentHours: num(file, 'tuning', data, 'modelRentHours', 1, 24 * 365),
+    modelWatchSeconds: num(file, 'tuning', data, 'modelWatchSeconds', 1, 600),
   };
 }
 

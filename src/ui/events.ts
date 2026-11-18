@@ -7,8 +7,8 @@ import { findServer, type Content, type GameState } from '../core';
 
 export type GameEvent =
   | { readonly type: 'connected'; readonly server: string }
-  /** `traced` is true when the trace cut the connection, false when the player closed it. */
-  | { readonly type: 'disconnected'; readonly server: string; readonly traced: boolean }
+  /** `traced` is true when the trace cut the connection; `pulled` when a watching model cut it just in time. */
+  | { readonly type: 'disconnected'; readonly server: string; readonly traced: boolean; readonly pulled: boolean }
   | { readonly type: 'traceStarted'; readonly server: string }
   | { readonly type: 'programStarted' }
   | { readonly type: 'programFinished' }
@@ -23,6 +23,8 @@ export interface Snapshot {
   readonly tasks: ReadonlySet<string>;
   readonly messages: number;
   readonly balance: number;
+  /** Changes when the player is caught. */
+  readonly lieLowUntilMs: number;
 }
 
 export function snapshot(state: GameState): Snapshot {
@@ -33,6 +35,7 @@ export function snapshot(state: GameState): Snapshot {
     tasks: new Set(state.tasks.map((task) => task.id)),
     messages: state.messages.length,
     balance: state.player.balance,
+    lieLowUntilMs: state.player.lieLowUntilMs,
   };
 }
 
@@ -46,8 +49,9 @@ export function diff(before: Snapshot, after: Snapshot, content: Content, byCloc
 
   for (const [id, was] of before.connections) {
     const now = after.connections.get(id);
-    // Only a finished trace closes a connection while the clock runs.
-    if (!now) events.push({ type: 'disconnected', server: name(was.serverId), traced: byClock });
+    // While the clock runs, a connection closes because a trace finished or because a watching model got out first.
+    const traced = byClock && after.lieLowUntilMs !== before.lieLowUntilMs;
+    if (!now) events.push({ type: 'disconnected', server: name(was.serverId), traced, pulled: byClock && !traced });
     else {
       if (!was.tracing && now.tracing) events.push({ type: 'traceStarted', server: name(now.serverId) });
       if (was.user === null && now.user !== null) events.push({ type: 'loggedIn' });

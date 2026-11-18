@@ -1,4 +1,4 @@
-import { effectiveSpeed, gameDate, gatewayOf, isConnected, isLyingLow, usedStorageGq } from '../../../core';
+import { effectiveSpeed, gameDate, gatewayOf, isConnected, isLyingLow, rentedModel, usedStorageGq } from '../../../core';
 import { formatDay, formatGameTime, formatRating, formatTime } from '../../format';
 import { useGame } from '../../hooks';
 import { content } from '../../session';
@@ -23,6 +23,10 @@ export function GatewayWindow() {
   const lyingLow = useGame((game) => (isLyingLow(game) ? formatGameTime(game.player.lieLowUntilMs) : ''));
   const usedGb = useGame((game) => usedStorageGq(game, content));
   const running = useGame((game) => `${game.tasks.length} of ${content.rules.maxRunningPrograms}`);
+  const model = useGame((game) => {
+    const rented = rentedModel(game, content);
+    return rented && game.player.model ? `${rented.name} until ${formatGameTime(game.player.model.untilMs)}` : '';
+  });
   const gateway = gatewayOf(content);
 
   return (
@@ -51,6 +55,8 @@ export function GatewayWindow() {
             <span class="meter__fill" style={{ width: `${Math.min(100, (usedGb / content.rules.storageGq) * 100)}%` }} />
           </span>
         </dd>
+        <dt>Model</dt>
+        <dd>{model || <span class="row__dim">none rented</span>}</dd>
         <dt>Programs</dt>
         <dd>{running} running</dd>
         <dt>Date</dt>

@@ -15,6 +15,7 @@ import {
   uninstallProgram,
 } from './contracts';
 import { scheduleReview } from './forensics';
+import { modelRead, rentModel } from './model';
 import { readFile, sendPhish } from './phish';
 import { canLogIn, echoCell, lockRing, startTask } from './tasks';
 import { hopUnderTrace, newTrace, noteIntrusion, reroute } from './trace';
@@ -54,6 +55,10 @@ export type Action =
   | { readonly type: 'buyProgram'; readonly connectionId: string; readonly programId: string }
   /** Remove an installed program from the gateway to free its room. */
   | { readonly type: 'uninstallProgram'; readonly programId: string }
+  /** Rent a language model from the board you are logged in to. */
+  | { readonly type: 'rentModel'; readonly connectionId: string; readonly modelId: string }
+  /** Have the rented model read every file on a connection. */
+  | { readonly type: 'modelRead'; readonly connectionId: string }
   /** Note what a file says: the people it names and the details in it. */
   | { readonly type: 'readFile'; readonly serverId: string; readonly name: string }
   /** Write to someone as somebody else, mentioning some details. */
@@ -95,6 +100,11 @@ function closeConnection(state: GameState, content: Content, connection: Connect
   state.connections = state.connections.filter((other) => other !== connection);
   // Programs stop when the connection they were working on goes away.
   state.tasks = state.tasks.filter((task) => task.connectionId !== connection.id);
+}
+
+/** A watching model hung up before the trace got there. Nothing is lost but the connection. */
+export function pullOut(state: GameState, content: Content, connection: Connection): void {
+  closeConnection(state, content, connection);
 }
 
 /** A trace reached the gateway: the connection is cut, the player pays for it and is told. */
@@ -226,6 +236,10 @@ export function applyAction(state: GameState, action: Action, content: Content):
       return reason === null ? OK : refuse(reason);
     }
 
+    case 'rentModel':
+      return answer(rentModel(state, content, action.connectionId, action.modelId));
+    case 'modelRead':
+      return answer(modelRead(state, content, action.connectionId));
     case 'readFile':
       return answer(readFile(state, content, action.serverId, action.name));
     case 'sendPhish':

@@ -5,7 +5,7 @@
 import type { Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 7;
+export const STATE_VERSION = 8;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -41,6 +41,8 @@ export interface PlayerState {
   contacts: string[];
   /** Ids of details the player has read in files. */
   facts: string[];
+  /** The language model being rented, and the game time the rental runs out. */
+  model: { id: string; untilMs: number } | null;
 }
 
 /** A message sent to someone under a borrowed name, waiting for its answer. */
@@ -293,6 +295,7 @@ export function createGame(options: NewGameOptions): GameState {
       lieLowUntilMs: 0,
       contacts: [],
       facts: [],
+      model: null,
     },
     knownServers: [],
     route: [],

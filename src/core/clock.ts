@@ -5,7 +5,8 @@
  * connection is open the clock is locked to 1× (no pause, no speed-up),
  * so trace timers stay tense.
  */
-import { caught } from './actions';
+import { caught, pullOut } from './actions';
+import { endRental, shouldPullOut } from './model';
 import { runReviews } from './forensics';
 import { runPhish } from './phish';
 import { isConnected, type GameState, type Speed } from './state';
@@ -34,10 +35,14 @@ export function tick(state: GameState, realMs: number, content: Content): number
     // A monitor blinded during this tick starts its blind time on the next one.
     if (connection.monitor.blindMs > 0 && sighted.includes(connection)) continue;
     const traceMs = advanceMonitor(connection, simMs);
-    if (traceMs > 0 && advanceTrace(connection.trace, traceMs)) caught(state, content, connection);
+    if (traceMs <= 0) continue;
+    // A watching model hangs up first, if the trace would otherwise get there.
+    if (shouldPullOut(state, content, connection)) pullOut(state, content, connection);
+    else if (advanceTrace(connection.trace, traceMs)) caught(state, content, connection);
   }
   if (state.reviews.length > 0) runReviews(state, content);
   if (state.phish.sent.length > 0) runPhish(state, content);
+  if (state.player.model) endRental(state, content);
   return simMs;
 }
 

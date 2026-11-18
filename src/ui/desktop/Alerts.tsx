@@ -23,7 +23,9 @@ export function Alerts() {
       if (event.type !== 'disconnected') return;
       const alert: Alert = event.traced
         ? { id: nextId++, severe: true, title: 'Trace complete', text: `They found you. ${event.server} cut the connection.` }
-        : { id: nextId++, severe: false, title: 'Disconnected', text: `Connection to ${event.server} closed.` };
+        : event.pulled
+          ? { id: nextId++, severe: false, title: 'Pulled out', text: `Your model cut the line to ${event.server} just before the trace reached you.` }
+          : { id: nextId++, severe: false, title: 'Disconnected', text: `Connection to ${event.server} closed.` };
       setAlerts((list) => [...list, alert]);
       const timer = setTimeout(
         () => {

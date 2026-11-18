@@ -50,6 +50,7 @@ export { MAX_LEVEL_GAP, blindSeconds, canLogIn, checkTask, layerSeconds, program
 export { evidenceCount, isEvidence } from './forensics';
 export { canRead, fileNotes, findAsk, findPerson, judge, knownFacts, knownPeople, marks, openAsks, standing } from './phish';
 export type { Draft, Standing, Verdict } from './phish';
+export { findModel, hasSkill, rentedModel } from './model';
 export { hopUnderTrace, mostUrgentTrace, totalTraceMs, traceHopMs, traceReport } from './trace';
 export type { TraceReport } from './trace';
 export {

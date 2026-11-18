@@ -1,0 +1,16 @@
+[
+  {
+    "id": "magpie-8b",
+    "name": "Magpie 8B",
+    "blurb": "A small model on shared hardware. Reads every file on a server for you and notes what matters, and picks out the log lines that point at you.",
+    "price": 400,
+    "skills": ["read", "scrub"]
+  },
+  {
+    "id": "heron-120b",
+    "name": "Heron 120B",
+    "blurb": "A large model on its own hardware. Everything Magpie does. It also reads a message over before you send it and says what is wrong with it, and it watches your traces and cuts the line just before one reaches you.",
+    "price": 1200,
+    "skills": ["read", "scrub", "review", "watch"]
+  }
+]

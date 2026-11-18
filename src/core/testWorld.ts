@@ -128,6 +128,9 @@ export const testRules: Rules = {
   phishMaxDetails: 2,
   phishWaryHours: 4,
   phishStrikes: 2,
+  modelsAfter: 2,
+  modelRentHours: 24,
+  modelWatchSeconds: 5,
 };
 
 /** Two extra programs that are only for sale, never owned at the start. */
@@ -154,6 +157,8 @@ export const testMail: Record<MailKey, MailDef> = {
   review: { from: 'Fixer', subject: 'Logs read at {target}', body: '{lines}, fine {fine}' },
   harderSecurity: letter('harderSecurity'),
   phishing: letter('phishing'),
+  models: letter('models'),
+  modelExpired: { from: 'Farm', subject: 'Ended: {model}', body: '{model}' },
   phishRefused: { from: '{name}', subject: 'Refused: {label}', body: '{hours}' },
   phishReported: { from: 'Fixer', subject: 'Reported by {name}', body: '{title}' },
 };
@@ -184,5 +189,9 @@ export const content: Content = {
   contracts: testContracts,
   mail: testMail,
   people: testPeople,
+  models: [
+    { id: 'small', name: 'Small', blurb: 'b', price: 40, skills: ['read', 'scrub'] },
+    { id: 'big', name: 'Big', blurb: 'b', price: 90, skills: ['read', 'scrub', 'review', 'watch'] },
+  ],
   rules: testRules,
 };
