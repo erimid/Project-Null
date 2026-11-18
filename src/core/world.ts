@@ -5,7 +5,7 @@
  * hands them in as a `Content` object, so tests can use tiny made-up
  * worlds and the real data can change without touching the rules.
  */
-import type { AccountDef, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
+import type { AccountDef, ContractDef, MailDef, MailKey, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
 import type { Connection, GameState, ServerState } from './state';
 
 /** Numbers that tune the rules. The real ones come from content/tuning.json. */
@@ -18,6 +18,10 @@ export interface Rules {
   readonly storageGq: number;
   /** With no relays, the trace takes this fraction of the server's per-hop time. */
   readonly directTraceFactor: number;
+  /** In-game hours without contracts after being traced. */
+  readonly lieLowHours: number;
+  readonly finePerSecurityLevel: number;
+  readonly caughtRatingLoss: number;
 }
 
 export interface Content {
@@ -27,7 +31,35 @@ export interface Content {
   readonly programs: readonly ProgramDef[];
   /** Ids of programs every player owns from the start. */
   readonly startingPrograms: readonly string[];
+  readonly contracts: readonly ContractDef[];
+  /** Messages the rules send, by name. */
+  readonly mail: Readonly<Record<MailKey, MailDef>>;
   readonly rules: Rules;
+}
+
+/**
+ * Sends the player one of the written messages. Text in {braces} is
+ * replaced from `fill`; {handle} is always available.
+ */
+export function sendMail(state: GameState, content: Content, key: MailKey, fill: Record<string, string> = {}): void {
+  const values: Record<string, string> = { handle: state.player.handle, ...fill };
+  const write = (text: string) => text.replace(/\{(\w+)\}/g, (whole, name: string) => values[name] ?? whole);
+  const mail = content.mail[key];
+  state.messages.push({
+    id: `m${state.nextId++}`,
+    from: write(mail.from),
+    subject: write(mail.subject),
+    body: write(mail.body),
+    timeMs: state.clock.gameTimeMs,
+    read: false,
+  });
+}
+
+/** Does `name` the first time it is called for this game, and nothing after that. */
+export function once(state: GameState, name: string, action: () => void): void {
+  if (state.flags.includes(name)) return;
+  state.flags.push(name);
+  action();
 }
 
 export function findProgram(content: Content, id: string): ProgramDef | undefined {
@@ -85,6 +117,11 @@ export function syncWithContent(state: GameState, content: Content): GameState {
   // A player always owns something; an empty list means a new game or a save from before programs existed.
   if (state.player.programs.length === 0) state.player.programs = [...content.startingPrograms];
   state.player.programs = state.player.programs.filter((id) => findProgram(content, id) !== undefined);
+
+  once(state, 'welcome', () => sendMail(state, content, 'welcome'));
+  // A contract that was removed from the game can't be finished.
+  const isContract = (id: string) => content.contracts.some((contract) => contract.id === id);
+  if (state.contracts.activeId !== null && !isContract(state.contracts.activeId)) state.contracts.activeId = null;
 
   // Drop anything that points at a server that no longer exists.
   state.knownServers = state.knownServers.filter(exists);

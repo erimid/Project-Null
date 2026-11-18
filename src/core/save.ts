@@ -77,6 +77,13 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
       servers,
     };
   },
+  // 3 -> 4: contracts, rating and lying low were added.
+  3: (old) => ({
+    ...old,
+    player: { ...(old.player as object), rating: 0, lieLowUntilMs: 0 },
+    contracts: { activeId: null, completed: [] },
+    flags: [],
+  }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -226,6 +233,12 @@ function checkState(raw: Obj): GameState {
   ) {
     throw damaged;
   }
+  if (!isNum(player.rating) || !isNum(player.lieLowUntilMs)) throw damaged;
+  const contracts = raw.contracts;
+  if (!isObj(contracts) || !(contracts.activeId === null || isText(contracts.activeId)) || !isList(contracts.completed, isText)) {
+    throw damaged;
+  }
+  if (!isList(raw.flags, isText)) throw damaged;
   if (!isList(raw.tasks, isTask) || !isList(raw.messages, isMessage)) throw damaged;
   if (!isObj(rngStreams) || !Object.values(rngStreams).every(isNum)) throw damaged;
   if (!isList(raw.knownServers, isText) || !isList(raw.route, isText)) throw damaged;

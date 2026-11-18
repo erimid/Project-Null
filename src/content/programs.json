@@ -7,7 +7,19 @@
     "version": 1,
     "baseSeconds": 12,
     "secondsPerGq": 0,
+    "price": 0,
     "blurb": "Works out an account's password one character at a time."
+  },
+  {
+    "id": "password-breaker-2",
+    "name": "Password Breaker",
+    "short": "Breaker",
+    "kind": "breakPassword",
+    "version": 2,
+    "baseSeconds": 12,
+    "secondsPerGq": 0,
+    "price": 2000,
+    "blurb": "Twice as fast as version 1, and can take on stronger passwords."
   },
   {
     "id": "proxy-bypass",
@@ -17,6 +29,7 @@
     "version": 1,
     "baseSeconds": 9,
     "secondsPerGq": 0,
+    "price": 900,
     "blurb": "Slips past a proxy so you can change records and logs."
   },
   {
@@ -27,6 +40,7 @@
     "version": 1,
     "baseSeconds": 9,
     "secondsPerGq": 0,
+    "price": 1300,
     "blurb": "Opens a path through a firewall so you can copy and delete files."
   },
   {
@@ -37,6 +51,7 @@
     "version": 1,
     "baseSeconds": 2,
     "secondsPerGq": 1,
+    "price": 0,
     "blurb": "Copies a file to your gateway."
   },
   {
@@ -47,6 +62,7 @@
     "version": 1,
     "baseSeconds": 2,
     "secondsPerGq": 0.5,
+    "price": 0,
     "blurb": "Deletes a file from a server."
   },
   {
@@ -57,6 +73,7 @@
     "version": 1,
     "baseSeconds": 3,
     "secondsPerGq": 0,
+    "price": 0,
     "blurb": "Removes one line from an access log."
   },
   {
@@ -67,6 +84,7 @@
     "version": 1,
     "baseSeconds": 0,
     "secondsPerGq": 0,
+    "price": 0,
     "blurb": "Shows how far a trace has got and how long you have left."
   }
 ]

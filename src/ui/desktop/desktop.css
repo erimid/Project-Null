@@ -1025,3 +1025,130 @@ button.pill:not(:disabled):hover {
 .message-body p:last-child {
   margin-bottom: 0;
 }
+
+/* ---- contracts and the market ---- */
+
+button.tabbar__contract--live {
+  gap: 10px;
+  padding: 0 4px 0 14px;
+  color: var(--text-bright);
+  font-weight: 600;
+}
+
+button.tabbar__contract--live:hover {
+  color: var(--cyan);
+}
+
+.tabbar__contract-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mint);
+}
+
+.readout .is-warn {
+  color: #ff8a95;
+}
+
+.row--contract {
+  grid-template-columns: minmax(0, 1fr) 80px 90px;
+  align-items: start;
+}
+
+.row--contract .row__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row--contract .row__main strong {
+  font-size: 16px;
+}
+
+.contract__summary {
+  display: block;
+  color: var(--text);
+}
+
+.row--contract .row__dim {
+  font-size: 14px;
+}
+
+.contract__pay {
+  padding-top: 2px;
+  text-align: right;
+  color: var(--mint);
+}
+
+.board__warning,
+.board__note {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 59, 78, 0.4);
+  border-radius: 8px;
+  color: var(--red-text);
+}
+
+.board__note {
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.board__note strong {
+  color: var(--text-bright);
+}
+
+.contract__title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.contract__brief {
+  margin: 14px 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  line-height: 1.5;
+}
+
+.contract__brief p {
+  margin: 0 0 10px;
+}
+
+.objective {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text-bright);
+  overflow-wrap: anywhere;
+}
+
+.objective.is-done {
+  border-color: rgba(78, 230, 200, 0.5);
+}
+
+.objective__mark {
+  color: var(--text-dim);
+}
+
+.objective.is-done .objective__mark {
+  color: var(--mint);
+}
+
+.contract__actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.records__change {
+  margin-left: 12px;
+  font-family: var(--font-ui);
+}
+
+.message-body p {
+  margin: 0 0 10px;
+}

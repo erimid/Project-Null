@@ -2,6 +2,7 @@ import { BottomBar } from './BottomBar';
 import { TopBar } from './TopBar';
 import { useEffect } from 'preact/hooks';
 import { session } from '../session';
+import { ContractWindow } from './windows/ContractWindow';
 import { GatewayWindow } from './windows/GatewayWindow';
 import { MapWindow } from './windows/MapWindow';
 import { MessagesWindow } from './windows/MessagesWindow';
@@ -33,6 +34,7 @@ export function Desktop() {
         <ServerWindow />
         <ProgramsWindow />
         <MessagesWindow />
+        <ContractWindow />
         <SavesWindow />
       </main>
       <BottomBar />

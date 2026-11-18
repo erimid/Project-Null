@@ -1,6 +1,6 @@
-import { effectiveSpeed, gameDate, isConnected, usedStorageGq } from '../../../core';
+import { effectiveSpeed, gameDate, isConnected, isLyingLow, usedStorageGq } from '../../../core';
 import { gameInfo } from '../../../content';
-import { formatDay, formatMoney, formatTime } from '../../format';
+import { formatDay, formatGameTime, formatMoney, formatRating, formatTime } from '../../format';
 import { useGame } from '../../hooks';
 import { content } from '../../session';
 import { Window } from '../Window';
@@ -20,6 +20,8 @@ export function GatewayWindow() {
     return speed === 0 ? 'paused' : `${speed}×`;
   });
 
+  const rating = useGame((game) => formatRating(game.player.rating));
+  const lyingLow = useGame((game) => (isLyingLow(game) ? formatGameTime(game.player.lieLowUntilMs) : ''));
   const storage = useGame((game) => `${usedStorageGq(game)} / ${content.rules.storageGq} Gq`);
   const running = useGame((game) => `${game.tasks.length} / ${content.rules.maxRunningPrograms}`);
 
@@ -34,6 +36,14 @@ export function GatewayWindow() {
         <dd>{uplink}</dd>
         <dt>balance</dt>
         <dd>{balance}</dd>
+        <dt>rating</dt>
+        <dd>{rating}</dd>
+        {lyingLow && (
+          <>
+            <dt>lying low</dt>
+            <dd class="is-warn">until {lyingLow}</dd>
+          </>
+        )}
         <dt>storage</dt>
         <dd>{storage}</dd>
         <dt>programs</dt>

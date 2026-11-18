@@ -5,8 +5,10 @@
  *
  * To add a server: add a file in servers/, then import and list it below.
  */
+import contractsJson from './contracts.json';
 import gameJson from './game.json';
 import landJson from './land.json';
+import mailJson from './mail.json';
 import programsJson from './programs.json';
 import tuningJson from './tuning.json';
 import gateway from './servers/gateway.json';
@@ -20,15 +22,20 @@ import halvorsen from './servers/halvorsen.json';
 import meridianFreight from './servers/meridian-freight.json';
 import corvaneMutual from './servers/corvane-mutual.json';
 import ashgrovePoly from './servers/ashgrove-poly.json';
-import { checkContent, parseGameInfo, parsePrograms, parseServers, parseTuning } from './schema';
+import { checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
 
 export type {
   AccountDef,
+  ContractDef,
   FileDef,
   GameInfo,
   LogDef,
+  MailDef,
+  MailKey,
+  ObjectiveDef,
   ProgramDef,
   ProgramKind,
+  RatingDef,
   RecordsDef,
   Role,
   SecurityDef,
@@ -44,7 +51,9 @@ export const servers = parseServers(
   'servers/',
 );
 export const programs = parsePrograms(programsJson);
-checkContent(gameInfo, servers, programs);
+export const contracts = parseContracts(contractsJson);
+export const mail = parseMail(mailJson);
+checkContent(gameInfo, servers, programs, contracts);
 
 /**
  * Dots that draw the continents on the globe: [lat, lon, lat, lon, ...]

@@ -84,7 +84,56 @@ export interface ProgramDef {
   readonly baseSeconds: number;
   /** Extra seconds per gigaquad of file size. 0 for programs that don't handle files. */
   readonly secondsPerGq: number;
+  /** What it costs on the market. 0 = not for sale. */
+  readonly price: number;
   readonly blurb: string;
+}
+
+/** What a contract asks for. */
+export type ObjectiveDef =
+  /** Copy a file from the target to your gateway. */
+  | { readonly kind: 'steal'; readonly file: string }
+  /** Delete a file on the target. */
+  | { readonly kind: 'destroy'; readonly file: string }
+  /** Change one value in the target's records: the row whose first column is `key`. */
+  | { readonly kind: 'record'; readonly key: string; readonly column: string; readonly value: string };
+
+export const OBJECTIVE_KINDS = ['steal', 'destroy', 'record'] as const;
+
+export interface ContractDef {
+  readonly id: string;
+  readonly title: string;
+  /** Who is paying, as shown on the board. */
+  readonly client: string;
+  /** Id of the server the job is on. */
+  readonly targetId: string;
+  readonly pay: number;
+  /** Rating gained for finishing it. */
+  readonly rating: number;
+  /** Rating needed before the board offers it. */
+  readonly minRating: number;
+  /** One line for the board. */
+  readonly summary: string;
+  /** The full brief, in the client's voice. Blank lines separate paragraphs. */
+  readonly brief: string;
+  readonly objective: ObjectiveDef;
+}
+
+/** A message the game sends the player. Text in {braces} is filled in when it is sent. */
+export interface MailDef {
+  readonly from: string;
+  readonly subject: string;
+  readonly body: string;
+}
+
+/** Messages the rules send by name. Every one must exist in mail.json. */
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught'] as const;
+export type MailKey = (typeof MAIL_KEYS)[number];
+
+export interface RatingDef {
+  /** Rating points needed for this title. */
+  readonly min: number;
+  readonly title: string;
 }
 
 export const ROLES = ['guest', 'admin'] as const;
@@ -140,6 +189,12 @@ export interface Tuning {
   readonly storageGq: number;
   /** With no relays, the trace takes this fraction of the server's per-hop time. */
   readonly directTraceFactor: number;
+  /** In-game hours you can't take contracts after being traced. */
+  readonly lieLowHours: number;
+  /** Fine for being traced, per level of security on the server that caught you. */
+  readonly finePerSecurityLevel: number;
+  /** Rating lost for being traced. */
+  readonly caughtRatingLoss: number;
 }
 
 export interface GameInfo {
@@ -153,6 +208,8 @@ export interface GameInfo {
   readonly startingServers: readonly string[];
   /** Ids of the programs a new player owns. */
   readonly startingPrograms: readonly string[];
+  /** Titles for rating levels, lowest first. The first must start at 0. */
+  readonly ratings: readonly RatingDef[];
 }
 
 export class ContentError extends Error {
@@ -260,11 +317,64 @@ export function parsePrograms(data: unknown, file = 'programs.json'): ProgramDef
       version: num(file, where, raw, 'version', 1, 20),
       baseSeconds: num(file, where, raw, 'baseSeconds', 0, 3600),
       secondsPerGq: num(file, where, raw, 'secondsPerGq', 0, 600),
+      price: num(file, where, raw, 'price', 0, 1_000_000),
       blurb: text(file, where, raw, 'blurb'),
     };
   });
   unique(file, 'programs', 'id', programs.map((program) => program.id));
   return programs;
+}
+
+export function parseContracts(data: unknown, file = 'contracts.json'): ContractDef[] {
+  if (!Array.isArray(data)) throw new ContentError(file, 'must be a list of contracts');
+  const contracts = data.map((value, index): ContractDef => {
+    const raw = entry(file, `entry ${index}`, value);
+    const id = text(file, `entry ${index}`, raw, 'id');
+    const where = `contract "${id}"`;
+    const goal = entry(file, `${where} objective`, raw.objective);
+    const kind = text(file, `${where} objective`, goal, 'kind');
+    let objective: ObjectiveDef;
+    if (kind === 'steal' || kind === 'destroy') {
+      objective = { kind, file: text(file, `${where} objective`, goal, 'file') };
+    } else if (kind === 'record') {
+      objective = {
+        kind,
+        key: text(file, `${where} objective`, goal, 'key'),
+        column: text(file, `${where} objective`, goal, 'column'),
+        value: text(file, `${where} objective`, goal, 'value'),
+      };
+    } else {
+      throw new ContentError(file, `${where}: objective kind "${kind}" is not one of ${OBJECTIVE_KINDS.join(', ')}`);
+    }
+    return {
+      id,
+      title: text(file, where, raw, 'title'),
+      client: text(file, where, raw, 'client'),
+      targetId: text(file, where, raw, 'targetId'),
+      pay: num(file, where, raw, 'pay', 1, 10_000_000),
+      rating: num(file, where, raw, 'rating', 0, 100),
+      minRating: num(file, where, raw, 'minRating', 0, 1000),
+      summary: text(file, where, raw, 'summary'),
+      brief: text(file, where, raw, 'brief'),
+      objective,
+    };
+  });
+  unique(file, 'contracts', 'id', contracts.map((contract) => contract.id));
+  return contracts;
+}
+
+export function parseMail(data: unknown, file = 'mail.json'): Record<MailKey, MailDef> {
+  if (!isObj(data)) throw new ContentError(file, 'must be an object');
+  const mail = {} as Record<MailKey, MailDef>;
+  for (const key of MAIL_KEYS) {
+    const raw = entry(file, `message "${key}"`, data[key]);
+    mail[key] = {
+      from: text(file, `message "${key}"`, raw, 'from'),
+      subject: text(file, `message "${key}"`, raw, 'subject'),
+      body: text(file, `message "${key}"`, raw, 'body'),
+    };
+  }
+  return mail;
 }
 
 function parseAccounts(file: string, where: string, raw: Obj, kind: ServerKind): AccountDef[] {
@@ -367,7 +477,27 @@ export function checkContent(
   info: GameInfo,
   servers: readonly ServerDef[],
   programs: readonly ProgramDef[],
+  contracts: readonly ContractDef[] = [],
 ): void {
+  for (const contract of contracts) {
+    const where = `contract "${contract.id}"`;
+    const target = servers.find((server) => server.id === contract.targetId);
+    if (!target) throw new ContentError('contracts.json', `${where}: target "${contract.targetId}" is not a server`);
+    const goal = contract.objective;
+    if (goal.kind === 'record') {
+      if (!target.records?.columns.includes(goal.column) || goal.column === target.records.columns[0]) {
+        throw new ContentError('contracts.json', `${where}: ${target.id} has no changeable records column "${goal.column}"`);
+      }
+      if (!target.records.rows.some((row) => row[0] === goal.key)) {
+        throw new ContentError('contracts.json', `${where}: ${target.id} has no record "${goal.key}"`);
+      }
+    } else if (!target.files.some((item) => item.name === goal.file)) {
+      throw new ContentError('contracts.json', `${where}: ${target.id} has no file "${goal.file}"`);
+    }
+  }
+  if (contracts.length > 0 && !servers.some((server) => server.kind === 'board')) {
+    throw new ContentError('servers/', 'there are contracts but no board server to post them on');
+  }
   for (const id of info.startingServers) {
     if (!servers.some((server) => server.id === id)) {
       throw new ContentError('game.json', `startingServers names "${id}", which is not a server`);
@@ -406,6 +536,9 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     maxRunningPrograms: num(file, 'tuning', data, 'maxRunningPrograms', 1, 20),
     storageGq: num(file, 'tuning', data, 'storageGq', 1, 100_000),
     directTraceFactor: num(file, 'tuning', data, 'directTraceFactor', 0.05, 5),
+    lieLowHours: num(file, 'tuning', data, 'lieLowHours', 0, 24 * 365),
+    finePerSecurityLevel: num(file, 'tuning', data, 'finePerSecurityLevel', 0, 1_000_000),
+    caughtRatingLoss: num(file, 'tuning', data, 'caughtRatingLoss', 0, 100),
   };
 }
 
@@ -419,7 +552,15 @@ export function parseGameInfo(data: unknown, file = 'game.json'): GameInfo {
   if (!startingPrograms.every((id) => typeof id === 'string')) {
     throw new ContentError(file, 'startingPrograms must be a list of program ids');
   }
+  const ratings = list(file, 'game', data, 'ratings').map((value, index) => {
+    const raw = entry(file, `rating ${index}`, value);
+    return { min: num(file, `rating ${index}`, raw, 'min', 0, 100_000), title: text(file, `rating ${index}`, raw, 'title') };
+  });
+  if (ratings[0]?.min !== 0 || ratings.some((rating, index) => index > 0 && rating.min <= ratings[index - 1]!.min)) {
+    throw new ContentError(file, 'ratings must start at 0 and go up');
+  }
   return {
+    ratings,
     startingServers: startingServers as string[],
     startingPrograms: startingPrograms as string[],
     title: text(file, 'game', data, 'title'),

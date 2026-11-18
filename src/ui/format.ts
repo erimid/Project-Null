@@ -32,3 +32,9 @@ export function formatSavedAt(iso: string): string {
   if (Number.isNaN(d.getTime())) return 'unknown';
   return `${d.getDate()} ${MONTHS[d.getMonth()]}, ${two(d.getHours())}:${two(d.getMinutes())}`;
 }
+
+/** "3 · Runner": the rating number and the title that goes with it. */
+export function formatRating(rating: number): string {
+  const title = [...gameInfo.ratings].reverse().find((level) => rating >= level.min)?.title ?? '';
+  return `${rating} · ${title}`;
+}

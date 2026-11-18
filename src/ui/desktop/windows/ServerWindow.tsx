@@ -1,14 +1,27 @@
 import { useState } from 'preact/hooks';
-import { canLogIn, type Connection, type GameState, type ServerState, type TaskTarget } from '../../../core';
+import {
+  activeContract,
+  availableContracts,
+  canLogIn,
+  isLyingLow,
+  type Action,
+  type Connection,
+  type GameState,
+  type ServerState,
+  type TaskTarget,
+} from '../../../core';
 import { findServer, type ServerDef } from '../../../core/content';
-import { formatGameTime } from '../../format';
+import { formatGameTime, formatMoney } from '../../format';
 import { useGame, useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { activeConnection, deskStore, useDesk, type Section } from '../deskStore';
 import { TaskProgress, findTask } from '../TaskProgress';
 import { Window } from '../Window';
+import { windows } from '../windowStore';
 
 const SECTION_LABELS: Record<Section, string> = {
+  contracts: 'Contracts',
+  market: 'Market',
   files: 'Files',
   logs: 'Logs',
   records: 'Records',
@@ -31,6 +44,8 @@ interface View {
   connection: Connection;
   /** Starts a program on this connection; any refusal is shown at the bottom of the window. */
   run: (target: TaskTarget) => void;
+  /** Does anything else on this connection, with refusals shown the same way. True if it worked. */
+  act: (action: Action) => boolean;
 }
 
 /** Sections this login can open, in menu order. */
@@ -38,6 +53,7 @@ function sectionsFor(server: ServerDef, connection: Connection): Section[] {
   const admin = connection.role === 'admin';
   const sections: Section[] = [];
   if (server.kind === 'directory') sections.push('directory');
+  if (server.kind === 'board') sections.push('contracts', 'market');
   sections.push('files');
   if (admin) sections.push('logs');
   if (admin && server.records) sections.push('records');
@@ -263,8 +279,12 @@ function Logs({ game, state, connection, run }: View) {
   );
 }
 
-function Records({ server, state }: View) {
+function Records({ game, server, state, connection, act }: View) {
   const columns = server.records?.columns ?? [];
+  // The change the active contract wants made here, if it hasn't been made yet.
+  const contract = activeContract(game, content);
+  const goal = contract?.targetId === server.id && contract.objective.kind === 'record' ? contract.objective : null;
+  const goalColumn = goal ? columns.indexOf(goal.column) : -1;
   return (
     <table class="records data">
       <caption>{server.records?.title}</caption>
@@ -281,7 +301,18 @@ function Records({ server, state }: View) {
         {state.records.map((row) => (
           <tr key={row[0]}>
             {row.map((cell, index) => (
-              <td key={index}>{cell}</td>
+              <td key={index}>
+                {cell}
+                {goal && row[0] === goal.key && index === goalColumn && cell !== goal.value && (
+                  <button
+                    type="button"
+                    class="btn btn--go records__change"
+                    onClick={() => act({ type: 'alterRecord', connectionId: connection.id })}
+                  >
+                    Change to {goal.value}
+                  </button>
+                )}
+              </td>
             ))}
           </tr>
         ))}
@@ -320,6 +351,84 @@ function Directory({ game, connection }: View) {
   );
 }
 
+function Contracts({ game, connection, act }: View) {
+  const active = activeContract(game, content);
+  const offers = availableContracts(game, content);
+  const lyingLow = isLyingLow(game);
+  return (
+    <>
+      {lyingLow && (
+        <p class="board__warning">
+          No work for you until <span class="data">{formatGameTime(game.player.lieLowUntilMs)}</span>. You were traced. Lie low and let
+          the clock run.
+        </p>
+      )}
+      {active && (
+        <p class="board__note">
+          You are working on <strong>{active.title}</strong>. Deliver it or give it up before taking another.
+        </p>
+      )}
+      {offers.length === 0 && <p class="empty">Nothing on the board right now.</p>}
+      <ul class="rows">
+        {offers.map((contract) => (
+          <li key={contract.id} class="row row--contract">
+            <span class="row__main">
+              <strong>{contract.title}</strong>
+              <span class="contract__summary">{contract.summary}</span>
+              <span class="row__dim">
+                {contract.client} · target {findServer(content, contract.targetId)?.name}
+              </span>
+            </span>
+            <span class="data contract__pay">{formatMoney(contract.pay)}</span>
+            <button
+              type="button"
+              class="btn btn--go"
+              disabled={!!active || lyingLow}
+              onClick={() => {
+                if (act({ type: 'acceptContract', connectionId: connection.id, contractId: contract.id })) windows.focus('contract');
+              }}
+            >
+              Accept
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function Market({ game, connection, act }: View) {
+  const forSale = content.programs.filter((program) => program.price > 0);
+  return (
+    <ul class="rows">
+      {forSale.map((program) => {
+        const owned = game.player.programs.includes(program.id);
+        return (
+          <li key={program.id} class="row row--contract">
+            <span class="row__main">
+              <strong>{program.name}</strong> <span class="data row__dim">v{program.version}</span>
+              <span class="contract__summary">{program.blurb}</span>
+            </span>
+            <span class="data contract__pay">{formatMoney(program.price)}</span>
+            {owned ? (
+              <span class="row__done">Owned</span>
+            ) : (
+              <button
+                type="button"
+                class="btn btn--go"
+                disabled={game.player.balance < program.price}
+                onClick={() => act({ type: 'buyProgram', connectionId: connection.id, programId: program.id })}
+              >
+                Buy
+              </button>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 /** The server at the far end of the connection whose tab is in front. */
 export function ServerWindow() {
   const desk = useDesk();
@@ -340,7 +449,12 @@ export function ServerWindow() {
     const result = session.dispatch({ type: 'runProgram', connectionId: connection.id, target });
     setNotice(result.ok ? null : { connectionId: connection.id, text: result.reason });
   };
-  const view: View = { game, server, state, connection, run };
+  const act = (action: Action) => {
+    const result = session.dispatch(action);
+    setNotice(result.ok ? null : { connectionId: connection.id, text: result.reason });
+    return result.ok;
+  };
+  const view: View = { game, server, state, connection, run, act };
 
   return (
     <Window
@@ -361,6 +475,8 @@ export function ServerWindow() {
     >
       <Security {...view} />
       {!loggedIn && <LoginScreen {...view} />}
+      {section === 'contracts' && <Contracts {...view} />}
+      {section === 'market' && <Market {...view} />}
       {section === 'files' && <Files {...view} />}
       {section === 'logs' && <Logs {...view} />}
       {section === 'records' && <Records {...view} />}

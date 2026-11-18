@@ -4,9 +4,10 @@
  * That keeps the rules in one place and makes them testable.
  */
 import { MAX_HOPS, SPEEDS, isConnected, type Connection, type GameState, type Speed, type TaskTarget } from './state';
+import { abandonContract, acceptContract, alterRecord, buyProgram, deliverContract, punish } from './contracts';
 import { canLogIn, startTask } from './tasks';
 import { newTrace, noteIntrusion } from './trace';
-import { findAccount, findConnection, findServer, gatewayOf, sourceAddress, type Content } from './world';
+import { findAccount, findConnection, findServer, gatewayOf, sendMail, sourceAddress, type Content } from './world';
 
 export type Action =
   | { readonly type: 'setSpeed'; readonly speed: Speed }
@@ -24,12 +25,22 @@ export type Action =
   /** Run a program against something on a connection. */
   | { readonly type: 'runProgram'; readonly connectionId: string; readonly target: TaskTarget }
   | { readonly type: 'cancelProgram'; readonly taskId: string }
-  | { readonly type: 'readMessage'; readonly messageId: string };
+  | { readonly type: 'readMessage'; readonly messageId: string }
+  /** Take a contract from the board you are logged in to. */
+  | { readonly type: 'acceptContract'; readonly connectionId: string; readonly contractId: string }
+  | { readonly type: 'abandonContract' }
+  /** Hand in the finished contract and get paid. */
+  | { readonly type: 'deliverContract' }
+  /** Make the record change the active contract asks for. */
+  | { readonly type: 'alterRecord'; readonly connectionId: string }
+  /** Buy a program from the market on the board you are logged in to. */
+  | { readonly type: 'buyProgram'; readonly connectionId: string; readonly programId: string };
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
 const OK: ActionResult = { ok: true };
 const refuse = (reason: string): ActionResult => ({ ok: false, reason });
+const answer = (reason: string | null): ActionResult => (reason === null ? OK : refuse(reason));
 
 function writeLog(state: GameState, serverId: string, text: string): void {
   state.servers[serverId]?.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text, byPlayer: true });
@@ -55,20 +66,13 @@ function closeConnection(state: GameState, content: Content, connection: Connect
   state.tasks = state.tasks.filter((task) => task.connectionId !== connection.id);
 }
 
-/** A trace reached the gateway: the connection is cut and the player is told. */
+/** A trace reached the gateway: the connection is cut, the player pays for it and is told. */
 export function caught(state: GameState, content: Content, connection: Connection): void {
   const server = findServer(content, connection.serverId);
   closeConnection(state, content, connection);
-  state.messages.push({
-    id: `m${state.nextId++}`,
-    from: 'Gateway',
-    subject: `Traced by ${server?.name ?? 'the target'}`,
-    body:
-      `${server?.name ?? 'The target'} followed your connection all the way back to this gateway and cut it. ` +
-      'They know where you are. Expect to hear more about this.',
-    timeMs: state.clock.gameTimeMs,
-    read: false,
-  });
+  const { fine, hours } = punish(state, content, connection.serverId);
+  const target = server?.name ?? 'the target';
+  sendMail(state, content, 'caught', { target, fine: String(fine), hours: String(hours) });
 }
 
 export function applyAction(state: GameState, action: Action, content: Content): ActionResult {
@@ -182,6 +186,17 @@ export function applyAction(state: GameState, action: Action, content: Content):
       state.tasks = state.tasks.filter((task) => task.id !== action.taskId);
       return OK;
     }
+
+    case 'acceptContract':
+      return answer(acceptContract(state, content, action.connectionId, action.contractId));
+    case 'abandonContract':
+      return answer(abandonContract(state));
+    case 'deliverContract':
+      return answer(deliverContract(state, content));
+    case 'alterRecord':
+      return answer(alterRecord(state, content, action.connectionId));
+    case 'buyProgram':
+      return answer(buyProgram(state, content, action.connectionId, action.programId));
 
     case 'readMessage': {
       const message = state.messages.find((item) => item.id === action.messageId);

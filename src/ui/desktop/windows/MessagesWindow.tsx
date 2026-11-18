@@ -10,17 +10,17 @@ export function MessagesWindow() {
   const messages = useWorld((game) => game.messages);
   const [openId, setOpenId] = useState<string | null>(null);
 
-  // Remember the newest message seen, so only one that arrives while playing pops the window up.
-  const newest = messages.at(-1)?.id ?? null;
-  const seen = useRef<string | null | undefined>(undefined);
+  // A message that has just arrived, or is waiting unread when the game opens, brings the window up.
+  const newest = messages.at(-1);
+  const seen = useRef<string | null>(null);
   useEffect(() => {
-    if (seen.current !== undefined && newest !== null && newest !== seen.current && !messages.at(-1)?.read) {
+    if (newest && newest.id !== seen.current && !newest.read) {
       windows.focus('messages');
-      setOpenId(newest);
-      session.dispatch({ type: 'readMessage', messageId: newest });
+      setOpenId(newest.id);
+      session.dispatch({ type: 'readMessage', messageId: newest.id });
     }
-    seen.current = newest;
-  }, [newest]);
+    seen.current = newest?.id ?? null;
+  }, [newest?.id]);
 
   const unread = messages.filter((message) => !message.read).length;
   const open = messages.find((message) => message.id === openId);
@@ -56,7 +56,7 @@ export function MessagesWindow() {
           <p class="message-body__meta">
             From {open.from} · <span class="data">{formatGameTime(open.timeMs)}</span>
           </p>
-          {open.body.split('\n').map((paragraph, index) => (
+          {open.body.split('\n\n').map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
         </article>

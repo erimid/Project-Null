@@ -355,13 +355,12 @@ describe('the trace', () => {
     wait(1.5);
     expect(state.connections).toEqual([]);
     expect(state.tasks).toEqual([]);
-    expect(state.messages).toHaveLength(1);
-    const message = state.messages[0]!;
-    expect(message).toMatchObject({ from: 'Gateway', subject: 'Traced by Test Corp', read: false });
+    const message = state.messages.at(-1)!;
+    expect(message).toMatchObject({ from: 'Fixer', subject: 'Traced by Test Corp', read: false });
     expect(state.servers.corp!.logs.at(-1)!.text).toBe('connection closed 10.0.0.4');
 
     ok({ type: 'readMessage', messageId: message.id });
-    expect(state.messages[0]!.read).toBe(true);
+    expect(message.read).toBe(true);
     refused({ type: 'readMessage', messageId: 'nope' }, /No such message/);
   });
 
@@ -370,7 +369,8 @@ describe('the trace', () => {
     wait(8 + 29);
     ok({ type: 'disconnectAll' });
     wait(60);
-    expect(state.messages).toEqual([]);
+    expect(state.messages.map((message) => message.subject)).toEqual(['welcome']);
+    expect(state.player.balance).toBe(100);
   });
 
   it('starts the moment you connect to the most watchful servers', () => {
@@ -397,9 +397,8 @@ describe('saves from before security existed (version 2)', () => {
     const old = JSON.parse(serializeGame(now, '')) as { version: number; state: Record<string, any> };
     old.version = 2;
     old.state.version = 2;
-    delete old.state.tasks;
-    delete old.state.messages;
-    for (const key of ['programs', 'files', 'passwords']) delete old.state.player[key];
+    for (const key of ['tasks', 'messages', 'contracts', 'flags']) delete old.state[key];
+    for (const key of ['programs', 'files', 'passwords', 'rating', 'lieLowUntilMs']) delete old.state.player[key];
     for (const connection of old.state.connections) {
       delete connection.bypassed;
       delete connection.trace;
@@ -407,10 +406,13 @@ describe('saves from before security existed (version 2)', () => {
     for (const server of Object.values(old.state.servers as Record<string, { logs: { id?: number }[] }>)) for (const log of server.logs) delete log.id;
 
     const loaded = syncWithContent(deserializeGame(JSON.stringify(old)).state, content);
-    expect(loaded.version).toBe(3);
+    expect(loaded.version).toBe(4);
     expect(loaded.player.programs).toEqual(content.startingPrograms);
     expect(loaded.tasks).toEqual([]);
-    expect(loaded.messages).toEqual([]);
+    // Old saves get the welcome message too, since it explains where the work is.
+    expect(loaded.messages.map((message) => message.subject)).toEqual(['welcome']);
+    expect(loaded.player).toMatchObject({ rating: 0, lieLowUntilMs: 0 });
+    expect(loaded.contracts).toEqual({ activeId: null, completed: [] });
     expect(loaded.connections[0]).toMatchObject({ bypassed: { proxy: false, firewall: false }, trace: { status: 'none' } });
     const ids = Object.values(loaded.servers).flatMap((server) => server.logs.map((log) => log.id));
     expect(new Set(ids).size).toBe(ids.length);

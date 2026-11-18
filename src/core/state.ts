@@ -5,7 +5,7 @@
 import type { Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -33,6 +33,17 @@ export interface PlayerState {
   files: StoredFile[];
   /** Passwords the player has broken: server id -> the account names they open. */
   passwords: Record<string, string[]>;
+  /** Standing on the contracts board. Finished contracts raise it; being traced lowers it. */
+  rating: number;
+  /** Game time until which the board gives the player no work. 0 = never traced. */
+  lieLowUntilMs: number;
+}
+
+export interface ContractsState {
+  /** Id of the contract being worked on, if any. One at a time. */
+  activeId: string | null;
+  /** Ids of contracts delivered and paid. */
+  completed: string[];
 }
 
 export interface StoredFile {
@@ -155,6 +166,9 @@ export interface GameState {
   tasks: Task[];
   /** The player's inbox, oldest first. */
   messages: Message[];
+  contracts: ContractsState;
+  /** Names of one-off things that have already happened (e.g. the welcome message was sent). */
+  flags: string[];
   /** Changeable state of each server, by server id. */
   servers: Record<string, ServerState>;
 }
@@ -187,12 +201,16 @@ export function createGame(options: NewGameOptions): GameState {
       programs: [],
       files: [],
       passwords: {},
+      rating: 0,
+      lieLowUntilMs: 0,
     },
     knownServers: [],
     route: [],
     connections: [],
     tasks: [],
     messages: [],
+    contracts: { activeId: null, completed: [] },
+    flags: [],
     servers: {},
   };
 }
