@@ -583,17 +583,26 @@ export function ServerWindow() {
       id="server"
       title={server.name}
       note={loggedIn ? `${connection.user} @ ${server.hostname}` : 'not logged in'}
-      actions={sections.map((name) => (
-        <button
-          key={name}
-          type="button"
-          class={`tabbtn${name === section ? ' is-current' : ''}`}
-          aria-pressed={name === section}
-          onClick={() => deskStore.showSection(connection.id, name)}
-        >
-          {SECTION_LABELS[name]}
-        </button>
-      ))}
+      actions={
+        <>
+          {sections.map((name) => (
+            <button
+              key={name}
+              type="button"
+              class={`tabbtn${name === section ? ' is-current' : ''}`}
+              aria-pressed={name === section}
+              onClick={() => deskStore.showSection(connection.id, name)}
+            >
+              {SECTION_LABELS[name]}
+            </button>
+          ))}
+          {loggedIn && (
+            <button type="button" class="tabbtn tabbtn--exit" onClick={() => act({ type: 'logout', connectionId: connection.id })}>
+              Log out
+            </button>
+          )}
+        </>
+      }
     >
       <Security {...view} />
       {!loggedIn && <LoginScreen {...view} />}

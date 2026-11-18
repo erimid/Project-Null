@@ -21,6 +21,8 @@ export type Action =
   | { readonly type: 'disconnect'; readonly connectionId: string }
   | { readonly type: 'disconnectAll' }
   | { readonly type: 'login'; readonly connectionId: string; readonly user: string }
+  /** Go back to the login screen without dropping the connection. */
+  | { readonly type: 'logout'; readonly connectionId: string }
   /** Copy an address from a directory server into the player's address book. */
   | { readonly type: 'learnServer'; readonly connectionId: string; readonly serverId: string }
   /** Run a program against something on a connection. */
@@ -170,6 +172,18 @@ export function applyAction(state: GameState, action: Action, content: Content):
       writeLog(state, connection.serverId, `login ${account.user} from ${sourceAddress(content, connection)}`);
       // Walking in on a password-protected account is noticed, however you got the password.
       if (account.role === 'admin' && server.security.password > 0) noteIntrusion(content, connection);
+      return OK;
+    }
+
+    case 'logout': {
+      const connection = findConnection(state, action.connectionId);
+      if (!connection) return refuse('That connection is closed.');
+      if (connection.user === null) return refuse('You are not logged in.');
+      writeLog(state, connection.serverId, `logout ${connection.user}`);
+      connection.user = null;
+      connection.role = null;
+      // Programs working inside the account stop with it. Bypassed layers stay open for this connection.
+      state.tasks = state.tasks.filter((task) => task.connectionId !== connection.id);
       return OK;
     }
 

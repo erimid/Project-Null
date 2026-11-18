@@ -8,7 +8,7 @@
     "rating": 1,
     "minRating": 0,
     "summary": "Copy the member card file from Tallis Library.",
-    "brief": "A small library in Edinburgh keeps a list of who borrows what. I would like to read it.\n\nCopy member_cards.dat from their system. Nobody is watching that machine closely, so this is a good one to learn on. Payment on delivery.",
+    "brief": "A small library in Lisbon keeps a list of who borrows what. I would like to read it.\n\nCopy member_cards.dat from their system. Nobody is watching that machine closely, so this is a good one to learn on. Payment on delivery.",
     "objective": {
       "kind": "steal",
       "file": "member_cards.dat"

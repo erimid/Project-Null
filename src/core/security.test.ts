@@ -134,6 +134,33 @@ describe('passwords', () => {
   });
 });
 
+describe('logging out', () => {
+  it('goes back to the login screen, keeps the connection and lets you log in as someone else', () => {
+    const { state, ok, refused, run } = harness();
+    ok({ type: 'connect', serverId: 'relay-a' });
+    refused({ type: 'logout', connectionId: first(state) }, /not logged in/);
+    ok({ type: 'login', connectionId: first(state), user: 'guest' });
+    ok({ type: 'logout', connectionId: first(state) });
+    expect(state.connections[0]).toMatchObject({ user: null, role: null });
+    expect(state.servers['relay-a']!.logs.at(-1)).toMatchObject({ text: 'logout guest', byPlayer: true });
+    ok({ type: 'login', connectionId: first(state), user: 'root' });
+    expect(state.connections[0]!.role).toBe('admin');
+    refused({ type: 'logout', connectionId: 'nope' }, /closed/);
+    void run;
+  });
+
+  it('stops programs running in the account but keeps bypassed layers and the trace', () => {
+    const { state, ok, run, wait } = inside();
+    ok(run({ kind: 'firewall' }));
+    wait(6);
+    ok(run({ kind: 'proxy' }));
+    ok({ type: 'logout', connectionId: first(state) });
+    expect(state.tasks).toEqual([]);
+    expect(state.connections[0]!.bypassed).toEqual({ proxy: false, firewall: true });
+    expect(state.connections[0]!.trace.status).not.toBe('none');
+  });
+});
+
 describe('the firewall', () => {
   it('blocks copying and deleting files until it is bypassed', () => {
     const { state, ok, refused, run, wait } = inside();
