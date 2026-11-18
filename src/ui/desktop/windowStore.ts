@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'preact/hooks';
 
-export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'contract', 'viewer', 'saves'] as const;
+export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'contract', 'web', 'dark', 'viewer', 'saves'] as const;
 export type WindowId = (typeof WINDOW_IDS)[number];
 
 export interface WindowDef {
@@ -13,6 +13,8 @@ export interface WindowDef {
   /** Short name on its bottom-bar tab. */
   readonly pill: string;
   readonly width: number;
+  /** Starting height, for windows whose contents scroll inside them. Others are as tall as their contents. */
+  readonly height?: number;
   /** Narrowest it can be dragged to. Defaults to MIN_WIDTH. */
   readonly minWidth?: number;
   /** Starting position. A negative x is measured from the right edge of the screen. */
@@ -24,11 +26,13 @@ export interface WindowDef {
 export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
   gateway: { title: 'Gateway', pill: 'Gateway', width: 360, x: 24, y: 20, open: true },
   // x: -24 means 24px in from the right edge of the screen.
-  map: { title: 'Route map', pill: 'Route map', width: 700, x: -24, y: 20, open: true },
+  map: { title: 'Route map', pill: 'Map', width: 700, x: -24, y: 20, open: true },
   server: { title: 'Server', pill: 'Server', width: 668, x: 24, y: 292, open: true },
   programs: { title: 'Programs', pill: 'Programs', width: 440, x: 410, y: 60, open: false },
   messages: { title: 'Messages', pill: 'Messages', width: 520, x: -48, y: 56, open: false },
   contract: { title: 'Contract', pill: 'Contract', width: 440, x: 24, y: 20, open: false },
+  web: { title: 'Lumen', pill: 'Web', width: 620, height: 500, x: 260, y: 40, open: false },
+  dark: { title: 'Undertow', pill: 'Darknet', width: 620, height: 500, x: 320, y: 70, open: false },
   viewer: { title: 'File viewer', pill: 'Viewer', width: 640, x: 320, y: 90, open: false },
   saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 200, y: 120, open: false },
 };
@@ -55,13 +59,13 @@ export interface WindowLayout {
 
 type Layouts = Readonly<Record<WindowId, WindowLayout>>;
 
-const STORAGE_KEY = 'project-null.windows.v7';
+const STORAGE_KEY = 'project-null.windows.v8';
 
 function defaults(): Layouts {
   const entries = WINDOW_IDS.map((id, index) => {
     const def = WINDOW_DEFS[id];
     const x = def.x >= 0 ? def.x : Math.max(24, window.innerWidth + def.x - def.width);
-    return [id, { x, y: def.y, open: def.open, z: index + 1, minimized: false, w: null, h: null }] as const;
+    return [id, { x, y: def.y, open: def.open, z: index + 1, minimized: false, w: null, h: def.height ?? null }] as const;
   });
   return Object.fromEntries(entries) as Layouts;
 }
@@ -148,7 +152,7 @@ export const windows = {
   },
   /** Back to its usual size. */
   resetSize(id: WindowId): void {
-    set(patch(id, { w: null, h: null }), true);
+    set(patch(id, { w: null, h: WINDOW_DEFS[id].height ?? null }), true);
   },
   /** While dragging. Call `settle` when the drag ends. */
   move(id: WindowId, x: number, y: number): void {

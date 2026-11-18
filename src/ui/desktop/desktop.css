@@ -6,6 +6,8 @@
   min-width: 1280px;
   display: grid;
   grid-template-rows: var(--bar-height) minmax(0, 1fr) 58px;
+  /* Without this a crowded bar would widen the whole page instead of squeezing its tabs. */
+  grid-template-columns: minmax(0, 1fr);
   background: radial-gradient(circle at 70% 35%, var(--bg-glow) 0%, var(--bg) 60%);
 }
 
@@ -205,7 +207,7 @@
   opacity: 1;
 }
 
-.dock__tab.is-minimized {
+.dock__tab.is-open.is-minimized {
   color: var(--text);
   background: none;
   border-top-color: rgba(95, 212, 255, 0.35);
@@ -288,13 +290,17 @@
   display: flex;
   align-items: stretch;
   gap: 2px;
+  /* With many windows open the tabs squeeze before the bar overflows. */
+  min-width: 0;
 }
 
 .dock__tab {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 14px;
+  min-width: 0;
+  padding: 0 11px;
+  overflow: hidden;
   color: var(--text-muted);
   border-top: 2px solid transparent;
   /* Sits on the bar's own top line. */
@@ -326,7 +332,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 1px;
-  padding: 0 14px;
+  padding: 0 11px;
   border-left: 1px solid var(--line-soft);
   white-space: nowrap;
 }
@@ -357,7 +363,7 @@
 }
 
 .dock__stat--trace {
-  min-width: 84px;
+  min-width: 76px;
 }
 
 .dock__stat--trace.is-tracing .dock__value {
@@ -378,8 +384,9 @@
 
 .dock__cut {
   align-self: center;
-  margin-left: 12px;
-  padding: 7px 16px;
+  flex: none;
+  margin-left: 8px;
+  padding: 7px 14px;
   border: 1px solid var(--red);
   border-radius: 8px;
   background: rgba(255, 59, 78, 0.16);
@@ -535,8 +542,9 @@
 .menu__button {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 18px 0 20px;
+  gap: 10px;
+  flex: none;
+  padding: 0 14px 0 16px;
   border-right: 1px solid var(--line-soft);
   color: var(--cyan);
   font-size: 18px;
@@ -738,7 +746,8 @@
 .speed {
   display: inline-flex;
   align-self: center;
-  margin-left: 14px;
+  flex: none;
+  margin-left: 8px;
   border: 1px solid rgba(95, 212, 255, 0.25);
   border-radius: 8px;
   overflow: hidden;
@@ -2175,6 +2184,187 @@ button.tabbar__contract--live:hover {
   .dock__value.is-down,
   .count--alert,
   .login__banner {
+    animation: none;
+  }
+}
+
+/* ---- in-game browsers ---- */
+
+.browser {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* The page scrolls, not the window: the bar stays put. */
+  height: 100%;
+  min-height: 0;
+}
+
+.browser__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.browser__nav {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text);
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.browser__nav:not(:disabled):hover {
+  border-color: var(--cyan);
+  color: var(--text-bright);
+}
+
+.browser__nav:disabled {
+  border-color: rgba(95, 212, 255, 0.16);
+  color: var(--text-dim);
+}
+
+.browser__address {
+  flex: 1;
+  margin-left: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: rgba(3, 8, 15, 0.7);
+  font-size: 13px;
+  color: var(--text-bright);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browser__scheme {
+  color: var(--text-dim);
+}
+
+.browser__page {
+  flex: 1;
+  min-height: 0;
+  padding: 20px 24px;
+  overflow-y: auto;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: #0a1826;
+  animation: page-in 0.25s ease-out;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95, 212, 255, 0.3) transparent;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.page__heading {
+  margin: 0 0 12px;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text-bright);
+}
+
+.page__text {
+  margin: 0 0 12px;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.page__list {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.page__quote {
+  margin: 0 0 12px;
+  padding: 8px 14px;
+  border-left: 2px solid var(--line-strong);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.page__by {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+
+.page__links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.page__link {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cyan);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: rgba(95, 212, 255, 0.4);
+  text-underline-offset: 3px;
+}
+
+.page__link:hover {
+  color: var(--text-bright);
+  text-decoration-color: currentColor;
+}
+
+/* The darknet browser: green on black. */
+.browser--dark .browser__page {
+  background: #020705;
+  border-color: rgba(78, 230, 200, 0.25);
+  color: #9fd9c9;
+}
+
+.browser--dark .page__heading {
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--mint);
+}
+
+.browser--dark .page__heading::before {
+  content: '> ';
+  color: var(--text-dim);
+}
+
+.browser--dark .page__quote {
+  border-left-color: rgba(78, 230, 200, 0.4);
+}
+
+.browser--dark .page__by,
+.browser--dark .page__link {
+  color: var(--mint);
+}
+
+.browser--dark .page__link {
+  text-decoration-color: rgba(78, 230, 200, 0.4);
+}
+
+.browser--dark .browser__address {
+  border-color: rgba(78, 230, 200, 0.25);
+  color: var(--mint-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .browser__page {
     animation: none;
   }
 }

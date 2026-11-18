@@ -10,6 +10,7 @@ import gameJson from './game.json';
 import landJson from './land.json';
 import mailJson from './mail.json';
 import programsJson from './programs.json';
+import sitesJson from './sites.json';
 import tuningJson from './tuning.json';
 import gateway from './servers/gateway.json';
 import relayRegistry from './servers/relay-registry.json';
@@ -22,6 +23,7 @@ import halvorsen from './servers/halvorsen.json';
 import meridianFreight from './servers/meridian-freight.json';
 import corvaneMutual from './servers/corvane-mutual.json';
 import ashgrovePoly from './servers/ashgrove-poly.json';
+import { parseSites } from './sites';
 import { checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
 
 export type {
@@ -46,7 +48,11 @@ export type {
   Tuning,
 } from './schema';
 
+export { findPage } from './sites';
+export type { BlockDef, LinkDef, Net, PageDef, SiteDef } from './sites';
+
 export const gameInfo = parseGameInfo(gameJson);
+export const sites = parseSites(sitesJson);
 export const tuning = parseTuning(tuningJson);
 export const servers = parseServers(
   [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly],
