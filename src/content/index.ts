@@ -1,17 +1,15 @@
 /**
- * content/ holds the game's data as JSON: servers, programs, contracts and
- * so on. Code elsewhere imports data through this file, never the JSON
- * files directly, so each data file gets a type and a check in one place.
+ * content/ holds the game's data as JSON: servers, tuning numbers, and
+ * later programs and contracts. Code elsewhere imports data through this
+ * file, never the JSON files directly, so every file is checked once here.
  */
 import gameJson from './game.json';
+import serversJson from './servers.json';
+import tuningJson from './tuning.json';
+import { parseGameInfo, parseServers, parseTuning } from './schema';
 
-export interface GameInfo {
-  /** Working title shown in the UI. */
-  readonly title: string;
-  /** Player handle used until the player picks one. */
-  readonly defaultHandle: string;
-  /** Letter shown after money amounts, e.g. "12,880c". */
-  readonly currencySuffix: string;
-}
+export type { GameInfo, ServerDef, ServerKind, Tuning } from './schema';
 
-export const gameInfo: GameInfo = gameJson;
+export const gameInfo = parseGameInfo(gameJson);
+export const tuning = parseTuning(tuningJson);
+export const servers = parseServers(serversJson);
