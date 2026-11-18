@@ -22,5 +22,6 @@ export type {
 export type { ModelDef, ModelSkill } from '../content/models';
 export type { HardwareDef, HardwareSlot } from '../content/hardware';
 export type { SkillBranch, SkillDef, SkillEffect } from '../content/skills';
+export type { ModuleDef, ModuleGrade, ModuleTrait } from '../content/modules';
 export type { AskDef, FactDef, PeopleDef, PersonDef, RewardDef } from '../content/people';
 export { findAccount, findProgram, findServer, gatewayOf, ownedProgram } from './world';

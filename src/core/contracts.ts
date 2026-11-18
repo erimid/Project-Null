@@ -187,6 +187,7 @@ export function uninstallProgram(state: GameState, programId: string): string | 
   if (!state.player.programs.includes(programId)) return 'That program is not installed.';
   if (state.tasks.some((task) => task.programId === programId)) return 'That program is running. Stop it first.';
   state.player.programs = state.player.programs.filter((id) => id !== programId);
+  for (const [kind, id] of Object.entries(state.player.preferred)) if (id === programId) delete state.player.preferred[kind];
   return null;
 }
 

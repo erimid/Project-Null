@@ -150,7 +150,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -301,6 +301,10 @@ export interface Tuning {
   readonly skillPointRating: number;
   /** Credits to unlearn every skill the first time. Each time after costs this much more. */
   readonly unlearnPrice: number;
+  /** Seconds the Workbench takes to fit one module, on a stock processor. */
+  readonly buildSeconds: number;
+  /** Delivered contracts before the fixer writes about the Workbench and sends the first modules. */
+  readonly workbenchAfter: number;
 }
 
 export interface GameInfo {
@@ -724,6 +728,8 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     linksAfterRating: num(file, 'tuning', data, 'linksAfterRating', 0, 100_000),
     skillPointRating: num(file, 'tuning', data, 'skillPointRating', 1, 1000),
     unlearnPrice: num(file, 'tuning', data, 'unlearnPrice', 0, 10_000_000),
+    buildSeconds: num(file, 'tuning', data, 'buildSeconds', 0, 3600),
+    workbenchAfter: num(file, 'tuning', data, 'workbenchAfter', 0, 1000),
   };
 }
 

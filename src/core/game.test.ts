@@ -18,7 +18,7 @@ import {
 
 import { content } from './testWorld';
 
-const fullPlayer = { hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0 }, programs: content.startingPrograms, files: [], passwords: {}, rating: 0, bestRating: 0, skills: {}, unlearns: 0, lieLowUntilMs: 0, contacts: [], facts: [], model: null };
+const fullPlayer = { hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0 }, programs: content.startingPrograms, files: [], passwords: {}, rating: 0, bestRating: 0, skills: {}, unlearns: 0, parts: {}, builds: [], preferred: {}, lieLowUntilMs: 0, contacts: [], facts: [], model: null };
 const newGame = (): GameState =>
   syncWithContent(
     createGame({ seed: 7, handle: 'TESTER', startDate: '2034-03-14T08:00:00Z', startingBalance: 2500 }),
@@ -214,11 +214,11 @@ describe('save and load', () => {
       6: (old) => ({ ...old, player: { ...(old.player as object), handle: 'RESTORED' } }),
     };
     const { player, ...rest } = newGame();
-    const oldState = { ...rest, version: 5, player: { hardware: player.hardware, credits: 777, programs: [], files: [], passwords: {}, rating: 0, bestRating: 0, skills: {}, unlearns: 0, lieLowUntilMs: 0, contacts: [], facts: [], model: null } };
+    const oldState = { ...rest, version: 5, player: { hardware: player.hardware, credits: 777, programs: [], files: [], passwords: {}, rating: 0, bestRating: 0, skills: {}, unlearns: 0, parts: {}, builds: [], preferred: {}, lieLowUntilMs: 0, contacts: [], facts: [], model: null } };
     const text = JSON.stringify({ format: 'project-null-save', version: 5, summary: {}, state: oldState });
 
     const loaded = deserializeGame(text, migrations, 7).state;
-    expect(loaded.player).toEqual({ handle: 'RESTORED', balance: 777, hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0 }, programs: [], files: [], passwords: {}, rating: 0, bestRating: 0, skills: {}, unlearns: 0, lieLowUntilMs: 0, contacts: [], facts: [], model: null });
+    expect(loaded.player).toEqual({ handle: 'RESTORED', balance: 777, hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0 }, programs: [], files: [], passwords: {}, rating: 0, bestRating: 0, skills: {}, unlearns: 0, parts: {}, builds: [], preferred: {}, lieLowUntilMs: 0, contacts: [], facts: [], model: null });
     expect(loaded.version).toBe(7);
   });
 
@@ -237,7 +237,7 @@ describe('save and load', () => {
       },
     };
     const loaded = syncWithContent(deserializeGame(JSON.stringify(v1)).state, content);
-    expect(loaded.version).toBe(11);
+    expect(loaded.version).toBe(12);
     expect(loaded.player).toEqual({ handle: 'OLD', balance: 1200, ...fullPlayer });
     expect(loaded.clock).toEqual({ gameTimeMs: 2025936000000, speed: 2 });
     expect(loaded.rngStreams).toEqual({ world: 12345 });

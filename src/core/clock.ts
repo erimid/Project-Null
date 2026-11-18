@@ -13,6 +13,7 @@ import { monitorHeld } from './link';
 import { runPhish } from './phish';
 import { isConnected, type GameState, type Speed } from './state';
 import { advanceTasks } from './tasks';
+import { hasTrait } from './crafting';
 import { advanceMonitor, advanceTrace, intruding, noteIntrusion } from './trace';
 import type { Content } from './world';
 
@@ -43,7 +44,9 @@ export function tick(state: GameState, realMs: number, content: Content): number
     const traceMs = advanceMonitor(connection, simMs);
     if (traceMs <= 0) continue;
     // A monitor that comes back sees an administrator who should not be there, and anything still running.
-    if (wasBlind && (intruding(content, connection) || state.tasks.some((task) => task.connectionId === connection.id))) {
+    // A Quiet build passes for ordinary traffic.
+    const working = state.tasks.some((task) => task.connectionId === connection.id && !hasTrait(state, content, task.programId, 'quiet'));
+    if (wasBlind && (intruding(content, connection) || working)) {
       noteIntrusion(state, content, connection);
     }
     // A watching model hangs up first, if the trace would otherwise get there.

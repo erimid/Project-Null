@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 11;
+export const STATE_VERSION = 12;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -41,6 +41,12 @@ export interface PlayerState {
   skills: Record<string, number>;
   /** Times the player has paid to unlearn every skill. Each time costs more. */
   unlearns: number;
+  /** Modules on hand, by `module:grade` (see partKey in crafting.ts) -> how many. */
+  parts: Record<string, number>;
+  /** Programs the player built at the Workbench. Their ids are in `programs` while installed. */
+  builds: Build[];
+  /** Which installed program runs for each kind, by program kind. Missing = the strongest. */
+  preferred: Record<string, string>;
   /** Game time until which the board gives the player no work. 0 = never traced. */
   lieLowUntilMs: number;
   /** Ids of people the player has come across in files. */
@@ -49,6 +55,22 @@ export interface PlayerState {
   facts: string[];
   /** The language model being rented, and the game time the rental runs out. */
   model: { id: string; untilMs: number } | null;
+}
+
+/** One module fitted to a crafted program. */
+export interface Fitted {
+  /** Module id (content/modules.json). */
+  id: string;
+  grade: number;
+}
+
+/** A program built at the Workbench: a program from the market with modules fitted. */
+export interface Build {
+  /** Its program id, made when it was built (b + a number). */
+  id: string;
+  /** Id of the market program it was built from. */
+  base: string;
+  modules: Fitted[];
 }
 
 /** Tier installed in each slot of the gateway. */
@@ -184,7 +206,9 @@ export type TaskTarget =
   | { kind: 'copyFile'; file: string }
   | { kind: 'deleteFile'; file: string }
   /** Remove one or more lines from the access log in a single run. */
-  | { kind: 'deleteLog'; logIds: number[] };
+  | { kind: 'deleteLog'; logIds: number[] }
+  /** Build a crafted program at the Workbench. Runs at home. Its modules are taken when it starts. */
+  | { kind: 'build'; base: string; modules: Fitted[] };
 
 /** A program that is running, against a connection or (connectionId null) on the gateway itself. */
 export interface Task {
@@ -319,6 +343,9 @@ export function createGame(options: NewGameOptions): GameState {
       bestRating: 0,
       skills: {},
       unlearns: 0,
+      parts: {},
+      builds: [],
+      preferred: {},
       lieLowUntilMs: 0,
       contacts: [],
       facts: [],

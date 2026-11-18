@@ -123,6 +123,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     const rating = typeof player.rating === 'number' ? player.rating : 0;
     return { ...old, player: { ...player, bestRating: rating, skills: {}, unlearns: 0 } };
   },
+  // 11 -> 12: crafting. Nobody had parts or built programs before.
+  11: (old) => ({ ...old, player: { ...(old.player as object), parts: {}, builds: [], preferred: {} } }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -244,7 +246,10 @@ const isJob = (j: unknown): j is Obj =>
 
 const isLevel = (value: unknown) => value === undefined || isNum(value);
 
-const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'deleteLog'];
+const isFitted = (f: unknown): f is Obj => isObj(f) && isText(f.id) && isNum(f.grade);
+const isBuild = (b: unknown): b is Obj => isObj(b) && isText(b.id) && isText(b.base) && isList(b.modules, isFitted);
+
+const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'deleteLog', 'build'];
 
 const isTask = (t: unknown): t is Obj =>
   isObj(t) &&
@@ -257,6 +262,7 @@ const isTask = (t: unknown): t is Obj =>
   TARGET_KINDS.includes(t.target.kind as string) &&
   (t.target.kind !== 'deleteLog' || isList(t.target.logIds, isNum)) &&
   (t.target.kind !== 'decrypt' || (isText(t.target.file) && t.connectionId === null)) &&
+  (t.target.kind !== 'build' || (isText(t.target.base) && isList(t.target.modules, isFitted) && t.connectionId === null)) &&
   (t.puzzle === undefined ||
     (isObj(t.puzzle) &&
       isList(t.puzzle.startAngles, isNum) &&
@@ -304,6 +310,8 @@ function checkState(raw: Obj): GameState {
   if (!isNum(player.bestRating) || !isNum(player.unlearns) || !isObj(player.skills) || !Object.values(player.skills).every(isNum)) {
     throw damaged;
   }
+  if (!isObj(player.parts) || !Object.values(player.parts).every(isNum) || !isList(player.builds, isBuild)) throw damaged;
+  if (!isObj(player.preferred) || !Object.values(player.preferred).every(isText)) throw damaged;
   if (!isList(player.contacts, isText) || !isList(player.facts, isText)) throw damaged;
   if (!(player.model === null || (isObj(player.model) && isText(player.model.id) && isNum(player.model.untilMs)))) throw damaged;
   const phish = raw.phish;

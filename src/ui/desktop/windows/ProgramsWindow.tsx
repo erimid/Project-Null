@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { findProgram, findServer, hostedModel, maxPrograms, programStorageGq, rackStorageGb, storageGb, usedStorageGq } from '../../../core';
+import { findProgram, findServer, hostedModel, installedOfKind, ownedProgram, maxPrograms, programStorageGq, rackStorageGb, storageGb, usedStorageGq } from '../../../core';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
@@ -42,7 +42,7 @@ export function ProgramsWindow() {
             return (
               <li key={task.id} class="row row--task">
                 <span class="row__main">
-                  <strong>{findProgram(content, task.programId)?.name ?? task.programId}</strong>
+                  <strong>{findProgram(content, task.programId, game)?.name ?? task.programId}</strong>
                   <span class="row__dim"> · {connection ? serverName(connection.serverId) : 'Gateway'}</span>
                 </span>
                 <TaskProgress taskId={task.id} label={describeTarget(task.target)} />
@@ -87,7 +87,11 @@ export function ProgramsWindow() {
       <h3 class="map__heading section-gap">Installed programs</h3>
       <ul class="rows rows--scroll">
         {game.player.programs.map((id) => {
-          const program = findProgram(content, id);
+          const program = findProgram(content, id, game);
+          const built = game.player.builds.some((build) => build.id === id);
+          // Where there is a choice of program for a job, say which one runs.
+          const choice = program ? installedOfKind(game, content, program.kind).length > 1 : false;
+          const inUse = program ? ownedProgram(game, content, program.kind)?.id === id : false;
           return (
             program && (
               <li key={id} class="row row--program">
@@ -96,15 +100,23 @@ export function ProgramsWindow() {
                   <span class="program__blurb">{program.blurb}</span>
                 </span>
                 <span class="data row__dim">{program.sizeGq} GB</span>
+                {choice &&
+                  (inUse ? (
+                    <span class="row__done">In use</span>
+                  ) : (
+                    <button type="button" class="btn" onClick={() => session.dispatch({ type: 'preferProgram', programId: id })}>
+                      Use
+                    </button>
+                  ))}
                 {isRunning(id) ? (
                   <span class="row__done">Running</span>
                 ) : (
                   <ConfirmButton
                     class="btn btn--danger"
-                    confirmLabel="Remove?"
+                    confirmLabel={built ? 'Scrap?' : 'Remove?'}
                     onConfirm={() => session.dispatch({ type: 'uninstallProgram', programId: id })}
                   >
-                    Remove
+                    {built ? 'Scrap' : 'Remove'}
                   </ConfirmButton>
                 )}
               </li>

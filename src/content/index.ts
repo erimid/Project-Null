@@ -40,6 +40,8 @@ import peopleJson from './people.json';
 import { checkPeople, parsePeople } from './people';
 import { parseSites } from './sites';
 import skillsJson from './skills.json';
+import modulesJson from './modules.json';
+import { parseModules } from './modules';
 import { parseSkills } from './skills';
 import { checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
 
@@ -71,6 +73,7 @@ export { findPage } from './sites';
 export type { ModelDef, ModelSkill } from './models';
 export type { HardwareDef, HardwareSlot } from './hardware';
 export type { SkillBranch, SkillDef, SkillEffect } from './skills';
+export type { ModuleDef, ModuleGrade, ModuleTrait } from './modules';
 export type { CompanyPools } from './companies';
 export type { AskDef, FactDef, FileRef, PeopleDef, PersonDef, RewardDef } from './people';
 export type { BlockDef, LinkDef, Net, PageDef, SiteDef } from './sites';
@@ -91,6 +94,7 @@ export const companies = parseCompanies(companiesJson);
 export const hardware = parseHardware(hardwareJson, models.map((model) => model.id));
 export const people = parsePeople(peopleJson);
 export const skills = parseSkills(skillsJson);
+export const modules = parseModules(modulesJson);
 checkPeople(people, servers, tuning.phishMaxDetails);
 
 /**

@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROFILES, formatCareer, playCareer, type CareerOptions, type CareerReport, type Profile } from '../core/career';
 import type { Content } from '../core';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, servers, skills, tuning } from './index';
+import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, servers, skills, tuning } from './index';
 
 const content: Content = {
   servers,
@@ -23,6 +23,7 @@ const content: Content = {
   hardware,
   companies,
   skills,
+  modules,
   rules: tuning,
 };
 
