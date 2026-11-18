@@ -199,7 +199,9 @@ function autosave(): void {
 /** A short description of the things the clock can change besides the time. */
 function shape(): string {
   const traces = state.connections.map((c) => `${c.trace.status}${traceReport(c.trace).relaysTraced}`).join();
-  return `${state.tasks.length}|${state.connections.length}|${state.messages.length}|${traces}`;
+  const monitors = state.connections.map((c) => `${c.monitor.blindMs > 0}${c.monitor.echo?.result ?? ''}`).join();
+  const sealed = state.player.files.filter((file) => file.encrypted).length;
+  return `${state.tasks.length}|${state.connections.length}|${state.messages.length}|${traces}|${monitors}|${sealed}`;
 }
 
 function startLoop(): void {

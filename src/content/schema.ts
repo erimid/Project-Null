@@ -64,6 +64,8 @@ export const PROGRAM_KINDS = [
   'breakPassword',
   'bypassProxy',
   'bypassFirewall',
+  'bypassMonitor',
+  'decrypt',
   'copyFile',
   'deleteFile',
   'deleteLog',
@@ -129,7 +131,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -156,6 +158,8 @@ export interface FileDef {
   readonly sizeGq: number;
   /** Lowest role that can see the file. */
   readonly access: Role;
+  /** Level of the encryption on it. Missing = readable. A copy stays encrypted until a Decrypter has run on it. */
+  readonly encrypted?: number;
   /** What you get when you open the file. Files without it show as raw data. */
   readonly content?: FileContent;
 }
@@ -236,6 +240,14 @@ export interface Tuning {
   readonly ringToleranceDegrees: number;
   /** Port line-up: seconds a missed lock adds to the bypass. */
   readonly ringMissSeconds: number;
+  /** Seconds a Monitor Bypass as strong as the monitor keeps it blind. Each level of difference doubles or halves it. */
+  readonly monitorBlindSeconds: number;
+  /** Echo the handshake: repeating the pattern right multiplies the blind time left by this. */
+  readonly echoBonusFactor: number;
+  /** Echo the handshake: one wrong cell multiplies the blind time left by this. */
+  readonly echoPenaltyFactor: number;
+  /** Delivered contracts before the fixer writes about harder security. */
+  readonly harderSecurityAfter: number;
 }
 
 export interface GameInfo {
@@ -473,6 +485,7 @@ function parseFiles(file: string, where: string, raw: Obj): FileDef[] {
       name,
       sizeGq: num(file, `${where} file ${i}`, item, 'sizeGq', 1, 1000),
       access: role(file, `${where} file ${i}`, item, 'access'),
+      ...(item['encrypted'] === undefined ? {} : { encrypted: num(file, `${where} file "${name}"`, item, 'encrypted', 1, 5) }),
       ...(item['content'] === undefined ? {} : { content: parseFileContent(file, `${where} file "${name}"`, item['content']) }),
     };
   });
@@ -618,6 +631,10 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     reviewFineFactor: num(file, 'tuning', data, 'reviewFineFactor', 0, 10),
     ringToleranceDegrees: num(file, 'tuning', data, 'ringToleranceDegrees', 1, 90),
     ringMissSeconds: num(file, 'tuning', data, 'ringMissSeconds', 0, 60),
+    monitorBlindSeconds: num(file, 'tuning', data, 'monitorBlindSeconds', 1, 3600),
+    echoBonusFactor: num(file, 'tuning', data, 'echoBonusFactor', 1, 10),
+    echoPenaltyFactor: num(file, 'tuning', data, 'echoPenaltyFactor', 0, 1),
+    harderSecurityAfter: num(file, 'tuning', data, 'harderSecurityAfter', 0, 1000),
   };
 }
 

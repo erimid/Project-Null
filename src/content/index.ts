@@ -23,6 +23,8 @@ import halvorsen from './servers/halvorsen.json';
 import meridianFreight from './servers/meridian-freight.json';
 import corvaneMutual from './servers/corvane-mutual.json';
 import ashgrovePoly from './servers/ashgrove-poly.json';
+import aldergateFinch from './servers/aldergate-finch.json';
+import sunderbyKraft from './servers/sunderby-kraft.json';
 import { parseSites } from './sites';
 import { checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
 
@@ -55,7 +57,7 @@ export const gameInfo = parseGameInfo(gameJson);
 export const sites = parseSites(sitesJson);
 export const tuning = parseTuning(tuningJson);
 export const servers = parseServers(
-  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly],
+  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft],
   'servers/',
 );
 export const programs = parsePrograms(programsJson);

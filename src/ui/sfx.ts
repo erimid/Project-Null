@@ -119,7 +119,8 @@ export function startSfx(): void {
   let lastSecond = -1;
   session.subscribeGame(() => {
     const connection = mostUrgentTrace(session.getState());
-    if (!connection) {
+    // A held trace is silent: the quiet is how you know the monitor is blind.
+    if (!connection || connection.monitor.blindMs > 0) {
       lastSecond = -1;
       return;
     }

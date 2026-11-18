@@ -1,8 +1,9 @@
+import { useState } from 'preact/hooks';
 import { findProgram, findServer, programStorageGq, usedStorageGq } from '../../../core';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
-import { TaskProgress, describeTarget } from '../TaskProgress';
+import { TaskProgress, describeTarget, findTask } from '../TaskProgress';
 import { viewer } from '../viewerStore';
 import { Window } from '../Window';
 
@@ -18,6 +19,11 @@ export function ProgramsWindow() {
   const byFiles = used - byPrograms;
   const share = (gb: number) => `${(gb / capacity) * 100}%`;
   const serverName = (id: string) => findServer(content, id)?.name ?? id;
+  const [notice, setNotice] = useState('');
+  const decrypt = (name: string) => {
+    const result = session.dispatch({ type: 'decryptFile', name });
+    setNotice(result.ok ? '' : result.reason);
+  };
   const isRunning = (programId: string) => game.tasks.some((task) => task.programId === programId);
 
   return (
@@ -33,7 +39,7 @@ export function ProgramsWindow() {
               <li key={task.id} class="row row--task">
                 <span class="row__main">
                   <strong>{findProgram(content, task.programId)?.name ?? task.programId}</strong>
-                  <span class="row__dim"> · {connection ? serverName(connection.serverId) : ''}</span>
+                  <span class="row__dim"> · {connection ? serverName(connection.serverId) : 'Gateway'}</span>
                 </span>
                 <TaskProgress taskId={task.id} label={describeTarget(task.target)} />
                 <button type="button" class="btn" onClick={() => session.dispatch({ type: 'cancelProgram', taskId: task.id })}>
@@ -96,13 +102,29 @@ export function ProgramsWindow() {
         <p class="empty">No files yet. Copy one from a server and it shows up here.</p>
       ) : (
         <ul class="rows rows--scroll">
-          {game.player.files.map((file) => (
-            <li key={file.name} class="row row--stored">
+          {game.player.files.map((file) => {
+            const decrypting = findTask(game, null, { kind: 'decrypt', file: file.name });
+            return (
+            <li key={file.name} class={`row row--stored${file.encrypted ? ' is-sealed' : ''}`}>
               <span class="row__main data">
                 {file.name}
-                <span class="program__blurb">from {serverName(file.from)}</span>
+                <span class="program__blurb">
+                  from {serverName(file.from)}
+                  {file.encrypted ? <span class="sealed"> · encrypted, level {file.encrypted}</span> : null}
+                </span>
               </span>
               <span class="data row__dim">{file.sizeGq} GB</span>
+              {file.encrypted ? (
+                <span class="row__decrypt">
+                  {decrypting ? (
+                    <TaskProgress taskId={decrypting.id} label="Decrypting" />
+                  ) : (
+                    <button type="button" class="btn btn--go" onClick={() => decrypt(file.name)}>
+                      Decrypt
+                    </button>
+                  )}
+                </span>
+              ) : null}
               <button
                 type="button"
                 class="btn"
@@ -118,8 +140,14 @@ export function ProgramsWindow() {
                 Delete
               </ConfirmButton>
             </li>
-          ))}
+            );
+          })}
         </ul>
+      )}
+      {notice && (
+        <p class="map__notice" role="status">
+          {notice}
+        </p>
       )}
     </Window>
   );

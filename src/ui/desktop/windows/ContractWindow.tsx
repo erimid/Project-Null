@@ -13,7 +13,9 @@ function objectiveText(contract: ContractDef): string {
   const goal = contract.objective;
   switch (goal.kind) {
     case 'steal':
-      return `Copy ${goal.file} from ${target} to your gateway.`;
+      return findServer(content, contract.targetId)?.files.find((file) => file.name === goal.file)?.encrypted
+        ? `Copy ${goal.file} from ${target} to your gateway and decrypt it.`
+        : `Copy ${goal.file} from ${target} to your gateway.`;
     case 'destroy':
       return `Delete ${goal.file} on ${target}.`;
     case 'record':
@@ -41,6 +43,8 @@ export function ContractWindow() {
   const done = objectiveMet(game, content, contract);
   const possible = objectivePossible(game, content, contract);
   const target = findServer(content, contract.targetId);
+  const goal = contract.objective;
+  const sealed = goal.kind === 'steal' && game.player.files.some((file) => file.name === goal.file && file.encrypted);
 
   return (
     <Window id="contract" note={done ? 'ready to deliver' : 'in progress'}>
@@ -69,6 +73,7 @@ export function ContractWindow() {
           <span class="visually-hidden">{done ? ' Done.' : ' Not done yet.'}</span>
         </span>
       </p>
+      {sealed && <p class="board__warning">You have the file, but it is still encrypted. Run a Decrypter on it from Programs.</p>}
       {!possible && <p class="board__warning">This can no longer be done. Give the contract up.</p>}
       <div class="contract__actions">
         <ConfirmButton class="btn btn--danger" confirmLabel="Really give up?" onConfirm={() => finish({ type: 'abandonContract' })}>

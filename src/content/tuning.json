@@ -18,5 +18,9 @@
   "reviewHours": 3,
   "reviewFineFactor": 0.5,
   "ringToleranceDegrees": 24,
-  "ringMissSeconds": 1.5
+  "ringMissSeconds": 1.5,
+  "monitorBlindSeconds": 60,
+  "echoBonusFactor": 1.5,
+  "echoPenaltyFactor": 0.75,
+  "harderSecurityAfter": 5
 }

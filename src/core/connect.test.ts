@@ -74,7 +74,7 @@ describe('world setup', () => {
     state.knownServers.push('gone');
     state.route = ['relay-a', 'gone'];
     state.connections = [
-      { id: 'c9', serverId: 'gone', route: [], user: null, role: null, openedAtMs: 0, bypassed: { proxy: false, firewall: false }, trace: { status: 'none', graceMs: 0, elapsedMs: 0, hopMs: [1] }, reroutes: 0 },
+      { id: 'c9', serverId: 'gone', route: [], user: null, role: null, openedAtMs: 0, bypassed: { proxy: false, firewall: false }, trace: { status: 'none', graceMs: 0, elapsedMs: 0, hopMs: [1] }, reroutes: 0, monitor: { blindMs: 0, used: false, echo: null } },
     ];
     syncWithContent(state, content);
     expect(state.knownServers).not.toContain('gone');
@@ -129,6 +129,7 @@ describe('connecting', () => {
         // One relay with a delay of 2, at 10 seconds per hop.
         trace: noTrace([20_000]),
         reroutes: 0,
+        monitor: { blindMs: 0, used: false, echo: null },
       },
     ]);
     ok(state, { type: 'clearRoute' });

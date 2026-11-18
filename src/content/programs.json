@@ -94,5 +94,41 @@
     "price": 0,
     "sizeGq": 1,
     "blurb": "Shows how far a trace has got and how long you have left."
+  },
+  {
+    "id": "monitor-bypass",
+    "name": "Monitor Bypass",
+    "short": "Monitor",
+    "kind": "bypassMonitor",
+    "version": 1,
+    "baseSeconds": 6,
+    "secondsPerGq": 0,
+    "price": 1600,
+    "sizeGq": 3,
+    "blurb": "Blinds a server's monitor for a short while. Nothing you do is noticed, and a running trace stands still. Works once per connection."
+  },
+  {
+    "id": "monitor-bypass-2",
+    "name": "Monitor Bypass",
+    "short": "Monitor",
+    "kind": "bypassMonitor",
+    "version": 2,
+    "baseSeconds": 6,
+    "secondsPerGq": 0,
+    "price": 3600,
+    "sizeGq": 5,
+    "blurb": "Twice as fast as version 1, keeps a monitor blind for twice as long, and can take on stronger monitors."
+  },
+  {
+    "id": "decrypter",
+    "name": "Decrypter",
+    "short": "Decrypter",
+    "kind": "decrypt",
+    "version": 1,
+    "baseSeconds": 20,
+    "secondsPerGq": 2,
+    "price": 1200,
+    "sizeGq": 3,
+    "blurb": "Opens an encrypted file you have copied to your gateway. Runs at home, so nobody is watching while it works."
   }
 ]

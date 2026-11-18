@@ -3,7 +3,7 @@
  * time; when it finishes, its effect is applied.
  */
 import type { ProgramDef, ProgramKind, ServerDef } from '../content/schema';
-import type { Connection, GameState, RingPuzzle, ServerState, Task, TaskTarget } from './state';
+import type { Connection, EchoPuzzle, GameState, RingPuzzle, Task, TaskTarget } from './state';
 import { stream } from './streams';
 import { noteIntrusion } from './trace';
 import { findAccount, findConnection, findProgram, findServer, ownedProgram, type Content } from './world';
@@ -15,6 +15,8 @@ const PROGRAM_FOR: Record<TaskTarget['kind'], ProgramKind> = {
   password: 'breakPassword',
   proxy: 'bypassProxy',
   firewall: 'bypassFirewall',
+  monitor: 'bypassMonitor',
+  decrypt: 'decrypt',
   copyFile: 'copyFile',
   deleteFile: 'deleteFile',
   deleteLog: 'deleteLog',
@@ -52,19 +54,18 @@ export function canLogIn(state: GameState, server: ServerDef, user: string): boo
 type Check = { ok: true; seconds: number; program: ProgramDef; level?: number } | { ok: false; reason: string };
 const no = (reason: string): Check => ({ ok: false, reason });
 
-/** Decides whether a program can start on a target, and how long it will take. */
-export function checkTask(state: GameState, content: Content, connection: Connection, target: TaskTarget): Check {
-  const server = findServer(content, connection.serverId);
-  const serverState = state.servers[connection.serverId];
-  if (!server || !serverState) return no('That connection is closed.');
-
+/**
+ * Decides whether a program can start on a target, and how long it will
+ * take. `connection` is null for work done on the gateway itself.
+ */
+export function checkTask(state: GameState, content: Content, connection: Connection | null, target: TaskTarget): Check {
   const program = ownedProgram(state, content, PROGRAM_FOR[target.kind]);
   if (!program) return no('You do not own a program for that.');
   if (state.tasks.length >= content.rules.maxRunningPrograms) {
     return no(`Your gateway can run ${content.rules.maxRunningPrograms} programs at once.`);
   }
   const same = (task: Task) =>
-    task.connectionId === connection.id && JSON.stringify(task.target) === JSON.stringify(target);
+    task.connectionId === (connection?.id ?? null) && JSON.stringify(task.target) === JSON.stringify(target);
   if (state.tasks.some(same)) return no('That is already running.');
 
   const against = (layer: string, level: number): Check => {
@@ -72,6 +73,18 @@ export function checkTask(state: GameState, content: Content, connection: Connec
     if (seconds === null) return no(`${program.name} v${program.version} is too weak for this ${layer} (level ${level}).`);
     return { ok: true, seconds, program, level };
   };
+
+  if (target.kind === 'decrypt') {
+    const file = state.player.files.find((item) => item.name === target.file);
+    if (!file) return no('You have no such file.');
+    if (!file.encrypted) return no('That file is not encrypted.');
+    const check = against('encryption', file.encrypted);
+    return check.ok ? { ...check, seconds: check.seconds + (program.secondsPerGq * file.sizeGq) / program.version } : check;
+  }
+
+  const server = connection && findServer(content, connection.serverId);
+  const serverState = connection && state.servers[connection.serverId];
+  if (!connection || !server || !serverState) return no('That connection is closed.');
   const admin = connection.role === 'admin';
   const fileTime = (sizeGq: number): Check => ({
     ok: true,
@@ -94,6 +107,13 @@ export function checkTask(state: GameState, content: Content, connection: Connec
       if (level === 0) return no(`This server has no ${target.kind}.`);
       if (connection.bypassed[target.kind]) return no(`The ${target.kind} is already bypassed.`);
       return against(target.kind, level);
+    }
+    case 'monitor': {
+      const level = server.security.monitor;
+      if (level === 0) return no('Nothing is watching this server closely enough to blind.');
+      if (connection.monitor.blindMs > 0) return no('The monitor is already blind.');
+      if (connection.monitor.used) return no('This monitor has seen that trick. Reconnect to try it again.');
+      return against('monitor', level);
     }
     case 'copyFile':
     case 'deleteFile': {
@@ -120,9 +140,74 @@ export function checkTask(state: GameState, content: Content, connection: Connec
   }
 }
 
-function finish(state: GameState, serverState: ServerState, connection: Connection, task: Task): void {
+/** How long a bypass keeps a monitor blind: the base time, doubled or halved per level of difference. */
+export function blindSeconds(content: Content, program: ProgramDef, level: number): number {
+  return content.rules.monitorBlindSeconds * 2 ** Math.min(1, program.version - level);
+}
+
+const ECHO_CELLS = 9;
+
+/** A handshake pattern for a monitor of this level: longer as the level goes up. */
+function newEcho(state: GameState, level: number): EchoPuzzle {
+  const rng = stream(state, 'puzzle');
+  const cells: number[] = [];
+  const length = 3 + Math.ceil(level / 2);
+  while (cells.length < length) {
+    const cell = rng.int(0, ECHO_CELLS - 1);
+    // Never the same cell twice running, so each step can be seen.
+    if (cell !== cells[cells.length - 1]) cells.push(cell);
+  }
+  return { cells, entered: 0, result: 'open' };
+}
+
+/**
+ * Repeats one cell of the handshake pattern. The whole pattern right
+ * stretches the blind time that is left; one wrong cell shortens it and
+ * ends the attempt. Returns a reason only if there was nothing to answer.
+ */
+export function echoCell(state: GameState, content: Content, connectionId: string, cell: number): string | null {
+  const monitor = findConnection(state, connectionId)?.monitor;
+  const echo = monitor?.echo;
+  if (!monitor || !echo || echo.result !== 'open') return 'There is no handshake to answer.';
+  if (!Number.isInteger(cell) || cell < 0 || cell >= ECHO_CELLS) return 'No such cell.';
+  if (echo.cells[echo.entered] !== cell) {
+    echo.result = 'lost';
+    monitor.blindMs *= content.rules.echoPenaltyFactor;
+    return null;
+  }
+  echo.entered++;
+  if (echo.entered === echo.cells.length) {
+    echo.result = 'won';
+    monitor.blindMs *= content.rules.echoBonusFactor;
+  }
+  return null;
+}
+
+/** Applies a finished program that ran on the gateway itself. */
+function finishLocal(state: GameState, task: Task): void {
+  const target = task.target;
+  if (target.kind !== 'decrypt') return;
+  const file = state.player.files.find((item) => item.name === target.file);
+  if (file) delete file.encrypted;
+}
+
+function finish(state: GameState, content: Content, connection: Connection, task: Task): void {
+  const serverState = state.servers[connection.serverId];
+  const program = findProgram(content, task.programId);
+  if (!serverState || !program) return;
   const target = task.target;
   switch (target.kind) {
+    case 'decrypt':
+      return;
+    case 'monitor': {
+      const level = findServer(content, connection.serverId)?.security.monitor ?? 0;
+      connection.monitor = {
+        blindMs: blindSeconds(content, program, level) * 1000,
+        used: true,
+        echo: newEcho(state, level),
+      };
+      return;
+    }
     case 'password': {
       const known = (state.player.passwords[connection.serverId] ??= []);
       if (!known.includes(target.user)) known.push(target.user);
@@ -135,7 +220,12 @@ function finish(state: GameState, serverState: ServerState, connection: Connecti
     case 'copyFile': {
       const file = serverState.files.find((item) => item.name === target.file);
       if (!file) return;
-      state.player.files.push({ name: file.name, sizeGq: file.sizeGq, from: connection.serverId });
+      state.player.files.push({
+        name: file.name,
+        sizeGq: file.sizeGq,
+        from: connection.serverId,
+        ...(file.encrypted ? { encrypted: file.encrypted } : {}),
+      });
       serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file copied: ${file.name}`, byPlayer: true });
       return;
     }
@@ -199,23 +289,25 @@ export function lockRing(state: GameState, content: Content, taskId: string, rin
   return null;
 }
 
-/** Starts a program. Returns a reason if it can't start. */
-export function startTask(state: GameState, content: Content, connectionId: string, target: TaskTarget): string | null {
-  const connection = findConnection(state, connectionId);
-  if (!connection) return 'That connection is closed.';
+/** Starts a program, over a connection or (connectionId null) on the gateway. Returns a reason if it can't start. */
+export function startTask(state: GameState, content: Content, connectionId: string | null, target: TaskTarget): string | null {
+  const connection = findConnection(state, connectionId) ?? null;
+  if ((connection === null) !== (target.kind === 'decrypt')) {
+    return connection ? 'That runs on your gateway, not over a connection.' : 'That connection is closed.';
+  }
   const check = checkTask(state, content, connection, target);
   if (!check.ok) return check.reason;
   state.tasks.push({
     id: `t${state.nextId++}`,
     programId: check.program.id,
-    connectionId,
+    connectionId: connection?.id ?? null,
     target,
     progressMs: 0,
     durationMs: check.seconds * 1000,
     ...(target.kind === 'firewall' ? { puzzle: newPuzzle(state, check.level) } : {}),
   });
-  // Monitors notice programs working on their server.
-  noteIntrusion(content, connection);
+  // Monitors notice programs working on their server. They don't notice being blinded, or work done at home.
+  if (connection && target.kind !== 'monitor') noteIntrusion(content, connection);
   return null;
 }
 
@@ -225,8 +317,11 @@ export function advanceTasks(state: GameState, content: Content, simMs: number):
     task.progressMs += simMs;
     if (task.progressMs < task.durationMs) continue;
     state.tasks = state.tasks.filter((other) => other !== task);
+    if (task.connectionId === null) {
+      finishLocal(state, task);
+      continue;
+    }
     const connection = findConnection(state, task.connectionId);
-    const serverState = connection && state.servers[connection.serverId];
-    if (connection && serverState && findProgram(content, task.programId)) finish(state, serverState, connection, task);
+    if (connection) finish(state, content, connection, task);
   }
 }
