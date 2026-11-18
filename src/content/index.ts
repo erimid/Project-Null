@@ -30,6 +30,8 @@ import calderFacilities from './servers/calder-facilities.json';
 import calderRe from './servers/calder-re.json';
 import gatehousePerimeter from './servers/gatehouse-perimeter.json';
 import brennanMarsh from './servers/brennan-marsh.json';
+import companiesJson from './companies.json';
+import { parseCompanies } from './companies';
 import hardwareJson from './hardware.json';
 import { parseHardware } from './hardware';
 import modelsJson from './models.json';
@@ -66,6 +68,7 @@ export type {
 export { findPage } from './sites';
 export type { ModelDef, ModelSkill } from './models';
 export type { HardwareDef, HardwareSlot } from './hardware';
+export type { CompanyPools } from './companies';
 export type { AskDef, FactDef, FileRef, PeopleDef, PersonDef, RewardDef } from './people';
 export type { BlockDef, LinkDef, Net, PageDef, SiteDef } from './sites';
 
@@ -81,6 +84,7 @@ export const contracts = parseContracts(contractsJson);
 export const mail = parseMail(mailJson);
 checkContent(gameInfo, servers, programs, contracts);
 export const models = parseModels(modelsJson);
+export const companies = parseCompanies(companiesJson);
 export const hardware = parseHardware(hardwareJson, models.map((model) => model.id));
 export const people = parsePeople(peopleJson);
 checkPeople(people, servers, tuning.phishMaxDetails);

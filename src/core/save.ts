@@ -115,6 +115,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     const ports = typeof maxConnections === 'number' ? Math.min(3, Math.max(1, Math.floor(maxConnections))) : 1;
     return { ...old, player: { ...player, hardware: { cpu: 1, storage: 1, modem: 1, ports, rack: 0 } } };
   },
+  // 9 -> 10: repeatable jobs against generated companies. The board posts them on the next tick.
+  9: (old) => ({ ...old, contracts: { ...(old.contracts as object), jobs: [] } }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -227,6 +229,13 @@ const isConnection = (c: unknown): c is Obj =>
 const isHardware = (h: unknown) =>
   isObj(h) && ['cpu', 'storage', 'modem', 'ports', 'rack'].every((slot) => isNum(h[slot]) && Number.isInteger(h[slot]) && (h[slot] as number) >= 0);
 
+const isJob = (j: unknown): j is Obj =>
+  isObj(j) &&
+  ['id', 'title', 'client', 'targetId', 'summary', 'brief'].every((key) => isText(j[key])) &&
+  ['pay', 'rating', 'minRating', 'expiresMs'].every((key) => isNum(j[key])) &&
+  isObj(j.objective) &&
+  ['steal', 'destroy', 'record'].includes(j.objective.kind as string);
+
 const isLevel = (value: unknown) => value === undefined || isNum(value);
 
 const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'deleteLog'];
@@ -301,7 +310,12 @@ function checkState(raw: Obj): GameState {
     throw damaged;
   }
   const contracts = raw.contracts;
-  if (!isObj(contracts) || !(contracts.activeId === null || isText(contracts.activeId)) || !isList(contracts.completed, isText)) {
+  if (
+    !isObj(contracts) ||
+    !(contracts.activeId === null || isText(contracts.activeId)) ||
+    !isList(contracts.completed, isText) ||
+    !isList(contracts.jobs, isJob)
+  ) {
     throw damaged;
   }
   if (!isList(raw.flags, isText)) throw damaged;

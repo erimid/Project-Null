@@ -1,0 +1,162 @@
+{
+  "count": 30,
+  "cities": [
+    { "city": "Rotterdam", "country": "Netherlands", "lat": 51.92, "lon": 4.48, "net": "77.161" },
+    { "city": "Lyon", "country": "France", "lat": 45.76, "lon": 4.84, "net": "90.84" },
+    { "city": "Kraków", "country": "Poland", "lat": 50.06, "lon": 19.94, "net": "83.24" },
+    { "city": "Porto", "country": "Portugal", "lat": 41.15, "lon": -8.61, "net": "62.169" },
+    { "city": "Gothenburg", "country": "Sweden", "lat": 57.71, "lon": 11.97, "net": "78.69" },
+    { "city": "Leeds", "country": "United Kingdom", "lat": 53.8, "lon": -1.55, "net": "51.148" },
+    { "city": "Hamburg", "country": "Germany", "lat": 53.55, "lon": 9.99, "net": "87.79" },
+    { "city": "Turin", "country": "Italy", "lat": 45.07, "lon": 7.69, "net": "93.42" },
+    { "city": "Pittsburgh", "country": "United States", "lat": 40.44, "lon": -79.99, "net": "71.182" },
+    { "city": "Calgary", "country": "Canada", "lat": 51.05, "lon": -114.07, "net": "142.59" },
+    { "city": "Monterrey", "country": "Mexico", "lat": 25.69, "lon": -100.32, "net": "187.141" },
+    { "city": "Valparaíso", "country": "Chile", "lat": -33.05, "lon": -71.62, "net": "200.27" },
+    { "city": "Medellín", "country": "Colombia", "lat": 6.24, "lon": -75.58, "net": "181.49" },
+    { "city": "Baltimore", "country": "United States", "lat": 39.29, "lon": -76.61, "net": "69.243" },
+    { "city": "Accra", "country": "Ghana", "lat": 5.6, "lon": -0.19, "net": "154.160" },
+    { "city": "Casablanca", "country": "Morocco", "lat": 33.57, "lon": -7.59, "net": "105.159" },
+    { "city": "Durban", "country": "South Africa", "lat": -29.86, "lon": 31.02, "net": "196.25" },
+    { "city": "Amman", "country": "Jordan", "lat": 31.95, "lon": 35.93, "net": "176.29" },
+    { "city": "Muscat", "country": "Oman", "lat": 23.59, "lon": 58.41, "net": "5.36" },
+    { "city": "Pune", "country": "India", "lat": 18.52, "lon": 73.86, "net": "117.211" },
+    { "city": "Busan", "country": "South Korea", "lat": 35.18, "lon": 129.08, "net": "211.104" },
+    { "city": "Kaohsiung", "country": "Taiwan", "lat": 22.63, "lon": 120.3, "net": "61.219" },
+    { "city": "Cebu", "country": "Philippines", "lat": 10.32, "lon": 123.89, "net": "112.199" },
+    { "city": "Osaka", "country": "Japan", "lat": 34.69, "lon": 135.5, "net": "153.127" },
+    { "city": "Adelaide", "country": "Australia", "lat": -34.93, "lon": 138.6, "net": "203.122" },
+    { "city": "Christchurch", "country": "New Zealand", "lat": -43.53, "lon": 172.64, "net": "202.36" }
+  ],
+  "first": ["Ana", "Ben", "Carla", "Dev", "Elif", "Femi", "Greta", "Hamid", "Ines", "Jonas", "Kiri", "Lena", "Marek", "Nadia", "Omar", "Priya", "Quinn", "Rosa", "Sami", "Tomas", "Uma", "Viktor", "Wen", "Yusuf", "Zofia"],
+  "last": ["Abbott", "Barros", "Chen", "Dlamini", "Eriksen", "Fofana", "García", "Haddad", "Ito", "Jansen", "Kowalski", "Lindqvist", "Mensah", "Novak", "Okonkwo", "Petrov", "Quist", "Rossi", "Sato", "Tan", "Uddin", "Varga", "Weber", "Yilmaz", "Zamora"],
+  "stems": ["Ashby", "Bramwell", "Carrow", "Dunmere", "Elstow", "Fairholt", "Greyling", "Harrowgate", "Ivel", "Juniper", "Kettering", "Larchmont", "Morrow", "Northvale", "Orrin", "Pellow", "Quarry Lane", "Redfern", "Saltash", "Thistle", "Underhill", "Vantage", "Westmoor", "Yardley", "Zephyr", "Alder", "Brightwater", "Copperfield", "Dovecote", "Ember"],
+  "logs": [
+    "login admin from {ip}",
+    "logout admin",
+    "backup completed",
+    "backup completed with 2 warnings",
+    "password changed for user admin",
+    "scheduled scan: no threats found",
+    "disk usage at 81%",
+    "failed login admin from {ip}",
+    "service restarted: mail",
+    "certificate renewed"
+  ],
+  "sectors": [
+    {
+      "id": "freight",
+      "suffixes": ["Freight", "Haulage", "Logistics", "Shipping"],
+      "blurbs": ["Bookings, manifests and driver logs.", "A regional carrier's dispatch system."],
+      "tag": "DSP",
+      "files": [
+        { "name": "manifests_q{q}.dat", "sizeGb": [3, 8] },
+        { "name": "driver_logs.dat", "sizeGb": [2, 5] },
+        { "name": "rate_card_{year}.txt", "sizeGb": [1, 1], "text": "{company} · RATE CARD {year}\n\nFull load, domestic: per km rates as agreed.\nPart load: minimum charge applies.\nHazardous goods: by quote only, approved by {staff}.\n\nRates for our three largest accounts are not on this card. Ask {staff2}." },
+        { "name": "dispatch_note.txt", "sizeGb": [1, 1], "text": "From: {staff}\nTo: night dispatch\n\nThe customs broker on the {city} run keeps asking which trailers are sealed and which are not. Do not tell him. If he asks again, put him through to me.\n\n{staff}" }
+      ],
+      "records": { "title": "Shipments", "columns": ["Consignment", "Status"], "key": "CN-{n}", "values": ["in transit", "held at depot", "delivered", "returned to sender"] }
+    },
+    {
+      "id": "clinic",
+      "suffixes": ["Clinic", "Medical Centre", "Health", "Dental Group"],
+      "blurbs": ["Appointments and patient billing.", "A private clinic's front-desk system."],
+      "tag": "MED",
+      "files": [
+        { "name": "billing_{year}.dat", "sizeGb": [2, 6] },
+        { "name": "appointments.dat", "sizeGb": [1, 3] },
+        { "name": "practice_meeting.txt", "sizeGb": [1, 1], "text": "PRACTICE MEETING · MINUTES\n\nPresent: {staff}, {staff2}.\n\n1. The insurer has queried 40 claims from last quarter. {staff} will \"look into it\".\n2. The new booking system keeps double-booking Thursdays.\n3. Nobody has changed the admin password since the system went in. {staff2} says it is fine." },
+        { "name": "welcome.txt", "sizeGb": [1, 1], "access": "guest", "text": "Welcome to {company}, {city}.\n\nTo book or change an appointment, call reception. We do not discuss patient matters by email." }
+      ],
+      "records": { "title": "Patients", "columns": ["Patient no.", "Account"], "key": "P{n}", "values": ["paid", "overdue", "written off", "in dispute"] }
+    },
+    {
+      "id": "law",
+      "suffixes": ["& Partners", "Legal", "Solicitors", "Chambers"],
+      "blurbs": ["Case files and client billing for a small practice.", "A law firm's document store."],
+      "tag": "DOC",
+      "files": [
+        { "name": "case_{n}_bundle.dat", "sizeGb": [3, 9] },
+        { "name": "client_ledger.dat", "sizeGb": [1, 3] },
+        { "name": "file_note_{n}.txt", "sizeGb": [1, 1], "text": "FILE NOTE · PRIVILEGED\n\nCall with the client this morning. They want the settlement signed before the press hears about it. I said that is not how settlements work. They said it is how theirs work.\n\nPlease make sure the earlier drafts are not on the shared drive.\n\n{staff}" }
+      ]
+    },
+    {
+      "id": "retail",
+      "suffixes": ["Stores", "Outfitters", "Supply", "Market"],
+      "blurbs": ["Stock, loyalty cards and supplier invoices.", "A shop chain's back office."],
+      "tag": "POS",
+      "files": [
+        { "name": "loyalty_members.dat", "sizeGb": [4, 10] },
+        { "name": "supplier_invoices_{year}.dat", "sizeGb": [2, 5] },
+        { "name": "memo_shrinkage.txt", "sizeGb": [1, 1], "text": "MEMO\nFrom: {staff}\nTo: store managers\n\nStock losses at the {city} branch are up again. Until we know why, every refund over 50 needs a second signature.\n\nAnd please stop putting the safe code on a sticky note. {staff2}, this means you." }
+      ]
+    },
+    {
+      "id": "energy",
+      "suffixes": ["Energy", "Power", "Utilities", "Grid Services"],
+      "blurbs": ["Meter readings and maintenance schedules.", "A small utility's operations server."],
+      "tag": "OPS",
+      "files": [
+        { "name": "meter_readings_{q}.dat", "sizeGb": [5, 12] },
+        { "name": "substation_plans.dat", "sizeGb": [3, 7] },
+        { "name": "maintenance_rota.txt", "sizeGb": [1, 1], "text": "MAINTENANCE ROTA · {city}\n\nWeek 11: {staff}, {staff2}.\n\nThe east feeder has tripped three times this month. Head office says it is within tolerance. Head office does not live on the east side.\n\nDo not share this rota outside the team." }
+      ],
+      "records": { "title": "Accounts", "columns": ["Account", "Supply"], "key": "AC-{n}", "values": ["connected", "disconnected", "on payment plan", "flagged for audit"] }
+    },
+    {
+      "id": "credit",
+      "suffixes": ["Credit Union", "Savings", "Lending", "Building Society"],
+      "blurbs": ["Member accounts and loan files.", "A savings co-operative's records."],
+      "tag": "FIN",
+      "files": [
+        { "name": "loan_book_{year}.dat", "sizeGb": [4, 9] },
+        { "name": "member_statements.dat", "sizeGb": [3, 8] },
+        { "name": "audit_prep.txt", "sizeGb": [1, 1], "text": "AUDIT PREPARATION · CONFIDENTIAL\n\nThe auditors arrive on the 20th. Before then:\n- reconcile the {city} branch float (it is out again)\n- remove the personal loans {staff} approved for family members, or at least label them\n\n{staff2}" }
+      ],
+      "records": { "title": "Loans", "columns": ["Loan", "Status"], "key": "L-{n}", "values": ["current", "in arrears", "settled", "referred to collections"] }
+    },
+    {
+      "id": "engineering",
+      "suffixes": ["Engineering", "Fabrication", "Works", "Industries"],
+      "blurbs": ["Drawings, tenders and test reports.", "A manufacturer's design office."],
+      "tag": "CAD",
+      "files": [
+        { "name": "drawings_rev{n}.dat", "sizeGb": [6, 14] },
+        { "name": "tender_{year}_draft.dat", "sizeGb": [2, 4] },
+        { "name": "test_report.txt", "sizeGb": [1, 1], "text": "TEST REPORT · BRACKET ASSEMBLY\n\nSamples 1 to 6 passed. Sample 7 cracked at 80% of rated load.\n\nThe customer has asked for the full report. {staff} wants to send samples 1 to 6 only.\n\nI am writing this down so that somebody has.\n\n{staff2}" }
+      ]
+    },
+    {
+      "id": "school",
+      "suffixes": ["Academy", "College", "School", "Institute"],
+      "blurbs": ["Enrolment, grades and fees.", "A private school's student records."],
+      "tag": "EDU",
+      "files": [
+        { "name": "exam_papers_{year}.dat", "sizeGb": [2, 6] },
+        { "name": "fees_ledger.dat", "sizeGb": [1, 4] },
+        { "name": "staff_bulletin.txt", "sizeGb": [1, 1], "access": "guest", "text": "STAFF BULLETIN · {company}\n\nReminder: exam papers are kept on the admin server and nowhere else. {staff} holds the only admin login.\n\nParents' evening is on Thursday." }
+      ],
+      "records": { "title": "Students", "columns": ["Student no.", "Result"], "key": "S{n}", "values": ["pass", "fail", "distinction", "resit"] }
+    }
+  ],
+  "jobs": {
+    "clients": ["A competitor", "A former employee", "A journalist", "A private investigator", "An anonymous client", "A creditor", "A rival bidder", "Someone who was let go"],
+    "steal": {
+      "titles": ["A copy for a friend", "Quiet acquisition", "Borrowed paperwork", "Second opinion"],
+      "summaries": ["Copy {file} from {company}."],
+      "briefs": ["I need a copy of {file} from {company} in {city}. Nobody there needs to know it has gone.\n\nBring it back readable. That is all.", "{company} has a file called {file}. I want it. Their security is {tier}, so plan for that."]
+    },
+    "destroy": {
+      "titles": ["Clean slate", "Lost in the post", "Accidental deletion", "Housekeeping"],
+      "summaries": ["Delete {file} at {company}."],
+      "briefs": ["There is a file at {company} in {city} called {file}. It should not exist. Please see to it.\n\nDo not copy it. Just make it gone.", "{file} on the {company} server is going to cost me a lot of money if anyone reads it. Delete it. Their security is {tier}."]
+    },
+    "record": {
+      "titles": ["A small correction", "Clerical error", "Change of status"],
+      "summaries": ["Change {key} to \"{value}\" at {company}."],
+      "briefs": ["{company} in {city} keeps a {records} table. Row {key} says the wrong thing. Make its {column} say \"{value}\".\n\nYou will need to get past the proxy to change it.", "One line in {company}'s records: {key}. I need {column} to read \"{value}\" by the end of the week. Their security is {tier}."]
+    },
+    "tiers": ["light", "modest", "decent", "serious", "heavy"]
+  }
+}

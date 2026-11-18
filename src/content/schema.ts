@@ -47,6 +47,8 @@ export interface ServerDef {
   readonly records?: RecordsDef;
   /** A layer of this server that is run from another server. See ServerLinkDef. */
   readonly link?: ServerLinkDef;
+  /** Set only on companies generated for one game: how strong they are (1 to 5) and their line of business. */
+  readonly generated?: { readonly tier: number; readonly sector: string };
 }
 
 export const LINK_LAYERS = ['firewall', 'monitor'] as const;
@@ -281,6 +283,12 @@ export interface Tuning {
   readonly hardwareAfter: number;
   /** Being traced by a server with a layer at this level or above costs a hardware tier. */
   readonly hardwareLossLevel: number;
+  /** Repeatable jobs the board keeps posted. */
+  readonly boardJobs: number;
+  /** In-game hours a repeatable job stays on the board. */
+  readonly jobHours: number;
+  /** A repeatable job pays this much per tier of the company's security, plus a little. */
+  readonly jobPayPerTier: number;
 }
 
 export interface GameInfo {
@@ -695,6 +703,9 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     modelWatchSeconds: num(file, 'tuning', data, 'modelWatchSeconds', 1, 600),
     hardwareAfter: num(file, 'tuning', data, 'hardwareAfter', 0, 1000),
     hardwareLossLevel: num(file, 'tuning', data, 'hardwareLossLevel', 1, 6),
+    boardJobs: num(file, 'tuning', data, 'boardJobs', 0, 20),
+    jobHours: num(file, 'tuning', data, 'jobHours', 1, 24 * 365),
+    jobPayPerTier: num(file, 'tuning', data, 'jobPayPerTier', 0, 1_000_000),
   };
 }
 

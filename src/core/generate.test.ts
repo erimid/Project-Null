@@ -1,0 +1,195 @@
+import { describe, expect, it } from 'vitest';
+import { companies } from '../content';
+import {
+  applyAction,
+  availableContracts,
+  createGame,
+  deserializeGame,
+  fileContent,
+  generateCompanies,
+  isJob,
+  regionOf,
+  serializeGame,
+  syncWithContent,
+  tick,
+  tierForRating,
+  worldFor,
+  STATE_VERSION,
+  type Action,
+  type Content,
+  type GameState,
+} from './index';
+import { postJobs } from './contracts';
+import { content as testContent } from './testWorld';
+
+/** The test world, with the real company pools. */
+const base: Content = { ...testContent, companies };
+
+function game(seed = 11) {
+  const world = worldFor(base, seed);
+  const state: GameState = syncWithContent(
+    createGame({ seed, handle: 'T', startDate: '2034-03-14T08:00:00Z', startingBalance: 1000 }),
+    world,
+  );
+  state.knownServers = world.servers.map((server) => server.id);
+  const act = (action: Action) => applyAction(state, action, world);
+  const ok = (action: Action) => expect(act(action)).toEqual({ ok: true });
+  return { state, world, act, ok };
+}
+
+describe('generated companies', () => {
+  it('makes the configured number, each with its own name, id and address', () => {
+    const made = generateCompanies(companies, 1);
+    expect(made).toHaveLength(companies.count);
+    for (const key of ['id', 'name', 'address'] as const) expect(new Set(made.map((server) => server[key])).size).toBe(made.length);
+  });
+
+  it('makes the same companies for the same seed, and different ones for another', () => {
+    expect(generateCompanies(companies, 5)).toEqual(generateCompanies(companies, 5));
+    expect(generateCompanies(companies, 5).map((s) => s.name)).not.toEqual(generateCompanies(companies, 6).map((s) => s.name));
+  });
+
+  it('never reuses an address that is already taken', () => {
+    const taken = generateCompanies(companies, 3).map((server) => server.address);
+    const made = generateCompanies(companies, 3, taken);
+    expect(made.some((server) => taken.includes(server.address))).toBe(false);
+  });
+
+  it('keeps every layer within reach of bought programs, gives an admin login, and fills every placeholder', () => {
+    for (let seed = 0; seed < 20; seed++) {
+      for (const server of generateCompanies(companies, seed)) {
+        const { password, proxy, firewall, monitor } = server.security;
+        expect(Math.max(password, proxy, firewall, monitor)).toBeLessThanOrEqual(3);
+        expect(server.accounts.some((account) => account.role === 'admin')).toBe(true);
+        expect(server.generated!.tier).toBeGreaterThanOrEqual(1);
+        expect(server.generated!.tier).toBeLessThanOrEqual(5);
+        const text = JSON.stringify([server.name, server.banner, server.files, server.logs, server.records]);
+        expect(text, server.id).not.toMatch(/\{\w+\}/);
+      }
+    }
+  });
+
+  it('spreads across tiers', () => {
+    const tiers = new Set(Array.from({ length: 10 }, (_, seed) => generateCompanies(companies, seed).map((s) => s.generated!.tier)).flat());
+    expect([...tiers].sort()).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('are part of the game world, listed, with text files that open', () => {
+    const h = game();
+    const made = h.world.servers.filter((server) => server.generated);
+    expect(made).toHaveLength(companies.count);
+    expect(made.every((server) => server.listed && h.state.servers[server.id])).toBe(true);
+    const withText = made.find((server) => server.files.some((file) => file.content));
+    const file = withText!.files.find((item) => item.content)!;
+    expect(fileContent(h.world, withText!.id, file.name)?.kind).toBe('text');
+  });
+
+  it('are placed in a region of the world', () => {
+    expect(regionOf({ lat: 40, lon: -74 })).toBe('Americas');
+    expect(regionOf({ lat: 52, lon: 4 })).toBe('Europe');
+    expect(regionOf({ lat: 5, lon: -0.2 })).toBe('Africa & Middle East');
+    expect(regionOf({ lat: 31, lon: 36 })).toBe('Africa & Middle East');
+    expect(regionOf({ lat: 35, lon: 135 })).toBe('Asia & Pacific');
+  });
+});
+
+describe('repeatable jobs', () => {
+  it('the board keeps its number of jobs posted, against companies of about the right tier', () => {
+    const h = game();
+    postJobs(h.state, h.world);
+    expect(h.state.contracts.jobs).toHaveLength(base.rules.boardJobs);
+    for (const job of h.state.contracts.jobs) {
+      const tier = h.world.servers.find((server) => server.id === job.targetId)!.generated!.tier;
+      expect(tier).toBeLessThanOrEqual(tierForRating(0));
+      expect(job.summary).not.toMatch(/\{\w+\}/);
+      expect(job.brief).not.toMatch(/\{\w+\}/);
+    }
+    // Each job is against a different company.
+    expect(new Set(h.state.contracts.jobs.map((job) => job.targetId)).size).toBe(h.state.contracts.jobs.length);
+  });
+
+  it('offers harder companies as the rating goes up', () => {
+    const h = game();
+    h.state.player.rating = 8;
+    postJobs(h.state, h.world);
+    const tiers = h.state.contracts.jobs.map((job) => h.world.servers.find((server) => server.id === job.targetId)!.generated!.tier);
+    expect(tiers.every((tier) => tier >= 4)).toBe(true);
+  });
+
+  it('are on the board next to the hand-written contracts', () => {
+    const h = game();
+    postJobs(h.state, h.world);
+    const offers = availableContracts(h.state, h.world);
+    expect(offers.filter(isJob)).toHaveLength(base.rules.boardJobs);
+    expect(offers.some((offer) => !isJob(offer))).toBe(true);
+  });
+
+  it('come off the board when they run out, and new ones go up', () => {
+    const h = game();
+    postJobs(h.state, h.world);
+    const first = h.state.contracts.jobs.map((job) => job.id);
+    h.state.clock.gameTimeMs += (base.rules.jobHours + 1) * 3_600_000;
+    tick(h.state, 1000, h.world);
+    expect(h.state.contracts.jobs).toHaveLength(base.rules.boardJobs);
+    expect(h.state.contracts.jobs.some((job) => first.includes(job.id))).toBe(false);
+  });
+
+  it('can be taken, done and delivered like any contract, and are replaced', () => {
+    const h = game();
+    postJobs(h.state, h.world);
+    const job = h.state.contracts.jobs.find((item) => item.objective.kind === 'destroy') ?? h.state.contracts.jobs[0]!;
+    h.ok({ type: 'connect', serverId: 'hidden' });
+    const board = h.state.connections[0]!.id;
+    h.ok({ type: 'login', connectionId: board, user: 'member' });
+    h.ok({ type: 'acceptContract', connectionId: board, contractId: job.id });
+    // A job being worked on is never taken down, even when its time is up.
+    h.state.clock.gameTimeMs += (base.rules.jobHours + 1) * 3_600_000;
+    postJobs(h.state, h.world);
+    expect(h.state.contracts.jobs.some((item) => item.id === job.id)).toBe(true);
+    // Do the job by hand.
+    const target = h.state.servers[job.targetId]!;
+    const goal = job.objective;
+    if (goal.kind === 'destroy') target.files = target.files.filter((file) => file.name !== goal.file);
+    else if (goal.kind === 'steal') h.state.player.files.push({ name: goal.file, sizeGq: 1, from: job.targetId });
+    else target.records.find((row) => row[0] === goal.key)![1] = goal.value;
+    const before = h.state.player.balance;
+    h.ok({ type: 'deliverContract' });
+    expect(h.state.player.balance).toBe(before + job.pay);
+    expect(h.state.contracts.jobs.some((item) => item.id === job.id)).toBe(false);
+    expect(h.state.contracts.jobs).toHaveLength(base.rules.boardJobs);
+  });
+
+  it('a job given up comes off the board', () => {
+    const h = game();
+    postJobs(h.state, h.world);
+    const job = h.state.contracts.jobs[0]!;
+    h.ok({ type: 'connect', serverId: 'hidden' });
+    const board = h.state.connections[0]!.id;
+    h.ok({ type: 'login', connectionId: board, user: 'member' });
+    h.ok({ type: 'acceptContract', connectionId: board, contractId: job.id });
+    h.ok({ type: 'abandonContract' });
+    expect(h.state.contracts.jobs.some((item) => item.id === job.id)).toBe(false);
+  });
+
+  it('survive a save, and an active job keeps working after loading', () => {
+    const h = game();
+    postJobs(h.state, h.world);
+    h.state.contracts.activeId = h.state.contracts.jobs[0]!.id;
+    const loaded = syncWithContent(deserializeGame(serializeGame(h.state, 'now')).state, worldFor(base, h.state.seed));
+    expect(loaded.contracts.jobs).toEqual(h.state.contracts.jobs);
+    expect(loaded.contracts.activeId).toBe(h.state.contracts.jobs[0]!.id);
+  });
+
+  it('old saves (version 9) load with no jobs and get some on the next minute', () => {
+    const h = game();
+    const file = JSON.parse(serializeGame(h.state, 'now'));
+    file.version = 9;
+    file.state.version = 9;
+    delete file.state.contracts.jobs;
+    const loaded = syncWithContent(deserializeGame(JSON.stringify(file)).state, h.world);
+    expect(loaded.version).toBe(STATE_VERSION);
+    expect(loaded.contracts.jobs).toEqual([]);
+    tick(loaded, 1000, h.world);
+    expect(loaded.contracts.jobs).toHaveLength(base.rules.boardJobs);
+  });
+});

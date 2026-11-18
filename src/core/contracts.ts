@@ -7,15 +7,23 @@ import type { ContractDef } from '../content/schema';
 import { baseFine, closeCase } from './forensics';
 import type { Connection, GameState } from './state';
 import { freeStorageGb } from './tasks';
+import { refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
 import { findConnection, findProgram, findServer, noteProgress, once, sendMail, type Content } from './world';
 
-export function findContract(content: Content, id: string | null): ContractDef | undefined {
-  return id === null ? undefined : content.contracts.find((contract) => contract.id === id);
+/** A hand-written contract, or a job on this game's board. */
+export function findContract(state: GameState, content: Content, id: string | null): ContractDef | undefined {
+  if (id === null) return undefined;
+  return content.contracts.find((contract) => contract.id === id) ?? state.contracts.jobs.find((job) => job.id === id);
 }
 
 export function activeContract(state: GameState, content: Content): ContractDef | undefined {
-  return findContract(content, state.contracts.activeId);
+  return findContract(state, content, state.contracts.activeId);
+}
+
+/** Keeps the board's repeatable jobs topped up. */
+export function postJobs(state: GameState, content: Content): void {
+  refreshJobs(state, content, (job) => objectivePossible(state, content, job));
 }
 
 /** True once the thing the contract asks for has been done. */
@@ -58,10 +66,13 @@ export function availableContracts(state: GameState, content: Content): Contract
       !state.contracts.completed.includes(contract.id) &&
       objectivePossible(state, content, contract),
   );
+  const jobs = state.contracts.jobs.filter(
+    (job) => job.id !== state.contracts.activeId && job.expiresMs > state.clock.gameTimeMs && objectivePossible(state, content, job),
+  );
   const offered = open.filter((contract) => contract.minRating <= state.player.rating);
-  if (offered.length > 0 || state.contracts.activeId !== null) return offered;
+  if (offered.length > 0 || state.contracts.activeId !== null) return [...offered, ...jobs];
   const easiest = [...open].sort((a, b) => a.minRating - b.minRating)[0];
-  return easiest ? [easiest] : [];
+  return [...(easiest ? [easiest] : []), ...jobs];
 }
 
 /** The connection, if it is logged in to a contracts board. Otherwise a reason. */
@@ -88,6 +99,8 @@ export function acceptContract(state: GameState, content: Content, connectionId:
 
 export function abandonContract(state: GameState): string | null {
   if (state.contracts.activeId === null) return 'You have no contract.';
+  // A job given up is gone from the board; someone else will take it.
+  state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== state.contracts.activeId);
   state.contracts.activeId = null;
   return null;
 }
@@ -103,6 +116,9 @@ export function deliverContract(state: GameState, content: Content): string | nu
   state.player.rating += contract.rating;
   state.contracts.completed.push(contract.id);
   state.contracts.activeId = null;
+  // A delivered job comes off the board and another takes its place.
+  state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
+  postJobs(state, content);
   sendMail(state, content, 'paid', { client: contract.client, title: contract.title, pay: String(contract.pay) });
   once(state, 'firstDelivery', () => sendMail(state, content, 'firstDelivery'));
   noteProgress(state, content);
@@ -188,6 +204,7 @@ export function punish(state: GameState, content: Content, serverId: string): { 
   const contract = activeContract(state, content);
   if (contract?.targetId === serverId && !objectiveMet(state, content, contract)) {
     state.contracts.activeId = null;
+    state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
     sendMail(state, content, 'contractFailed', {
       client: contract.client,
       title: contract.title,

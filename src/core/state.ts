@@ -2,10 +2,10 @@
  * The whole game in one plain object. It contains only data (no
  * functions, no class instances), so it can be saved as JSON as it is.
  */
-import type { Role } from '../content/schema';
+import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 9;
+export const STATE_VERSION = 10;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -79,6 +79,14 @@ export interface ContractsState {
   activeId: string | null;
   /** Ids of contracts delivered and paid. */
   completed: string[];
+  /** Repeatable jobs on the board right now, made for this game (see jobs.ts). */
+  jobs: Job[];
+}
+
+/** A job the board made up against a generated company. Taken down at `expiresMs` unless it is being worked on. */
+export interface Job extends ContractDef {
+  /** Game time it comes off the board. */
+  readonly expiresMs: number;
 }
 
 export interface StoredFile {
@@ -312,7 +320,7 @@ export function createGame(options: NewGameOptions): GameState {
     connections: [],
     tasks: [],
     messages: [],
-    contracts: { activeId: null, completed: [] },
+    contracts: { activeId: null, completed: [], jobs: [] },
     phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
     reviews: [],
     flags: [],

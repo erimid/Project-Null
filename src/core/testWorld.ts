@@ -1,6 +1,7 @@
 /** A tiny made-up world for unit tests, so tests don't depend on the real data files. */
 import type { ServerDef } from '../content/schema';
 import type { ContractDef, MailDef, MailKey, ProgramDef } from '../content/schema';
+import { NO_COMPANIES } from '../content/companies';
 import type { HardwareDef } from '../content/hardware';
 import type { PeopleDef } from '../content/people';
 import type { Content, Rules } from './world';
@@ -162,6 +163,9 @@ export const testRules: Rules = {
   modelWatchSeconds: 5,
   hardwareAfter: 2,
   hardwareLossLevel: 3,
+  boardJobs: 3,
+  jobHours: 24,
+  jobPayPerTier: 100,
 };
 
 const part = (slot: HardwareDef['slot'], tier: number, price: number, values: Partial<HardwareDef>): HardwareDef => ({
@@ -251,5 +255,6 @@ export const content: Content = {
     { id: 'big', name: 'Big', blurb: 'b', price: 90, skills: ['read', 'scrub', 'review', 'watch'] },
   ],
   hardware: testHardware,
+  companies: NO_COMPANIES,
   rules: testRules,
 };

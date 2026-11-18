@@ -16,6 +16,7 @@ export type {
   FileState,
   GameState,
   HardwareState,
+  Job,
   LogEntry,
   Message,
   PhishAttempt,
@@ -75,8 +76,12 @@ export {
   isLyingLow,
   objectiveMet,
   objectivePossible,
+  postJobs,
 } from './contracts';
 export { applyAction } from './actions';
+export { REGIONS, fill, generateCompanies, regionOf, worldFor } from './generate';
+export type { Region } from './generate';
+export { isJob, tierForRating } from './jobs';
 export type { Action, ActionResult } from './actions';
 export { SAVE_FORMAT, SaveError, deserializeGame, readSummary, serializeGame, summarize } from './save';
 export type { LoadedGame, Migration, SaveFile, SaveSummary } from './save';
