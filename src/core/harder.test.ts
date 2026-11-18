@@ -1,3 +1,4 @@
+import { STATE_VERSION } from './state';
 import { describe, expect, it } from 'vitest';
 import {
   applyAction,
@@ -218,7 +219,7 @@ describe('progress and old saves', () => {
     file.state.version = 5;
     for (const connection of file.state.connections) delete connection.monitor;
     const loaded = deserializeGame(JSON.stringify(file)).state;
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(STATE_VERSION);
     expect(loaded.connections[0]).toMatchObject({ serverId: 'corp', monitor: { blindMs: 0, used: false, echo: null } });
   });
 });

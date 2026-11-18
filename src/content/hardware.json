@@ -1,0 +1,40 @@
+[
+  { "id": "cpu-1", "slot": "cpu", "tier": 1, "name": "Stock board, 4 cores", "price": 0, "speed": 1, "programs": 3,
+    "blurb": "What your gateway came with. Runs three programs at once." },
+  { "id": "cpu-2", "slot": "cpu", "tier": 2, "name": "Varga V8 processor", "price": 2500, "speed": 1.5, "programs": 4,
+    "blurb": "Eight cores pulled from a decommissioned render farm. Programs run half again as fast, four at once." },
+  { "id": "cpu-3", "slot": "cpu", "tier": 3, "name": "Varga V16 processor", "price": 6000, "speed": 2, "programs": 5,
+    "blurb": "Sixteen cores. A password that took a minute takes thirty seconds. Five programs at once." },
+  { "id": "cpu-4", "slot": "cpu", "tier": 4, "name": "Kessel quantum co-processor", "price": 14000, "speed": 3, "programs": 6,
+    "blurb": "Nobody at the Backroom will say where these come from. Programs run three times as fast, six at once." },
+
+  { "id": "storage-1", "slot": "storage", "tier": 1, "name": "Stock drive, 40 GB", "price": 0, "storageGb": 40,
+    "blurb": "What your gateway came with." },
+  { "id": "storage-2", "slot": "storage", "tier": 2, "name": "Solid-state array, 80 GB", "price": 1500, "storageGb": 80,
+    "blurb": "Twice the room for programs and the files you bring home." },
+  { "id": "storage-3", "slot": "storage", "tier": 3, "name": "Solid-state array, 160 GB", "price": 4000, "storageGb": 160,
+    "blurb": "Room for every program on the market and a good haul of files." },
+  { "id": "storage-4", "slot": "storage", "tier": 4, "name": "Cold-storage rack, 320 GB", "price": 9000, "storageGb": 320,
+    "blurb": "Enough to host a large model and still bring home whole archives." },
+
+  { "id": "modem-1", "slot": "modem", "tier": 1, "name": "Stock modem", "price": 0, "fileSpeed": 1,
+    "blurb": "What your gateway came with." },
+  { "id": "modem-2", "slot": "modem", "tier": 2, "name": "Bonded line, 2 channels", "price": 1800, "fileSpeed": 1.5,
+    "blurb": "Two lines bonded into one. Files copy and delete half again as fast." },
+  { "id": "modem-3", "slot": "modem", "tier": 3, "name": "Bonded line, 4 channels", "price": 4500, "fileSpeed": 2,
+    "blurb": "Files copy and delete twice as fast. Less time with the firewall open." },
+  { "id": "modem-4", "slot": "modem", "tier": 4, "name": "Leased fibre", "price": 10000, "fileSpeed": 3,
+    "blurb": "A line rented under a shell company's name. Files move three times as fast." },
+
+  { "id": "ports-1", "slot": "ports", "tier": 1, "name": "Single port", "price": 0, "connections": 1,
+    "blurb": "What your gateway came with. One connection at a time." },
+  { "id": "ports-2", "slot": "ports", "tier": 2, "name": "Dual-port card", "price": 3000, "connections": 2,
+    "blurb": "Hold two connections open at once, each through its own route, each with its own trace." },
+  { "id": "ports-3", "slot": "ports", "tier": 3, "name": "Quad-port card", "price": 8000, "connections": 3,
+    "blurb": "Three connections at once. Keep one server busy while you work on another." },
+
+  { "id": "rack-1", "slot": "rack", "tier": 1, "name": "Inference card", "price": 5000, "model": "magpie-8b", "sizeGb": 8,
+    "blurb": "Runs Magpie 8B on your own gateway, for good. No rent, no farm. The weights take 8 GB of storage." },
+  { "id": "rack-2", "slot": "rack", "tier": 2, "name": "Inference cluster", "price": 15000, "model": "heron-120b", "sizeGb": 30,
+    "blurb": "Runs Heron 120B on your own gateway, for good. The weights take 30 GB of storage." }
+]

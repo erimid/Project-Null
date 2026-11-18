@@ -138,7 +138,7 @@ describe('connecting', () => {
 
   it('refuses unknown servers, the gateway, a server in the route, and a second connection to the same server', () => {
     const state = knowAll();
-    state.player.maxConnections = 3;
+    state.player.hardware.ports = 3;
     refused(newGame(), { type: 'connect', serverId: 'corp' }, /do not have that address/);
     refused(state, { type: 'connect', serverId: 'gateway' }, /already at your gateway/);
     ok(state, { type: 'addHop', serverId: 'relay-a' });
@@ -151,7 +151,7 @@ describe('connecting', () => {
     const state = knowAll();
     ok(state, { type: 'connect', serverId: 'corp' });
     refused(state, { type: 'connect', serverId: 'directory' }, /one connection at a time/);
-    state.player.maxConnections = 2;
+    state.player.hardware.ports = 2;
     ok(state, { type: 'connect', serverId: 'directory' });
     expect(state.connections.map((c) => c.serverId)).toEqual(['corp', 'directory']);
     refused(state, { type: 'connect', serverId: 'relay-b' }, /2 connections/);
@@ -159,7 +159,7 @@ describe('connecting', () => {
 
   it('gives each connection its own route', () => {
     const state = knowAll();
-    state.player.maxConnections = 2;
+    state.player.hardware.ports = 2;
     ok(state, { type: 'addHop', serverId: 'relay-a' });
     ok(state, { type: 'connect', serverId: 'corp' });
     ok(state, { type: 'clearRoute' });
@@ -170,7 +170,7 @@ describe('connecting', () => {
 
   it('disconnects one connection or all of them', () => {
     const state = knowAll();
-    state.player.maxConnections = 3;
+    state.player.hardware.ports = 3;
     ok(state, { type: 'connect', serverId: 'corp' });
     ok(state, { type: 'connect', serverId: 'directory' });
     ok(state, { type: 'connect', serverId: 'relay-a' });

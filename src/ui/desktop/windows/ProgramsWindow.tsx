@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { findProgram, findServer, programStorageGq, usedStorageGq } from '../../../core';
+import { findProgram, findServer, hostedModel, maxPrograms, programStorageGq, rackStorageGb, storageGb, usedStorageGq } from '../../../core';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
@@ -13,11 +13,14 @@ import { Window } from '../Window';
  */
 export function ProgramsWindow() {
   const game = useWorld((state) => state);
-  const capacity = content.rules.storageGq;
+  const capacity = storageGb(game, content);
   const used = usedStorageGq(game, content);
   const byPrograms = programStorageGq(game, content);
-  const byFiles = used - byPrograms;
-  const share = (gb: number) => `${(gb / capacity) * 100}%`;
+  const byModel = rackStorageGb(game, content);
+  const model = hostedModel(game, content);
+  const byFiles = used - byPrograms - byModel;
+  const free = Math.max(0, capacity - used);
+  const share = (gb: number) => `${Math.min(100, (gb / Math.max(capacity, used)) * 100)}%`;
   const serverName = (id: string) => findServer(content, id)?.name ?? id;
   const [notice, setNotice] = useState('');
   const decrypt = (name: string) => {
@@ -27,7 +30,7 @@ export function ProgramsWindow() {
   const isRunning = (programId: string) => game.tasks.some((task) => task.programId === programId);
 
   return (
-    <Window id="programs" note={`${game.tasks.length} of ${content.rules.maxRunningPrograms} running`}>
+    <Window id="programs" note={`${game.tasks.length} of ${maxPrograms(game, content)} running`}>
       <h3 class="map__heading">Running</h3>
       {game.tasks.length === 0 ? (
         <p class="empty">Nothing is running. Programs start from buttons on a server you are connected to.</p>
@@ -57,15 +60,28 @@ export function ProgramsWindow() {
           {used} of {capacity} GB used
         </span>
       </h3>
-      <div class="storage" role="img" aria-label={`Programs ${byPrograms} GB, files ${byFiles} GB, free ${capacity - used} GB`}>
+      <div
+        class={`storage${used > capacity ? ' is-over' : ''}`}
+        role="img"
+        aria-label={`Programs ${byPrograms} GB,${model ? ` ${model.name} ${byModel} GB,` : ''} files ${byFiles} GB, free ${free} GB`}
+      >
         <span class="storage__part storage__part--programs" style={{ width: share(byPrograms) }} />
+        {byModel > 0 && <span class="storage__part storage__part--model" style={{ width: share(byModel) }} />}
         <span class="storage__part storage__part--files" style={{ width: share(byFiles) }} />
       </div>
       <p class="storage__key">
         <span class="storage__dot storage__dot--programs" /> Programs <span class="data">{byPrograms} GB</span>
+        {model && (
+          <>
+            <span class="storage__dot storage__dot--model" /> {model.name} <span class="data">{byModel} GB</span>
+          </>
+        )}
         <span class="storage__dot storage__dot--files" /> Files <span class="data">{byFiles} GB</span>
-        <span class="storage__dot" /> Free <span class="data">{capacity - used} GB</span>
+        <span class="storage__dot" /> Free <span class="data">{free} GB</span>
       </p>
+      {used > capacity && (
+        <p class="board__warning">Your gateway holds more than its drive is meant to. Nothing new fits until you free some room.</p>
+      )}
 
       <h3 class="map__heading section-gap">Installed programs</h3>
       <ul class="rows rows--scroll">

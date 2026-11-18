@@ -27,7 +27,7 @@ export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
   gateway: { title: 'Gateway', pill: 'Gateway', width: 360, x: 24, y: 20, open: true },
   // x: -24 means 24px in from the right edge of the screen.
   map: { title: 'Route map', pill: 'Map', width: 700, x: -24, y: 20, open: true },
-  server: { title: 'Server', pill: 'Server', width: 668, x: 24, y: 292, open: true },
+  server: { title: 'Server', pill: 'Server', width: 760, x: 24, y: 292, open: true },
   programs: { title: 'Programs', pill: 'Programs', width: 440, x: 410, y: 60, open: false },
   messages: { title: 'Messages', pill: 'Messages', width: 520, x: -48, y: 56, open: false },
   contract: { title: 'Contract', pill: 'Contract', width: 440, x: 24, y: 20, open: false },

@@ -4,6 +4,7 @@
  */
 import type { ProgramDef, ProgramKind, ServerDef } from '../content/schema';
 import type { Connection, EchoPuzzle, GameState, RingPuzzle, Task, TaskTarget } from './state';
+import { cpuSpeed, fileSpeed, maxPrograms, rackStorageGb, storageGb } from './hardware';
 import { stream } from './streams';
 import { noteIntrusion } from './trace';
 import { findAccount, findConnection, findProgram, findServer, ownedProgram, type Content } from './world';
@@ -38,9 +39,16 @@ export function programStorageGq(state: GameState, content: Content): number {
   return state.player.programs.reduce((sum, id) => sum + (findProgram(content, id)?.sizeGq ?? 0), 0);
 }
 
-/** Room taken on the gateway: installed programs plus stored files. */
+/** Room taken on the gateway: installed programs, a hosted model's weights, and stored files. */
 export function usedStorageGq(state: GameState, content: Content): number {
-  return programStorageGq(state, content) + state.player.files.reduce((sum, file) => sum + file.sizeGq, 0);
+  return (
+    programStorageGq(state, content) + rackStorageGb(state, content) + state.player.files.reduce((sum, file) => sum + file.sizeGq, 0)
+  );
+}
+
+/** Room left on the gateway, in GB. Can be below 0 after losing a storage part. */
+export function freeStorageGb(state: GameState, content: Content): number {
+  return storageGb(state, content) - usedStorageGq(state, content);
 }
 
 /** True if the player has broken (or never needed) the password for this account. */
@@ -59,11 +67,19 @@ const no = (reason: string): Check => ({ ok: false, reason });
  * take. `connection` is null for work done on the gateway itself.
  */
 export function checkTask(state: GameState, content: Content, connection: Connection | null, target: TaskTarget): Check {
+  const check = baseCheck(state, content, connection, target);
+  if (!check.ok) return check;
+  // The modem moves files; the processor does everything else.
+  const files = target.kind === 'copyFile' || target.kind === 'deleteFile';
+  return { ...check, seconds: check.seconds / (files ? fileSpeed(state, content) : cpuSpeed(state, content)) };
+}
+
+/** checkTask on a stock gateway. */
+function baseCheck(state: GameState, content: Content, connection: Connection | null, target: TaskTarget): Check {
   const program = ownedProgram(state, content, PROGRAM_FOR[target.kind]);
   if (!program) return no('You do not own a program for that.');
-  if (state.tasks.length >= content.rules.maxRunningPrograms) {
-    return no(`Your gateway can run ${content.rules.maxRunningPrograms} programs at once.`);
-  }
+  const most = maxPrograms(state, content);
+  if (state.tasks.length >= most) return no(`Your gateway can run ${most} programs at once.`);
   const same = (task: Task) =>
     task.connectionId === (connection?.id ?? null) && JSON.stringify(task.target) === JSON.stringify(target);
   if (state.tasks.some(same)) return no('That is already running.');
@@ -122,7 +138,7 @@ export function checkTask(state: GameState, content: Content, connection: Connec
       if (server.security.firewall > 0 && !connection.bypassed.firewall) return no('The firewall is blocking file access.');
       if (target.kind === 'copyFile') {
         if (state.player.files.some((own) => own.name === file.name)) return no('You already have a copy of that file.');
-        if (usedStorageGq(state, content) + file.sizeGq > content.rules.storageGq) return no('Not enough room on your gateway.');
+        if (file.sizeGq > freeStorageGb(state, content)) return no('Not enough room on your gateway.');
       } else if (!admin) {
         return no('Only an administrator can delete files.');
       }

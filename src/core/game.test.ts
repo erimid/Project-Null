@@ -18,7 +18,7 @@ import {
 
 import { content } from './testWorld';
 
-const fullPlayer = { programs: content.startingPrograms, files: [], passwords: {}, rating: 0, lieLowUntilMs: 0, contacts: [], facts: [], model: null };
+const fullPlayer = { hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0 }, programs: content.startingPrograms, files: [], passwords: {}, rating: 0, lieLowUntilMs: 0, contacts: [], facts: [], model: null };
 const newGame = (): GameState =>
   syncWithContent(
     createGame({ seed: 7, handle: 'TESTER', startDate: '2034-03-14T08:00:00Z', startingBalance: 2500 }),
@@ -31,7 +31,7 @@ describe('new game', () => {
   it('starts at the configured date with the starting balance', () => {
     const state = newGame();
     expect(gameDate(state)).toEqual({ year: 2034, month: 3, day: 14, weekday: 2, hours: 8, minutes: 0 });
-    expect(state.player).toEqual({ handle: 'TESTER', balance: 2500, maxConnections: 1, ...fullPlayer });
+    expect(state.player).toEqual({ handle: 'TESTER', balance: 2500, ...fullPlayer });
     expect(state.connections).toEqual([]);
   });
 
@@ -194,7 +194,7 @@ describe('save and load', () => {
       (s) => ((s.connections as unknown) = [{ id: 'c1', serverId: 'x', route: [], openedAtMs: 0, user: 'a', role: 'king' }]),
       (s) => ((s.knownServers as unknown) = [7]),
       (s) => ((s.servers as unknown) = { x: { files: [], logs: [{ timeMs: 0 }], records: [] } }),
-      (s) => ((s.player.maxConnections as unknown) = 'two'),
+      (s) => ((s.player.hardware.ports as unknown) = 'two'),
       (s) => ((s.rngStreams as unknown) = { trace: 'x' }),
     ];
     for (const damage of cases) {
@@ -214,11 +214,11 @@ describe('save and load', () => {
       6: (old) => ({ ...old, player: { ...(old.player as object), handle: 'RESTORED' } }),
     };
     const { player, ...rest } = newGame();
-    const oldState = { ...rest, version: 5, player: { maxConnections: player.maxConnections, credits: 777, programs: [], files: [], passwords: {}, rating: 0, lieLowUntilMs: 0, contacts: [], facts: [], model: null } };
+    const oldState = { ...rest, version: 5, player: { hardware: player.hardware, credits: 777, programs: [], files: [], passwords: {}, rating: 0, lieLowUntilMs: 0, contacts: [], facts: [], model: null } };
     const text = JSON.stringify({ format: 'project-null-save', version: 5, summary: {}, state: oldState });
 
     const loaded = deserializeGame(text, migrations, 7).state;
-    expect(loaded.player).toEqual({ handle: 'RESTORED', balance: 777, maxConnections: 1, programs: [], files: [], passwords: {}, rating: 0, lieLowUntilMs: 0, contacts: [], facts: [], model: null });
+    expect(loaded.player).toEqual({ handle: 'RESTORED', balance: 777, hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0 }, programs: [], files: [], passwords: {}, rating: 0, lieLowUntilMs: 0, contacts: [], facts: [], model: null });
     expect(loaded.version).toBe(7);
   });
 
@@ -237,8 +237,8 @@ describe('save and load', () => {
       },
     };
     const loaded = syncWithContent(deserializeGame(JSON.stringify(v1)).state, content);
-    expect(loaded.version).toBe(8);
-    expect(loaded.player).toEqual({ handle: 'OLD', balance: 1200, maxConnections: 1, ...fullPlayer });
+    expect(loaded.version).toBe(9);
+    expect(loaded.player).toEqual({ handle: 'OLD', balance: 1200, ...fullPlayer });
     expect(loaded.clock).toEqual({ gameTimeMs: 2025936000000, speed: 2 });
     expect(loaded.rngStreams).toEqual({ world: 12345 });
     expect(loaded.knownServers).toEqual(['gateway', 'directory']);

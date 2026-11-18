@@ -63,5 +63,15 @@
     "from": "Lowlight Compute",
     "subject": "Your rental has ended: {model}",
     "body": "Your day with {model} is over and the instance has been wiped. Nothing it read has been kept on our side.\n\nRent it again from the Market on your board whenever you like.\n\nLowlight Compute\nNo logs. No questions. No refunds."
+  },
+  "hardware": {
+    "from": "Wren",
+    "subject": "Your gateway is slow",
+    "body": "{handle}, you are still on the machine you started with. It shows.\n\nThe Backroom has a Hardware shelf now, next to the Market. A faster processor runs every program quicker and runs more of them at once. More storage holds more of what you bring home. A better modem moves files faster, so the firewall is open for less time. A second port lets you hold two connections at once, and some jobs need that.\n\nIf you are tired of paying Lowlight by the day, there is an inference card that runs a model on your own gateway for good.\n\nParts install the moment you pay. Nobody buys them back.\n\nOne warning. The big systems do not just fine you when they trace you. They push something back down the line, and you lose a part. Be careful where you get caught."
+  },
+  "hardwareLost": {
+    "from": "Wren",
+    "subject": "They burned a part",
+    "body": "That trace did more than find you. Whoever runs that system pushed something back down the line, and your {part} did not survive it.\n\nYour gateway is running on {now} in that slot until you replace it. The Hardware shelf at the Backroom has what you need, if you have the credits."
   }
 }

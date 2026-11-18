@@ -8,8 +8,6 @@
     8,
     3
   ],
-  "maxRunningPrograms": 3,
-  "storageGq": 40,
   "directTraceFactor": 0.5,
   "lieLowHours": 6,
   "finePerSecurityLevel": 250,
@@ -30,5 +28,7 @@
   "phishStrikes": 2,
   "modelsAfter": 4,
   "modelRentHours": 24,
-  "modelWatchSeconds": 5
+  "modelWatchSeconds": 5,
+  "hardwareAfter": 2,
+  "hardwareLossLevel": 4
 }

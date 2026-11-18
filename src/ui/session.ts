@@ -21,7 +21,7 @@ import {
   type GameState,
   type SaveSummary,
 } from '../core';
-import { contracts, gameInfo, mail, models, people, programs, servers, tuning } from '../content';
+import { contracts, gameInfo, hardware, mail, models, people, programs, servers, tuning } from '../content';
 import { diff, snapshot, type GameEvent, type Snapshot } from './events';
 import { createMemoryStore, openSaveStore, type SaveStore } from './storage/saveStore';
 
@@ -35,6 +35,7 @@ export const content: Content = {
   mail,
   people,
   models,
+  hardware,
   rules: tuning,
 };
 
