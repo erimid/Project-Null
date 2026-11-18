@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { contracts, gameInfo, mail, programs, servers, tuning } from './index';
+import { contracts, findPage, gameInfo, mail, programs, servers, sites, tuning } from './index';
+import { parseSites } from './sites';
 import { ContentError, MAIL_KEYS, checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
 
 const valid = {
@@ -24,6 +25,23 @@ const valid = {
   relayDelay: 1,
 };
 const relay = { ...valid, id: 'r', address: '10.0.0.9', kind: 'relay', accounts: [{ user: 'guest', role: 'guest', name: 'G' }] };
+
+describe('the in-game internet', () => {
+  it('has a start page on each network, and every link leads to a page', () => {
+    expect(findPage(sites, 'web', 'start.lumen/')).toBeDefined();
+    expect(findPage(sites, 'dark', 'index.veil/')).toBeDefined();
+    // A dark page cannot be opened from the ordinary web.
+    expect(findPage(sites, 'web', 'index.veil/')).toBeUndefined();
+  });
+
+  it('rejects a link that leads nowhere and a site without a front page', () => {
+    const site = { id: 's', net: 'web', address: 'a.b', name: 'S', pages: [{ path: '/', title: 'T', blocks: [{ p: 'x' }] }] };
+    expect(parseSites([site])).toHaveLength(1);
+    expect(() => parseSites([{ ...site, pages: [{ path: '/', title: 'T', blocks: [{ links: [{ text: 'x', to: 'no.where/' }] }] }] }])).toThrow(ContentError);
+    expect(() => parseSites([{ ...site, pages: [{ path: '/x', title: 'T', blocks: [] }] }])).toThrow(ContentError);
+    expect(() => parseSites([site, site])).toThrow(ContentError);
+  });
+});
 
 describe('shipped data files', () => {
   it('load without errors', () => {

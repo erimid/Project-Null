@@ -1,0 +1,657 @@
+[
+  {
+    "id": "start",
+    "net": "web",
+    "address": "start.lumen",
+    "name": "Lumen Start",
+    "pages": [
+      {
+        "path": "/",
+        "title": "Lumen · Start",
+        "blocks": [
+          {
+            "h": "Good morning."
+          },
+          {
+            "p": "Lumen is the browser that came with your gateway. These are the places most people start."
+          },
+          {
+            "links": [
+              {
+                "text": "The Continental Wire · news",
+                "to": "wire.news/"
+              },
+              {
+                "text": "Open Relay Foundation",
+                "to": "openrelay.org/"
+              },
+              {
+                "text": "Tallis Public Library",
+                "to": "tallis-library.pt/"
+              },
+              {
+                "text": "Halvorsen Biogenetics",
+                "to": "halvorsen.no/"
+              },
+              {
+                "text": "Corvane Mutual Insurance",
+                "to": "corvane.ca/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "wire",
+    "net": "web",
+    "address": "wire.news",
+    "name": "The Continental Wire",
+    "pages": [
+      {
+        "path": "/",
+        "title": "The Continental Wire",
+        "blocks": [
+          {
+            "h": "The Continental Wire"
+          },
+          {
+            "p": "Tuesday 14 March 2034 · Morning edition"
+          },
+          {
+            "links": [
+              {
+                "text": "Oslo biotech declines to name backer of 'sleep study'",
+                "to": "wire.news/halvorsen"
+              },
+              {
+                "text": "Singapore port: refrigerated container held for a second week",
+                "to": "wire.news/port"
+              },
+              {
+                "text": "Insurers deny keeping a shared blacklist",
+                "to": "wire.news/blacklist"
+              }
+            ]
+          },
+          {
+            "p": "Weather: rain over the North Sea, clearing by evening."
+          }
+        ]
+      },
+      {
+        "path": "/halvorsen",
+        "title": "Oslo biotech declines to name backer",
+        "blocks": [
+          {
+            "h": "Oslo biotech declines to name backer of 'sleep study'"
+          },
+          {
+            "p": "OSLO. Halvorsen Biogenetics confirmed on Monday that it is running a study into memory and sleep, but would not say who is paying for it or where it is taking place."
+          },
+          {
+            "p": "The company's own ethics board has not been shown the protocol, according to two people familiar with its meetings. A spokesperson said the work was 'at an early stage and commercially sensitive'."
+          },
+          {
+            "quote": "People are frightened of what they do not understand. We are helping people remember what they are told. That is all.",
+            "by": "Dr. Elin Halvorsen, founder"
+          },
+          {
+            "p": "Norway's research regulator said it had no trial of that description on its register."
+          },
+          {
+            "links": [
+              {
+                "text": "Back to the front page",
+                "to": "wire.news/"
+              },
+              {
+                "text": "Halvorsen Biogenetics",
+                "to": "halvorsen.no/"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/port",
+        "title": "Refrigerated container held for a second week",
+        "blocks": [
+          {
+            "h": "Singapore port: refrigerated container held for a second week"
+          },
+          {
+            "p": "SINGAPORE. Customs officers at Pasir Panjang are still holding a refrigerated container that arrived on the MV Corellia, after it weighed more than three times what its paperwork declared."
+          },
+          {
+            "p": "The terminal's operator, Meridian Freight, said the hold was 'a routine paperwork matter'. The owner of the cargo has asked the court to stop the container being opened."
+          },
+          {
+            "p": "Port workers told the Wire that the gate cameras were out of service on the night a second, unmarked refrigerated truck left the terminal."
+          },
+          {
+            "links": [
+              {
+                "text": "Back to the front page",
+                "to": "wire.news/"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/blacklist",
+        "title": "Insurers deny keeping a shared blacklist",
+        "blocks": [
+          {
+            "h": "Insurers deny keeping a shared blacklist"
+          },
+          {
+            "p": "TORONTO. Three of Canada's largest insurers have denied that they share a list of customers judged to be fraud risks, after a former claims adjuster said such a list exists and that people are added to it for complaining."
+          },
+          {
+            "p": "Corvane Mutual called the claim 'categorically untrue'. It declined to say whether it keeps a list of its own."
+          },
+          {
+            "links": [
+              {
+                "text": "Back to the front page",
+                "to": "wire.news/"
+              },
+              {
+                "text": "Corvane Mutual Insurance",
+                "to": "corvane.ca/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "openrelay",
+    "net": "web",
+    "address": "openrelay.org",
+    "name": "Open Relay Foundation",
+    "pages": [
+      {
+        "path": "/",
+        "title": "Open Relay Foundation",
+        "blocks": [
+          {
+            "h": "An open network needs an open map."
+          },
+          {
+            "p": "The Open Relay Foundation keeps the public directory of hosts that answer on the open network. Anyone may read it. Nobody pays to be in it."
+          },
+          {
+            "p": "To use the directory, connect to the Open Relay Registry from your own machine and open its Directory."
+          },
+          {
+            "links": [
+              {
+                "text": "What we record, and what we don't",
+                "to": "openrelay.org/privacy"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/privacy",
+        "title": "What we record",
+        "blocks": [
+          {
+            "h": "What we record, and what we don't"
+          },
+          {
+            "list": [
+              "We record which hosts are listed.",
+              "We record lookups for ninety days, to handle abuse.",
+              "We do not publish who looked a host up.",
+              "We do not sell anything to anyone."
+            ]
+          },
+          {
+            "p": "If you believe our records have been copied without permission, write to the registrar."
+          },
+          {
+            "links": [
+              {
+                "text": "Home",
+                "to": "openrelay.org/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tallis",
+    "net": "web",
+    "address": "tallis-library.pt",
+    "name": "Tallis Public Library",
+    "pages": [
+      {
+        "path": "/",
+        "title": "Biblioteca Tallis",
+        "blocks": [
+          {
+            "h": "Biblioteca Tallis"
+          },
+          {
+            "p": "A public library in Lisbon since 1911. Open Monday to Saturday, 09:00 to 19:00."
+          },
+          {
+            "p": "New this month: Tide Tables of the Tagus, How Networks Forget, and a donated copy of The Lamp-Makers: A History."
+          },
+          {
+            "p": "Our catalogue terminals run on equipment older than most of our readers. Please be patient with them."
+          },
+          {
+            "links": [
+              {
+                "text": "Lumen Start",
+                "to": "start.lumen/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "halvorsen",
+    "net": "web",
+    "address": "halvorsen.no",
+    "name": "Halvorsen Biogenetics",
+    "pages": [
+      {
+        "path": "/",
+        "title": "Halvorsen Biogenetics ASA",
+        "blocks": [
+          {
+            "h": "Remembering, better."
+          },
+          {
+            "p": "Halvorsen Biogenetics develops therapies for memory. We are a privately held company based in Oslo."
+          },
+          {
+            "links": [
+              {
+                "text": "Our research",
+                "to": "halvorsen.no/research"
+              },
+              {
+                "text": "Careers",
+                "to": "halvorsen.no/careers"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/research",
+        "title": "Our research",
+        "blocks": [
+          {
+            "h": "Our research"
+          },
+          {
+            "list": [
+              "HB-2206 · memory consolidation in older adults · Phase II",
+              "HB-2209 · recall after anaesthesia · Phase I, recruiting",
+              "HB-2211 · preclinical"
+            ]
+          },
+          {
+            "p": "All Halvorsen trials are reviewed by our independent ethics board."
+          },
+          {
+            "links": [
+              {
+                "text": "Home",
+                "to": "halvorsen.no/"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/careers",
+        "title": "Careers",
+        "blocks": [
+          {
+            "h": "Careers"
+          },
+          {
+            "p": "We are hiring: Records Officer (Oslo). Night Shift Technician (site disclosed at interview). Cold-chain Logistics Coordinator (Singapore)."
+          },
+          {
+            "p": "Discretion is part of every role."
+          },
+          {
+            "links": [
+              {
+                "text": "Home",
+                "to": "halvorsen.no/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "corvane",
+    "net": "web",
+    "address": "corvane.ca",
+    "name": "Corvane Mutual",
+    "pages": [
+      {
+        "path": "/",
+        "title": "Corvane Mutual Insurance Co.",
+        "blocks": [
+          {
+            "h": "We're with you when it matters."
+          },
+          {
+            "p": "Home, motor, marine and commercial cover from a mutual owned by its members since 1958."
+          },
+          {
+            "p": "Corvane treats every claim fairly and every customer the same."
+          },
+          {
+            "links": [
+              {
+                "text": "Lumen Start",
+                "to": "start.lumen/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index",
+    "net": "dark",
+    "address": "index.veil",
+    "name": "Undertow Index",
+    "pages": [
+      {
+        "path": "/",
+        "title": "undertow // index",
+        "blocks": [
+          {
+            "h": "undertow // index"
+          },
+          {
+            "p": "You are off the map now. Nothing here is listed anywhere else, and nothing here is promised to be true."
+          },
+          {
+            "links": [
+              {
+                "text": "the backroom · front door",
+                "to": "backroom.veil/"
+              },
+              {
+                "text": "lowtide · message board",
+                "to": "lowtide.veil/"
+              },
+              {
+                "text": "glasshouse · leaks",
+                "to": "glasshouse.veil/"
+              },
+              {
+                "text": "tin shed · tools",
+                "to": "tinshed.veil/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "backroomdoor",
+    "net": "dark",
+    "address": "backroom.veil",
+    "name": "The Backroom",
+    "pages": [
+      {
+        "path": "/",
+        "title": "the backroom",
+        "blocks": [
+          {
+            "h": "the backroom"
+          },
+          {
+            "p": "Invite only. If you have one, you already know the address. Connect from your Route map, not from here."
+          },
+          {
+            "p": "If you do not have one: nobody here can help you, and asking is how you make sure you never get one."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lowtide",
+    "net": "dark",
+    "address": "lowtide.veil",
+    "name": "Lowtide",
+    "pages": [
+      {
+        "path": "/",
+        "title": "lowtide",
+        "blocks": [
+          {
+            "h": "lowtide"
+          },
+          {
+            "p": "Board for people who work at night. Newest first."
+          },
+          {
+            "links": [
+              {
+                "text": "how many relays is enough",
+                "to": "lowtide.veil/relays"
+              },
+              {
+                "text": "anyone else getting asked about LANTERN",
+                "to": "lowtide.veil/lantern"
+              },
+              {
+                "text": "who is wren",
+                "to": "lowtide.veil/wren"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/relays",
+        "title": "how many relays is enough",
+        "blocks": [
+          {
+            "h": "how many relays is enough"
+          },
+          {
+            "quote": "two for a library, four for a company, and if the monitor is fast, as many as you own. slow relays are worth more than close ones.",
+            "by": "saltmarsh"
+          },
+          {
+            "quote": "scrub before you leave. the trace is not the only way they find you. somebody reads those logs in the morning.",
+            "by": "pylon_"
+          },
+          {
+            "quote": "and when the timer goes red, reroute. it makes them start that hop again. you only get a couple.",
+            "by": "saltmarsh"
+          },
+          {
+            "links": [
+              {
+                "text": "back",
+                "to": "lowtide.veil/"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/lantern",
+        "title": "anyone else getting asked about LANTERN",
+        "blocks": [
+          {
+            "h": "anyone else getting asked about LANTERN"
+          },
+          {
+            "quote": "third client this month wants the same file out of an oslo biotech. all different names. same money.",
+            "by": "pylon_"
+          },
+          {
+            "quote": "took it. copied it. did not open it like they said. got paid double to forget i had.",
+            "by": "ferrous"
+          },
+          {
+            "quote": "did you open it",
+            "by": "pylon_"
+          },
+          {
+            "quote": "account deleted",
+            "by": "ferrous"
+          },
+          {
+            "links": [
+              {
+                "text": "back",
+                "to": "lowtide.veil/"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/wren",
+        "title": "who is wren",
+        "blocks": [
+          {
+            "h": "who is wren"
+          },
+          {
+            "quote": "someone called wren vouched me into the backroom. never met them. who are they",
+            "by": "newhand"
+          },
+          {
+            "quote": "wren vouches for a lot of people. nobody i know has met wren either.",
+            "by": "saltmarsh"
+          },
+          {
+            "quote": "ask yourself why someone you never met wants you working.",
+            "by": "pylon_"
+          },
+          {
+            "links": [
+              {
+                "text": "back",
+                "to": "lowtide.veil/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "glasshouse",
+    "net": "dark",
+    "address": "glasshouse.veil",
+    "name": "Glasshouse",
+    "pages": [
+      {
+        "path": "/",
+        "title": "glasshouse",
+        "blocks": [
+          {
+            "h": "glasshouse"
+          },
+          {
+            "p": "We publish what was meant to stay in the building. We do not say where it came from."
+          },
+          {
+            "links": [
+              {
+                "text": "corvane: the list they say does not exist",
+                "to": "glasshouse.veil/corvane"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/corvane",
+        "title": "corvane: the list",
+        "blocks": [
+          {
+            "h": "corvane: the list they say does not exist"
+          },
+          {
+            "p": "1,312 names. Shared with every insurer in the country. Reasons include 'two claims in one year', 'disputed a denial in the press' and 'asked too many questions'."
+          },
+          {
+            "p": "We hold five rows. We want the rest, or we want it gone. Either is a public service."
+          },
+          {
+            "links": [
+              {
+                "text": "back",
+                "to": "glasshouse.veil/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tinshed",
+    "net": "dark",
+    "address": "tinshed.veil",
+    "name": "Tin Shed",
+    "pages": [
+      {
+        "path": "/",
+        "title": "tin shed",
+        "blocks": [
+          {
+            "h": "tin shed"
+          },
+          {
+            "p": "Tools, as described, no refunds. We do not sell here any more. Everything moves through the Backroom market."
+          },
+          {
+            "list": [
+              "password breaker v2 · twice the speed, stronger passwords",
+              "proxy bypass v1 · change records and logs",
+              "firewall bypass v1 · copy and delete files"
+            ]
+          },
+          {
+            "p": "Coming when it is ready: something that makes a trace look the wrong way."
+          },
+          {
+            "links": [
+              {
+                "text": "index",
+                "to": "index.veil/"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

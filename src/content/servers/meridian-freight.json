@@ -58,7 +58,7 @@
       "access": "admin",
       "content": {
         "kind": "text",
-        "text": "PASIR PANJANG TERMINAL · BERTHS, WEEK 11\n\nMon 11   Berth 3   MV Tamsin Reach      discharge\nTue 12   Berth 5   MV Corellia          discharge, customs on board\nThu 14   Berth 2   MV Asta Harbour      discharge\nThu 14   Berth 5   (held)               \"private charter\", no name filed\nSat 16   Berth 3   MV Odile             load\n\nDuty controller: L. Tan. Gate B cameras are being serviced Tue night; index will have gaps."
+        "text": "PASIR PANJANG TERMINAL · BERTHS, WEEK 11\n\nSat 11   Berth 3   MV Tamsin Reach      discharge\nSun 12   Berth 5   MV Corellia          discharge, customs on board\nTue 14   Berth 2   MV Asta Harbour      discharge\nTue 14   Berth 5   (held)               \"private charter\", no name filed\nThu 16   Berth 3   MV Odile             load\n\nDuty controller: L. Tan. Gate B cameras are being serviced over the weekend; index will have gaps."
       }
     },
     {
@@ -83,7 +83,7 @@
         "lines": [
           {
             "at": 2,
-            "text": "Tuesday, 02:14. The night the cameras were due for service."
+            "text": "Sunday, 02:14. The night the cameras were due for service."
           },
           {
             "at": 8,

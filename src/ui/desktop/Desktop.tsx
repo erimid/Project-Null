@@ -6,6 +6,7 @@ import { useGame } from '../hooks';
 import type { Speed } from '../../core';
 import { session } from '../session';
 import { Alerts } from './Alerts';
+import { BrowserWindow } from './windows/BrowserWindow';
 import { ContractWindow } from './windows/ContractWindow';
 import { GatewayWindow } from './windows/GatewayWindow';
 import { MapWindow } from './windows/MapWindow';
@@ -73,6 +74,8 @@ export function Desktop() {
         <ProgramsWindow />
         <MessagesWindow />
         <ContractWindow />
+        <BrowserWindow net="web" />
+        <BrowserWindow net="dark" />
         <ViewerWindow />
         <SavesWindow />
         <Alerts />
