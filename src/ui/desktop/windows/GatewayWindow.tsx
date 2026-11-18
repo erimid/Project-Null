@@ -65,28 +65,28 @@ export function GatewayWindow() {
   return (
     <Window id="gateway" note={gateway.address}>
       <dl class="tiles">
-        <div class="tile">
+        <div class="tile" data-tip="Your handle, the name the Backroom knows you by.">
           <dt>Operator</dt>
           <dd>{handle}</dd>
         </div>
-        <div class="tile">
+        <div class="tile" data-tip="How many connections are open, and how many your gateway can hold at once.">
           <dt>Connection</dt>
           <dd class={uplink.startsWith('Idle') ? undefined : 'is-ok'}>{uplink}</dd>
         </div>
-        <div class="tile">
+        <div class="tile" data-tip="Programs running on your gateway. See them in the Programs window.">
           <dt>Programs</dt>
           <dd>{running} running</dd>
         </div>
-        <div class="tile">
+        <div class="tile" data-tip="How fast game time runs, and the date. Time is locked to real time while you are connected.">
           <dt>Clock</dt>
           <dd>{clock}</dd>
           <span class="tile__sub">{localTime}</span>
         </div>
-        <div class="tile">
+        <div class="tile" data-tip="Your money. Jobs pay into it.">
           <dt>Credits</dt>
           <dd class="data">{balance}</dd>
         </div>
-        <div class="tile">
+        <div class="tile" data-tip="Your standing with the Backroom. Higher ratings open better jobs and earn skill points.">
           <dt>Rating</dt>
           <dd>{rating}</dd>
           <span class="meter meter--mint" aria-hidden="true">
@@ -94,7 +94,7 @@ export function GatewayWindow() {
           </span>
           <span class="tile__sub">{lyingLow ? <span class="is-warn">lying low until {lyingLow}</span> : `next: ${stepNext}`}</span>
         </div>
-        <div class="tile">
+        <div class="tile" data-tip="Room on your gateway for programs and copied files. Buy more as hardware.">
           <dt>Storage</dt>
           <dd>
             {usedGb} of {capacity} GB
@@ -103,7 +103,7 @@ export function GatewayWindow() {
             <span class="meter__fill" style={{ width: `${Math.min(100, (usedGb / capacity) * 100)}%` }} />
           </span>
         </div>
-        <div class="tile">
+        <div class="tile" data-tip="A rented model that reads files and spots risky log lines for you. Rent one from the Backroom market.">
           <dt>Model</dt>
           <dd>{model || <span class="row__dim">none</span>}</dd>
         </div>

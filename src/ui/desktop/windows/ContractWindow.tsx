@@ -83,10 +83,17 @@ export function ContractWindow() {
       {sealed && <p class="board__warning">You have the file, but it is still encrypted. Run a Decrypter on it from Programs.</p>}
       {!possible && <p class="board__warning">This can no longer be done. Give the contract up.</p>}
       <div class="contract__actions">
-        <ConfirmButton class="btn btn--danger" confirmLabel="Really give up?" onConfirm={() => finish({ type: 'abandonContract' })}>
+        <ConfirmButton class="btn btn--danger" confirmLabel="Really give up?" tip="Drop this job. You are not paid for it." onConfirm={() => finish({ type: 'abandonContract' })}>
           Give up
         </ConfirmButton>
-        <button type="button" class="btn btn--go" disabled={!done} onClick={() => finish({ type: 'deliverContract' })}>
+        <button
+          type="button"
+          class="btn btn--go"
+          disabled={!done}
+          title={done ? undefined : 'The goal is not done yet'}
+          data-tip="Hand the job in and get paid"
+          onClick={() => finish({ type: 'deliverContract' })}
+        >
           Deliver
         </button>
       </div>

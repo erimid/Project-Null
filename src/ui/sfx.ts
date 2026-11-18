@@ -196,3 +196,11 @@ export function startSfx(): void {
     } else play([{ freq: 990, seconds: 0.06, wave: 'square', level: 0.045 }]);
   });
 }
+
+/** A soft rising pair of notes: the tour moving on to its next stop. */
+export function tourChime(): void {
+  play([
+    { freq: 784, seconds: 0.12, wave: 'triangle', level: 0.05 },
+    { freq: 1175, at: 0.07, seconds: 0.22, wave: 'triangle', level: 0.05 },
+  ]);
+}

@@ -1,5 +1,7 @@
 import type { ComponentChildren } from 'preact';
-import { useRef } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
+import { WINDOW_HELP } from './help';
+import { hintStore, useHints } from './hintStore';
 import { useLayout } from './layout';
 import { usePanes } from './panes';
 import { KEEP_VISIBLE, MIN_HEIGHT, MIN_WIDTH, WINDOW_DEFS, windows, useWindows, type WindowId } from './windowStore';
@@ -35,16 +37,36 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
   const sizing = useRef<Drag | null>(null);
   const layoutKind = useLayout();
   const panes = usePanes();
+  const hints = useHints();
+
+  const tablet = layoutKind === 'tablet';
+  const half = panes.indexOf(id);
+  const shown = layout.open && !layout.minimized && (layoutKind === 'desk' || (tablet ? half >= 0 : windows.isOnTop(id)));
+  useEffect(() => {
+    if (shown) hintStore.firstShow(id);
+  }, [shown]);
 
   if (!layout.open || layout.minimized) return null;
   const name = title ?? def.title;
+  const helpOpen = hints.open === id;
+  const helpButton = (
+    <button
+      class={`window__close window__help-btn${helpOpen ? ' is-open' : ''}`}
+      type="button"
+      aria-label={`What is ${name} for?`}
+      aria-expanded={helpOpen}
+      data-tip="What is this window for?"
+      onClick={() => hintStore.toggleHelp(id)}
+    >
+      ?
+    </button>
+  );
+  const help = helpOpen && <HelpCard id={id} name={def.title} hintsOn={hints.on} />;
 
   // A phone shows only the front window, full screen. The others stay
   // mounted underneath (hidden), so whatever was going on in them is kept.
   // A tablet shows two, side by side, each about as wide as a phone.
   if (layoutKind !== 'desk') {
-    const tablet = layoutKind === 'tablet';
-    const half = panes.indexOf(id);
     const front = tablet ? half >= 0 : windows.isOnTop(id);
     const pane = tablet && half >= 0 ? ` window--pane window--pane-${panes[1 - half] === null ? 'solo' : half === 0 ? 'left' : 'right'}` : '';
     return (
@@ -52,6 +74,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
         class={`window window--phone${pane}${windows.isOnTop(id) ? ' window--front' : ''}`}
         hidden={!front}
         aria-label={name}
+        data-tour={id}
         onPointerDownCapture={tablet ? () => windows.focus(id) : undefined}
       >
         <div class="window__title">
@@ -59,6 +82,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
           {note && <span class="window__title-note">{note}</span>}
           <span class="window__title-gap" />
           {actions}
+          {helpButton}
           <button class="window__close" type="button" aria-label={`Close ${name}`} onClick={() => windows.close(id)}>
             ×
           </button>
@@ -68,6 +92,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
             {tabs}
           </nav>
         )}
+        {help}
         <div class="window__body">{children}</div>
       </section>
     );
@@ -137,6 +162,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
         zIndex: layout.z,
       }}
       aria-label={name}
+      data-tour={id}
       onPointerDownCapture={() => windows.focus(id)}
     >
       <div
@@ -150,6 +176,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
         {note && <span class="window__title-note">{note}</span>}
         <span class="window__title-gap" />
         {actions}
+        {helpButton}
         <button class="window__close" type="button" aria-label={`Minimize ${name}`} onClick={() => windows.minimize(id)}>
           –
         </button>
@@ -162,6 +189,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
           {tabs}
         </nav>
       )}
+      {help}
       <div class="window__body">{children}</div>
       <div
         class="window__grip"
@@ -173,5 +201,34 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
         onDblClick={() => windows.resetSize(id)}
       />
     </section>
+  );
+}
+
+/** What a window is for: opened by the ? in its title bar, and once by itself the first time the window shows. */
+function HelpCard({ id, name, hintsOn }: { id: WindowId; name: string; hintsOn: boolean }) {
+  const help = WINDOW_HELP[id];
+  return (
+    <aside class="window__help" aria-label={`About ${name}`}>
+      <p class="window__help-summary">{help.summary}</p>
+      <ul class="window__help-points">
+        {help.points.map((point) => (
+          <li key={point}>{point}</li>
+        ))}
+      </ul>
+      <div class="window__help-actions">
+        {hintsOn && (
+          <button type="button" class="window__help-off" onClick={() => {
+            hintStore.setOn(false);
+            hintStore.closeHelp();
+          }}>
+            Stop showing these by themselves
+          </button>
+        )}
+        <span class="window__title-gap" />
+        <button type="button" class="btn btn--go" onClick={() => hintStore.closeHelp()}>
+          Got it
+        </button>
+      </div>
+    </aside>
   );
 }

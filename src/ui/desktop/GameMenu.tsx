@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { sound, useSound } from '../audio';
 import { useGame } from '../hooks';
+import { hintStore, useHints } from './hintStore';
 import { windows } from './windowStore';
 
 const SHORTCUTS: readonly (readonly [string, string])[] = [
@@ -14,6 +15,7 @@ export function GameMenu() {
   const handle = useGame((game) => game.player.handle);
   const [open, setOpen] = useState(false);
   const soundSettings = useSound();
+  const hints = useHints();
   const root = useRef<HTMLDivElement>(null);
 
   // Clicking anywhere else, or Esc, closes it.
@@ -34,12 +36,13 @@ export function GameMenu() {
   }, [open]);
 
   return (
-    <div class="menu" ref={root}>
+    <div class="menu" ref={root} data-tour="menu">
       <button
         type="button"
         class={`menu__button${open ? ' is-open' : ''}`}
         aria-haspopup="menu"
         aria-expanded={open}
+        data-tip={open ? undefined : 'Game menu: save and load, sound, keys, help'}
         onClick={() => setOpen(!open)}
       >
         <span class="menu__bars" aria-hidden="true" />
@@ -60,6 +63,30 @@ export function GameMenu() {
             Saved games
             <span class="menu__item-note">Save, load, new game</span>
           </button>
+          <button
+            type="button"
+            class="menu__item"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              hintStore.startTour();
+            }}
+          >
+            Tour of the desk
+            <span class="menu__item-note">What everything on screen is for</span>
+          </button>
+          <h3 class="menu__heading">Hints</h3>
+          <div class="menu__sound">
+            <button
+              type="button"
+              class={`btn${hints.on ? ' btn--go' : ''}`}
+              aria-pressed={hints.on}
+              onClick={() => hintStore.setOn(!hints.on)}
+            >
+              {hints.on ? 'On' : 'Off'}
+            </button>
+            <span class="menu__item-note">Labels on hover, and a help card the first time each window opens</span>
+          </div>
           <h3 class="menu__heading">Sound</h3>
           <div class="menu__sound">
             <button

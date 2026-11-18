@@ -1,0 +1,261 @@
+/*
+ * The tutorial: hover labels, the ? help card in each window, and the
+ * tour of the desk.
+ */
+
+/* ---------- Hover labels ---------- */
+
+.hover-tip {
+  position: fixed;
+  z-index: 5100;
+  max-width: min(260px, calc(100vw - 20px));
+  padding: 7px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: rgba(6, 17, 29, 0.97);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.6),
+    0 0 18px rgba(95, 212, 255, 0.08);
+  color: var(--text-bright);
+  font-size: 14px;
+  line-height: 1.3;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  animation: hover-tip-in 0.14s ease-out;
+}
+
+.hover-tip--below {
+  transform: translate(-50%, 0);
+  animation-name: hover-tip-in-below;
+}
+
+@keyframes hover-tip-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% + 4px));
+  }
+}
+
+@keyframes hover-tip-in-below {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -4px);
+  }
+}
+
+/* ---------- The ? in a window's title bar, and its card ---------- */
+
+.window__help-btn {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.window__help-btn.is-open {
+  color: var(--mint);
+  background: rgba(78, 230, 200, 0.12);
+}
+
+.window__help {
+  flex: none;
+  margin: 10px 12px 0;
+  padding: 12px 14px 10px;
+  border: 1px solid rgba(78, 230, 200, 0.4);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(78, 230, 200, 0.09), rgba(78, 230, 200, 0.03));
+  color: var(--text);
+  animation: help-card-in 0.22s ease-out;
+  /* Never more than half the window; the rest scrolls. */
+  max-height: 50%;
+  overflow-y: auto;
+}
+
+@keyframes help-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.window__help-summary {
+  margin: 0 0 6px;
+  color: var(--mint-text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.window__help-points {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14.5px;
+  line-height: 1.35;
+}
+
+.window__help-points li + li {
+  margin-top: 3px;
+}
+
+.window__help-points li::marker {
+  color: var(--mint);
+}
+
+.window__help-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.window__help-off {
+  padding: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  text-align: left;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+.window__help-off:hover {
+  color: var(--text);
+}
+
+/* ---------- The tour ---------- */
+
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 6000;
+}
+
+.tour__shade {
+  position: absolute;
+  inset: 0;
+  background: rgba(1, 5, 10, 0.72);
+  animation: fade-in 0.25s ease-out;
+}
+
+/* A lit frame: everything outside it is dimmed by its huge shadow. */
+.tour__frame {
+  position: absolute;
+  border: 2px solid var(--mint);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 9999px rgba(1, 5, 10, 0.72),
+    0 0 24px rgba(78, 230, 200, 0.45),
+    inset 0 0 18px rgba(78, 230, 200, 0.18);
+  pointer-events: none;
+  transition:
+    left 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: tour-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes tour-pulse {
+  50% {
+    border-color: rgba(78, 230, 200, 0.55);
+  }
+}
+
+.tour__card {
+  position: absolute;
+  width: min(340px, calc(100vw - 24px));
+  padding: 16px 18px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-window);
+  background: rgba(6, 17, 29, 0.98);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(95, 212, 255, 0.1);
+  transition:
+    left 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: tour-card-in 0.3s ease-out;
+}
+
+.tour__card--middle {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation-name: tour-card-in-middle;
+}
+
+@keyframes tour-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes tour-card-in-middle {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 8px));
+  }
+}
+
+.tour__count {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.tour__title {
+  margin: 2px 0 6px;
+  color: var(--text-bright);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tour__body {
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.tour__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tour__skip {
+  padding: 0;
+  color: var(--text-dim);
+  font-size: 14px;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+.tour__skip:hover {
+  color: var(--text);
+}
+
+.tour .btn {
+  min-height: 34px;
+  padding: 4px 16px;
+  font-size: 15px;
+}
+
+.is-phone .tour .btn {
+  min-height: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour__frame,
+  .tour__card {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* The ? stands out a little from the dash and the cross next to it. */
+.window__help-btn:not(.is-open) {
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-muted);
+}

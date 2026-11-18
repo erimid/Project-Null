@@ -6,6 +6,8 @@ interface Props {
   /** What the button says while waiting for the second click. */
   confirmLabel?: string;
   onConfirm: () => void;
+  /** Hover label: what the button does. */
+  tip?: string;
   children: ComponentChildren;
 }
 
@@ -13,7 +15,7 @@ interface Props {
  * A button for actions that can't be undone. The first click arms it and
  * changes its label; a second click within a few seconds does the action.
  */
-export function ConfirmButton({ class: className = '', confirmLabel = 'Sure?', onConfirm, children }: Props) {
+export function ConfirmButton({ class: className = '', confirmLabel = 'Sure?', onConfirm, tip, children }: Props) {
   const [armed, setArmed] = useState(false);
 
   useEffect(() => {
@@ -26,6 +28,7 @@ export function ConfirmButton({ class: className = '', confirmLabel = 'Sure?', o
     <button
       type="button"
       class={`${className}${armed ? ' is-armed' : ''}`}
+      data-tip={tip && `${tip} Press twice to be sure.`}
       onBlur={() => setArmed(false)}
       onClick={() => {
         if (!armed) return setArmed(true);

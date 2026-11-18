@@ -29,6 +29,7 @@ export function TopBar() {
               type="button"
               class="tab__main"
               aria-pressed={isActive}
+              data-tip="Show this connection in the Server window"
               onClick={() => {
                 deskStore.activate(connection.id);
                 windows.focus('server');
@@ -42,6 +43,7 @@ export function TopBar() {
               type="button"
               class="tab__close"
               aria-label={`Disconnect from ${name}`}
+              data-tip="Disconnect"
               onClick={() => session.dispatch({ type: 'disconnect', connectionId: connection.id })}
             >
               ×
@@ -49,16 +51,24 @@ export function TopBar() {
           </div>
         );
       })}
-      <button class="tabbar__add" type="button" aria-label="New connection" onClick={() => windows.focus('map')}>
+      <button class="tabbar__add" type="button" aria-label="New connection" data-tip="Open another connection from the Route map" onClick={() => windows.focus('map')}>
         +
       </button>
       {contract ? (
-        <button type="button" class="tabbar__contract tabbar__contract--live" onClick={() => windows.focus('contract')}>
+        <button
+          type="button"
+          class="tabbar__contract tabbar__contract--live"
+          data-tour="contract"
+          data-tip="Your contract. Open it to see the goal and deliver."
+          onClick={() => windows.focus('contract')}
+        >
           <span class="tabbar__contract-label">{done ? 'Ready to deliver' : 'Contract'}</span>
           {contract.title}
         </button>
       ) : (
-        <span class="tabbar__contract">No active contract</span>
+        <span class="tabbar__contract" data-tour="contract" data-tip="Take a job from the Contracts board at the Backroom.">
+          No active contract
+        </span>
       )}
     </header>
   );
