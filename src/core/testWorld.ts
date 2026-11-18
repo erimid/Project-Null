@@ -242,9 +242,9 @@ export const testPeople: PeopleDef = {
     { id: 'boss', name: 'Boss', title: 'Director, Test Corp', address: 'boss@corp.test', source: { serverId: 'corp', file: 'secret.dat' } },
   ],
   facts: [
-    { id: 'door', text: 'The door code is 4417.', source: { serverId: 'directory', file: 'readme.txt' } },
-    { id: 'audit', text: 'The audit is on Friday.', source: { serverId: 'corp', file: 'secret.dat' } },
-    { id: 'dog', text: 'The boss has a dog called Rex.', source: { serverId: 'corp', file: 'secret.dat' } },
+    { id: 'door', text: 'The door code is 4417.', mention: 'The code is still 4417.', source: { serverId: 'directory', file: 'readme.txt' } },
+    { id: 'audit', text: 'The audit is on Friday.', mention: 'It is for the audit on Friday.', source: { serverId: 'corp', file: 'secret.dat' } },
+    { id: 'dog', text: 'The boss has a dog called Rex.', mention: 'Rex says hello.', source: { serverId: 'corp', file: 'secret.dat' } },
   ],
   asks: [
     { id: 'reset', markId: 'clerk', label: 'Password reset', text: 'Reset my password.', senderId: 'boss', needs: ['audit', 'dog'], reward: { kind: 'password', serverId: 'vault', user: 'admin' }, reply: 'Done. It is hunter2.' },

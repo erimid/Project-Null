@@ -289,7 +289,7 @@ function Letter({ game, ask, onBack, onSent }: { game: GameState; ask: AskDef; o
           </p>
           <p>{firstName(mark.name)},</p>
           <p>{ask.text}</p>
-          {picked.length > 0 && <p>{picked.map((fact) => fact.text).join(' ')}</p>}
+          {picked.length > 0 && <p>{picked.map((fact) => fact.mention).join(' ')}</p>}
           <p>{sender.name}</p>
         </article>
       )}
