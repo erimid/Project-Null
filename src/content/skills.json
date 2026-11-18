@@ -7,8 +7,8 @@
     "ranks": 3,
     "cost": 1,
     "effect": "crackSpeed",
-    "amount": 0.1,
-    "blurb": "Password Breakers, Proxy Bypasses and Firewall Bypasses run 10% faster for each rank."
+    "amount": 0.15,
+    "blurb": "Password Breakers, Proxy Bypasses and Firewall Bypasses run 15% faster for each rank."
   },
   {
     "id": "steady-hand",
@@ -84,7 +84,7 @@
     "row": 2,
     "name": "Clean sweep",
     "ranks": 1,
-    "cost": 2,
+    "cost": 1,
     "effect": "logSpeed",
     "amount": 1,
     "blurb": "The Log Deleter works twice as fast."

@@ -324,6 +324,22 @@ describe('the log review', () => {
     expect(h.state.player.balance).toBe(balance);
   });
 
+  it('waits while the player is back on that server, so the new visit can be cleaned up too', () => {
+    const h = visit(true);
+    h.wait(3 * HOURS - 5);
+    h.ok({ type: 'connect', serverId: 'corp' });
+    const id = h.state.connections[0]!.id;
+    h.ok({ type: 'login', connectionId: id, user: 'admin' });
+    h.wait(8);
+    // Due by now, with a fresh login line in the log: nothing happens while the connection is open.
+    expect(h.state.reviews).toHaveLength(1);
+    expect(h.state.player.balance).toBe(100);
+    h.ok({ type: 'disconnectAll' });
+    h.wait(1);
+    expect(h.state.reviews).toEqual([]);
+    expect(h.state.player.balance).toBe(60);
+  });
+
   it('happens once per server even after several visits', () => {
     const h = visit(false);
     h.ok({ type: 'connect', serverId: 'corp' });
