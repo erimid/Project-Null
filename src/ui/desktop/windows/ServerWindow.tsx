@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import {
+  usedStorageGq,
   activeContract,
   availableContracts,
   canLogIn,
@@ -17,6 +18,7 @@ import { useGame, useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { activeConnection, deskStore, useDesk, type Section } from '../deskStore';
 import { TaskProgress, findTask } from '../TaskProgress';
+import { viewer } from '../viewerStore';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
 
@@ -297,6 +299,8 @@ function Files({ game, state, connection, run }: View) {
   const admin = connection.role === 'admin';
   const files = state.files.filter((file) => admin || file.access === 'guest');
   if (files.length === 0) return <p class="empty">No files.</p>;
+  // A firewall keeps files shut as well as stopping copies.
+  const walled = (findServer(content, connection.serverId)?.security.firewall ?? 0) > 0 && !connection.bypassed.firewall;
   return (
     <ul class="rows data">
       {files.map((file) => {
@@ -315,6 +319,15 @@ function Files({ game, state, connection, run }: View) {
                 <TaskProgress taskId={deleting.id} label="Deleting" />
               ) : (
                 <>
+                  <button
+                    type="button"
+                    class="btn"
+                    disabled={walled}
+                    title={walled ? 'The firewall is blocking file access' : undefined}
+                    onClick={() => viewer.open({ serverId: connection.serverId, name: file.name, sizeGq: file.sizeGq })}
+                  >
+                    Open
+                  </button>
                   {owned ? (
                     <span class="row__done">Copied</span>
                   ) : (
@@ -525,28 +538,34 @@ function Contracts({ game, connection, act }: View) {
 }
 
 function Market({ game, connection, act }: View) {
-  const forSale = content.programs.filter((program) => program.price > 0);
+  // Starting programs only show up here if the player has removed one: the market gives those back.
+  const forSale = content.programs.filter(
+    (program) => program.price > 0 || (content.startingPrograms.includes(program.id) && !game.player.programs.includes(program.id)),
+  );
+  const free = content.rules.storageGq - usedStorageGq(game, content);
   return (
     <ul class="rows">
       {forSale.map((program) => {
         const owned = game.player.programs.includes(program.id);
         return (
-          <li key={program.id} class="row row--contract">
+          <li key={program.id} class="row row--contract row--market">
             <span class="row__main">
               <strong>{program.name}</strong> <span class="data row__dim">v{program.version}</span>
               <span class="contract__summary">{program.blurb}</span>
             </span>
-            <span class="data contract__pay">{formatMoney(program.price)}</span>
+            <span class="data row__dim">{program.sizeGq} GB</span>
+            <span class="data contract__pay">{program.price > 0 ? formatMoney(program.price) : 'free'}</span>
             {owned ? (
               <span class="row__done">Owned</span>
             ) : (
               <button
                 type="button"
                 class="btn btn--go"
-                disabled={game.player.balance < program.price}
+                disabled={game.player.balance < program.price || program.sizeGq > free}
+                title={program.sizeGq > free ? 'Not enough room on your gateway' : undefined}
                 onClick={() => act({ type: 'buyProgram', connectionId: connection.id, programId: program.id })}
               >
-                Buy
+                {program.price > 0 ? 'Buy' : 'Install'}
               </button>
             )}
           </li>

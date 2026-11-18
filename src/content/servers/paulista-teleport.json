@@ -40,7 +40,11 @@
     {
       "name": "tariffs_2034.txt",
       "sizeGq": 1,
-      "access": "guest"
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "PAULISTA TELEPORT · TARIFFS 2034\n\nSpare transponder capacity, by the hour:\n  Ku band, shared          420 per hour\n  Ku band, dedicated       1,150 per hour\n  C band, dedicated        1,900 per hour\n\nMinimum booking four hours. Capacity that is booked and not delivered is credited on the next bill, if the customer reports it within ten days.\n\nResellers: your contract rate applies, not this list."
+      }
     },
     {
       "name": "coverage_footprint.dat",

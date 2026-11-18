@@ -4,7 +4,16 @@
  * That keeps the rules in one place and makes them testable.
  */
 import { MAX_HOPS, SPEEDS, isConnected, type Connection, type GameState, type Speed, type TaskTarget } from './state';
-import { abandonContract, acceptContract, alterRecord, buyProgram, deliverContract, punish } from './contracts';
+import {
+  abandonContract,
+  acceptContract,
+  alterRecord,
+  buyProgram,
+  deleteStoredFile,
+  deliverContract,
+  punish,
+  uninstallProgram,
+} from './contracts';
 import { scheduleReview } from './forensics';
 import { canLogIn, lockRing, startTask } from './tasks';
 import { hopUnderTrace, newTrace, noteIntrusion, reroute } from './trace';
@@ -41,7 +50,11 @@ export type Action =
   /** Make the record change the active contract asks for. */
   | { readonly type: 'alterRecord'; readonly connectionId: string }
   /** Buy a program from the market on the board you are logged in to. */
-  | { readonly type: 'buyProgram'; readonly connectionId: string; readonly programId: string };
+  | { readonly type: 'buyProgram'; readonly connectionId: string; readonly programId: string }
+  /** Remove an installed program from the gateway to free its room. */
+  | { readonly type: 'uninstallProgram'; readonly programId: string }
+  /** Delete a file stored on the gateway. */
+  | { readonly type: 'deleteStoredFile'; readonly name: string };
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
@@ -238,6 +251,10 @@ export function applyAction(state: GameState, action: Action, content: Content):
       return answer(alterRecord(state, content, action.connectionId));
     case 'buyProgram':
       return answer(buyProgram(state, content, action.connectionId, action.programId));
+    case 'uninstallProgram':
+      return answer(uninstallProgram(state, action.programId));
+    case 'deleteStoredFile':
+      return answer(deleteStoredFile(state, action.name));
 
     case 'readMessage': {
       const message = state.messages.find((item) => item.id === action.messageId);

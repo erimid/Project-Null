@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { sound, useSound } from '../audio';
 import { useGame } from '../hooks';
 import { windows } from './windowStore';
 
@@ -12,6 +13,7 @@ const SHORTCUTS: readonly (readonly [string, string])[] = [
 export function GameMenu() {
   const handle = useGame((game) => game.player.handle);
   const [open, setOpen] = useState(false);
+  const soundSettings = useSound();
   const root = useRef<HTMLDivElement>(null);
 
   // Clicking anywhere else, or Esc, closes it.
@@ -58,6 +60,26 @@ export function GameMenu() {
             Saved games
             <span class="menu__item-note">Save, load, new game</span>
           </button>
+          <h3 class="menu__heading">Sound</h3>
+          <div class="menu__sound">
+            <button
+              type="button"
+              class={`btn${soundSettings.on ? ' btn--go' : ''}`}
+              aria-pressed={soundSettings.on}
+              onClick={() => sound.set({ on: !soundSettings.on })}
+            >
+              {soundSettings.on ? 'On' : 'Off'}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              aria-label="Volume"
+              value={Math.round(soundSettings.volume * 100)}
+              disabled={!soundSettings.on}
+              onInput={(event) => sound.set({ volume: Number((event.currentTarget as HTMLInputElement).value) / 100 })}
+            />
+          </div>
           <h3 class="menu__heading">Keys</h3>
           <dl class="menu__keys">
             {SHORTCUTS.map(([keys, what]) => (

@@ -84,8 +84,10 @@ export interface ProgramDef {
   readonly baseSeconds: number;
   /** Extra seconds per gigabyte of file size ("Gq" in field names is the old name of the unit). 0 for programs that don't handle files. */
   readonly secondsPerGq: number;
-  /** What it costs on the market. 0 = not for sale. */
+  /** What it costs on the market. 0 = free: a starting program, which the market gives back if you removed it. */
   readonly price: number;
+  /** Room it takes on the gateway, in gigabytes. */
+  readonly sizeGq: number;
   readonly blurb: string;
 }
 
@@ -154,7 +156,36 @@ export interface FileDef {
   readonly sizeGq: number;
   /** Lowest role that can see the file. */
   readonly access: Role;
+  /** What you get when you open the file. Files without it show as raw data. */
+  readonly content?: FileContent;
 }
+
+/** One line of a recording, and when it is said. */
+export interface CueDef {
+  /** Seconds from the start. */
+  readonly at: number;
+  /** Who is speaking, if anyone is named. */
+  readonly who?: string;
+  readonly text: string;
+}
+
+export const SCENES = ['gate', 'corridor', 'room'] as const;
+/** What a camera recording looks at. The picture is drawn by the game. */
+export type Scene = (typeof SCENES)[number];
+
+export type FileContent =
+  /** Plain text. Blank lines separate paragraphs; single line breaks are kept. */
+  | { readonly kind: 'text'; readonly text: string }
+  /** A sound recording: voices, with the words shown as they are spoken. */
+  | { readonly kind: 'audio'; readonly title: string; readonly seconds: number; readonly lines: readonly CueDef[] }
+  /** A camera recording, with notes that appear as it plays. */
+  | {
+      readonly kind: 'video';
+      readonly title: string;
+      readonly seconds: number;
+      readonly scene: Scene;
+      readonly lines: readonly CueDef[];
+    };
 
 export interface LogDef {
   /** How long before the start of the game the entry was written. */
@@ -328,6 +359,7 @@ export function parsePrograms(data: unknown, file = 'programs.json'): ProgramDef
       baseSeconds: num(file, where, raw, 'baseSeconds', 0, 3600),
       secondsPerGq: num(file, where, raw, 'secondsPerGq', 0, 600),
       price: num(file, where, raw, 'price', 0, 1_000_000),
+      sizeGq: num(file, where, raw, 'sizeGq', 0, 1000),
       blurb: text(file, where, raw, 'blurb'),
     };
   });
@@ -403,13 +435,45 @@ function parseAccounts(file: string, where: string, raw: Obj, kind: ServerKind):
   return accounts;
 }
 
-function parseFiles(file: string, where: string, raw: Obj): FileDef[] {
-  const files = list(file, where, raw, 'files').map((value, i) => {
-    const item = entry(file, `${where} file ${i}`, value);
+function parseCues(file: string, where: string, raw: Obj, seconds: number): CueDef[] {
+  return list(file, where, raw, 'lines').map((value, i) => {
+    const item = entry(file, `${where} line ${i}`, value);
+    const who = item['who'];
+    if (who !== undefined && typeof who !== 'string') throw new ContentError(file, `${where} line ${i}: "who" must be text`);
     return {
-      name: text(file, `${where} file ${i}`, item, 'name'),
+      at: num(file, `${where} line ${i}`, item, 'at', 0, seconds),
+      ...(who === undefined ? {} : { who }),
+      text: text(file, `${where} line ${i}`, item, 'text'),
+    };
+  });
+}
+
+function parseFileContent(file: string, where: string, value: unknown): FileContent {
+  const raw = entry(file, `${where} content`, value);
+  const kind = raw['kind'];
+  if (kind === 'text') return { kind, text: text(file, where, raw, 'text') };
+  if (kind === 'audio' || kind === 'video') {
+    const seconds = num(file, where, raw, 'seconds', 1, 600);
+    const base = { title: text(file, where, raw, 'title'), seconds, lines: parseCues(file, where, raw, seconds) };
+    if (kind === 'audio') return { kind, ...base };
+    const scene = raw['scene'];
+    if (!(SCENES as readonly unknown[]).includes(scene)) {
+      throw new ContentError(file, `${where}: scene must be one of ${SCENES.join(', ')}`);
+    }
+    return { kind, ...base, scene: scene as Scene };
+  }
+  throw new ContentError(file, `${where}: content kind must be text, audio or video`);
+}
+
+function parseFiles(file: string, where: string, raw: Obj): FileDef[] {
+  const files = list(file, where, raw, 'files').map((value, i): FileDef => {
+    const item = entry(file, `${where} file ${i}`, value);
+    const name = text(file, `${where} file ${i}`, item, 'name');
+    return {
+      name,
       sizeGq: num(file, `${where} file ${i}`, item, 'sizeGq', 1, 1000),
       access: role(file, `${where} file ${i}`, item, 'access'),
+      ...(item['content'] === undefined ? {} : { content: parseFileContent(file, `${where} file "${name}"`, item['content']) }),
     };
   });
   unique(file, where, 'file', files.map((item) => item.name));

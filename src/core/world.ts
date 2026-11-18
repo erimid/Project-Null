@@ -5,7 +5,7 @@
  * hands them in as a `Content` object, so tests can use tiny made-up
  * worlds and the real data can change without touching the rules.
  */
-import type { AccountDef, ContractDef, MailDef, MailKey, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
+import type { AccountDef, ContractDef, FileContent, MailDef, MailKey, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
 import type { Connection, GameState, ServerState } from './state';
 
 /** Numbers that tune the rules. The real ones come from content/tuning.json. */
@@ -84,6 +84,11 @@ export function ownedProgram(state: GameState, content: Content, kind: ProgramKi
     .sort((a, b) => b.version - a.version)[0];
 }
 
+/** What opening a file shows, if anything was written for it. `serverId` is where the file is, or came from. */
+export function fileContent(content: Content, serverId: string, name: string): FileContent | undefined {
+  return findServer(content, serverId)?.files.find((file) => file.name === name)?.content;
+}
+
 export function findServer(content: Content, id: string): ServerDef | undefined {
   return content.servers.find((server) => server.id === id);
 }
@@ -100,7 +105,8 @@ export function findAccount(server: ServerDef, user: string): AccountDef | undef
 
 function initialServerState(server: ServerDef, state: GameState): ServerState {
   return {
-    files: server.files.map((file) => ({ ...file })),
+    // What is inside a file stays in the data files; the game only tracks which files exist.
+    files: server.files.map((file) => ({ name: file.name, sizeGq: file.sizeGq, access: file.access })),
     logs: server.logs
       .map((log) => ({ timeMs: state.clock.gameTimeMs - log.minutesAgo * 60_000, text: log.text }))
       .sort((a, b) => a.timeMs - b.timeMs)
@@ -127,6 +133,19 @@ export function syncWithContent(state: GameState, content: Content): GameState {
   // A player always owns something; an empty list means a new game or a save from before programs existed.
   if (state.player.programs.length === 0) state.player.programs = [...content.startingPrograms];
   state.player.programs = state.player.programs.filter((id) => findProgram(content, id) !== undefined);
+
+  // Recordings were added to servers after some saves were made; give those saves the files once.
+  once(state, 'recordings-added', () => {
+    for (const server of content.servers) {
+      const files = state.servers[server.id]?.files;
+      for (const file of server.files) {
+        if (!files || file.content === undefined || file.content.kind === 'text') continue;
+        if (!files.some((other) => other.name === file.name)) {
+          files.push({ name: file.name, sizeGq: file.sizeGq, access: file.access });
+        }
+      }
+    }
+  });
 
   once(state, 'welcome', () => sendMail(state, content, 'welcome'));
   // A contract that was removed from the game can't be finished.

@@ -27,6 +27,8 @@ import { checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, 
 export type {
   AccountDef,
   ContractDef,
+  CueDef,
+  FileContent,
   FileDef,
   GameInfo,
   LogDef,

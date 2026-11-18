@@ -216,7 +216,7 @@ describe('files', () => {
     expect(state.player.files).toEqual([]);
     wait(0.2);
     expect(state.player.files).toEqual([{ name: 'secret.dat', sizeGq: 5, from: 'corp' }]);
-    expect(usedStorageGq(state)).toBe(5);
+    expect(usedStorageGq(state, content)).toBe(5);
     expect(state.servers.corp!.files).toHaveLength(1);
     expect(state.servers.corp!.logs.at(-1)).toMatchObject({ text: 'file copied: secret.dat', byPlayer: true });
   });

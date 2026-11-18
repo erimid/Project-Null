@@ -123,7 +123,7 @@ describe('security and program checks', () => {
   });
 
   it('reject an unknown kind of program and a repeated id', () => {
-    const good = { id: 'p', name: 'P', short: 'P', kind: 'copyFile', version: 1, baseSeconds: 1, secondsPerGq: 0, price: 0, blurb: 'b' };
+    const good = { id: 'p', name: 'P', short: 'P', kind: 'copyFile', version: 1, baseSeconds: 1, secondsPerGq: 0, price: 0, sizeGq: 1, blurb: 'b' };
     expect(parsePrograms([good])).toHaveLength(1);
     expect(() => parsePrograms([{ ...good, kind: 'magic' }])).toThrow(ContentError);
     expect(() => parsePrograms([good, good])).toThrow(ContentError);

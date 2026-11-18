@@ -41,22 +41,71 @@
     {
       "name": "adjuster_notes_C-88214.txt",
       "sizeGq": 1,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "CLAIM C-88214 · DUNMORE COLD STORAGE INC. · ADJUSTER NOTES\n\nLoss: refrigeration failure, total loss of stored goods. Claimed 2,310,000.\n\nSite visit 6 Mar. Compressors were switched off at the panel, not failed. Insured says \"a power event\". The utility has no record of one.\n\nInventory list names 40 pallets \"biological samples, client confidential\". Insured will not name the client. Storage contract is signed by a holding company in Oslo.\n\nRecommend: hold payment. Refer to the watchlist.\n\nP. Okafor has overruled: \"pay it, quietly, this week\". I have asked for that in writing."
+      }
     },
     {
       "name": "fraud_watchlist.dat",
       "sizeGq": 3,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "FRAUD WATCHLIST · SHARED WITH MEMBER INSURERS · DO NOT DISCLOSE TO SUBJECT\n\nname                   reason                              added by\nR. Castellanos         two claims in one year              system\nM. Adeyemi-Clarke      disputed a denial in the press      p.okafor\nFenwick Auto Group     pattern match, unverified           system\nT. Ferrand (sr.)       \"asked too many questions\"          p.okafor\nD. Shaw                address shared with listed person   system\n\n5 of 1,312 rows shown."
+      }
     },
     {
       "name": "reinsurance_treaty_draft_v6.txt",
       "sizeGq": 2,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "REINSURANCE TREATY · DRAFT 6 · NOT FOR CIRCULATION\n\n1. The Reinsurer takes 60% of any single loss above 1,000,000.\n2. The Reinsurer may inspect any claim file on five days' notice.\n3. NEW IN THIS DRAFT: claims marked \"special handling\" by the Company are excluded from clause 2.\n\nComment (legal): clause 3 was added at the request of Claims Systems. Nobody in legal knows what \"special handling\" means. Please advise before signature."
+      }
     },
     {
       "name": "payout_batch_0315.dat",
       "sizeGq": 5,
       "access": "admin"
+    },
+    {
+      "name": "call_C-88214_0309.wav",
+      "sizeGq": 2,
+      "access": "admin",
+      "content": {
+        "kind": "audio",
+        "title": "Claims line · C-88214",
+        "seconds": 30,
+        "lines": [
+          {
+            "at": 1,
+            "who": "Adjuster",
+            "text": "Mr. Okafor, I can't sign this. The compressors were switched off by hand."
+          },
+          {
+            "at": 8,
+            "who": "Okafor",
+            "text": "You can, and you will. This one is special handling."
+          },
+          {
+            "at": 14,
+            "who": "Adjuster",
+            "text": "Special handling for whom?"
+          },
+          {
+            "at": 18,
+            "who": "Okafor",
+            "text": "For someone who insures a great deal with us and would like their samples forgotten."
+          },
+          {
+            "at": 26,
+            "who": "Okafor",
+            "text": "Pay it. Then delete this call."
+          }
+        ]
+      }
     }
   ],
   "logs": [

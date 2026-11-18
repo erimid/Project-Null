@@ -8,9 +8,11 @@ import {
   isLyingLow,
   objectiveMet,
   objectivePossible,
+  programStorageGq,
   serializeGame,
   syncWithContent,
   tick,
+  usedStorageGq,
   type Action,
   type GameState,
 } from './index';
@@ -216,7 +218,7 @@ describe('the market', () => {
     refused({ type: 'buyProgram', connectionId: 'nope', programId: 'breaker-2' }, /Log in to the board/);
     visit('hidden', 'member');
     refused({ type: 'buyProgram', connectionId: here(), programId: 'gold-plated' }, /cannot afford/);
-    refused({ type: 'buyProgram', connectionId: here(), programId: 'copier' }, /not for sale/);
+    refused({ type: 'buyProgram', connectionId: here(), programId: 'copier' }, /already own/);
     refused({ type: 'buyProgram', connectionId: here(), programId: 'nope' }, /not for sale/);
     ok({ type: 'buyProgram', connectionId: here(), programId: 'breaker-2' });
     expect(state.player.balance).toBe(40);
@@ -233,6 +235,61 @@ describe('the market', () => {
     ok({ type: 'runProgram', connectionId: here(), target: { kind: 'password', user: 'admin' } });
     // Version 2 against a level 1 password: half of 10 seconds.
     expect(state.tasks[0]).toMatchObject({ programId: 'breaker-2', durationMs: 5_000 });
+  });
+});
+
+describe('gateway storage', () => {
+  const sized = (sizeGq: number) => ({
+    ...content,
+    programs: content.programs.map((program) => ({ ...program, sizeGq })),
+  });
+
+  it('counts installed programs as well as files', () => {
+    const { state } = harness();
+    const big = sized(2);
+    state.player.files.push({ name: 'a.dat', sizeGq: 3, from: 'corp' });
+    expect(programStorageGq(state, big)).toBe(2 * state.player.programs.length);
+    expect(usedStorageGq(state, big)).toBe(2 * state.player.programs.length + 3);
+  });
+
+  it('refuses to buy a program there is no room for', () => {
+    const { state, here, visit } = harness();
+    visit('hidden', 'member');
+    // Six starting programs of 3 GB fill 18 of the 20 GB.
+    const result = applyAction(state, { type: 'buyProgram', connectionId: here(), programId: 'breaker-2' }, sized(3));
+    expect(result).toEqual({ ok: false, reason: 'Not enough room on your gateway.' });
+    expect(state.player.balance).toBe(100);
+  });
+
+  it('removes a program, and the market gives a starting program back for nothing', () => {
+    const { state, ok, refused, here, visit, breakIn } = harness();
+    refused({ type: 'uninstallProgram', programId: 'nope' }, /not installed/);
+    ok({ type: 'uninstallProgram', programId: 'copier' });
+    expect(state.player.programs).not.toContain('copier');
+    breakIn();
+    refused({ type: 'runProgram', connectionId: here(), target: { kind: 'copyFile', file: 'secret.dat' } }, /do not own/);
+    visit('hidden', 'member');
+    ok({ type: 'buyProgram', connectionId: here(), programId: 'copier' });
+    expect(state.player.programs).toContain('copier');
+    expect(state.player.balance).toBe(100);
+  });
+
+  it('will not remove a program while it is running', () => {
+    const { ok, refused, here } = harness();
+    ok({ type: 'connect', serverId: 'corp' });
+    ok({ type: 'runProgram', connectionId: here(), target: { kind: 'password', user: 'admin' } });
+    refused({ type: 'uninstallProgram', programId: 'breaker' }, /running/);
+  });
+
+  it('deletes a stored file, which undoes a steal that was not delivered yet', () => {
+    const { state, ok, refused, accept } = harness();
+    accept('steal');
+    state.player.files.push({ name: 'secret.dat', sizeGq: 5, from: 'corp' });
+    expect(objectiveMet(state, content, byId('steal'))).toBe(true);
+    ok({ type: 'deleteStoredFile', name: 'secret.dat' });
+    expect(state.player.files).toEqual([]);
+    expect(objectiveMet(state, content, byId('steal'))).toBe(false);
+    refused({ type: 'deleteStoredFile', name: 'secret.dat' }, /no such file/);
   });
 });
 
