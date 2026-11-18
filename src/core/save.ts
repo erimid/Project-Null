@@ -101,6 +101,12 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
       monitor: { blindMs: 0, used: false, echo: null },
     })),
   }),
+  // 6 -> 7: writing to people. Nobody had been written to before it existed.
+  6: (old) => ({
+    ...old,
+    player: { ...(old.player as object), contacts: [], facts: [] },
+    phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
+  }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -269,6 +275,19 @@ function checkState(raw: Obj): GameState {
     throw damaged;
   }
   if (!isNum(player.rating) || !isNum(player.lieLowUntilMs)) throw damaged;
+  if (!isList(player.contacts, isText) || !isList(player.facts, isText)) throw damaged;
+  const phish = raw.phish;
+  if (
+    !isObj(phish) ||
+    !isList(phish.sent, (a): a is Obj => isObj(a) && isText(a.askId) && isNum(a.dueMs) && typeof a.ok === 'boolean') ||
+    !isObj(phish.strikes) ||
+    !Object.values(phish.strikes).every(isNum) ||
+    !isObj(phish.waryUntilMs) ||
+    !Object.values(phish.waryUntilMs).every(isNum) ||
+    !isList(phish.done, isText)
+  ) {
+    throw damaged;
+  }
   const contracts = raw.contracts;
   if (!isObj(contracts) || !(contracts.activeId === null || isText(contracts.activeId)) || !isList(contracts.completed, isText)) {
     throw damaged;

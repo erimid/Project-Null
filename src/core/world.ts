@@ -6,6 +6,7 @@
  * worlds and the real data can change without touching the rules.
  */
 import type { AccountDef, ContractDef, FileContent, MailDef, MailKey, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
+import type { PeopleDef } from '../content/people';
 import type { Connection, GameState, ServerState } from './state';
 
 /** Numbers that tune the rules. The real ones come from content/tuning.json. */
@@ -40,6 +41,16 @@ export interface Rules {
   readonly echoPenaltyFactor: number;
   /** Delivered contracts before the fixer writes about harder security. */
   readonly harderSecurityAfter: number;
+  /** Delivered contracts before the fixer writes about writing to people. */
+  readonly phishingAfter: number;
+  /** In-game minutes before someone answers a message. */
+  readonly phishReplyMinutes: number;
+  /** Most details one message can mention. */
+  readonly phishMaxDetails: number;
+  /** In-game hours someone who saw through a message will not read another. */
+  readonly phishWaryHours: number;
+  /** Times someone can see through a message before they report it and stop answering. */
+  readonly phishStrikes: number;
 }
 
 export interface Content {
@@ -52,6 +63,8 @@ export interface Content {
   readonly contracts: readonly ContractDef[];
   /** Messages the rules send, by name. */
   readonly mail: Readonly<Record<MailKey, MailDef>>;
+  /** People who can be written to, and what can be known about them. */
+  readonly people: PeopleDef;
   readonly rules: Rules;
 }
 
@@ -77,6 +90,9 @@ export function sendMail(state: GameState, content: Content, key: MailKey, fill:
 export function noteProgress(state: GameState, content: Content): void {
   if (state.contracts.completed.length >= content.rules.harderSecurityAfter) {
     once(state, 'harderSecurity', () => sendMail(state, content, 'harderSecurity'));
+  }
+  if (state.contracts.completed.length >= content.rules.phishingAfter && content.people.asks.length > 0) {
+    once(state, 'phishing', () => sendMail(state, content, 'phishing'));
   }
 }
 
@@ -163,6 +179,18 @@ export function syncWithContent(state: GameState, content: Content): GameState {
         if (!files.some((other) => other.name === file.name)) {
           files.push({ name: file.name, sizeGq: file.sizeGq, access: file.access });
         }
+      }
+    }
+  });
+
+  // Files that name people or hold details were added after some saves were made; give those saves the files once.
+  once(state, 'people-files', () => {
+    const sources = [...content.people.people.flatMap((person) => (person.source ? [person.source] : [])), ...content.people.facts.map((fact) => fact.source)];
+    for (const source of sources) {
+      const files = state.servers[source.serverId]?.files;
+      const file = findServer(content, source.serverId)?.files.find((item) => item.name === source.file);
+      if (files && file && !files.some((other) => other.name === file.name)) {
+        files.push({ name: file.name, sizeGq: file.sizeGq, access: file.access, ...(file.encrypted ? { encrypted: file.encrypted } : {}) });
       }
     }
   });

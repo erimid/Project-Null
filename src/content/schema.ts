@@ -131,7 +131,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -248,6 +248,16 @@ export interface Tuning {
   readonly echoPenaltyFactor: number;
   /** Delivered contracts before the fixer writes about harder security. */
   readonly harderSecurityAfter: number;
+  /** Delivered contracts before the fixer writes about writing to people. */
+  readonly phishingAfter: number;
+  /** In-game minutes before someone answers a message. */
+  readonly phishReplyMinutes: number;
+  /** Most details one message can mention. */
+  readonly phishMaxDetails: number;
+  /** In-game hours someone who saw through a message will not read another. */
+  readonly phishWaryHours: number;
+  /** Times someone can see through a message before they report it and stop answering. */
+  readonly phishStrikes: number;
 }
 
 export interface GameInfo {
@@ -635,6 +645,11 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     echoBonusFactor: num(file, 'tuning', data, 'echoBonusFactor', 1, 10),
     echoPenaltyFactor: num(file, 'tuning', data, 'echoPenaltyFactor', 0, 1),
     harderSecurityAfter: num(file, 'tuning', data, 'harderSecurityAfter', 0, 1000),
+    phishingAfter: num(file, 'tuning', data, 'phishingAfter', 0, 1000),
+    phishReplyMinutes: num(file, 'tuning', data, 'phishReplyMinutes', 1, 100_000),
+    phishMaxDetails: num(file, 'tuning', data, 'phishMaxDetails', 1, 10),
+    phishWaryHours: num(file, 'tuning', data, 'phishWaryHours', 0, 24 * 365),
+    phishStrikes: num(file, 'tuning', data, 'phishStrikes', 1, 20),
   };
 }
 

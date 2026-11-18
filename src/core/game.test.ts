@@ -18,7 +18,7 @@ import {
 
 import { content } from './testWorld';
 
-const fullPlayer = { programs: content.startingPrograms, files: [], passwords: {}, rating: 0, lieLowUntilMs: 0 };
+const fullPlayer = { programs: content.startingPrograms, files: [], passwords: {}, rating: 0, lieLowUntilMs: 0, contacts: [], facts: [] };
 const newGame = (): GameState =>
   syncWithContent(
     createGame({ seed: 7, handle: 'TESTER', startDate: '2034-03-14T08:00:00Z', startingBalance: 2500 }),
@@ -214,11 +214,11 @@ describe('save and load', () => {
       6: (old) => ({ ...old, player: { ...(old.player as object), handle: 'RESTORED' } }),
     };
     const { player, ...rest } = newGame();
-    const oldState = { ...rest, version: 5, player: { maxConnections: player.maxConnections, credits: 777, programs: [], files: [], passwords: {}, rating: 0, lieLowUntilMs: 0 } };
+    const oldState = { ...rest, version: 5, player: { maxConnections: player.maxConnections, credits: 777, programs: [], files: [], passwords: {}, rating: 0, lieLowUntilMs: 0, contacts: [], facts: [] } };
     const text = JSON.stringify({ format: 'project-null-save', version: 5, summary: {}, state: oldState });
 
     const loaded = deserializeGame(text, migrations, 7).state;
-    expect(loaded.player).toEqual({ handle: 'RESTORED', balance: 777, maxConnections: 1, programs: [], files: [], passwords: {}, rating: 0, lieLowUntilMs: 0 });
+    expect(loaded.player).toEqual({ handle: 'RESTORED', balance: 777, maxConnections: 1, programs: [], files: [], passwords: {}, rating: 0, lieLowUntilMs: 0, contacts: [], facts: [] });
     expect(loaded.version).toBe(7);
   });
 
@@ -237,7 +237,7 @@ describe('save and load', () => {
       },
     };
     const loaded = syncWithContent(deserializeGame(JSON.stringify(v1)).state, content);
-    expect(loaded.version).toBe(6);
+    expect(loaded.version).toBe(7);
     expect(loaded.player).toEqual({ handle: 'OLD', balance: 1200, maxConnections: 1, ...fullPlayer });
     expect(loaded.clock).toEqual({ gameTimeMs: 2025936000000, speed: 2 });
     expect(loaded.rngStreams).toEqual({ world: 12345 });

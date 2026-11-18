@@ -15,6 +15,7 @@ import {
   uninstallProgram,
 } from './contracts';
 import { scheduleReview } from './forensics';
+import { readFile, sendPhish } from './phish';
 import { canLogIn, echoCell, lockRing, startTask } from './tasks';
 import { hopUnderTrace, newTrace, noteIntrusion, reroute } from './trace';
 import { findAccount, findConnection, findServer, gatewayOf, sendMail, sourceAddress, type Content } from './world';
@@ -53,6 +54,10 @@ export type Action =
   | { readonly type: 'buyProgram'; readonly connectionId: string; readonly programId: string }
   /** Remove an installed program from the gateway to free its room. */
   | { readonly type: 'uninstallProgram'; readonly programId: string }
+  /** Note what a file says: the people it names and the details in it. */
+  | { readonly type: 'readFile'; readonly serverId: string; readonly name: string }
+  /** Write to someone as somebody else, mentioning some details. */
+  | { readonly type: 'sendPhish'; readonly askId: string; readonly senderId: string; readonly factIds: readonly string[] }
   /** Repeat one cell of the monitor's handshake pattern. */
   | { readonly type: 'echoCell'; readonly connectionId: string; readonly cell: number }
   /** Decrypt a file stored on the gateway. */
@@ -221,6 +226,10 @@ export function applyAction(state: GameState, action: Action, content: Content):
       return reason === null ? OK : refuse(reason);
     }
 
+    case 'readFile':
+      return answer(readFile(state, content, action.serverId, action.name));
+    case 'sendPhish':
+      return answer(sendPhish(state, content, action));
     case 'echoCell':
       return answer(echoCell(state, content, action.connectionId, action.cell));
     case 'decryptFile':

@@ -167,5 +167,20 @@
       "column": "Status",
       "value": "Paid"
     }
+  },
+  {
+    "id": "tessera-brackley",
+    "title": "What was in the water",
+    "client": "A local reporter",
+    "targetId": "tessera-water",
+    "pay": 4500,
+    "rating": 2,
+    "minRating": 6,
+    "summary": "Copy the Brackley Reservoir test results from Tessera Water and decrypt them.",
+    "brief": "Tessera Water paid nineteen families to stop talking about a set of test results from June 2032. I want the results.\n\nCopy brackley_results_june_2032.txt from Tessera's records archive and decrypt it. The archive is not listed anywhere, so you will not find its address in a directory. Their lawyers at Aldergate & Finch write to it. Somebody at Tessera will tell the right person where it is.",
+    "objective": {
+      "kind": "steal",
+      "file": "brackley_results_june_2032.txt"
+    }
   }
 ]

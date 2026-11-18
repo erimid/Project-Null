@@ -433,7 +433,7 @@ describe('saves from before security existed (version 2)', () => {
     for (const server of Object.values(old.state.servers as Record<string, { logs: { id?: number }[] }>)) for (const log of server.logs) delete log.id;
 
     const loaded = syncWithContent(deserializeGame(JSON.stringify(old)).state, content);
-    expect(loaded.version).toBe(6);
+    expect(loaded.version).toBe(7);
     expect(loaded.player.programs).toEqual(content.startingPrograms);
     expect(loaded.tasks).toEqual([]);
     // Old saves get the welcome message too, since it explains where the work is.

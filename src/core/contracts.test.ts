@@ -371,7 +371,7 @@ describe('saves', () => {
     delete old.state.player.rating;
     delete old.state.player.lieLowUntilMs;
     const loaded = deserializeGame(JSON.stringify(old)).state;
-    expect(loaded).toMatchObject({ version: 6, contracts: { activeId: null, completed: [] }, flags: [] });
+    expect(loaded).toMatchObject({ version: 7, contracts: { activeId: null, completed: [] }, flags: [] });
     expect(loaded.player).toMatchObject({ rating: 0, lieLowUntilMs: 0 });
   });
 

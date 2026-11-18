@@ -7,6 +7,7 @@
  */
 import { caught } from './actions';
 import { runReviews } from './forensics';
+import { runPhish } from './phish';
 import { isConnected, type GameState, type Speed } from './state';
 import { advanceTasks } from './tasks';
 import { advanceMonitor, advanceTrace } from './trace';
@@ -36,6 +37,7 @@ export function tick(state: GameState, realMs: number, content: Content): number
     if (traceMs > 0 && advanceTrace(connection.trace, traceMs)) caught(state, content, connection);
   }
   if (state.reviews.length > 0) runReviews(state, content);
+  if (state.phish.sent.length > 0) runPhish(state, content);
   return simMs;
 }
 

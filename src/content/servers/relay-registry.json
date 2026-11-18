@@ -57,6 +57,15 @@
       }
     },
     {
+      "name": "operator_contacts.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "OPERATOR CONTACTS · PUBLISHED AT THE OPERATORS' REQUEST\n\nPOLARMESH-IX (Polar Mesh Exchange, Tromsø)\n  Operator: Ivar Nordvik, operator@polarmesh.example\n  Ivar is at the TROMSO-2 site until the 20th and reads mail when the weather lets him.\n  Member accounts and abuse desk: Signe Dahl, signe.dahl@polarmesh.example\n  Signe answers members and staff only.\n\n  Notice to peers: maintenance is on Thursdays from 02:00 to 03:00. The TROMSO-2 station is on port ix-07, which moves to the backup switch for the hour.\n\nKESTREL-GW (Kestrel Wireless Cooperative, Nairobi)\n  Contact through the Thursday meeting. No address given.\n\nOther operators have asked not to be listed here."
+      }
+    },
+    {
       "name": "registry_export_0313.dat",
       "sizeGq": 6,
       "access": "admin",

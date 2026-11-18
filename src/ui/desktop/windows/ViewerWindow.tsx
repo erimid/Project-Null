@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { fileContent } from '../../../core';
+import { fileContent, fileNotes } from '../../../core';
 import type { CueDef, FileContent, Scene } from '../../../core/content';
 import { seeded } from '../../audio';
 import { playRecording, type Playing } from '../../recording';
 import { useGame } from '../../hooks';
-import { content } from '../../session';
+import { content, session } from '../../session';
 import { useViewer, type OpenFile } from '../viewerStore';
 import { Window } from '../Window';
 import { useWindows } from '../windowStore';
@@ -21,12 +21,35 @@ export function ViewerWindow() {
     const own = game.player.files.find((item) => item.name === file.name && item.from === file.serverId);
     return (own ?? game.servers[file.serverId]?.files.find((item) => item.name === file.name))?.encrypted ?? 0;
   });
+  // Reading a file is how its people and details get noted. A refusal (no longer connected) changes nothing.
+  const shown = open && file && level === 0 ? `${file.serverId}/${file.name}` : null;
+  useEffect(() => {
+    if (file && shown) session.dispatch({ type: 'readFile', serverId: file.serverId, name: file.name });
+  }, [shown]);
+  const noted = useGame((game) => {
+    if (!file) return '';
+    const notes = fileNotes(content, file.serverId, file.name);
+    return [
+      ...notes.people.filter((person) => game.player.contacts.includes(person.id)).map((person) => `${person.name}, ${person.title}`),
+      ...notes.facts.filter((fact) => game.player.facts.includes(fact.id)).map((fact) => fact.text),
+    ].join('\n');
+  });
   if (!file) return null;
   const inside = fileContent(content, file.serverId, file.name);
   return (
     <Window id="viewer" title={file.name} note={`${file.sizeGq} GB`}>
       {/* Closing the window unmounts the player, which stops the sound. */}
       {open && level > 0 && <Sealed name={file.name} level={level} />}
+      {open && level === 0 && noted && (
+        <aside class="noted">
+          <h3 class="map__heading">Noted from this file</h3>
+          <ul>
+            {noted.split('\n').map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </aside>
+      )}
       {open && level === 0 && <Inside key={`${file.serverId}/${file.name}`} file={file} inside={inside} />}
     </Window>
   );
