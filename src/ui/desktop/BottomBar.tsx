@@ -9,7 +9,7 @@ import { SpeedControl } from './SpeedControl';
 import { WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId } from './windowStore';
 
 /** Windows that only have a tab on the bar while they are open: Saved games opens from the game menu, the file viewer from a file. */
-const ON_DEMAND: readonly WindowId[] = ['viewer', 'saves'];
+export const ON_DEMAND: readonly WindowId[] = ['viewer', 'saves'];
 
 const clockText = (ms: number) => {
   const seconds = Math.ceil(ms / 1000);
@@ -63,7 +63,7 @@ function OtherTraces({ tracker }: { tracker: boolean }) {
  * it to bring the traced connection to the front. Other traces are
  * listed underneath, most urgent first.
  */
-function TraceAlarm() {
+export function TraceAlarm() {
   const server = useGame((game) => {
     const connection = mostUrgentTrace(game, content);
     return connection ? (findServer(content, connection.serverId)?.name ?? '') : null;
@@ -139,7 +139,7 @@ function TraceAlarm() {
  * credits, date and time, the speed control and Disconnect.
  */
 /** "3 more to Operator", for the rating's tooltip. */
-function ratingTitle(rating: number): string {
+export function ratingTitle(rating: number): string {
   const next = ratingStep(rating).next;
   return next ? `${next.min - rating} more to ${next.title}` : 'Top of the ladder';
 }

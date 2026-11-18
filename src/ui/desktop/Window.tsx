@@ -1,5 +1,6 @@
 import type { ComponentChildren } from 'preact';
 import { useRef } from 'preact/hooks';
+import { useLayout } from './layout';
 import { KEEP_VISIBLE, MIN_HEIGHT, MIN_WIDTH, WINDOW_DEFS, windows, useWindows, type WindowId } from './windowStore';
 
 const TITLE_HEIGHT = 40;
@@ -31,8 +32,35 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
   const frame = useRef<HTMLElement>(null);
   const drag = useRef<Drag | null>(null);
   const sizing = useRef<Drag | null>(null);
+  const phone = useLayout() === 'phone';
 
   if (!layout.open || layout.minimized) return null;
+  const name = title ?? def.title;
+
+  // A phone shows only the front window, full screen. The others stay
+  // mounted underneath (hidden), so whatever was going on in them is kept.
+  if (phone) {
+    const front = windows.isOnTop(id);
+    return (
+      <section class={`window window--phone${front ? ' window--front' : ''}`} hidden={!front} aria-label={name}>
+        <div class="window__title">
+          <span class="window__title-text">{name}</span>
+          {note && <span class="window__title-note">{note}</span>}
+          <span class="window__title-gap" />
+          {actions}
+          <button class="window__close" type="button" aria-label={`Close ${name}`} onClick={() => windows.close(id)}>
+            ×
+          </button>
+        </div>
+        {tabs && (
+          <nav class="window__tabs" aria-label={`${name} sections`}>
+            {tabs}
+          </nav>
+        )}
+        <div class="window__body">{children}</div>
+      </section>
+    );
+  }
 
   const width = layout.w ?? def.width;
   const clamp = (x: number, y: number): [number, number] => {
@@ -84,7 +112,6 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
     windows.settle();
   };
 
-  const name = title ?? def.title;
   return (
     <section
       ref={frame}
