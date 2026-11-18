@@ -53,6 +53,30 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     connections: [],
     servers: {},
   }),
+  // 2 -> 3: security, programs, traces and messages were added. Open connections
+  // from version 2 had no security to trip, so they start with a clean trace.
+  2: (old) => {
+    let nextId = typeof old.nextId === 'number' ? old.nextId : 1;
+    const servers = Object.fromEntries(
+      Object.entries(old.servers as Record<string, Record<string, unknown>>).map(([id, server]) => [
+        id,
+        { ...server, logs: (server.logs as object[]).map((log) => ({ id: nextId++, ...log })) },
+      ]),
+    );
+    return {
+      ...old,
+      nextId,
+      player: { ...(old.player as object), programs: [], files: [], passwords: {} },
+      connections: (old.connections as object[]).map((connection) => ({
+        ...connection,
+        bypassed: { proxy: false, firewall: false },
+        trace: { status: 'none', graceMs: 0, elapsedMs: 0, hopMs: [60_000] },
+      })),
+      tasks: [],
+      messages: [],
+      servers,
+    };
+  },
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -143,12 +167,44 @@ const isConnection = (c: unknown): c is Obj =>
   isText(c.serverId) &&
   isList(c.route, isText) &&
   isNum(c.openedAtMs) &&
-  ((c.user === null && c.role === null) || (isText(c.user) && isRole(c.role)));
+  ((c.user === null && c.role === null) || (isText(c.user) && isRole(c.role))) &&
+  isObj(c.bypassed) &&
+  typeof c.bypassed.proxy === 'boolean' &&
+  typeof c.bypassed.firewall === 'boolean' &&
+  isObj(c.trace) &&
+  ['none', 'pending', 'active'].includes(c.trace.status as string) &&
+  isNum(c.trace.graceMs) &&
+  isNum(c.trace.elapsedMs) &&
+  isList(c.trace.hopMs, isNum);
+
+const TARGET_KINDS = ['password', 'proxy', 'firewall', 'copyFile', 'deleteFile', 'deleteLog'];
+
+const isTask = (t: unknown): t is Obj =>
+  isObj(t) &&
+  isText(t.id) &&
+  isText(t.programId) &&
+  isText(t.connectionId) &&
+  isNum(t.progressMs) &&
+  isNum(t.durationMs) &&
+  isObj(t.target) &&
+  TARGET_KINDS.includes(t.target.kind as string);
+
+const isMessage = (m: unknown): m is Obj =>
+  isObj(m) &&
+  isText(m.id) &&
+  isText(m.from) &&
+  isText(m.subject) &&
+  isText(m.body) &&
+  isNum(m.timeMs) &&
+  typeof m.read === 'boolean';
 
 const isServerState = (s: unknown): s is Obj =>
   isObj(s) &&
   isList(s.files, (f): f is Obj => isObj(f) && isText(f.name) && isNum(f.sizeGq) && isRole(f.access)) &&
-  isList(s.logs, (l): l is Obj => isObj(l) && isNum(l.timeMs) && isText(l.text) && typeof l.byPlayer === 'boolean') &&
+  isList(
+    s.logs,
+    (l): l is Obj => isObj(l) && isNum(l.id) && isNum(l.timeMs) && isText(l.text) && typeof l.byPlayer === 'boolean',
+  ) &&
   isList(s.records, (row): row is string[] => isList(row, isText));
 
 function checkState(raw: Obj): GameState {
@@ -162,6 +218,15 @@ function checkState(raw: Obj): GameState {
   if (!isObj(player) || !isText(player.handle) || !isNum(player.balance) || !isNum(player.maxConnections)) {
     throw damaged;
   }
+  if (
+    !isList(player.programs, isText) ||
+    !isList(player.files, (f): f is Obj => isObj(f) && isText(f.name) && isNum(f.sizeGq) && isText(f.from)) ||
+    !isObj(player.passwords) ||
+    !Object.values(player.passwords).every((users) => isList(users, isText))
+  ) {
+    throw damaged;
+  }
+  if (!isList(raw.tasks, isTask) || !isList(raw.messages, isMessage)) throw damaged;
   if (!isObj(rngStreams) || !Object.values(rngStreams).every(isNum)) throw damaged;
   if (!isList(raw.knownServers, isText) || !isList(raw.route, isText)) throw damaged;
   if (!isList(raw.connections, isConnection)) throw damaged;

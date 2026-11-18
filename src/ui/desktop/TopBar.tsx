@@ -19,8 +19,9 @@ export function TopBar() {
       {game.connections.map((connection) => {
         const name = findServer(content, connection.serverId)?.name ?? connection.serverId;
         const isActive = connection.id === active?.id;
+        const traced = connection.trace.status === 'active';
         return (
-          <div key={connection.id} class={`tab${isActive ? ' is-active' : ''}`}>
+          <div key={connection.id} class={`tab${isActive ? ' is-active' : ''}${traced ? ' is-traced' : ''}`}>
             <button
               type="button"
               class="tab__main"
@@ -32,6 +33,7 @@ export function TopBar() {
             >
               <span class="tab__dot" aria-hidden="true" />
               {name}
+              {traced && <span class="visually-hidden"> (being traced)</span>}
             </button>
             <button
               type="button"

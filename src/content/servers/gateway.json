@@ -11,6 +11,14 @@
   "lon": 4.48,
   "blurb": "Your own machine. Every connection you make starts here.",
   "listed": false,
+  "security": {
+    "password": 0,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 0
+  },
+  "traceSecondsPerHop": 30,
+  "relayDelay": 1,
   "banner": [],
   "accounts": [],
   "files": [],

@@ -5,13 +5,41 @@
  * hands them in as a `Content` object, so tests can use tiny made-up
  * worlds and the real data can change without touching the rules.
  */
-import type { AccountDef, ServerDef } from '../content/schema';
+import type { AccountDef, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
 import type { Connection, GameState, ServerState } from './state';
+
+/** Numbers that tune the rules. The real ones come from content/tuning.json. */
+export interface Rules {
+  /** Game minutes that pass per real second at 1× speed. */
+  readonly gameMinutesPerRealSecond: number;
+  /** Seconds between an intrusion and the trace starting, by monitor level. Past the end = on connect. */
+  readonly monitorGraceSeconds: readonly number[];
+  readonly maxRunningPrograms: number;
+  readonly storageGq: number;
+  /** With no relays, the trace takes this fraction of the server's per-hop time. */
+  readonly directTraceFactor: number;
+}
 
 export interface Content {
   readonly servers: readonly ServerDef[];
   /** Ids of servers every player knows from the start. */
   readonly startingServers: readonly string[];
+  readonly programs: readonly ProgramDef[];
+  /** Ids of programs every player owns from the start. */
+  readonly startingPrograms: readonly string[];
+  readonly rules: Rules;
+}
+
+export function findProgram(content: Content, id: string): ProgramDef | undefined {
+  return content.programs.find((program) => program.id === id);
+}
+
+/** The best program of a kind that the player owns, if any. */
+export function ownedProgram(state: GameState, content: Content, kind: ProgramKind): ProgramDef | undefined {
+  return state.player.programs
+    .map((id) => findProgram(content, id))
+    .filter((program): program is ProgramDef => program?.kind === kind)
+    .sort((a, b) => b.version - a.version)[0];
 }
 
 export function findServer(content: Content, id: string): ServerDef | undefined {
@@ -28,12 +56,13 @@ export function findAccount(server: ServerDef, user: string): AccountDef | undef
   return server.accounts.find((account) => account.user === user);
 }
 
-function initialServerState(server: ServerDef, gameStartMs: number): ServerState {
+function initialServerState(server: ServerDef, state: GameState): ServerState {
   return {
     files: server.files.map((file) => ({ ...file })),
     logs: server.logs
-      .map((log) => ({ timeMs: gameStartMs - log.minutesAgo * 60_000, text: log.text, byPlayer: false }))
-      .sort((a, b) => a.timeMs - b.timeMs),
+      .map((log) => ({ timeMs: state.clock.gameTimeMs - log.minutesAgo * 60_000, text: log.text }))
+      .sort((a, b) => a.timeMs - b.timeMs)
+      .map((log) => ({ id: state.nextId++, ...log, byPlayer: false })),
     records: server.records ? server.records.rows.map((row) => [...row]) : [],
   };
 }
@@ -47,17 +76,24 @@ function initialServerState(server: ServerDef, gameStartMs: number): ServerState
  */
 export function syncWithContent(state: GameState, content: Content): GameState {
   for (const server of content.servers) {
-    state.servers[server.id] ??= initialServerState(server, state.clock.gameTimeMs);
+    state.servers[server.id] ??= initialServerState(server, state);
   }
   const exists = (id: string) => findServer(content, id) !== undefined;
   for (const id of [gatewayOf(content).id, ...content.startingServers]) {
     if (!state.knownServers.includes(id)) state.knownServers.push(id);
   }
+  // A player always owns something; an empty list means a new game or a save from before programs existed.
+  if (state.player.programs.length === 0) state.player.programs = [...content.startingPrograms];
+  state.player.programs = state.player.programs.filter((id) => findProgram(content, id) !== undefined);
+
   // Drop anything that points at a server that no longer exists.
   state.knownServers = state.knownServers.filter(exists);
   state.route = state.route.filter(exists);
   state.connections = state.connections.filter(
     (connection) => exists(connection.serverId) && connection.route.every(exists),
+  );
+  state.tasks = state.tasks.filter(
+    (task) => findConnection(state, task.connectionId) && findProgram(content, task.programId),
   );
   return state;
 }

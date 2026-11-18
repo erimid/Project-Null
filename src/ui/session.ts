@@ -14,17 +14,24 @@ import {
   serializeGame,
   syncWithContent,
   tick,
+  traceReport,
   type Action,
   type ActionResult,
   type Content,
   type GameState,
   type SaveSummary,
 } from '../core';
-import { gameInfo, servers, tuning } from '../content';
+import { gameInfo, programs, servers, tuning } from '../content';
 import { createMemoryStore, openSaveStore, type SaveStore } from './storage/saveStore';
 
 /** The data files, in the form the simulation takes them. */
-export const content: Content = { servers, startingServers: gameInfo.startingServers };
+export const content: Content = {
+  servers,
+  startingServers: gameInfo.startingServers,
+  programs,
+  startingPrograms: gameInfo.startingPrograms,
+  rules: tuning,
+};
 
 export const SLOT_COUNT = 3;
 const ACTIVE_SLOT_KEY = 'active-slot';
@@ -171,13 +178,24 @@ function autosave(): void {
   void writeSlot(saveStatus.activeSlot).catch((error) => report(`Autosave failed: ${message(error)}`, true));
 }
 
+/** A short description of the things the clock can change besides the time. */
+function shape(): string {
+  const traces = state.connections.map((c) => `${c.trace.status}${traceReport(c.trace).relaysTraced}`).join();
+  return `${state.tasks.length}|${state.connections.length}|${state.messages.length}|${traces}`;
+}
+
 function startLoop(): void {
   let last = performance.now();
   const frame = (now: number) => {
     // Cap the step so a tab that was in the background doesn't jump ahead.
     const elapsed = Math.min(now - last, 250);
     last = now;
-    if (tick(state, elapsed, tuning) > 0) emit(gameListeners);
+    const before = shape();
+    if (tick(state, elapsed, content) > 0) {
+      // A program finishing or a trace moving on changes what screens show, not just the clock.
+      if (shape() !== before) changed();
+      else emit(gameListeners);
+    }
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);

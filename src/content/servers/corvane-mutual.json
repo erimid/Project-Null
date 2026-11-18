@@ -11,37 +11,117 @@
   "lon": -79.38,
   "blurb": "Policy and claims records.",
   "listed": true,
+  "security": {
+    "password": 3,
+    "proxy": 1,
+    "firewall": 1,
+    "monitor": 2
+  },
+  "traceSecondsPerHop": 12,
+  "relayDelay": 1.0,
   "banner": [
     "CORVANE MUTUAL INSURANCE CO.",
     "Claims Administration · Node A",
     "This system holds personal information protected by law.",
     "Unauthorised access will be reported to the Office of the Privacy Commissioner."
   ],
-  "accounts": [{ "user": "admin", "role": "admin", "name": "P. Okafor, Claims Systems" }],
+  "accounts": [
+    {
+      "user": "admin",
+      "role": "admin",
+      "name": "P. Okafor, Claims Systems"
+    }
+  ],
   "files": [
-    { "name": "claims_open_2034Q1.dat", "sizeGq": 12, "access": "admin" },
-    { "name": "adjuster_notes_C-88214.txt", "sizeGq": 1, "access": "admin" },
-    { "name": "fraud_watchlist.dat", "sizeGq": 3, "access": "admin" },
-    { "name": "reinsurance_treaty_draft_v6.txt", "sizeGq": 2, "access": "admin" },
-    { "name": "payout_batch_0315.dat", "sizeGq": 5, "access": "admin" }
+    {
+      "name": "claims_open_2034Q1.dat",
+      "sizeGq": 12,
+      "access": "admin"
+    },
+    {
+      "name": "adjuster_notes_C-88214.txt",
+      "sizeGq": 1,
+      "access": "admin"
+    },
+    {
+      "name": "fraud_watchlist.dat",
+      "sizeGq": 3,
+      "access": "admin"
+    },
+    {
+      "name": "reinsurance_treaty_draft_v6.txt",
+      "sizeGq": 2,
+      "access": "admin"
+    },
+    {
+      "name": "payout_batch_0315.dat",
+      "sizeGq": 5,
+      "access": "admin"
+    }
   ],
   "logs": [
-    { "minutesAgo": 1640, "text": "login admin from 142.112.30.12" },
-    { "minutesAgo": 1622, "text": "claim C-88214 flagged for review" },
-    { "minutesAgo": 1620, "text": "logout admin" },
-    { "minutesAgo": 540, "text": "payout_batch_0315.dat staged" },
-    { "minutesAgo": 300, "text": "failed login admin from 24.114.67.9" },
-    { "minutesAgo": 299, "text": "failed login admin from 24.114.67.9" },
-    { "minutesAgo": 75, "text": "nightly reconciliation: ok" }
+    {
+      "minutesAgo": 1640,
+      "text": "login admin from 142.112.30.12"
+    },
+    {
+      "minutesAgo": 1622,
+      "text": "claim C-88214 flagged for review"
+    },
+    {
+      "minutesAgo": 1620,
+      "text": "logout admin"
+    },
+    {
+      "minutesAgo": 540,
+      "text": "payout_batch_0315.dat staged"
+    },
+    {
+      "minutesAgo": 300,
+      "text": "failed login admin from 24.114.67.9"
+    },
+    {
+      "minutesAgo": 299,
+      "text": "failed login admin from 24.114.67.9"
+    },
+    {
+      "minutesAgo": 75,
+      "text": "nightly reconciliation: ok"
+    }
   ],
   "records": {
     "title": "Open claims",
-    "columns": ["Claim", "Policyholder", "Amount", "Status"],
+    "columns": [
+      "Claim",
+      "Policyholder",
+      "Amount",
+      "Status"
+    ],
     "rows": [
-      ["C-88190", "Brightwater Marina Ltd.", "148,000", "Approved"],
-      ["C-88214", "Dunmore Cold Storage Inc.", "2,310,000", "Under review"],
-      ["C-88231", "R. Castellanos", "18,400", "Approved"],
-      ["C-88240", "Fenwick Auto Group", "96,750", "Denied"]
+      [
+        "C-88190",
+        "Brightwater Marina Ltd.",
+        "148,000",
+        "Approved"
+      ],
+      [
+        "C-88214",
+        "Dunmore Cold Storage Inc.",
+        "2,310,000",
+        "Under review"
+      ],
+      [
+        "C-88231",
+        "R. Castellanos",
+        "18,400",
+        "Approved"
+      ],
+      [
+        "C-88240",
+        "Fenwick Auto Group",
+        "96,750",
+        "Denied"
+      ]
     ]
   }
 }

@@ -5,7 +5,7 @@
 import type { Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 2;
+export const STATE_VERSION = 3;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -27,6 +27,36 @@ export interface PlayerState {
   balance: number;
   /** How many connections can be open at once. Starts at 1; upgrades raise it. */
   maxConnections: number;
+  /** Ids of the programs the player owns. */
+  programs: string[];
+  /** Files copied to the gateway. */
+  files: StoredFile[];
+  /** Passwords the player has broken: server id -> the account names they open. */
+  passwords: Record<string, string[]>;
+}
+
+export interface StoredFile {
+  name: string;
+  sizeGq: number;
+  /** Id of the server it was copied from. */
+  from: string;
+}
+
+/**
+ * A trace working its way back along a connection's route.
+ * - none: nobody has noticed.
+ * - pending: an intrusion was noticed; the trace starts when graceMs runs out.
+ * - active: the trace is running. It works through `hopMs` in order (the
+ *   last relay first); when all are done, the gateway is found.
+ */
+export interface TraceState {
+  status: 'none' | 'pending' | 'active';
+  /** Time left before a pending trace starts. */
+  graceMs: number;
+  /** How long an active trace has been running. */
+  elapsedMs: number;
+  /** How long the trace needs for each step back along the route. Fixed when the connection opens. */
+  hopMs: number[];
 }
 
 /**
@@ -45,6 +75,41 @@ export interface Connection {
   role: Role | null;
   /** Game time the connection was opened. */
   openedAtMs: number;
+  /** Layers bypassed for as long as this connection stays open. */
+  bypassed: { proxy: boolean; firewall: boolean };
+  trace: TraceState;
+}
+
+/** What a running program is working on. */
+export type TaskTarget =
+  | { kind: 'password'; user: string }
+  | { kind: 'proxy' }
+  | { kind: 'firewall' }
+  | { kind: 'copyFile'; file: string }
+  | { kind: 'deleteFile'; file: string }
+  | { kind: 'deleteLog'; logId: number };
+
+/** A program that is running against a connection. */
+export interface Task {
+  id: string;
+  programId: string;
+  connectionId: string;
+  target: TaskTarget;
+  /** Simulated time it has run so far. */
+  progressMs: number;
+  /** Simulated time it needs in total. */
+  durationMs: number;
+}
+
+/** A message in the player's inbox. */
+export interface Message {
+  id: string;
+  from: string;
+  subject: string;
+  body: string;
+  /** Game time it arrived. */
+  timeMs: number;
+  read: boolean;
 }
 
 export interface FileState {
@@ -54,6 +119,8 @@ export interface FileState {
 }
 
 export interface LogEntry {
+  /** Unique within the game, so a program can point at one entry. */
+  id: number;
   /** Game time the entry was written. */
   timeMs: number;
   text: string;
@@ -84,6 +151,10 @@ export interface GameState {
   /** The bounce chain being planned for the next connection: relay server ids in order. */
   route: string[];
   connections: Connection[];
+  /** Programs that are running right now. */
+  tasks: Task[];
+  /** The player's inbox, oldest first. */
+  messages: Message[];
   /** Changeable state of each server, by server id. */
   servers: Record<string, ServerState>;
 }
@@ -109,10 +180,19 @@ export function createGame(options: NewGameOptions): GameState {
     rngStreams: {},
     nextId: 1,
     clock: { gameTimeMs, speed: 1 },
-    player: { handle: options.handle, balance: options.startingBalance, maxConnections: 1 },
+    player: {
+      handle: options.handle,
+      balance: options.startingBalance,
+      maxConnections: 1,
+      programs: [],
+      files: [],
+      passwords: {},
+    },
     knownServers: [],
     route: [],
     connections: [],
+    tasks: [],
+    messages: [],
     servers: {},
   };
 }

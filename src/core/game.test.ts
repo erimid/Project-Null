@@ -18,7 +18,7 @@ import {
 
 import { content } from './testWorld';
 
-const rules = { gameMinutesPerRealSecond: 1 };
+const fullPlayer = { programs: content.startingPrograms, files: [], passwords: {} };
 const newGame = (): GameState =>
   syncWithContent(
     createGame({ seed: 7, handle: 'TESTER', startDate: '2034-03-14T08:00:00Z', startingBalance: 2500 }),
@@ -31,7 +31,7 @@ describe('new game', () => {
   it('starts at the configured date with the starting balance', () => {
     const state = newGame();
     expect(gameDate(state)).toEqual({ year: 2034, month: 3, day: 14, weekday: 2, hours: 8, minutes: 0 });
-    expect(state.player).toEqual({ handle: 'TESTER', balance: 2500, maxConnections: 1 });
+    expect(state.player).toEqual({ handle: 'TESTER', balance: 2500, maxConnections: 1, ...fullPlayer });
     expect(state.connections).toEqual([]);
   });
 
@@ -43,7 +43,7 @@ describe('new game', () => {
 describe('clock', () => {
   it('advances one game minute per real second at 1×', () => {
     const state = newGame();
-    tick(state, 90_000, rules);
+    tick(state, 90_000, content);
     expect(gameDate(state)).toMatchObject({ hours: 9, minutes: 30 });
   });
 
@@ -51,35 +51,35 @@ describe('clock', () => {
     for (const [speed, minutes] of [[2, 20], [4, 40], [0, 0]] as const) {
       const state = newGame();
       expect(act(state, { type: 'setSpeed', speed })).toEqual({ ok: true });
-      expect(tick(state, 10_000, rules)).toBe(10_000 * speed);
+      expect(tick(state, 10_000, content)).toBe(10_000 * speed);
       expect(gameDate(state)).toMatchObject({ hours: 8, minutes });
     }
   });
 
   it('rolls over midnight into the next day', () => {
     const state = newGame();
-    tick(state, 16 * 60 * 1000, rules);
+    tick(state, 16 * 60 * 1000, content);
     expect(gameDate(state)).toMatchObject({ day: 15, weekday: 3, hours: 0, minutes: 0 });
   });
 
   it('ignores zero, negative and NaN time steps', () => {
     const state = newGame();
     const before = state.clock.gameTimeMs;
-    for (const dt of [0, -5, Number.NaN]) expect(tick(state, dt, rules)).toBe(0);
+    for (const dt of [0, -5, Number.NaN]) expect(tick(state, dt, content)).toBe(0);
     expect(state.clock.gameTimeMs).toBe(before);
   });
 
   it('gives the same result in many small steps as in one big step', () => {
     const a = newGame();
     const b = newGame();
-    tick(a, 60_000, rules);
-    for (let i = 0; i < 600; i++) tick(b, 100, rules);
+    tick(a, 60_000, content);
+    for (let i = 0; i < 600; i++) tick(b, 100, content);
     expect(b.clock.gameTimeMs).toBe(a.clock.gameTimeMs);
   });
 
   it('respects the tuning for how fast game time runs', () => {
     const state = newGame();
-    tick(state, 1_000, { gameMinutesPerRealSecond: 5 });
+    tick(state, 1_000, { ...content, rules: { ...content.rules, gameMinutesPerRealSecond: 5 } });
     expect(gameDate(state)).toMatchObject({ hours: 8, minutes: 5 });
   });
 });
@@ -91,7 +91,7 @@ describe('time lock while connected', () => {
       act(state, { type: 'setSpeed', speed });
       connect(state);
       expect(effectiveSpeed(state)).toBe(1);
-      expect(tick(state, 1_000, rules)).toBe(1_000);
+      expect(tick(state, 1_000, content)).toBe(1_000);
     }
   });
 
@@ -153,7 +153,7 @@ describe('save and load', () => {
   it('round-trips the whole game', () => {
     const state = newGame();
     act(state, { type: 'setSpeed', speed: 2 });
-    tick(state, 123_456, rules);
+    tick(state, 123_456, content);
     state.player.balance = 9_001;
     stream(state, 'world').next();
     const text = serializeGame(state, '2026-11-18T03:00:00Z');
@@ -214,11 +214,11 @@ describe('save and load', () => {
       6: (old) => ({ ...old, player: { ...(old.player as object), handle: 'RESTORED' } }),
     };
     const { player, ...rest } = newGame();
-    const oldState = { ...rest, version: 5, player: { maxConnections: player.maxConnections, credits: 777 } };
+    const oldState = { ...rest, version: 5, player: { maxConnections: player.maxConnections, credits: 777, programs: [], files: [], passwords: {} } };
     const text = JSON.stringify({ format: 'project-null-save', version: 5, summary: {}, state: oldState });
 
     const loaded = deserializeGame(text, migrations, 7).state;
-    expect(loaded.player).toEqual({ handle: 'RESTORED', balance: 777, maxConnections: 1 });
+    expect(loaded.player).toEqual({ handle: 'RESTORED', balance: 777, maxConnections: 1, programs: [], files: [], passwords: {} });
     expect(loaded.version).toBe(7);
   });
 
@@ -237,8 +237,8 @@ describe('save and load', () => {
       },
     };
     const loaded = syncWithContent(deserializeGame(JSON.stringify(v1)).state, content);
-    expect(loaded.version).toBe(2);
-    expect(loaded.player).toEqual({ handle: 'OLD', balance: 1200, maxConnections: 1 });
+    expect(loaded.version).toBe(3);
+    expect(loaded.player).toEqual({ handle: 'OLD', balance: 1200, maxConnections: 1, ...fullPlayer });
     expect(loaded.clock).toEqual({ gameTimeMs: 2025936000000, speed: 2 });
     expect(loaded.rngStreams).toEqual({ world: 12345 });
     expect(loaded.knownServers).toEqual(['gateway', 'directory']);

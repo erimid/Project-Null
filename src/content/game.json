@@ -2,5 +2,18 @@
   "title": "Project Null",
   "defaultHandle": "GHOST_7",
   "currencySuffix": "c",
-  "startingServers": ["relay-registry", "backroom", "tallis-library"]
+  "startingServers": [
+    "relay-registry",
+    "backroom",
+    "tallis-library"
+  ],
+  "startingPrograms": [
+    "password-breaker",
+    "proxy-bypass",
+    "firewall-bypass",
+    "file-copier",
+    "file-deleter",
+    "log-deleter",
+    "trace-tracker"
+  ]
 }

@@ -11,15 +11,37 @@
   "lon": 24.75,
   "blurb": "Invite-only board where contracts are posted and paid.",
   "listed": false,
+  "security": {
+    "password": 0,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 0
+  },
+  "traceSecondsPerHop": 30,
+  "relayDelay": 1.5,
   "banner": [
     "the backroom",
     "members only. no names. no refunds.",
     "work is posted when there is work."
   ],
-  "accounts": [{ "user": "member", "role": "guest", "name": "Your invite" }],
+  "accounts": [
+    {
+      "user": "member",
+      "role": "guest",
+      "name": "Your invite"
+    }
+  ],
   "files": [
-    { "name": "house_rules.txt", "sizeGq": 1, "access": "guest" },
-    { "name": "escrow_terms.txt", "sizeGq": 1, "access": "guest" }
+    {
+      "name": "house_rules.txt",
+      "sizeGq": 1,
+      "access": "guest"
+    },
+    {
+      "name": "escrow_terms.txt",
+      "sizeGq": 1,
+      "access": "guest"
+    }
   ],
   "logs": []
 }

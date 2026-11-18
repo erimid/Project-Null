@@ -11,6 +11,14 @@
   "lon": -9.14,
   "blurb": "Public library catalogue. Old hardware, guest access, few questions.",
   "listed": true,
+  "security": {
+    "password": 1,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 0
+  },
+  "traceSecondsPerHop": 25,
+  "relayDelay": 0.8,
   "banner": [
     "BIBLIOTECA TALLIS · PUBLIC CATALOGUE",
     "Welcome, reader. Guest terminals may search the catalogue and renew loans.",
@@ -18,24 +26,76 @@
     "System maintenance every Sunday night."
   ],
   "accounts": [
-    { "user": "guest", "role": "guest", "name": "Reading room terminal" },
-    { "user": "sysop", "role": "admin", "name": "R. Figueira" }
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Reading room terminal"
+    },
+    {
+      "user": "sysop",
+      "role": "admin",
+      "name": "R. Figueira"
+    }
   ],
   "files": [
-    { "name": "catalogue_index.dat", "sizeGq": 9, "access": "guest" },
-    { "name": "new_acquisitions_march.txt", "sizeGq": 1, "access": "guest" },
-    { "name": "overdue_notices.dat", "sizeGq": 2, "access": "admin" },
-    { "name": "member_cards.dat", "sizeGq": 4, "access": "admin" },
-    { "name": "backup_sunday.arc", "sizeGq": 14, "access": "admin" }
+    {
+      "name": "catalogue_index.dat",
+      "sizeGq": 9,
+      "access": "guest"
+    },
+    {
+      "name": "new_acquisitions_march.txt",
+      "sizeGq": 1,
+      "access": "guest"
+    },
+    {
+      "name": "overdue_notices.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    },
+    {
+      "name": "member_cards.dat",
+      "sizeGq": 4,
+      "access": "admin"
+    },
+    {
+      "name": "backup_sunday.arc",
+      "sizeGq": 14,
+      "access": "admin"
+    }
   ],
   "logs": [
-    { "minutesAgo": 2150, "text": "login sysop from 62.48.133.2" },
-    { "minutesAgo": 2120, "text": "backup_sunday.arc written" },
-    { "minutesAgo": 2118, "text": "logout sysop" },
-    { "minutesAgo": 760, "text": "login guest from terminal 4" },
-    { "minutesAgo": 742, "text": "catalogue search: 'tide tables'" },
-    { "minutesAgo": 741, "text": "logout guest" },
-    { "minutesAgo": 95, "text": "relay opened 109.51.8.230 > 190.2.44.17" },
-    { "minutesAgo": 88, "text": "relay closed 109.51.8.230" }
+    {
+      "minutesAgo": 2150,
+      "text": "login sysop from 62.48.133.2"
+    },
+    {
+      "minutesAgo": 2120,
+      "text": "backup_sunday.arc written"
+    },
+    {
+      "minutesAgo": 2118,
+      "text": "logout sysop"
+    },
+    {
+      "minutesAgo": 760,
+      "text": "login guest from terminal 4"
+    },
+    {
+      "minutesAgo": 742,
+      "text": "catalogue search: 'tide tables'"
+    },
+    {
+      "minutesAgo": 741,
+      "text": "logout guest"
+    },
+    {
+      "minutesAgo": 95,
+      "text": "relay opened 109.51.8.230 > 190.2.44.17"
+    },
+    {
+      "minutesAgo": 88,
+      "text": "relay closed 109.51.8.230"
+    }
   ]
 }

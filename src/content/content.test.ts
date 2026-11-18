@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { gameInfo, servers, tuning } from './index';
-import { ContentError, checkContent, parseGameInfo, parseServers, parseTuning } from './schema';
+import { gameInfo, programs, servers, tuning } from './index';
+import { ContentError, checkContent, parseGameInfo, parsePrograms, parseServers, parseTuning } from './schema';
 
 const valid = {
   id: 'a',
@@ -19,6 +19,9 @@ const valid = {
   accounts: [],
   files: [{ name: 'f.dat', sizeGq: 1, access: 'guest' }],
   logs: [{ minutesAgo: 5, text: 'x' }],
+  security: { password: 0, proxy: 0, firewall: 0, monitor: 0 },
+  traceSecondsPerHop: 10,
+  relayDelay: 1,
 };
 const relay = { ...valid, id: 'r', address: '10.0.0.9', kind: 'relay', accounts: [{ user: 'guest', role: 'guest', name: 'G' }] };
 
@@ -96,8 +99,45 @@ describe('shipped servers', () => {
 
 describe('cross-file checks', () => {
   it('reject a starting server that does not exist', () => {
-    const info = parseGameInfo({ title: 'T', defaultHandle: 'H', currencySuffix: 'c', startingServers: ['nope'] });
-    expect(() => checkContent(info, servers)).toThrow(ContentError);
+    const info = parseGameInfo({ title: 'T', defaultHandle: 'H', currencySuffix: 'c', startingServers: ['nope'], startingPrograms: [] });
+    expect(() => checkContent(info, servers, programs)).toThrow(ContentError);
+  });
+});
+
+describe('security and program checks', () => {
+  it('reject a security level that is out of range, and a missing trace time', () => {
+    expect(() => parseServers([{ ...valid, security: { ...valid.security, proxy: 9 } }])).toThrow(ContentError);
+    expect(() => parseServers([{ ...valid, security: { password: 1 } }])).toThrow(ContentError);
+    expect(() => parseServers([{ ...valid, traceSecondsPerHop: undefined }])).toThrow(ContentError);
+  });
+
+  it('reject a password layer on a server with no administrator account', () => {
+    const locked = parseServers([valid, { ...relay, security: { ...valid.security, password: 1 } }]);
+    const info = parseGameInfo({ title: 'T', defaultHandle: 'H', currencySuffix: 'c', startingServers: [], startingPrograms: [] });
+    expect(() => checkContent(info, locked, programs)).toThrow(/no admin account/);
+  });
+
+  it('reject a starting program that does not exist', () => {
+    const info = parseGameInfo({ title: 'T', defaultHandle: 'H', currencySuffix: 'c', startingServers: [], startingPrograms: ['nope'] });
+    expect(() => checkContent(info, servers, programs)).toThrow(ContentError);
+  });
+
+  it('reject an unknown kind of program and a repeated id', () => {
+    const good = { id: 'p', name: 'P', short: 'P', kind: 'copyFile', version: 1, baseSeconds: 1, secondsPerGq: 0, blurb: 'b' };
+    expect(parsePrograms([good])).toHaveLength(1);
+    expect(() => parsePrograms([{ ...good, kind: 'magic' }])).toThrow(ContentError);
+    expect(() => parsePrograms([good, good])).toThrow(ContentError);
+  });
+
+  it('ship one program for every job, and no layer the starting programs cannot beat', () => {
+    for (const kind of ['breakPassword', 'bypassProxy', 'bypassFirewall', 'copyFile', 'deleteFile', 'deleteLog', 'traceTracker']) {
+      expect(programs.some((program) => program.kind === kind), kind).toBe(true);
+    }
+    for (const server of servers) {
+      for (const level of [server.security.password, server.security.proxy, server.security.firewall]) {
+        expect(level, server.id).toBeLessThanOrEqual(3);
+      }
+    }
   });
 });
 

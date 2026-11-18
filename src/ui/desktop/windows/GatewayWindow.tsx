@@ -1,7 +1,8 @@
-import { effectiveSpeed, gameDate, isConnected } from '../../../core';
+import { effectiveSpeed, gameDate, isConnected, usedStorageGq } from '../../../core';
 import { gameInfo } from '../../../content';
 import { formatDay, formatMoney, formatTime } from '../../format';
 import { useGame } from '../../hooks';
+import { content } from '../../session';
 import { Window } from '../Window';
 
 /** Status of the player's own machine. The build line shows which version of the game is running. */
@@ -19,6 +20,9 @@ export function GatewayWindow() {
     return speed === 0 ? 'paused' : `${speed}×`;
   });
 
+  const storage = useGame((game) => `${usedStorageGq(game)} / ${content.rules.storageGq} Gq`);
+  const running = useGame((game) => `${game.tasks.length} / ${content.rules.maxRunningPrograms}`);
+
   return (
     <Window id="gateway" note={gameInfo.title}>
       <dl class="readout data">
@@ -30,6 +34,10 @@ export function GatewayWindow() {
         <dd>{uplink}</dd>
         <dt>balance</dt>
         <dd>{balance}</dd>
+        <dt>storage</dt>
+        <dd>{storage}</dd>
+        <dt>programs</dt>
+        <dd>{running} running</dd>
         <dt>local time</dt>
         <dd>{localTime}</dd>
         <dt>clock</dt>

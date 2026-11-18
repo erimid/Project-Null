@@ -2,5 +2,13 @@
   "startDate": "2034-03-14T08:00:00Z",
   "gameMinutesPerRealSecond": 1,
   "startingBalance": 2500,
-  "autosaveSeconds": 60
+  "autosaveSeconds": 60,
+  "monitorGraceSeconds": [
+    20,
+    8,
+    3
+  ],
+  "maxRunningPrograms": 3,
+  "storageGq": 40,
+  "directTraceFactor": 0.5
 }
