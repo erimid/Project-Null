@@ -1,6 +1,8 @@
 import { BottomBar } from './BottomBar';
 import { TopBar } from './TopBar';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
+import { mostUrgentTrace } from '../../core';
+import { useGame } from '../hooks';
 import type { Speed } from '../../core';
 import { session } from '../session';
 import { Alerts } from './Alerts';
@@ -44,8 +46,25 @@ export function Desktop() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const tracing = useGame((game) => mostUrgentTrace(game) !== undefined);
+  // The whole desk jolts when a trace cuts the line.
+  const desk = useRef<HTMLDivElement>(null);
+  useEffect(
+    () =>
+      session.subscribeEvents((event) => {
+        if (event.type !== 'disconnected' || !event.traced) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const shake = ['-7px, 3px', '6px, -4px', '-4px, 2px', '3px, -1px', '0, 0'];
+        desk.current?.animate(
+          shake.map((offset) => ({ transform: `translate(${offset})` })),
+          { duration: 450 },
+        );
+      }),
+    [],
+  );
+
   return (
-    <div class="desktop">
+    <div ref={desk} class={`desktop${tracing ? ' is-tracing' : ''}`}>
       <TopBar />
       <main class="workspace">
         <GatewayWindow />

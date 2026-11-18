@@ -9,8 +9,10 @@ import '@fontsource/share-tech-mono/latin-400.css';
 import './ui/desktop/theme.css';
 import { Desktop } from './ui/desktop/Desktop';
 import { session } from './ui/session';
+import { startSfx } from './ui/sfx';
 
 // Load the last game (or start a new one) before drawing anything.
 void session.start().then(() => {
+  startSfx();
   render(<Desktop />, document.getElementById('app')!);
 });

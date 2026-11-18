@@ -13,6 +13,8 @@ export interface WindowDef {
   /** Short name on its bottom-bar tab. */
   readonly pill: string;
   readonly width: number;
+  /** Narrowest it can be dragged to. Defaults to MIN_WIDTH. */
+  readonly minWidth?: number;
   /** Starting position. A negative x is measured from the right edge of the screen. */
   readonly x: number;
   readonly y: number;
@@ -31,23 +33,35 @@ export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
   saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 200, y: 120, open: false },
 };
 
+export const MIN_WIDTH = 320;
+export const MIN_HEIGHT = 140;
+/** Height of the top bar plus the bottom bar: the desktop is the browser window minus these. */
+const BARS_HEIGHT = 110;
+/** How much of a window must stay on screen so it can always be grabbed again. */
+export const KEEP_VISIBLE = 80;
+
 export interface WindowLayout {
   readonly x: number;
   readonly y: number;
   readonly open: boolean;
   /** Higher = closer to the front. */
   readonly z: number;
+  /** Open but tucked away on the bottom bar. */
+  readonly minimized: boolean;
+  /** Size the player dragged it to. Null = the window's usual width, or as tall as its contents. */
+  readonly w: number | null;
+  readonly h: number | null;
 }
 
 type Layouts = Readonly<Record<WindowId, WindowLayout>>;
 
-const STORAGE_KEY = 'project-null.windows.v6';
+const STORAGE_KEY = 'project-null.windows.v7';
 
 function defaults(): Layouts {
   const entries = WINDOW_IDS.map((id, index) => {
     const def = WINDOW_DEFS[id];
     const x = def.x >= 0 ? def.x : Math.max(24, window.innerWidth + def.x - def.width);
-    return [id, { x, y: def.y, open: def.open, z: index + 1 }] as const;
+    return [id, { x, y: def.y, open: def.open, z: index + 1, minimized: false, w: null, h: null }] as const;
   });
   return Object.fromEntries(entries) as Layouts;
 }
@@ -66,7 +80,16 @@ function load(): Layouts {
         Number.isFinite(entry.z) &&
         typeof entry.open === 'boolean'
       ) {
-        layouts[id] = { x: entry.x!, y: entry.y!, z: entry.z!, open: entry.open };
+        const size = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null);
+        layouts[id] = {
+          x: entry.x!,
+          y: entry.y!,
+          z: entry.z!,
+          open: entry.open,
+          minimized: entry.minimized === true,
+          w: size(entry.w),
+          h: size(entry.h),
+        };
       }
     }
   } catch {
@@ -90,6 +113,10 @@ function set(next: Layouts, persist: boolean): void {
 }
 
 const topZ = () => Math.max(...WINDOW_IDS.map((id) => layouts[id].z));
+const isShown = (id: WindowId) => layouts[id].open && !layouts[id].minimized;
+/** The highest window that is actually on screen. */
+const topShownZ = () => Math.max(0, ...WINDOW_IDS.filter(isShown).map((id) => layouts[id].z));
+export const widthOf = (id: WindowId) => layouts[id].w ?? WINDOW_DEFS[id].width;
 const patch = (id: WindowId, change: Partial<WindowLayout>): Layouts => ({
   ...layouts,
   [id]: { ...layouts[id], ...change },
@@ -97,18 +124,31 @@ const patch = (id: WindowId, change: Partial<WindowLayout>): Layouts => ({
 
 export const windows = {
   get: (): Layouts => layouts,
-  isOnTop: (id: WindowId) => layouts[id].open && layouts[id].z === topZ(),
+  isOnTop: (id: WindowId) => isShown(id) && layouts[id].z === topShownZ(),
 
+  /** Opens it if it is closed or minimized, and brings it to the front. */
   focus(id: WindowId): void {
-    if (!windows.isOnTop(id)) set(patch(id, { open: true, z: topZ() + 1 }), true);
+    if (!windows.isOnTop(id)) set(patch(id, { open: true, minimized: false, z: topZ() + 1 }), true);
   },
   close(id: WindowId): void {
-    set(patch(id, { open: false }), true);
+    set(patch(id, { open: false, minimized: false }), true);
   },
-  /** Bottom-bar pill: open it, bring it forward, or close it if it's already in front. */
+  /** Tucks it away. Its tab on the bottom bar brings it back as it was. */
+  minimize(id: WindowId): void {
+    set(patch(id, { minimized: true }), true);
+  },
+  /** Bottom-bar tab: open it, bring it forward, or minimize it if it's already in front. */
   toggle(id: WindowId): void {
-    if (windows.isOnTop(id)) windows.close(id);
+    if (windows.isOnTop(id)) windows.minimize(id);
     else windows.focus(id);
+  },
+  /** While dragging the corner. Call `settle` when the drag ends. */
+  resize(id: WindowId, w: number, h: number): void {
+    set(patch(id, { w, h }), false);
+  },
+  /** Back to its usual size. */
+  resetSize(id: WindowId): void {
+    set(patch(id, { w: null, h: null }), true);
   },
   /** While dragging. Call `settle` when the drag ends. */
   move(id: WindowId, x: number, y: number): void {
@@ -118,6 +158,31 @@ export const windows = {
     set(layouts, true);
   },
 };
+
+/**
+ * When the browser window changes size, windows keep their distance from
+ * whichever side edge they were nearer to, and are pulled back in if they
+ * would end up off screen.
+ */
+let viewportWidth = window.innerWidth;
+window.addEventListener('resize', () => {
+  const before = viewportWidth;
+  viewportWidth = window.innerWidth;
+  const height = window.innerHeight - BARS_HEIGHT;
+  const next = { ...layouts };
+  for (const id of WINDOW_IDS) {
+    const layout = layouts[id];
+    const width = widthOf(id);
+    const rightGap = before - (layout.x + width);
+    const x = layout.x > rightGap ? viewportWidth - width - rightGap : layout.x;
+    next[id] = {
+      ...layout,
+      x: Math.max(Math.min(x, viewportWidth - KEEP_VISIBLE), Math.min(0, KEEP_VISIBLE - width)),
+      y: Math.max(0, Math.min(layout.y, height - KEEP_VISIBLE)),
+    };
+  }
+  set(next, true);
+});
 
 export function useWindows(): Layouts {
   const [value, setValue] = useState(layouts);

@@ -1,4 +1,5 @@
 import { findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, traceReport, type GameState } from '../../core';
+import { useEffect, useRef } from 'preact/hooks';
 import { formatDay, formatTime } from '../format';
 import { useGame, useWorld } from '../hooks';
 import { content, session } from '../session';
@@ -7,8 +8,8 @@ import { GameMenu } from './GameMenu';
 import { SpeedControl } from './SpeedControl';
 import { WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId } from './windowStore';
 
-/** Windows that have a tab on the bar. Saved games opens from the game menu, the file viewer from a file. */
-const TABS: readonly WindowId[] = WINDOW_IDS.filter((id) => id !== 'saves' && id !== 'viewer');
+/** Windows that only have a tab on the bar while they are open: Saved games opens from the game menu, the file viewer from a file. */
+const ON_DEMAND: readonly WindowId[] = ['viewer', 'saves'];
 
 const clockText = (ms: number) => {
   const seconds = Math.ceil(ms / 1000);
@@ -80,6 +81,14 @@ function TraceAlarm() {
  */
 export function BottomBar() {
   const balance = useGame((game) => Math.floor(game.player.balance).toLocaleString('en-US'));
+  // Flash the figure green or red when it changes, but not when the bar first appears.
+  const amount = useGame((game) => game.player.balance);
+  const lastAmount = useRef(amount);
+  const balanceMoved = amount > lastAmount.current ? ' is-up' : amount < lastAmount.current ? ' is-down' : '';
+  useEffect(() => {
+    const timer = setTimeout(() => (lastAmount.current = amount), 900);
+    return () => clearTimeout(timer);
+  }, [amount]);
   const time = useGame((game) => formatTime(gameDate(game)));
   const day = useGame((game) => formatDay(gameDate(game)));
   const connected = useGame(isConnected);
@@ -91,7 +100,7 @@ export function BottomBar() {
   const desk = useDesk();
   const active = useWorld((game) => activeConnection(game, desk));
   // The server window only exists while connected.
-  const tabs = TABS.filter((id) => id !== 'server' || connected);
+  const tabs = WINDOW_IDS.filter((id) => (ON_DEMAND.includes(id) ? layouts[id].open : id !== 'server' || connected));
 
   return (
     <footer class={`dock${tracing ? ' is-tracing' : ''}`}>
@@ -102,7 +111,8 @@ export function BottomBar() {
           <button
             key={id}
             type="button"
-            class={`dock__tab${layouts[id].open ? ' is-open' : ''}`}
+            class={`dock__tab${layouts[id].open ? ' is-open' : ''}${layouts[id].minimized ? ' is-minimized' : ''}`}
+            title={layouts[id].minimized ? 'Minimized' : undefined}
             aria-pressed={layouts[id].open}
             onClick={() => windows.toggle(id)}
           >
@@ -122,7 +132,9 @@ export function BottomBar() {
       </div>
       <div class="dock__stat">
         <span class="dock__label">Credits</span>
-        <span class="dock__value data">{balance}</span>
+        <span key={balance} class={`dock__value data${balanceMoved}`}>
+          {balance}
+        </span>
       </div>
       <div class="dock__stat">
         <span class="dock__label">{day}</span>
