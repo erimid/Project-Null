@@ -6,11 +6,11 @@ import type { ProgramDef, ProgramKind, ServerDef } from '../content/schema';
 import type { Connection, EchoPuzzle, GameState, RingPuzzle, Task, TaskTarget } from './state';
 import { cpuSpeed, fileSpeed, maxPrograms, rackStorageGb, storageGb } from './hardware';
 import { heldBy } from './link';
-import { checkBuild, finishBuild, hasTrait, takeModules } from './crafting';
+import { checkBuild, finishBuild, finishDecompile, hasTrait, partTaken, programFile, takeModules, takePartFile } from './crafting';
 import { effect } from './skills';
 import { stream } from './streams';
 import { noteIntrusion } from './trace';
-import { findAccount, findConnection, findProgram, findServer, ownedProgram, type Content } from './world';
+import { fileDef, findAccount, findConnection, findProgram, findServer, ownedProgram, type Content } from './world';
 
 /** A program this many levels below a layer can't touch it at all. */
 export const MAX_LEVEL_GAP = 2;
@@ -24,6 +24,7 @@ const PROGRAM_FOR: Record<Exclude<TaskTarget['kind'], 'build'>, ProgramKind> = {
   copyFile: 'copyFile',
   deleteFile: 'deleteFile',
   deleteLog: 'deleteLog',
+  decompile: 'decompile',
 };
 
 /**
@@ -112,6 +113,14 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
     return { ok: true, seconds, program, level };
   };
 
+  if (target.kind === 'decompile') {
+    const file = state.player.files.find((item) => item.name === target.file);
+    if (!file) return no('You have no such file.');
+    if (!programFile(state, content, file.name)) return no('That is not a program. There is nothing to take apart.');
+    if (file.encrypted) return no('Decrypt it first.');
+    return { ok: true, seconds: (program.baseSeconds + program.secondsPerGq * file.sizeGq) / program.version, program };
+  }
+
   if (target.kind === 'decrypt') {
     const file = state.player.files.find((item) => item.name === target.file);
     if (!file) return no('You have no such file.');
@@ -161,7 +170,10 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
       if (server.security.firewall > 0 && !connection.bypassed.firewall && !heldBy(state, content, server.id, 'firewall')) {
         return no('The firewall is blocking file access.');
       }
-      if (target.kind === 'copyFile') {
+      if (target.kind === 'copyFile' && fileDef(content, server.id, file.name)?.part) {
+        // A module installer goes into your parts, not onto the drive.
+        if (partTaken(state, server.id, file.name)) return no('You have already taken that module.');
+      } else if (target.kind === 'copyFile') {
         if (state.player.files.some((own) => own.name === file.name)) return no('You already have a copy of that file.');
         if (file.sizeGq > freeStorageGb(state, content)) return no('Not enough room on your gateway.');
       } else if (!admin) {
@@ -225,9 +237,10 @@ export function echoCell(state: GameState, content: Content, connectionId: strin
 }
 
 /** Applies a finished program that ran on the gateway itself. */
-function finishLocal(state: GameState, task: Task): void {
+function finishLocal(state: GameState, content: Content, task: Task): void {
   const target = task.target;
   if (target.kind === 'build') return finishBuild(state, task);
+  if (target.kind === 'decompile') return finishDecompile(state, content, task);
   if (target.kind !== 'decrypt') return;
   const file = state.player.files.find((item) => item.name === target.file);
   if (file) delete file.encrypted;
@@ -242,6 +255,7 @@ function finish(state: GameState, content: Content, connection: Connection, task
   const tidy = hasTrait(state, content, program.id, 'tidy');
   switch (target.kind) {
     case 'decrypt':
+    case 'decompile':
     case 'build':
       return;
     case 'monitor': {
@@ -265,6 +279,10 @@ function finish(state: GameState, content: Content, connection: Connection, task
     case 'copyFile': {
       const file = serverState.files.find((item) => item.name === target.file);
       if (!file) return;
+      if (takePartFile(state, content, connection.serverId, file.name)) {
+        if (!tidy) serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file copied: ${file.name}`, byPlayer: true });
+        return;
+      }
       state.player.files.push({
         name: file.name,
         sizeGq: file.sizeGq,
@@ -344,7 +362,7 @@ export function lockRing(state: GameState, content: Content, taskId: string, rin
 /** Starts a program, over a connection or (connectionId null) on the gateway. Returns a reason if it can't start. */
 export function startTask(state: GameState, content: Content, connectionId: string | null, target: TaskTarget): string | null {
   const connection = findConnection(state, connectionId) ?? null;
-  const atHome = target.kind === 'decrypt' || target.kind === 'build';
+  const atHome = target.kind === 'decrypt' || target.kind === 'decompile' || target.kind === 'build';
   if ((connection === null) !== atHome) {
     return connection ? 'That runs on your gateway, not over a connection.' : 'That connection is closed.';
   }
@@ -377,7 +395,7 @@ export function advanceTasks(state: GameState, content: Content, simMs: number):
     if (task.progressMs < task.durationMs) continue;
     state.tasks = state.tasks.filter((other) => other !== task);
     if (task.connectionId === null) {
-      finishLocal(state, task);
+      finishLocal(state, content, task);
       continue;
     }
     const connection = findConnection(state, task.connectionId);

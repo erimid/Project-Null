@@ -59,5 +59,10 @@
   "skillPointRating": 3,
   "unlearnPrice": 1500,
   "buildSeconds": 8,
-  "workbenchAfter": 2
+  "workbenchAfter": 2,
+  "moduleGradeRatings": [
+    0,
+    8,
+    20
+  ]
 }

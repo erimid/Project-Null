@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { findProgram, findServer, hostedModel, installedOfKind, ownedProgram, maxPrograms, programStorageGq, rackStorageGb, storageGb, usedStorageGq } from '../../../core';
+import { findProgram, findServer, hostedModel, installedOfKind, ownedProgram, programFile, maxPrograms, programStorageGq, rackStorageGb, storageGb, usedStorageGq } from '../../../core';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
@@ -26,6 +26,10 @@ export function ProgramsWindow() {
   const [notice, setNotice] = useState('');
   const decrypt = (name: string) => {
     const result = session.dispatch({ type: 'decryptFile', name });
+    setNotice(result.ok ? '' : result.reason);
+  };
+  const decompile = (name: string) => {
+    const result = session.dispatch({ type: 'decompileFile', name });
     setNotice(result.ok ? '' : result.reason);
   };
   const isRunning = (programId: string) => game.tasks.some((task) => task.programId === programId);
@@ -133,6 +137,8 @@ export function ProgramsWindow() {
         <ul class="rows rows--scroll">
           {game.player.files.map((file) => {
             const decrypting = findTask(game, null, { kind: 'decrypt', file: file.name });
+            const decompiling = findTask(game, null, { kind: 'decompile', file: file.name });
+            const isProgram = programFile(game, content, file.name) !== undefined;
             return (
             <li key={file.name} class={`row row--stored${file.encrypted ? ' is-sealed' : ''}`}>
               <span class="row__main data">
@@ -140,6 +146,7 @@ export function ProgramsWindow() {
                 <span class="program__blurb">
                   from {serverName(file.from)}
                   {file.encrypted ? <span class="sealed"> · encrypted, level {file.encrypted}</span> : null}
+                  {isProgram ? <span> · a program, can be decompiled</span> : null}
                 </span>
               </span>
               <span class="data row__dim">{file.sizeGq} GB</span>
@@ -150,6 +157,16 @@ export function ProgramsWindow() {
                   ) : (
                     <button type="button" class="btn btn--go" onClick={() => decrypt(file.name)}>
                       Decrypt
+                    </button>
+                  )}
+                </span>
+              ) : isProgram ? (
+                <span class="row__decrypt">
+                  {decompiling ? (
+                    <TaskProgress taskId={decompiling.id} label="Decompiling" />
+                  ) : (
+                    <button type="button" class="btn btn--go" onClick={() => decompile(file.name)}>
+                      Decompile
                     </button>
                   )}
                 </span>

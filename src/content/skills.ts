@@ -28,6 +28,7 @@ export const SKILL_EFFECTS = [
   'secondSlot',
   'tightBuilds',
   'refine',
+  'teardown',
 ] as const;
 /**
  * What a skill does. `amount` is per rank, and ranks add up.
@@ -45,6 +46,7 @@ export const SKILL_EFFECTS = [
  * - secondSlot: crafted programs take this many more modules.
  * - tightBuilds: crafted programs take (1 - amount) of the room.
  * - refine: two modules of one grade can be melted into one of the next grade.
+ * - teardown: decompiling gives this many more modules.
  */
 export type SkillEffect = (typeof SKILL_EFFECTS)[number];
 

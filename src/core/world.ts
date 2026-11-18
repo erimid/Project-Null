@@ -5,7 +5,7 @@
  * hands them in as a `Content` object, so tests can use tiny made-up
  * worlds and the real data can change without touching the rules.
  */
-import type { AccountDef, ContractDef, FileContent, MailDef, MailKey, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
+import type { AccountDef, ContractDef, FileContent, FileDef, MailDef, MailKey, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
 import type { CompanyPools } from '../content/companies';
 import type { HardwareDef } from '../content/hardware';
 import type { ModelDef } from '../content/models';
@@ -87,6 +87,8 @@ export interface Rules {
   readonly buildSeconds: number;
   /** Delivered contracts before the fixer writes about the Workbench and sends the first modules. */
   readonly workbenchAfter: number;
+  /** Rating needed before the market sells each grade of module, grade 1 first. */
+  readonly moduleGradeRatings: readonly number[];
 }
 
 export interface Content {
@@ -196,6 +198,11 @@ export function installedOfKind(state: GameState, content: Content, kind: Progra
 export function ownedProgram(state: GameState, content: Content, kind: ProgramKind): ProgramDef | undefined {
   const all = installedOfKind(state, content, kind);
   return all.find((program) => program.id === state.player.preferred[kind]) ?? all[0];
+}
+
+/** The written definition of a file on a server (or of the server a stored file came from). */
+export function fileDef(content: Content, serverId: string, name: string): FileDef | undefined {
+  return findServer(content, serverId)?.files.find((file) => file.name === name);
 }
 
 /** What opening a file shows, if anything was written for it. `serverId` is where the file is, or came from. */

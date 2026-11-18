@@ -6,6 +6,7 @@
 import type { ContractDef } from '../content/schema';
 import { baseFine, closeCase } from './forensics';
 import type { Connection, GameState } from './state';
+import { payPart } from './crafting';
 import { noteRating } from './skills';
 import { freeStorageGb } from './tasks';
 import { refreshJobs } from './jobs';
@@ -135,6 +136,11 @@ export function deliverContract(state: GameState, content: Content): string | nu
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
   postJobs(state, content);
   sendMail(state, content, 'paid', { client: contract.client, title: contract.title, pay: String(contract.pay) });
+  const part = payPart(state, content, contract.part);
+  if (part) {
+    const paid = state.messages[state.messages.length - 1]!;
+    paid.body += `\n\nAlso enclosed, as agreed: one ${part} module. It is on your Workbench.`;
+  }
   once(state, 'firstDelivery', () => sendMail(state, content, 'firstDelivery'));
   noteProgress(state, content);
   return null;

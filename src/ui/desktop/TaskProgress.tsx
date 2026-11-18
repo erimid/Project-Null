@@ -28,6 +28,8 @@ export function describeTarget(target: TaskTarget): string {
       return target.logIds.length === 1 ? 'removing a log line' : `removing ${target.logIds.length} log lines`;
     case 'build':
       return 'building';
+    case 'decompile':
+      return 'decompiling';
   }
 }
 

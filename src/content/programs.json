@@ -154,5 +154,17 @@
     "price": 1200,
     "sizeGq": 3,
     "blurb": "Opens an encrypted file you have copied to your gateway. Runs at home, so nobody is watching while it works."
+  },
+  {
+    "id": "decompiler",
+    "name": "Decompiler",
+    "short": "Decompiler",
+    "kind": "decompile",
+    "version": 1,
+    "baseSeconds": 15,
+    "secondsPerGq": 2,
+    "price": 1500,
+    "sizeGq": 3,
+    "blurb": "Takes a program you have copied home apart into modules for your Workbench. Runs at home."
   }
 ]

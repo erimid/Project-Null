@@ -59,7 +59,10 @@ export {
   findBuilt,
   findModule,
   hasTrait,
+  marketGrade,
   moduleSlots,
+  partTaken,
+  programFile,
   partCount,
   partKey,
 } from './crafting';

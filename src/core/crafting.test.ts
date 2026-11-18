@@ -293,3 +293,119 @@ describe('saves', () => {
     expect(testPrograms.length).toBeGreaterThan(0);
   });
 });
+
+describe('where modules come from', () => {
+  /** The directory also holds a module installer and a compiled program. */
+  const world: Content = {
+    ...content,
+    servers: content.servers.map((server) =>
+      server.id === 'directory'
+        ? {
+            ...server,
+            files: [
+              ...server.files,
+              { name: 'pacer.mod', sizeGq: 1, access: 'guest' as const, part: { id: 'quiet', grade: 2 } },
+              { name: 'agent.bin', sizeGq: 2, access: 'guest' as const, program: { modules: [swift1, { id: 'tidy', grade: 1 }], unlocks: 'breaker-2' } },
+            ],
+          }
+        : server,
+    ),
+    contracts: content.contracts.map((contract) => (contract.id === 'steal' ? { ...contract, part: { id: 'compact', grade: 1 } } : contract)),
+  };
+
+  function at(skills: Record<string, number> = {}) {
+    const state: GameState = syncWithContent(
+      createGame({ seed: 5, handle: 'T', startDate: '2034-03-14T08:00:00Z', startingBalance: 5000 }),
+      world,
+    );
+    state.knownServers = world.servers.map((server) => server.id);
+    state.player.skills = { ...skills };
+    const act = (action: Action) => applyAction(state, action, world);
+    const ok = (action: Action) => expect(act(action)).toEqual({ ok: true });
+    const refused = (action: Action, pattern: RegExp) => {
+      const result = act(action);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.reason).toMatch(pattern);
+    };
+    const wait = (seconds: number) => tick(state, seconds * 1000, world);
+    const visit = (serverId: string, user: string) => {
+      ok({ type: 'connect', serverId });
+      const id = state.connections.at(-1)!.id;
+      ok({ type: 'login', connectionId: id, user });
+      return id;
+    };
+    const copyHome = (name: string) => {
+      const id = visit('directory', 'guest');
+      ok({ type: 'runProgram', connectionId: id, target: { kind: 'copyFile', file: name } });
+      wait(10);
+      return id;
+    };
+    return { state, act, ok, refused, wait, visit, copyHome };
+  }
+
+  it('a module installer copied home goes into parts, once', () => {
+    const { state, refused, copyHome } = at();
+    const id = copyHome('pacer.mod');
+    expect(state.player.parts).toEqual({ 'quiet:2': 1 });
+    expect(state.player.files.map((file) => file.name)).not.toContain('pacer.mod');
+    refused({ type: 'runProgram', connectionId: id, target: { kind: 'copyFile', file: 'pacer.mod' } }, /already taken/);
+  });
+
+  it('the market sells modules, better grades at a better rating', () => {
+    const { state, ok, refused, visit } = at();
+    const board = visit('hidden', 'member');
+    ok({ type: 'buyModule', connectionId: board, moduleId: 'swift', grade: 1 });
+    expect(state.player.parts).toEqual({ 'swift:1': 1 });
+    expect(state.player.balance).toBe(4900);
+    refused({ type: 'buyModule', connectionId: board, moduleId: 'swift', grade: 2 }, /better rating/);
+    state.player.rating = 5;
+    ok({ type: 'buyModule', connectionId: board, moduleId: 'swift', grade: 2 });
+    refused({ type: 'buyModule', connectionId: board, moduleId: 'nope', grade: 1 }, /not for sale/);
+    state.player.balance = 10;
+    refused({ type: 'buyModule', connectionId: board, moduleId: 'swift', grade: 1 }, /afford/);
+  });
+
+  it('a contract can pay a module on top of the credits', () => {
+    const { state, ok, visit, act } = at();
+    const board = visit('hidden', 'member');
+    ok({ type: 'acceptContract', connectionId: board, contractId: 'steal' });
+    act({ type: 'disconnectAll' });
+    state.player.files.push({ name: 'secret.dat', sizeGq: 5, from: 'corp' });
+    ok({ type: 'deliverContract' });
+    expect(state.player.parts).toEqual({ 'compact:1': 1 });
+    expect(state.messages.find((message) => message.subject === 'Paid: Steal it')!.body).toMatch(/Compact 1 module/);
+  });
+
+  it('decompiling needs a Decompiler, and takes a program file apart into its modules and the program it was', () => {
+    const { state, ok, refused, copyHome, act, wait } = at();
+    copyHome('agent.bin');
+    act({ type: 'disconnectAll' });
+    expect(state.player.files.map((file) => file.name)).toContain('agent.bin');
+    refused({ type: 'decompileFile', name: 'agent.bin' }, /do not own a program/);
+    state.player.programs.push('decompiler');
+    refused({ type: 'decompileFile', name: 'readme.txt' }, /no such file/);
+    ok({ type: 'decompileFile', name: 'agent.bin' });
+    // 10s plus 1s per GB.
+    expect(state.tasks[0]).toMatchObject({ connectionId: null, durationMs: 12_000 });
+    wait(12.1);
+    expect(state.player.files.map((file) => file.name)).not.toContain('agent.bin');
+    expect(state.player.parts).toEqual({ 'swift:1': 1, 'tidy:1': 1 });
+    expect(state.player.programs).toContain('breaker-2');
+  });
+
+  it('decompiling gives one more module with Teardown, and refuses a file that is not a program or still encrypted', () => {
+    const { state, ok, refused, copyHome, act, wait } = at({ teardown: 1 });
+    state.player.programs.push('decompiler');
+    copyHome('agent.bin');
+    act({ type: 'disconnectAll' });
+    copyHome('readme.txt');
+    act({ type: 'disconnectAll' });
+    refused({ type: 'decompileFile', name: 'readme.txt' }, /not a program/);
+    state.player.files.find((file) => file.name === 'agent.bin')!.encrypted = 1;
+    refused({ type: 'decompileFile', name: 'agent.bin' }, /Decrypt it first/);
+    delete state.player.files.find((file) => file.name === 'agent.bin')!.encrypted;
+    ok({ type: 'decompileFile', name: 'agent.bin' });
+    wait(13);
+    expect(state.player.parts).toEqual({ 'swift:1': 2, 'tidy:1': 1 });
+  });
+});

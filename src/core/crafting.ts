@@ -6,13 +6,16 @@
  * Building runs on the gateway like decrypting does (a task with target
  * kind "build"); the modules are taken when it starts and given back if
  * it is stopped.
+ *
+ * Modules come from the market, from module installers on servers, as
+ * pay for some contracts, and from decompiling program files.
  */
 import type { ModuleDef } from '../content/modules';
-import type { ProgramDef } from '../content/schema';
+import type { PartDef, ProgramDef, ProgramFileDef } from '../content/schema';
 import { describeBuild, type BuiltProgram } from './builds';
 import { effect } from './skills';
 import type { Fitted, GameState, Task } from './state';
-import { findProgram, type Content } from './world';
+import { fileDef, findConnection, findProgram, findServer, type Content } from './world';
 
 export const findModule = (content: Content, id: string): ModuleDef | undefined => content.modules.find((module) => module.id === id);
 
@@ -125,4 +128,79 @@ export function preferProgram(state: GameState, content: Content, programId: str
   if (!program || !state.player.programs.includes(programId)) return 'That program is not installed.';
   state.player.preferred[program.kind] = programId;
   return null;
+}
+
+/** The highest grade of module the market sells at the player's rating. */
+export function marketGrade(state: GameState, content: Content): number {
+  return content.rules.moduleGradeRatings.filter((rating) => state.player.rating >= rating).length;
+}
+
+/** Buys one module from the board the player is logged in to. */
+export function buyModule(state: GameState, content: Content, connectionId: string, id: string, grade: number): string | null {
+  const connection = findConnection(state, connectionId);
+  if (!connection || connection.user === null || findServer(content, connection.serverId)?.kind !== 'board') return 'Log in to the board first.';
+  const module = findModule(content, id);
+  const price = module?.grades[grade - 1]?.price;
+  if (!module || price === undefined) return 'That is not for sale.';
+  if (grade > marketGrade(state, content)) return `The market sells ${module.name} ${grade} to people with a better rating.`;
+  if (state.player.balance < price) return 'You cannot afford that.';
+  state.player.balance -= price;
+  addParts(state, id, grade);
+  return null;
+}
+
+/** Flag set once a module installer on a server has been taken, so it can't be taken twice. */
+export const takenFlag = (serverId: string, name: string): string => `part:${serverId}/${name}`;
+
+/** True if this file on this server is a module installer the player has already taken. */
+export const partTaken = (state: GameState, serverId: string, name: string): boolean => state.flags.includes(takenFlag(serverId, name));
+
+/**
+ * A module installer has been copied home: the module goes into the
+ * player's parts instead of a file onto the drive. Returns true if the
+ * file was one.
+ */
+export function takePartFile(state: GameState, content: Content, serverId: string, name: string): boolean {
+  const part = fileDef(content, serverId, name)?.part;
+  if (!part || !findModule(content, part.id)) return false;
+  if (!partTaken(state, serverId, name)) {
+    state.flags.push(takenFlag(serverId, name));
+    addParts(state, part.id, part.grade);
+  }
+  return true;
+}
+
+/** What decompiling a stored file would give, if it is a program file. */
+export function programFile(state: GameState, content: Content, name: string): ProgramFileDef | undefined {
+  const file = state.player.files.find((item) => item.name === name);
+  return file ? fileDef(content, file.from, file.name)?.program : undefined;
+}
+
+/**
+ * Finishes decompiling: the file is gone; its modules (one more with
+ * Teardown, a copy of the first) go into parts, and a market program it
+ * turns out to be is installed if the player hasn't got it.
+ */
+export function finishDecompile(state: GameState, content: Content, task: Task): void {
+  if (task.target.kind !== 'decompile') return;
+  const name = task.target.file;
+  const program = programFile(state, content, name);
+  if (!program) return;
+  state.player.files = state.player.files.filter((file) => file.name !== name);
+  const parts = [...program.modules];
+  const extra = Math.floor(effect(state, content, 'teardown'));
+  for (let i = 0; i < extra && program.modules[0]; i++) parts.push(program.modules[0]);
+  for (const part of parts) if (findModule(content, part.id)) addParts(state, part.id, part.grade);
+  const unlocks = program.unlocks;
+  if (unlocks && content.programs.some((item) => item.id === unlocks) && !state.player.programs.includes(unlocks)) {
+    state.player.programs.push(unlocks);
+  }
+}
+
+/** Pays a contract's module, if it has one. Returns its name for the message, or null. */
+export function payPart(state: GameState, content: Content, part: PartDef | undefined): string | null {
+  const module = part && findModule(content, part.id);
+  if (!part || !module) return null;
+  addParts(state, part.id, part.grade);
+  return `${module.name} ${part.grade}`;
 }
