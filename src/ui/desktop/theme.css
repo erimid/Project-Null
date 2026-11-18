@@ -1,0 +1,81 @@
+/*
+ * Look and feel from the chosen mockup "2+5f — Card desktop with server tabs".
+ * Rule: the sans font is for titles, tabs, menus and buttons. The mono font
+ * is only for data (file names, readouts, timers, addresses).
+ */
+:root {
+  --bg: #03080f;
+  --bg-glow: #0b2236;
+  --bar: rgba(5, 13, 23, 0.92);
+  --panel: rgba(6, 18, 30, 0.94);
+
+  --line: rgba(95, 212, 255, 0.22);
+  --line-soft: rgba(95, 212, 255, 0.18);
+  --line-strong: rgba(95, 212, 255, 0.4);
+
+  --cyan: #5fd4ff;
+  --text-bright: #e6f7ff;
+  --text: #a9dcef;
+  --text-muted: #8fb8cc;
+  --text-dim: #5d8aa3;
+
+  --mint: #4ee6c8;
+  --mint-text: #c9fff3;
+  --red: #ff3b4e;
+  --red-text: #ffc2c8;
+
+  --font-ui: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+  --font-data: 'Share Tech Mono', ui-monospace, 'Cascadia Mono', Menlo, monospace;
+
+  --bar-height: 52px;
+  --radius-window: 14px;
+  --radius-pill: 999px;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.data {
+  font-family: var(--font-data);
+  font-weight: 400;
+}
