@@ -5348,3 +5348,315 @@ body {
     flex-wrap: wrap;
   }
 }
+
+/* ---- mobile step 6: polish from the device check ---- */
+
+/* A window's name is never cut short; the dim note beside it gives way first. */
+.window--phone .window__title-text {
+  flex: none;
+  max-width: 62%;
+}
+
+.window--phone .window__title-note {
+  flex: 0 10000 auto;
+}
+
+.window--phone .window__close {
+  flex: none;
+}
+
+/* Section tabs and the title bar's own buttons are thumb-sized. */
+.is-phone .tabbtn,
+.is-phone .compose__back {
+  min-height: 40px;
+}
+
+.window--phone .window__tabs {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* The route map: bigger zoom buttons, taller address rows, a relay button that can be hit. */
+.is-phone .globe-zoom button {
+  width: 44px;
+  height: 40px;
+  font-size: 22px;
+}
+
+.is-phone .address {
+  height: 44px;
+}
+
+.is-phone .address__relay {
+  width: 44px;
+  height: 36px;
+  font-size: 20px;
+}
+
+.is-phone .browser__nav {
+  width: 40px;
+  height: 40px;
+}
+
+/* Installed programs: the name and blurb take the whole width, the size and buttons sit under them. */
+.is-phone .row--program {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.is-phone .row--program > :first-child {
+  flex: 0 0 100%;
+}
+
+.is-phone .row--program > .row__dim.data {
+  min-width: 0;
+  margin-right: auto;
+  text-align: left;
+}
+
+/* Lists run their full length and the window scrolls, so there is never a scroller inside a scroller. Messages keeps its short list so the open message stays in view. */
+.is-phone .rows--scroll {
+  max-height: none;
+}
+
+.is-phone .rows--scroll:has(.message) {
+  max-height: 34vh;
+}
+
+/* A server's files in a narrow pane: slimmer buttons keep all three on one line, and on the narrowest they get a line to themselves. */
+@container win (max-width: 400px) {
+  .is-phone .row--file > .row__actions .btn {
+    padding: 8px 11px;
+  }
+
+  .is-phone .row--file > .row__actions {
+    flex-wrap: nowrap;
+  }
+}
+
+@container win (max-width: 330px) {
+  .is-phone .row--file > .row__actions {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Records: tighter columns and names that wrap, so most tables fit a phone without scrolling sideways. */
+.is-phone .records {
+  white-space: normal;
+}
+
+.is-phone .records th,
+.is-phone .records td:not(:nth-child(2)) {
+  white-space: nowrap;
+}
+
+.is-phone .records th,
+.is-phone .records td {
+  padding-right: 8px;
+}
+
+.is-phone .records th:last-child,
+.is-phone .records td:last-child {
+  padding-right: 0;
+}
+
+/* Where a dock tab has width to spare, its count sits beside the name and not out in the corner. */
+@media (min-width: 480px) {
+  .pdock__tab .count {
+    position: static;
+    margin-left: 7px;
+  }
+}
+
+/* A phone on its side: Messages puts the list on the left and the open message on the right. */
+@media (max-height: 500px) and (min-width: 600px) {
+  .window--phone .window__body:has(> .message-body) {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    column-gap: 16px;
+    overflow: hidden;
+  }
+
+  .window--phone .window__body:has(> .message-body) > .compose__sent {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .window--phone .window__body:has(> .message-body) > .rows--scroll,
+  .window--phone .window__body:has(> .message-body) > .message-body {
+    grid-row: 2;
+    min-height: 0;
+    max-height: none;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+/* The desk's bar on a small laptop: the handle is in the Gateway window, so the menu keeps just its bars, and the figures close up, which leaves every tab room for its whole name. */
+@media (max-width: 1520px) {
+  .dock .menu__handle {
+    display: none;
+  }
+
+  .dock .menu__button {
+    padding: 0 12px;
+  }
+
+  .dock__tab {
+    padding: 0 6px;
+  }
+
+  .dock__tab:has(.count) {
+    padding-right: 16px;
+  }
+
+  .dock__tab::after {
+    left: 6px;
+    right: 6px;
+  }
+
+  .dock__stat {
+    padding: 0 7px;
+  }
+
+  .dock__title {
+    margin-left: 6px;
+    letter-spacing: 0.04em;
+  }
+}
+
+/* Narrower still (a tablet held wide): the rating keeps its number and drops the title, which the Gateway window shows. */
+@media (max-width: 1320px) {
+  .dock__title {
+    display: none;
+  }
+
+  .speed__option {
+    min-width: 30px;
+    padding: 7px 5px;
+  }
+
+  .dock__cut {
+    padding: 7px 9px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .dock__tab {
+    padding: 0 4px;
+    font-size: 14px;
+  }
+
+  .dock__tab:has(.count) {
+    padding-right: 15px;
+  }
+
+  .dock__stat {
+    padding: 0 5px;
+  }
+}
+
+/* On the narrowest phones a title bar with a button of its own has no room for the note. */
+@media (max-width: 380px) {
+  .window--phone .window__title:has(.tabbtn) .window__title-note {
+    display: none;
+  }
+}
+
+/* The hidden "(being traced)" text stays inside its tab. Left loose it sat past the screen's edge on a small phone and stretched the page, and the alarm with it. */
+.desktop--phone .tab {
+  position: relative;
+}
+
+/* With more than one trace the alarm lists the others and is taller, so the window moves down further to keep its title bar clear. */
+.desktop--phone.is-tracing:has(.alarm__others) .window--phone {
+  top: 132px;
+}
+
+.desktop--phone.is-tracing:has(.alarm__others li:nth-child(2)) .window--phone {
+  top: 162px;
+}
+
+.desktop--phone.is-tracing:has(.alarm__others li:nth-child(3)) .window--phone {
+  top: 192px;
+}
+
+/* The other traces are buttons too: tall enough to tap. */
+.pdock .alarm__other {
+  padding: 5px 0;
+}
+
+/* The countdown is a little smaller on the narrowest phones, so the server's name keeps its room. */
+@media (max-width: 380px) {
+  .pdock .alarm {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .pdock .alarm__time {
+    font-size: 36px;
+  }
+}
+
+.desktop--tablet.is-tracing:has(.alarm__others) .window--pane {
+  top: 136px;
+}
+
+.desktop--tablet.is-tracing:has(.alarm__others li:nth-child(2)) .window--pane {
+  top: 166px;
+}
+
+.desktop--tablet.is-tracing:has(.alarm__others li:nth-child(3)) .window--pane {
+  top: 196px;
+}
+
+/* A phone on its side has little height to give: the alarm is slimmer there. */
+@media (max-height: 500px) {
+  .pdock .alarm {
+    padding: 5px 14px 7px;
+  }
+
+  .pdock .alarm__time {
+    font-size: 30px;
+  }
+
+  .pdock .alarm__bar {
+    margin-top: 5px;
+  }
+
+  .pdock .alarm__others {
+    margin-top: 5px;
+    padding-top: 2px;
+  }
+
+  .pdock .alarm__other {
+    padding: 3px 0;
+  }
+
+  .desktop--phone.is-tracing .window--phone {
+    top: 70px;
+  }
+
+  .desktop--phone.is-tracing:has(.alarm__others) .window--phone {
+    top: 104px;
+  }
+
+  .desktop--phone.is-tracing:has(.alarm__others li:nth-child(2)) .window--phone {
+    top: 130px;
+  }
+
+  .desktop--phone.is-tracing:has(.alarm__others li:nth-child(3)) .window--phone {
+    top: 156px;
+  }
+}
+
+/* The volume slider gets a taller strip to grab on a phone. */
+.desktop--phone .menu__sound input {
+  min-height: 40px;
+}
