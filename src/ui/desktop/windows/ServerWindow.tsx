@@ -357,6 +357,11 @@ function Logs({ game, state, connection, run }: View) {
           <TaskProgress taskId={running.id} label="Scrubbing" />
         ) : (
           <>
+            {chosen.length < state.logs.length ? (
+              <button type="button" class="btn" onClick={() => setPicked(state.logs.map((entry) => entry.id))}>
+                Select all
+              </button>
+            ) : null}
             {chosen.length > 0 && (
               <button type="button" class="btn" onClick={() => setPicked([])}>
                 Clear

@@ -118,7 +118,7 @@ export function MapWindow() {
               const hop = routeIds.indexOf(server.id);
               const isLive = game.connections.some((c) => c.serverId === server.id);
               return (
-                <li key={server.id}>
+                <li key={server.id} class="addresses__row">
                   <button
                     type="button"
                     class={`address${server.id === selected?.id ? ' is-selected' : ''}`}
@@ -130,6 +130,30 @@ export function MapWindow() {
                       {server.id === gateway.id ? 'you' : isLive ? 'connected' : hop >= 0 ? `relay ${hop + 1}` : server.city}
                     </span>
                   </button>
+                  {server.id !== gateway.id &&
+                    (game.route.includes(server.id) ? (
+                      <button
+                        type="button"
+                        class="address__relay is-on"
+                        disabled={!!live}
+                        aria-label={`Remove ${server.name} from the route`}
+                        title="Remove from route"
+                        onClick={() => run({ type: 'removeHop', serverId: server.id })}
+                      >
+                        −
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        class="address__relay"
+                        disabled={!!live || isLive}
+                        aria-label={`Add ${server.name} as a relay`}
+                        title="Add as relay"
+                        onClick={() => run({ type: 'addHop', serverId: server.id })}
+                      >
+                        +
+                      </button>
+                    ))}
                 </li>
               );
             })}
