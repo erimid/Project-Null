@@ -73,5 +73,15 @@
     "from": "Wren",
     "subject": "They burned a part",
     "body": "That trace did more than find you. Whoever runs that system pushed something back down the line, and your {part} did not survive it.\n\nYour gateway is running on {now} in that slot until you replace it. The Hardware shelf at the Backroom has what you need, if you have the credits."
+  },
+  "jobs": {
+    "from": "Wren",
+    "subject": "Between the real jobs",
+    "body": "{handle}, the board has more than the hand-written contracts now. Look for the ones against ordinary companies. Nobody special is behind them, they are just work: copy a file, delete one, change a record. They come and go, and a new batch appears every day or two.\n\nTwo things to know. The harder your name, the harder the companies it posts against. And small jobs against small companies barely move your rating, so do not live on them. They pay the rent. The real contracts make your name.\n\nWren"
+  },
+  "links": {
+    "from": "Wren",
+    "subject": "Two doors at once",
+    "body": "{handle}, a word about the better-defended systems. The best ones are not defended by the company that owns them. A security firm runs their firewall, or a desk in another building watches their monitor, and each of those has a login of its own.\n\nIf you hold an administrator session on that other machine, the layer it guards switches off while you are there. Close the session and it comes back on.\n\nYou will need a gateway that holds two connections at once. Read what is on the small servers before you go for the big ones. Their handover notes say a lot.\n\nWren"
   }
 }

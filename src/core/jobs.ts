@@ -10,9 +10,13 @@ import type { GameState, Job } from './state';
 import { stream } from './streams';
 import type { Content } from './world';
 
-/** The tier of company the board offers work against at this rating. */
-export function tierForRating(rating: number): number {
-  return Math.max(1, Math.min(5, 1 + Math.floor(rating / 2)));
+/** The tier of company the board offers work against at this rating. `tierRatings` is the lowest rating for each tier. */
+export function tierForRating(rating: number, tierRatings: readonly number[]): number {
+  let tier = 1;
+  tierRatings.forEach((min, index) => {
+    if (rating >= min) tier = index + 1;
+  });
+  return tier;
 }
 
 /** True for a job from the board's pool, as opposed to a hand-written contract. */
@@ -45,7 +49,7 @@ function possibleObjectives(state: GameState, server: ServerDef): Objective[] {
 function makeJob(state: GameState, content: Content): Job | undefined {
   const pools = content.companies.jobs;
   const rng = stream(state, 'jobs');
-  const tier = tierForRating(state.player.rating);
+  const tier = tierForRating(state.player.rating, content.rules.tierRatings);
   const busy = new Set(state.contracts.jobs.map((job) => job.targetId));
   const companies = content.servers.filter(
     (server) => server.generated && server.generated.tier <= tier && server.generated.tier >= tier - 1 && !busy.has(server.id),
@@ -78,7 +82,7 @@ function makeJob(state: GameState, content: Content): Job | undefined {
     client: rng.pick(pools.clients),
     targetId: server.id,
     pay: content.rules.jobPayPerTier * serverTier + rng.int(0, 4) * 50,
-    rating: 1,
+    rating: content.rules.jobRatings[serverTier - 1] ?? 0,
     minRating: 0,
     summary: fill(rng.pick(wording.summaries), values),
     brief: fill(rng.pick(wording.briefs), values),

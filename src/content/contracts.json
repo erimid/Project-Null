@@ -212,5 +212,52 @@
       "kind": "destroy",
       "file": "disclosure_bundle_7.dat"
     }
+  },
+  {
+    "id": "halvorsen-assay",
+    "title": "Batch 14",
+    "client": "A rival laboratory",
+    "targetId": "halvorsen",
+    "pay": 6500,
+    "rating": 3,
+    "minRating": 8,
+    "summary": "Delete assay batch 14 at Halvorsen Biogenetics.",
+    "brief": "Halvorsen has a six-month head start on a compound we have been working on for two years. Their results are in one file.\n\nDelete HB-2209_assay_batch_14.dat from their records server. Their security has grown teeth since you last saw it. Go in with proper tools and leave before anyone reads the audit log.",
+    "objective": {
+      "kind": "destroy",
+      "file": "HB-2209_assay_batch_14.dat"
+    }
+  },
+  {
+    "id": "corvane-dunmore",
+    "title": "Approved",
+    "client": "Dunmore Cold Storage",
+    "targetId": "corvane-mutual",
+    "pay": 8000,
+    "rating": 3,
+    "minRating": 10,
+    "summary": "Change claim C-88214 at Corvane Mutual to Approved.",
+    "brief": "Corvane has had our claim under review for four months. Our staff have not been paid since January.\n\nIn the open claims register, set the Status of C-88214 to Approved. Corvane's monitor is among the fastest in the country, and its password is not a weak one. Come prepared.",
+    "objective": {
+      "kind": "record",
+      "key": "C-88214",
+      "column": "Status",
+      "value": "Approved"
+    }
+  },
+  {
+    "id": "calder-loss",
+    "title": "What Calder Re models",
+    "client": "A regulator's analyst",
+    "targetId": "calder-re",
+    "pay": 9000,
+    "rating": 3,
+    "minRating": 12,
+    "summary": "Copy the Q1 loss model from Calder Re while its security desk is kept busy.",
+    "brief": "The regulator has been told that Calder Re's loss models are sound. Someone who has seen them says otherwise.\n\nCopy loss_model_q1.dat from Calder Reinsurance. You know how its monitor is kept quiet: hold the security desk at Calder Re Facilities open while you work. You will need a gateway that can hold two connections.",
+    "objective": {
+      "kind": "steal",
+      "file": "loss_model_q1.dat"
+    }
   }
 ]

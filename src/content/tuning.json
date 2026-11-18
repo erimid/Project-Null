@@ -33,5 +33,21 @@
   "hardwareLossLevel": 4,
   "boardJobs": 4,
   "jobHours": 36,
-  "jobPayPerTier": 350
+  "jobPayPerTier": 350,
+  "tierRatings": [
+    0,
+    2,
+    5,
+    9,
+    15
+  ],
+  "jobRatings": [
+    0,
+    1,
+    1,
+    2,
+    2
+  ],
+  "jobsAfter": 1,
+  "linksAfterRating": 4
 }

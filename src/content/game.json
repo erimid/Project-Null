@@ -34,6 +34,18 @@
     {
       "min": 8,
       "title": "Ghost"
+    },
+    {
+      "min": 12,
+      "title": "Shade"
+    },
+    {
+      "min": 18,
+      "title": "Phantom"
+    },
+    {
+      "min": 26,
+      "title": "Legend"
     }
   ]
 }

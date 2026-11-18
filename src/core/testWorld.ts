@@ -166,6 +166,10 @@ export const testRules: Rules = {
   boardJobs: 3,
   jobHours: 24,
   jobPayPerTier: 100,
+  tierRatings: [0, 2, 4, 6, 8],
+  jobRatings: [0, 1, 1, 2, 2],
+  jobsAfter: 99,
+  linksAfterRating: 4,
 };
 
 const part = (slot: HardwareDef['slot'], tier: number, price: number, values: Partial<HardwareDef>): HardwareDef => ({
@@ -221,6 +225,8 @@ export const testMail: Record<MailKey, MailDef> = {
   phishRefused: { from: '{name}', subject: 'Refused: {label}', body: '{hours}' },
   phishReported: { from: 'Fixer', subject: 'Reported by {name}', body: '{title}' },
   hardware: letter('hardware'),
+  jobs: letter('jobs'),
+  links: letter('links'),
   hardwareLost: { from: 'Fixer', subject: 'Lost {part}', body: 'now {now}' },
 };
 

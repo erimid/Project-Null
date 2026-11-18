@@ -20,6 +20,7 @@ import {
   type GameState,
 } from './index';
 import { postJobs } from './contracts';
+import { noteProgress } from './world';
 import { content as testContent } from './testWorld';
 
 /** The test world, with the real company pools. */
@@ -100,7 +101,7 @@ describe('repeatable jobs', () => {
     expect(h.state.contracts.jobs).toHaveLength(base.rules.boardJobs);
     for (const job of h.state.contracts.jobs) {
       const tier = h.world.servers.find((server) => server.id === job.targetId)!.generated!.tier;
-      expect(tier).toBeLessThanOrEqual(tierForRating(0));
+      expect(tier).toBeLessThanOrEqual(tierForRating(0, base.rules.tierRatings));
       expect(job.summary).not.toMatch(/\{\w+\}/);
       expect(job.brief).not.toMatch(/\{\w+\}/);
     }
@@ -191,5 +192,43 @@ describe('repeatable jobs', () => {
     expect(loaded.contracts.jobs).toEqual([]);
     tick(loaded, 1000, h.world);
     expect(loaded.contracts.jobs).toHaveLength(base.rules.boardJobs);
+  });
+});
+
+describe('the rating ladder', () => {
+  it('moves up a tier each time the rating reaches the next mark', () => {
+    const marks = [0, 2, 5, 9, 15];
+    expect([0, 1, 2, 4, 5, 8, 9, 14, 15, 99].map((rating) => tierForRating(rating, marks))).toEqual([1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
+  });
+
+  it('a delivered job earns the rating set for its company tier', () => {
+    const h = game();
+    postJobs(h.state, h.world);
+    for (const job of h.state.contracts.jobs) {
+      const tier = h.world.servers.find((server) => server.id === job.targetId)!.generated!.tier;
+      expect(job.rating).toBe(base.rules.jobRatings[tier - 1]);
+    }
+  });
+
+  it('a job saved before the ladder was stretched keeps the rating it was posted with', () => {
+    const h = game();
+    postJobs(h.state, h.world);
+    h.state.contracts.jobs[0] = { ...h.state.contracts.jobs[0]!, rating: 1 };
+    const loaded = syncWithContent(deserializeGame(serializeGame(h.state, 'now')).state, h.world);
+    expect(loaded.contracts.jobs[0]!.rating).toBe(1);
+  });
+
+  it('the fixer writes about standing jobs once enough is delivered, and about linked servers at the set rating, each once', () => {
+    const h = game();
+    const world = { ...base, rules: { ...base.rules, jobsAfter: 1 } };
+    h.state.contracts.completed = ['a'];
+    noteProgress(h.state, world);
+    noteProgress(h.state, world);
+    expect(h.state.messages.filter((m) => m.subject === 'jobs')).toHaveLength(1);
+    expect(h.state.messages.some((m) => m.subject === 'links')).toBe(false);
+    h.state.player.rating = base.rules.linksAfterRating;
+    noteProgress(h.state, world);
+    noteProgress(h.state, world);
+    expect(h.state.messages.filter((m) => m.subject === 'links')).toHaveLength(1);
   });
 });
