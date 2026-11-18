@@ -4,6 +4,7 @@
  */
 import type { ServerDef } from '../content/schema';
 import type { Connection, GameState, TraceState } from './state';
+import { monitorHeld } from './link';
 import { findServer, type Content } from './world';
 
 /** How long the trace needs for each step back along a route, last relay first. */
@@ -25,8 +26,10 @@ export function newTrace(content: Content, target: ServerDef, route: readonly st
  * bypassing, touching files or logs). Starts the countdown to a trace if
  * one isn't already under way.
  */
-export function noteIntrusion(content: Content, connection: Connection): void {
+export function noteIntrusion(state: GameState, content: Content, connection: Connection): void {
   if (connection.trace.status !== 'none' || connection.monitor.blindMs > 0) return;
+  // A monitor whose alerts wait on a console the player is sitting at notices nothing.
+  if (monitorHeld(state, content, connection)) return;
   const monitor = findServer(content, connection.serverId)?.security.monitor ?? 0;
   const graceSeconds = content.rules.monitorGraceSeconds[monitor] ?? 0;
   connection.trace.status = graceSeconds > 0 ? 'pending' : 'active';
@@ -93,16 +96,25 @@ export function traceReport(trace: TraceState): TraceReport {
   };
 }
 
-/** The connection whose trace will finish first, if any trace is running. */
-export function mostUrgentTrace(state: GameState): Connection | undefined {
+/** True while a connection's trace stands still: its monitor is blind, or kept busy from another server. */
+export function traceHeld(state: GameState, content: Content, connection: Connection): boolean {
+  return connection.monitor.blindMs > 0 || monitorHeld(state, content, connection);
+}
+
+/** Every running trace, the one that will finish first at the front. A held trace is not closing in, so moving ones come first. */
+export function tracesByUrgency(state: GameState, content: Content): Connection[] {
   return state.connections
     .filter((connection) => connection.trace.status === 'active')
-    // A held trace is not closing in, so one that is moving comes first.
     .sort(
       (a, b) =>
-        Number(a.monitor.blindMs > 0) - Number(b.monitor.blindMs > 0) ||
+        Number(traceHeld(state, content, a)) - Number(traceHeld(state, content, b)) ||
         traceReport(a.trace).remainingMs - traceReport(b.trace).remainingMs,
-    )[0];
+    );
+}
+
+/** The connection whose trace will finish first, if any trace is running. */
+export function mostUrgentTrace(state: GameState, content: Content): Connection | undefined {
+  return tracesByUrgency(state, content)[0];
 }
 
 /** Index in the route of the relay the trace is working on right now. -1 if there is none. */

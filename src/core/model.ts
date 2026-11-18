@@ -6,7 +6,7 @@ import type { ModelDef, ModelSkill } from '../content/models';
 import { hostedModel } from './hardware';
 import { readEverything } from './phish';
 import type { Connection, GameState } from './state';
-import { traceReport } from './trace';
+import { traceHeld, traceReport } from './trace';
 import { findConnection, findServer, sendMail, type Content } from './world';
 
 export const findModel = (content: Content, id: string): ModelDef | undefined => content.models.find((model) => model.id === id);
@@ -71,7 +71,7 @@ export function endRental(state: GameState, content: Content): void {
 
 /** True if a watching model should cut this connection now: its trace is about to finish. */
 export function shouldPullOut(state: GameState, content: Content, connection: Connection): boolean {
-  if (connection.trace.status !== 'active' || connection.monitor.blindMs > 0) return false;
+  if (connection.trace.status !== 'active' || traceHeld(state, content, connection)) return false;
   if (!hasSkill(state, content, 'watch')) return false;
   return traceReport(connection.trace).remainingMs <= content.rules.modelWatchSeconds * 1000;
 }

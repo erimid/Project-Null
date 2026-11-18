@@ -156,8 +156,10 @@ describe('security and program checks', () => {
       expect(programs.some((program) => program.kind === kind), kind).toBe(true);
     }
     for (const server of servers) {
-      for (const level of [server.security.password, server.security.proxy, server.security.firewall]) {
-        expect(level, server.id).toBeLessThanOrEqual(3);
+      // A layer run from another server is beaten by holding that server, not by a program.
+      const beatable = (['password', 'proxy', 'firewall'] as const).filter((layer) => server.link?.layer !== layer);
+      for (const layer of beatable) {
+        expect(server.security[layer], server.id).toBeLessThanOrEqual(3);
       }
     }
   });
@@ -227,7 +229,9 @@ describe('shipped contracts', () => {
       const security = servers.find((server) => server.id === contract.targetId)!.security;
       expect(security.password - best('breakPassword'), contract.id).toBeLessThanOrEqual(2);
       if (contract.objective.kind === 'record') expect(security.proxy - best('bypassProxy'), contract.id).toBeLessThanOrEqual(2);
-      else expect(security.firewall - best('bypassFirewall'), contract.id).toBeLessThanOrEqual(2);
+      else if (servers.find((server) => server.id === contract.targetId)!.link?.layer !== 'firewall') {
+        expect(security.firewall - best('bypassFirewall'), contract.id).toBeLessThanOrEqual(2);
+      }
     }
   });
 
@@ -305,5 +309,22 @@ describe('hardware', () => {
     const rack = { id: 'r', slot: 'rack', tier: 1, name: 'R', blurb: 'b', price: 9, sizeGb: 4, model: 'ghost' };
     expect(() => parseHardware([...stock, rack], ['magpie'])).toThrow(/models.json/);
     expect(parseHardware([...stock, { ...rack, model: 'magpie' }], ['magpie'])).toHaveLength(5);
+  });
+});
+
+describe('layers run from another server', () => {
+  const info = { ...gameInfo, startingServers: [], startingPrograms: [] };
+  const target = (link: unknown, security = { password: 0, proxy: 0, firewall: 5, monitor: 0 }) =>
+    parseServers([valid, { ...relay, accounts: [{ user: 'root', role: 'admin', name: 'R' }] }, { ...relay, id: 't', address: '10.0.0.10', security, link }]);
+
+  it('accepts a link to another server with an admin login', () => {
+    expect(() => checkContent(info, target({ serverId: 'r', layer: 'firewall' }), [])).not.toThrow();
+  });
+
+  it('rejects unknown layers, unknown servers, itself, and a layer the server does not have', () => {
+    expect(() => target({ serverId: 'r', layer: 'proxy' })).toThrow(/link layer/);
+    expect(() => checkContent(info, target({ serverId: 'nope', layer: 'firewall' }), [])).toThrow(/not another server/);
+    expect(() => checkContent(info, target({ serverId: 't', layer: 'firewall' }), [])).toThrow(/not another server/);
+    expect(() => checkContent(info, target({ serverId: 'r', layer: 'monitor' }), [])).toThrow(/has none/);
   });
 });

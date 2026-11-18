@@ -65,7 +65,8 @@ export {
   rackStorageGb,
   storageGb,
 } from './hardware';
-export { hopUnderTrace, mostUrgentTrace, totalTraceMs, traceHopMs, traceReport } from './trace';
+export { hopUnderTrace, mostUrgentTrace, totalTraceMs, traceHeld, traceHopMs, traceReport, tracesByUrgency } from './trace';
+export { heldBy, holding, monitorHeld } from './link';
 export type { TraceReport } from './trace';
 export {
   activeContract,

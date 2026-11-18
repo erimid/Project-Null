@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import { mostUrgentTrace } from '../../core';
 import { useGame } from '../hooks';
 import type { Speed } from '../../core';
-import { session } from '../session';
+import { content, session } from '../session';
 import { Alerts } from './Alerts';
 import { BrowserWindow } from './windows/BrowserWindow';
 import { ContractWindow } from './windows/ContractWindow';
@@ -47,7 +47,7 @@ export function Desktop() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const tracing = useGame((game) => mostUrgentTrace(game) !== undefined);
+  const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
   // The whole desk jolts when a trace cuts the line.
   const desk = useRef<HTMLDivElement>(null);
   useEffect(

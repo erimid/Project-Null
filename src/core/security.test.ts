@@ -334,7 +334,7 @@ describe('the trace', () => {
     ok({ type: 'connect', serverId: 'corp' });
     wait(120);
     expect(state.connections[0]!.trace.status).toBe('none');
-    expect(mostUrgentTrace(state)).toBeUndefined();
+    expect(mostUrgentTrace(state, content)).toBeUndefined();
   });
 
   it('starts a short while after the monitor notices a program', () => {
@@ -350,7 +350,7 @@ describe('the trace', () => {
     wait(2);
     // The second left over after the wait already counts towards the trace.
     expect(state.connections[0]!.trace).toMatchObject({ status: 'active', elapsedMs: 1_000 });
-    expect(mostUrgentTrace(state)).toBe(state.connections[0]);
+    expect(mostUrgentTrace(state, content)).toBe(state.connections[0]);
   });
 
   it('is noticed when logging in as an administrator with a broken password', () => {

@@ -8,6 +8,7 @@
 import { caught, pullOut } from './actions';
 import { endRental, shouldPullOut } from './model';
 import { runReviews } from './forensics';
+import { monitorHeld } from './link';
 import { runPhish } from './phish';
 import { isConnected, type GameState, type Speed } from './state';
 import { advanceTasks } from './tasks';
@@ -34,6 +35,8 @@ export function tick(state: GameState, realMs: number, content: Content): number
   for (const connection of [...state.connections]) {
     // A monitor blinded during this tick starts its blind time on the next one.
     if (connection.monitor.blindMs > 0 && sighted.includes(connection)) continue;
+    // A monitor kept busy from another server stands still, like a blind one.
+    if (monitorHeld(state, content, connection)) continue;
     const traceMs = advanceMonitor(connection, simMs);
     if (traceMs <= 0) continue;
     // A watching model hangs up first, if the trace would otherwise get there.

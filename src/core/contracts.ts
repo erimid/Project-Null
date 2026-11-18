@@ -133,7 +133,7 @@ export function alterRecord(state: GameState, content: Content, connectionId: st
     text: `record updated: ${goal.key}`,
     byPlayer: true,
   });
-  noteIntrusion(content, connection);
+  noteIntrusion(state, content, connection);
   return null;
 }
 

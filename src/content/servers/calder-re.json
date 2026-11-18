@@ -1,0 +1,74 @@
+{
+  "id": "calder-re",
+  "name": "Calder Reinsurance",
+  "kind": "company",
+  "owner": "Calder Reinsurance plc",
+  "hostname": "CR-UW-01",
+  "address": "185.17.92.18",
+  "city": "Edinburgh",
+  "country": "United Kingdom",
+  "lat": 55.95,
+  "lon": -3.2,
+  "blurb": "Underwriting: the treaties Calder Re signs with the insurers it covers.",
+  "listed": true,
+  "security": {
+    "password": 3,
+    "proxy": 0,
+    "firewall": 2,
+    "monitor": 4
+  },
+  "traceSecondsPerHop": 7,
+  "relayDelay": 1.0,
+  "link": {
+    "serverId": "calder-facilities",
+    "layer": "monitor"
+  },
+  "banner": [
+    "CALDER REINSURANCE PLC",
+    "Underwriting · CR-UW-01",
+    "Intrusion monitoring is active on this system at all times.",
+    "Alerts are handled by the Facilities security desk."
+  ],
+  "accounts": [
+    {
+      "user": "admin",
+      "role": "admin",
+      "name": "H. Lindsay, Treaty Underwriting"
+    }
+  ],
+  "files": [
+    {
+      "name": "treaty_book_2034.dat",
+      "sizeGq": 9,
+      "access": "admin"
+    },
+    {
+      "name": "corvane_special_handling.txt",
+      "sizeGq": 2,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "CORVANE MUTUAL · SPECIAL HANDLING · INTERNAL\n\nCorvane have asked that claims they mark \"special handling\" be outside our right to inspect. Legal objected. The objection was withdrawn on the 11th after a call from the chairman's office.\n\nWe now cover 60% of losses we are not allowed to look at. Three such claims so far, all from cold storage sites, all paid within a week.\n\nI have kept copies of what Corvane sent us before the clause was signed. They are in the treaty book, under C-88214.\n\nH. Lindsay"
+      }
+    },
+    {
+      "name": "loss_model_q1.dat",
+      "sizeGq": 6,
+      "access": "admin"
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 1300,
+      "text": "login admin from 185.17.92.31"
+    },
+    {
+      "minutesAgo": 1290,
+      "text": "file opened: corvane_special_handling.txt"
+    },
+    {
+      "minutesAgo": 1280,
+      "text": "logout admin"
+    }
+  ]
+}

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'preact/hooks';
 import {
   HARDWARE_SLOT_LABELS,
   freeStorageGb,
+  heldBy,
+  holding,
   installed,
   rackStorageGb,
   activeContract,
@@ -175,18 +177,40 @@ function LoginScreen({ game, server, state, connection, run }: View) {
 /** The server's defences, and the buttons that get past them. */
 function Security({ game, server, connection, run }: View) {
   const { password, proxy, firewall, monitor } = server.security;
-  if (password + proxy + firewall + monitor === 0) return null;
+  const holds = holding(content, connection);
+  const holdNote = holds.length > 0 && (
+    <p class="board__note link-note">
+      {holds.map(({ serverId, layer }) => (
+        <span key={serverId}>
+          This login holds <strong>{findServer(content, serverId)?.name}</strong>'s {layer}
+          {layer === 'firewall' ? ' open' : ' busy'}. Stay logged in here while you work there.
+        </span>
+      ))}
+    </p>
+  );
+  if (password + proxy + firewall + monitor === 0) return holdNote || null;
+  const link = server.link;
+  const linkedFrom = link && findServer(content, link.serverId)?.name;
+  const firewallHeld = !!heldBy(game, content, server.id, 'firewall');
+  const monitorBusy = !!heldBy(game, content, server.id, 'monitor');
   const passwordKnown = server.accounts.some((account) => account.role === 'admin' && canLogIn(game, server, account.user));
 
   const bypassable = (kind: 'proxy' | 'firewall', level: number, blocks: string) => {
     if (level === 0) return null;
     const task = findTask(game, connection, { kind });
     const done = connection.bypassed[kind];
+    const held = kind === 'firewall' && firewallHeld;
+    const remote = kind === 'firewall' && link?.layer === 'firewall';
     return (
-      <li class={`layer${done ? ' is-open' : ''}`} title={`${blocks} until it is bypassed.`}>
+      <li
+        class={`layer${done || held ? ' is-open' : ''}${remote ? ' is-linked' : ''}`}
+        title={remote ? `${blocks}. Run from ${linkedFrom}: an admin login there holds it open.` : `${blocks} until it is bypassed.`}
+      >
         <span class="layer__name">{kind === 'proxy' ? 'Proxy' : 'Firewall'}</span>
         <span class="layer__level data">{level}</span>
-        {done ? (
+        {held ? (
+          <span class="layer__state">held open</span>
+        ) : done ? (
           <span class="layer__state">bypassed</span>
         ) : task ? (
           <TaskProgress taskId={task.id} label="Bypassing" />
@@ -217,16 +241,20 @@ function Security({ game, server, connection, run }: View) {
       {bypassable('firewall', firewall, 'Blocks copying and deleting files')}
       {monitor > 0 && (
         <li
-          class={`layer${blind ? ' is-open is-blind' : ''}`}
+          class={`layer${blind || monitorBusy ? ' is-open is-blind' : ''}${link?.layer === 'monitor' ? ' is-linked' : ''}`}
           title={
-            monitor >= content.rules.monitorGraceSeconds.length
+            link?.layer === 'monitor'
+              ? `Reports to ${linkedFrom}. While you hold an admin login there, it notices nothing and its trace stands still.`
+              : monitor >= content.rules.monitorGraceSeconds.length
               ? 'Watches for intruders. This one traces every connection from the moment it opens.'
               : 'Watches for intruders. A higher level starts its trace sooner.'
           }
         >
           <span class="layer__name">Monitor</span>
           <span class="layer__level data">{monitor}</span>
-          {blind ? (
+          {monitorBusy && !blind ? (
+            <span class="layer__state">kept busy</span>
+          ) : blind ? (
             <BlindTime connectionId={connection.id} />
           ) : blinding ? (
             <TaskProgress taskId={blinding.id} label="Blinding" />
@@ -242,6 +270,12 @@ function Security({ game, server, connection, run }: View) {
         </li>
       )}
     </ul>
+    {link && !firewallHeld && !monitorBusy && (
+      <p class="board__note link-note">
+        This server's {link.layer} is run from <strong>{linkedFrom}</strong>.
+      </p>
+    )}
+    {holdNote}
     {connection.monitor.echo && <Handshake key={connection.id} connectionId={connection.id} echo={connection.monitor.echo} />}
     {lineup?.puzzle && <PortLineup taskId={lineup.id} rings={lineup.puzzle.locked.length} />}
     </>

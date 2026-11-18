@@ -209,7 +209,7 @@ export function applyAction(state: GameState, action: Action, content: Content):
       connection.role = account.role;
       writeLog(state, connection.serverId, `login ${account.user} from ${sourceAddress(content, connection)}`);
       // Walking in on a password-protected account is noticed, however you got the password.
-      if (account.role === 'admin' && server.security.password > 0) noteIntrusion(content, connection);
+      if (account.role === 'admin' && server.security.password > 0) noteIntrusion(state, content, connection);
       return OK;
     }
 

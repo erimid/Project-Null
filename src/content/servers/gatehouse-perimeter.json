@@ -1,0 +1,83 @@
+{
+  "id": "gatehouse-perimeter",
+  "name": "Gatehouse Managed Security",
+  "kind": "company",
+  "owner": "Gatehouse Managed Security Ltd.",
+  "hostname": "GH-EDGE-07",
+  "address": "89.101.160.7",
+  "city": "Cork",
+  "country": "Ireland",
+  "lat": 51.9,
+  "lon": -8.47,
+  "blurb": "Runs firewalls for small firms that cannot run their own. One console, many clients.",
+  "listed": true,
+  "security": {
+    "password": 2,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 2
+  },
+  "traceSecondsPerHop": 16,
+  "relayDelay": 1.2,
+  "banner": [
+    "GATEHOUSE MANAGED SECURITY",
+    "Edge console GH-EDGE-07",
+    "Client perimeters managed from this system: 14",
+    "Change window: Sundays 02:00 to 04:00."
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Status page"
+    },
+    {
+      "user": "ops",
+      "role": "admin",
+      "name": "N. Byrne, Duty Engineer"
+    }
+  ],
+  "files": [
+    {
+      "name": "status.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "ALL CLIENT PERIMETERS: OPERATIONAL\n\nScheduled maintenance this Sunday. Clients may see short interruptions."
+      }
+    },
+    {
+      "name": "client_runbook.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "RUNBOOK · CLIENT PERIMETERS\n\nEach client's firewall is driven from this console. When an engineer opens a client's session here for a change, that client's firewall is put in maintenance mode and passes everything until the session closes.\n\nDo not leave sessions open. We had a complaint from Brennan & Marsh in January.\n\nClients on this console include: Brennan & Marsh LLP (BO-DOCS), Harrow Dental, three others."
+      }
+    },
+    {
+      "name": "client_configs.dat",
+      "sizeGq": 5,
+      "access": "admin"
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 2200,
+      "text": "login ops from 89.101.160.2"
+    },
+    {
+      "minutesAgo": 2190,
+      "text": "maintenance BO-DOCS opened"
+    },
+    {
+      "minutesAgo": 2170,
+      "text": "maintenance BO-DOCS closed"
+    },
+    {
+      "minutesAgo": 2160,
+      "text": "logout ops"
+    }
+  ]
+}
