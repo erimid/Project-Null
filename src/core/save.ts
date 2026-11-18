@@ -107,6 +107,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     player: { ...(old.player as object), contacts: [], facts: [] },
     phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
   }),
+  // 7 -> 8: models for rent. Nobody had one before.
+  7: (old) => ({ ...old, player: { ...(old.player as object), model: null } }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -276,6 +278,7 @@ function checkState(raw: Obj): GameState {
   }
   if (!isNum(player.rating) || !isNum(player.lieLowUntilMs)) throw damaged;
   if (!isList(player.contacts, isText) || !isList(player.facts, isText)) throw damaged;
+  if (!(player.model === null || (isObj(player.model) && isText(player.model.id) && isNum(player.model.untilMs)))) throw damaged;
   const phish = raw.phish;
   if (
     !isObj(phish) ||

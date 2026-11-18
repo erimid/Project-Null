@@ -2626,3 +2626,24 @@ button.tabbar__contract--live:hover {
     transform: translateY(-4px);
   }
 }
+
+/* ---- rented models ---- */
+
+.review {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+}
+
+.review.is-good {
+  border-color: rgba(78, 230, 200, 0.45);
+  color: var(--mint-text);
+}
+
+.review.is-sender,
+.review.is-details {
+  border-color: rgba(255, 196, 107, 0.45);
+  color: #ffc46b;
+}

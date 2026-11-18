@@ -26,6 +26,8 @@ import ashgrovePoly from './servers/ashgrove-poly.json';
 import aldergateFinch from './servers/aldergate-finch.json';
 import sunderbyKraft from './servers/sunderby-kraft.json';
 import tesseraWater from './servers/tessera-water.json';
+import modelsJson from './models.json';
+import { parseModels } from './models';
 import peopleJson from './people.json';
 import { checkPeople, parsePeople } from './people';
 import { parseSites } from './sites';
@@ -54,6 +56,7 @@ export type {
 } from './schema';
 
 export { findPage } from './sites';
+export type { ModelDef, ModelSkill } from './models';
 export type { AskDef, FactDef, FileRef, PeopleDef, PersonDef, RewardDef } from './people';
 export type { BlockDef, LinkDef, Net, PageDef, SiteDef } from './sites';
 
@@ -68,6 +71,7 @@ export const programs = parsePrograms(programsJson);
 export const contracts = parseContracts(contractsJson);
 export const mail = parseMail(mailJson);
 checkContent(gameInfo, servers, programs, contracts);
+export const models = parseModels(modelsJson);
 export const people = parsePeople(peopleJson);
 checkPeople(people, servers, tuning.phishMaxDetails);
 

@@ -53,5 +53,15 @@
     "from": "Wren",
     "subject": "You were reported",
     "body": "{name} did not believe your second message either, and this time they passed it up the line.\n\nTheir side has changed its passwords, so anything you had broken there is gone, and {name} will not answer you again. The board has heard, and your rating has taken the knock.\n\nRead more before you write. The details have to be ones that person would know.\n\nWren"
+  },
+  "models": {
+    "from": "Wren",
+    "subject": "Hire some help",
+    "body": "{handle}, you are doing enough work now that some of it is not worth your own time.\n\nThe Backroom's Market rents language models by the day, from a compute farm that does not ask what they are for. A model lives on their hardware and works through your gateway.\n\nMagpie is small and cheap. Log in somewhere, open Files, and it will read every file there in one go and note the people and details for you. In Logs it will pick out the lines that point at you.\n\nHeron is large and costs three times as much. It does the same, and it will read a message over before you send it and tell you if the name or the details are wrong. It also watches your traces. If one is about to reach you, Heron cuts the line first. You lose the connection, not the fine.\n\nA rental lasts a day. Rent one when you have a day's work lined up.\n\nWren"
+  },
+  "modelExpired": {
+    "from": "Lowlight Compute",
+    "subject": "Your rental has ended: {model}",
+    "body": "Your day with {model} is over and the instance has been wiped. Nothing it read has been kept on our side.\n\nRent it again from the Market on your board whenever you like.\n\nLowlight Compute\nNo logs. No questions. No refunds."
   }
 }

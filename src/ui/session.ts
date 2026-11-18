@@ -21,7 +21,7 @@ import {
   type GameState,
   type SaveSummary,
 } from '../core';
-import { contracts, gameInfo, mail, people, programs, servers, tuning } from '../content';
+import { contracts, gameInfo, mail, models, people, programs, servers, tuning } from '../content';
 import { diff, snapshot, type GameEvent, type Snapshot } from './events';
 import { createMemoryStore, openSaveStore, type SaveStore } from './storage/saveStore';
 
@@ -34,6 +34,7 @@ export const content: Content = {
   contracts,
   mail,
   people,
+  models,
   rules: tuning,
 };
 
@@ -202,7 +203,7 @@ function shape(): string {
   const traces = state.connections.map((c) => `${c.trace.status}${traceReport(c.trace).relaysTraced}`).join();
   const monitors = state.connections.map((c) => `${c.monitor.blindMs > 0}${c.monitor.echo?.result ?? ''}`).join();
   const sealed = state.player.files.filter((file) => file.encrypted).length;
-  const phish = `${state.phish.sent.length}${state.phish.done.length}`;
+  const phish = `${state.phish.sent.length}${state.phish.done.length}${state.player.model?.id ?? ''}`;
   return `${state.tasks.length}|${state.connections.length}|${state.messages.length}|${traces}|${monitors}|${sealed}|${phish}`;
 }
 

@@ -27,5 +27,8 @@
   "phishReplyMinutes": 40,
   "phishMaxDetails": 3,
   "phishWaryHours": 8,
-  "phishStrikes": 2
+  "phishStrikes": 2,
+  "modelsAfter": 4,
+  "modelRentHours": 24,
+  "modelWatchSeconds": 5
 }

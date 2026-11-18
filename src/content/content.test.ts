@@ -231,7 +231,7 @@ describe('shipped contracts', () => {
   });
 
   it('only use placeholders the rules fill in', () => {
-    const known = ['handle', 'client', 'title', 'pay', 'target', 'fine', 'hours', 'lines', 'name', 'label'];
+    const known = ['handle', 'client', 'title', 'pay', 'target', 'fine', 'hours', 'lines', 'name', 'label', 'model'];
     for (const letter of Object.values(mail)) {
       for (const [, name] of `${letter.from} ${letter.subject} ${letter.body}`.matchAll(/\{(\w+)\}/g)) {
         expect(known).toContain(name);

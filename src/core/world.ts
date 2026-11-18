@@ -6,6 +6,7 @@
  * worlds and the real data can change without touching the rules.
  */
 import type { AccountDef, ContractDef, FileContent, MailDef, MailKey, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
+import type { ModelDef } from '../content/models';
 import type { PeopleDef } from '../content/people';
 import type { Connection, GameState, ServerState } from './state';
 
@@ -51,6 +52,12 @@ export interface Rules {
   readonly phishWaryHours: number;
   /** Times someone can see through a message before they report it and stop answering. */
   readonly phishStrikes: number;
+  /** Delivered contracts before the fixer writes about renting a model. */
+  readonly modelsAfter: number;
+  /** In-game hours one rental of a model lasts. */
+  readonly modelRentHours: number;
+  /** A watching model cuts the connection when a trace has this many seconds left. */
+  readonly modelWatchSeconds: number;
 }
 
 export interface Content {
@@ -65,6 +72,8 @@ export interface Content {
   readonly mail: Readonly<Record<MailKey, MailDef>>;
   /** People who can be written to, and what can be known about them. */
   readonly people: PeopleDef;
+  /** Language models for rent on the board. */
+  readonly models: readonly ModelDef[];
   readonly rules: Rules;
 }
 
@@ -93,6 +102,9 @@ export function noteProgress(state: GameState, content: Content): void {
   }
   if (state.contracts.completed.length >= content.rules.phishingAfter && content.people.asks.length > 0) {
     once(state, 'phishing', () => sendMail(state, content, 'phishing'));
+  }
+  if (state.contracts.completed.length >= content.rules.modelsAfter && content.models.length > 0) {
+    once(state, 'models', () => sendMail(state, content, 'models'));
   }
 }
 
@@ -200,6 +212,8 @@ export function syncWithContent(state: GameState, content: Content): GameState {
   // A contract that was removed from the game can't be finished.
   const isContract = (id: string) => content.contracts.some((contract) => contract.id === id);
   if (state.contracts.activeId !== null && !isContract(state.contracts.activeId)) state.contracts.activeId = null;
+
+  if (state.player.model && !content.models.some((model) => model.id === state.player.model?.id)) state.player.model = null;
 
   // Drop anything that points at a server that no longer exists.
   state.knownServers = state.knownServers.filter(exists);

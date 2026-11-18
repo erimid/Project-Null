@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { findPerson, knownFacts, knownPeople, marks, openAsks, standing, type GameState, type Standing } from '../../core';
+import { findPerson, hasSkill, judge, knownFacts, knownPeople, marks, openAsks, rentedModel, standing, type GameState, type Standing, type Verdict } from '../../core';
 import { content, session } from '../session';
 
 const STANDING_NOTES: Record<Standing, string> = {
@@ -20,6 +20,10 @@ export function Compose({ game, onSent }: { game: GameState; onSent: (notice: st
   const [senderId, setSenderId] = useState<string | null>(null);
   const [factIds, setFactIds] = useState<readonly string[]>([]);
   const [notice, setNotice] = useState('');
+  // What the rented model said about the message, and which message it was about.
+  const [review, setReview] = useState<{ of: string; verdict: Verdict } | null>(null);
+  const model = rentedModel(game, content);
+  const canReview = hasSkill(game, content, 'review');
 
   const targets = marks(game, content);
   if (targets.length === 0) {
@@ -43,6 +47,12 @@ export function Compose({ game, onSent }: { game: GameState; onSent: (notice: st
 
   const toggle = (id: string) =>
     setFactIds((list) => (list.includes(id) ? list.filter((other) => other !== id) : list.length < most ? [...list, id] : list));
+
+  const draftKey = `${ask?.id}/${senderId}/${[...factIds].sort().join()}`;
+  const readOver = () => {
+    if (ask && sender) setReview({ of: draftKey, verdict: judge(content, { askId: ask.id, senderId: sender.id, factIds: picked.map((fact) => fact.id) }) });
+  };
+  const said = review?.of === draftKey ? review.verdict : null;
 
   const send = () => {
     if (!ask || !sender || !mark) return;
@@ -160,7 +170,22 @@ export function Compose({ game, onSent }: { game: GameState; onSent: (notice: st
               <p>{sender.name}</p>
             </article>
           )}
+          {said && model && (
+            <p class={`review is-${said}`}>
+              <strong>{model.name}:</strong>{' '}
+              {said === 'good'
+                ? `This reads right. ${mark.name.split(' ')[0]} has no reason to doubt it.`
+                : said === 'sender'
+                  ? `${mark.name.split(' ')[0]} would not do this for ${sender?.name}. It needs somebody else's name on it.`
+                  : `The name is right, but the details do not prove it is them. Something ${sender?.name.split(' ')[0]} would know is missing.`}
+            </p>
+          )}
           <div class="contract__actions">
+            {canReview && model && (
+              <button type="button" class="btn" disabled={!ask || !sender} onClick={readOver}>
+                Have {model.name} read it over
+              </button>
+            )}
             {state !== 'open' && <span class="compose__state">{findPerson(content, mark.id)?.name} {STANDING_NOTES[state]}.</span>}
             <button type="button" class="btn btn--go" disabled={!ask || !sender || state !== 'open'} onClick={send}>
               Send
