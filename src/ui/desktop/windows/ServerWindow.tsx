@@ -768,9 +768,11 @@ function Contracts({ game, connection, act }: View) {
             </span>
             <span class="contract__reward">
               <span class="data contract__pay">{formatMoney(contract.pay)}</span>
-              <span class="contract__rating" title="What delivering it adds to your rating">
-                +<span class="data">{contract.rating}</span> rating
-              </span>
+              {contract.rating > 0 && (
+                <span class="contract__rating" title="What delivering it adds to your rating">
+                  +<span class="data">{contract.rating}</span> rating
+                </span>
+              )}
             </span>
             <button
               type="button"

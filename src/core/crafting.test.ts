@@ -343,6 +343,31 @@ describe('where modules come from', () => {
     return { state, act, ok, refused, wait, visit, copyHome };
   }
 
+  it('the first compiled program copied home brings one note about decompiling, and an installer or plain file does not', () => {
+    const { state, ok, copyHome } = at();
+    const notes = () => state.messages.filter((message) => message.subject === 'decompiling').length;
+    const leave = (id: string) => ok({ type: 'disconnect', connectionId: id });
+    leave(copyHome('pacer.mod'));
+    expect(notes()).toBe(0);
+    leave(copyHome('agent.bin'));
+    expect(notes()).toBe(1);
+    state.player.files = [];
+    leave(copyHome('agent.bin'));
+    expect(notes()).toBe(1);
+  });
+
+  it('a save from before installers existed is given them once, unless they were already taken', () => {
+    const { state } = at();
+    const files = state.servers['directory']!.files;
+    state.flags = state.flags.filter((flag) => flag !== 'installers-added');
+    state.flags.push('part:directory/pacer.mod');
+    state.servers['directory']!.files = files.filter((file) => file.name !== 'pacer.mod' && file.name !== 'agent.bin');
+    syncWithContent(state, world);
+    const names = state.servers['directory']!.files.map((file) => file.name);
+    expect(names).toContain('agent.bin');
+    expect(names).not.toContain('pacer.mod');
+  });
+
   it('a module installer copied home goes into parts, once', () => {
     const { state, refused, copyHome } = at();
     const id = copyHome('pacer.mod');

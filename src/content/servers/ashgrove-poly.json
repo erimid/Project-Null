@@ -90,6 +90,23 @@
           }
         ]
       }
+    },
+    {
+      "name": "registrar_macro.bin",
+      "sizeGq": 3,
+      "access": "admin",
+      "program": {
+        "modules": [
+          {
+            "id": "tidy",
+            "grade": 1
+          },
+          {
+            "id": "compact",
+            "grade": 1
+          }
+        ]
+      }
     }
   ],
   "logs": [

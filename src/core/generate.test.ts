@@ -85,6 +85,42 @@ describe('generated companies', () => {
     expect(fileContent(h.world, withText!.id, file.name)?.kind).toBe('text');
   });
 
+  it('some hold module installers and program files, one grade better in the better-defended ones, and the board never asks for them', () => {
+    let installers = 0;
+    let programs = 0;
+    for (let seed = 1; seed <= 6; seed++) {
+      for (const server of generateCompanies(companies, seed)) {
+        for (const file of server.files) {
+          const parts = file.part ? [file.part] : (file.program?.modules ?? []);
+          if (file.part) installers++;
+          if (file.program) programs++;
+          for (const part of parts) {
+            expect(part.grade).toBeGreaterThanOrEqual(1);
+            expect(part.grade).toBeLessThanOrEqual(3);
+          }
+          if (file.part && server.generated!.tier >= 4) {
+            const written = companies.sectors.find((sector) => sector.id === server.generated!.sector)!.installers!.find((item) => item.name === file.name)!;
+            expect(file.part.grade).toBe(Math.min(3, written.part!.grade + 1));
+          }
+        }
+      }
+    }
+    expect(installers).toBeGreaterThan(10);
+    expect(programs).toBeGreaterThan(10);
+    const h = game();
+    h.state.player.rating = 8;
+    for (let day = 0; day < 6; day++) {
+      h.state.clock.gameTimeMs += 3 * 86_400_000;
+      postJobs(h.state, h.world);
+      for (const job of h.state.contracts.jobs) {
+        if (job.objective.kind === 'record') continue;
+        const wanted = job.objective.file;
+        const file = h.world.servers.find((server) => server.id === job.targetId)!.files.find((item) => item.name === wanted)!;
+        expect(file.part ?? file.program).toBeUndefined();
+      }
+    }
+  });
+
   it('are placed in a region of the world', () => {
     expect(regionOf({ lat: 40, lon: -74 })).toBe('Americas');
     expect(regionOf({ lat: 52, lon: 4 })).toBe('Europe');

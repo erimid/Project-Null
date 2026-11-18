@@ -95,7 +95,7 @@ export const hardware = parseHardware(hardwareJson, models.map((model) => model.
 export const people = parsePeople(peopleJson);
 export const skills = parseSkills(skillsJson);
 export const modules = parseModules(modulesJson);
-checkParts(modules, servers, contracts, programs);
+checkParts(modules, servers, contracts, programs, companies.sectors);
 checkPeople(people, servers, tuning.phishMaxDetails);
 
 /**

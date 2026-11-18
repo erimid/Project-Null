@@ -153,7 +153,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -565,7 +565,7 @@ export function parsePart(file: string, where: string, value: unknown): PartDef 
   return { id: text(file, `${where} part`, raw, 'id'), grade };
 }
 
-function parseProgramFile(file: string, where: string, value: unknown): ProgramFileDef {
+export function parseProgramFile(file: string, where: string, value: unknown): ProgramFileDef {
   const raw = entry(file, `${where} program`, value);
   const modules = list(file, `${where} program`, raw, 'modules').map((part) => parsePart(file, where, part));
   if (modules.length === 0) throw new ContentError(file, `${where}: a program file needs at least one module`);

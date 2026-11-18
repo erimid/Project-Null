@@ -51,6 +51,15 @@
       "name": "tariff_table_2034.dat",
       "sizeGq": 2,
       "access": "admin"
+    },
+    {
+      "name": "meter_poll.mod",
+      "sizeGq": 1,
+      "access": "admin",
+      "part": {
+        "id": "quiet",
+        "grade": 2
+      }
     }
   ],
   "logs": [

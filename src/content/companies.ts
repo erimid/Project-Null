@@ -9,7 +9,7 @@
  * made: {company} {city} {staff} {staff2} {year} {q} {n} {ip}, and in
  * jobs also {file} {key} {value} {column} {records} {tier}.
  */
-import { ContentError, ROLES, type Role } from './schema';
+import { ContentError, parsePart, parseProgramFile, ROLES, type PartDef, type ProgramFileDef, type Role } from './schema';
 
 export interface CityDef {
   readonly city: string;
@@ -39,6 +39,21 @@ export interface RecordsTemplate {
   readonly values: readonly string[];
 }
 
+/**
+ * A file some companies of a sector hold that is more than data: a
+ * module installer (`part`) or a compiled program (`program`). Each
+ * company has it with probability `chance`. Companies of tier 4 and 5
+ * hold better modules: every grade is one higher, up to 3.
+ */
+export interface InstallerTemplate {
+  readonly name: string;
+  readonly sizeGb: readonly [number, number];
+  readonly chance: number;
+  readonly text?: string;
+  readonly part?: PartDef;
+  readonly program?: ProgramFileDef;
+}
+
 export interface SectorDef {
   readonly id: string;
   /** Put after a name stem: "Freight", "Clinic"... */
@@ -47,6 +62,7 @@ export interface SectorDef {
   /** Short tag used in host names, e.g. "DSP". */
   readonly tag: string;
   readonly files: readonly FileTemplate[];
+  readonly installers?: readonly InstallerTemplate[];
   readonly records?: RecordsTemplate;
 }
 
@@ -140,6 +156,24 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
       };
     });
     if (!files.some((f) => (f.access ?? 'admin') === 'admin')) fail(`${where} needs at least one admin file for jobs`);
+    const installers = sector.installers === undefined ? [] : list(sector.installers, `${where} installers`).map((item, j): InstallerTemplate => {
+      const f = obj(item, `${where} installer ${j}`);
+      const name = text(f.name, `${where} installer ${j} name`);
+      if (files.some((file) => file.name === name)) fail(`${where} installer "${name}" has the same name as a file`);
+      const size = f.sizeGb;
+      if (!Array.isArray(size) || size.length !== 2) fail(`${where} installer ${j}: sizeGb must be [smallest, largest]`);
+      const [low, high] = [number((size as unknown[])[0], `${where} installer ${j} size`, 1, 1000), number((size as unknown[])[1], `${where} installer ${j} size`, 1, 1000)];
+      if (high < low) fail(`${where} installer ${j}: sizeGb is the wrong way round`);
+      if ((f.part === undefined) === (f.program === undefined)) fail(`${where} installer "${name}" must have either a part or a program`);
+      return {
+        name,
+        sizeGb: [low, high],
+        chance: number(f.chance, `${where} installer ${j} chance`, 0, 1),
+        ...(f.text === undefined ? {} : { text: text(f.text, `${where} installer ${j} text`) }),
+        ...(f.part === undefined ? {} : { part: parsePart(file, `${where} installer "${name}"`, f.part) }),
+        ...(f.program === undefined ? {} : { program: parseProgramFile(file, `${where} installer "${name}"`, f.program) }),
+      };
+    });
     let records: RecordsTemplate | undefined;
     if (sector.records !== undefined) {
       const r = obj(sector.records, `${where} records`);
@@ -155,6 +189,7 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
       blurbs: texts(sector.blurbs, `${where} blurbs`),
       tag: text(sector.tag, `${where} tag`),
       files,
+      ...(installers.length > 0 ? { installers } : {}),
       ...(records ? { records } : {}),
     };
   });

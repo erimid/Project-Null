@@ -11,7 +11,12 @@
   "lon": -0.97,
   "blurb": "Records and compliance archive. Not listed.",
   "listed": false,
-  "security": { "password": 2, "proxy": 0, "firewall": 2, "monitor": 2 },
+  "security": {
+    "password": 2,
+    "proxy": 0,
+    "firewall": 2,
+    "monitor": 2
+  },
   "traceSecondsPerHop": 10,
   "relayDelay": 1.0,
   "banner": [
@@ -46,6 +51,19 @@
       "name": "regulator_returns_2032.dat",
       "sizeGq": 4,
       "access": "admin"
+    },
+    {
+      "name": "sample_logger.bin",
+      "sizeGq": 2,
+      "access": "admin",
+      "program": {
+        "modules": [
+          {
+            "id": "tidy",
+            "grade": 2
+          }
+        ]
+      }
     }
   ],
   "logs": [

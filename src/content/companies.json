@@ -55,6 +55,10 @@
         { "name": "rate_card_{year}.txt", "sizeGb": [1, 1], "text": "{company} · RATE CARD {year}\n\nFull load, domestic: per km rates as agreed.\nPart load: minimum charge applies.\nHazardous goods: by quote only, approved by {staff}.\n\nRates for our three largest accounts are not on this card. Ask {staff2}." },
         { "name": "dispatch_note.txt", "sizeGb": [1, 1], "text": "From: {staff}\nTo: night dispatch\n\nThe customs broker on the {city} run keeps asking which trailers are sealed and which are not. Do not tell him. If he asks again, put him through to me.\n\n{staff}" }
       ],
+      "installers": [
+        {"name": "route_pacer.mod", "sizeGb": [1, 2], "chance": 0.35, "part": {"id": "swift", "grade": 1}},
+        {"name": "dispatch_client.bin", "sizeGb": [2, 3], "chance": 0.3, "program": {"modules": [{"id": "compact", "grade": 1}]}}
+      ],
       "records": { "title": "Shipments", "columns": ["Consignment", "Status"], "key": "CN-{n}", "values": ["in transit", "held at depot", "delivered", "returned to sender"] }
     },
     {
@@ -68,6 +72,10 @@
         { "name": "practice_meeting.txt", "sizeGb": [1, 1], "text": "PRACTICE MEETING · MINUTES\n\nPresent: {staff}, {staff2}.\n\n1. The insurer has queried 40 claims from last quarter. {staff} will \"look into it\".\n2. The new booking system keeps double-booking Thursdays.\n3. Nobody has changed the admin password since the system went in. {staff2} says it is fine." },
         { "name": "welcome.txt", "sizeGb": [1, 1], "access": "guest", "text": "Welcome to {company}, {city}.\n\nTo book or change an appointment, call reception. We do not discuss patient matters by email." }
       ],
+      "installers": [
+        {"name": "audit_scrubber.mod", "sizeGb": [1, 2], "chance": 0.35, "part": {"id": "tidy", "grade": 1}},
+        {"name": "ward_sync.bin", "sizeGb": [2, 3], "chance": 0.25, "program": {"modules": [{"id": "quiet", "grade": 1}, {"id": "compact", "grade": 1}]}}
+      ],
       "records": { "title": "Patients", "columns": ["Patient no.", "Account"], "key": "P{n}", "values": ["paid", "overdue", "written off", "in dispute"] }
     },
     {
@@ -79,6 +87,10 @@
         { "name": "case_{n}_bundle.dat", "sizeGb": [3, 9] },
         { "name": "client_ledger.dat", "sizeGb": [1, 3] },
         { "name": "file_note_{n}.txt", "sizeGb": [1, 1], "text": "FILE NOTE · PRIVILEGED\n\nCall with the client this morning. They want the settlement signed before the press hears about it. I said that is not how settlements work. They said it is how theirs work.\n\nPlease make sure the earlier drafts are not on the shared drive.\n\n{staff}" }
+      ],
+      "installers": [
+        {"name": "docket_pacer.mod", "sizeGb": [1, 2], "chance": 0.35, "part": {"id": "quiet", "grade": 1}},
+        {"name": "matter_sync.bin", "sizeGb": [2, 4], "chance": 0.25, "program": {"modules": [{"id": "tidy", "grade": 1}, {"id": "swift", "grade": 1}]}}
       ]
     },
     {
@@ -90,6 +102,10 @@
         { "name": "loyalty_members.dat", "sizeGb": [4, 10] },
         { "name": "supplier_invoices_{year}.dat", "sizeGb": [2, 5] },
         { "name": "memo_shrinkage.txt", "sizeGb": [1, 1], "text": "MEMO\nFrom: {staff}\nTo: store managers\n\nStock losses at the {city} branch are up again. Until we know why, every refund over 50 needs a second signature.\n\nAnd please stop putting the safe code on a sticky note. {staff2}, this means you." }
+      ],
+      "installers": [
+        {"name": "till_unroll.mod", "sizeGb": [1, 2], "chance": 0.4, "part": {"id": "swift", "grade": 1}},
+        {"name": "pos_agent.bin", "sizeGb": [2, 3], "chance": 0.25, "program": {"modules": [{"id": "compact", "grade": 1}, {"id": "swift", "grade": 1}]}}
       ]
     },
     {
@@ -101,6 +117,10 @@
         { "name": "meter_readings_{q}.dat", "sizeGb": [5, 12] },
         { "name": "substation_plans.dat", "sizeGb": [3, 7] },
         { "name": "maintenance_rota.txt", "sizeGb": [1, 1], "text": "MAINTENANCE ROTA · {city}\n\nWeek 11: {staff}, {staff2}.\n\nThe east feeder has tripped three times this month. Head office says it is within tolerance. Head office does not live on the east side.\n\nDo not share this rota outside the team." }
+      ],
+      "installers": [
+        {"name": "scada_trim.mod", "sizeGb": [1, 2], "chance": 0.3, "part": {"id": "compact", "grade": 2}},
+        {"name": "meter_agent.bin", "sizeGb": [2, 4], "chance": 0.25, "program": {"modules": [{"id": "swift", "grade": 2}]}}
       ],
       "records": { "title": "Accounts", "columns": ["Account", "Supply"], "key": "AC-{n}", "values": ["connected", "disconnected", "on payment plan", "flagged for audit"] }
     },
@@ -114,6 +134,10 @@
         { "name": "member_statements.dat", "sizeGb": [3, 8] },
         { "name": "audit_prep.txt", "sizeGb": [1, 1], "text": "AUDIT PREPARATION · CONFIDENTIAL\n\nThe auditors arrive on the 20th. Before then:\n- reconcile the {city} branch float (it is out again)\n- remove the personal loans {staff} approved for family members, or at least label them\n\n{staff2}" }
       ],
+      "installers": [
+        {"name": "ledger_cleaner.mod", "sizeGb": [1, 2], "chance": 0.3, "part": {"id": "tidy", "grade": 2}},
+        {"name": "batch_runner.bin", "sizeGb": [2, 4], "chance": 0.25, "program": {"modules": [{"id": "swift", "grade": 1}, {"id": "tidy", "grade": 1}]}}
+      ],
       "records": { "title": "Loans", "columns": ["Loan", "Status"], "key": "L-{n}", "values": ["current", "in arrears", "settled", "referred to collections"] }
     },
     {
@@ -125,6 +149,10 @@
         { "name": "drawings_rev{n}.dat", "sizeGb": [6, 14] },
         { "name": "tender_{year}_draft.dat", "sizeGb": [2, 4] },
         { "name": "test_report.txt", "sizeGb": [1, 1], "text": "TEST REPORT · BRACKET ASSEMBLY\n\nSamples 1 to 6 passed. Sample 7 cracked at 80% of rated load.\n\nThe customer has asked for the full report. {staff} wants to send samples 1 to 6 only.\n\nI am writing this down so that somebody has.\n\n{staff2}" }
+      ],
+      "installers": [
+        {"name": "cad_tuner.mod", "sizeGb": [1, 2], "chance": 0.3, "part": {"id": "compact", "grade": 1}},
+        {"name": "build_daemon.bin", "sizeGb": [3, 5], "chance": 0.25, "program": {"modules": [{"id": "swift", "grade": 1}, {"id": "quiet", "grade": 1}], "unlocks": "proxy-bypass"}}
       ]
     },
     {
@@ -136,6 +164,10 @@
         { "name": "exam_papers_{year}.dat", "sizeGb": [2, 6] },
         { "name": "fees_ledger.dat", "sizeGb": [1, 4] },
         { "name": "staff_bulletin.txt", "sizeGb": [1, 1], "access": "guest", "text": "STAFF BULLETIN · {company}\n\nReminder: exam papers are kept on the admin server and nowhere else. {staff} holds the only admin login.\n\nParents' evening is on Thursday." }
+      ],
+      "installers": [
+        {"name": "lab_pacer.mod", "sizeGb": [1, 2], "chance": 0.3, "part": {"id": "quiet", "grade": 1}},
+        {"name": "grading_unpacker.bin", "sizeGb": [2, 3], "chance": 0.25, "program": {"modules": [{"id": "compact", "grade": 1}], "unlocks": "decrypter"}}
       ],
       "records": { "title": "Students", "columns": ["Student no.", "Result"], "key": "S{n}", "values": ["pass", "fail", "distinction", "resit"] }
     }

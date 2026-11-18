@@ -19,7 +19,7 @@
     "cost": 1,
     "effect": "steadyHand",
     "amount": 0.35,
-    "blurb": "The rings of a port line-up turn a third slower, and a port can be a little further off the marker and still lock."
+    "blurb": "The rings of a port line-up turn about a third slower, and a ring can sit a little off the marker and still lock."
   },
   {
     "id": "extra-thread",
@@ -133,7 +133,7 @@
     "cost": 2,
     "effect": "teardown",
     "amount": 1,
-    "blurb": "Decompiling a program gives one more module than it would."
+    "blurb": "Taking a program file apart gives you one more module out of it, a second copy of the first."
   },
   {
     "id": "second-slot",
@@ -167,6 +167,6 @@
     "needs": "second-slot",
     "effect": "refine",
     "amount": 1,
-    "blurb": "At the Workbench, melt two of the same module down into one a grade better."
+    "blurb": "At the Workbench, melt two modules of the same kind and grade down into one a grade better."
   }
 ]

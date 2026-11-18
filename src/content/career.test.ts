@@ -59,7 +59,10 @@ const SLOW: Profile = { ...PROFILES.typical, name: 'slow', thinkSeconds: 8, hops
 const FRUGAL: Profile = { ...PROFILES.typical, name: 'frugal', thinkSeconds: 5, hops: 8, upgrades: false };
 
 const SEEDS = [1, 7, 2034];
-const everything = [...programs, ...hardware].reduce((sum, item) => sum + item.price, 0);
+// The shelf: every program, every part of hardware, and every grade of every module the market sells.
+const everything =
+  [...programs, ...hardware].reduce((sum, item) => sum + item.price, 0) +
+  modules.reduce((sum, module) => sum + module.grades.reduce((inner, grade) => inner + grade.price, 0), 0);
 
 describe('a whole career', () => {
   it.each(SEEDS)('a careful player reaches the top title with every written contract done, never traced (seed %i)', (seed) => {

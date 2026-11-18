@@ -55,6 +55,19 @@
       "name": "loss_model_q1.dat",
       "sizeGq": 6,
       "access": "admin"
+    },
+    {
+      "name": "risk_engine.bin",
+      "sizeGq": 5,
+      "access": "admin",
+      "program": {
+        "modules": [
+          {
+            "id": "swift",
+            "grade": 3
+          }
+        ]
+      }
     }
   ],
   "logs": [
