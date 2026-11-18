@@ -1,0 +1,18 @@
+{
+  "id": "gateway",
+  "name": "Home Gateway",
+  "kind": "gateway",
+  "owner": "You",
+  "hostname": "localhost",
+  "address": "81.204.17.66",
+  "city": "Rotterdam",
+  "country": "Netherlands",
+  "lat": 51.92,
+  "lon": 4.48,
+  "blurb": "Your own machine. Every connection you make starts here.",
+  "listed": false,
+  "banner": [],
+  "accounts": [],
+  "files": [],
+  "logs": []
+}

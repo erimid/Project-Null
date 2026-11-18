@@ -19,9 +19,22 @@ function useStore<T>(subscribe: (listener: () => void) => () => void, read: () =
   return value;
 }
 
-/** Reads one value out of the game, e.g. useGame((game) => game.player.balance). */
+/**
+ * Reads one simple value (text, number, true/false) out of the game, e.g.
+ * useGame((game) => game.player.balance). Checked on every clock tick.
+ */
 export function useGame<T>(select: (game: GameState) => T): T {
   return useStore(session.subscribeGame, () => select(session.getState()));
+}
+
+/**
+ * Reads anything out of the game, including lists and objects. The
+ * component re-renders whenever the player does something or a game is
+ * loaded, but not on clock ticks, so don't use it for the time.
+ */
+export function useWorld<T>(select: (game: GameState) => T): T {
+  useStore(session.subscribeChanges, session.getRevision);
+  return select(session.getState());
 }
 
 export function useSaveStatus(): SaveStatus {

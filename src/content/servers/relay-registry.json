@@ -1,0 +1,42 @@
+{
+  "id": "relay-registry",
+  "name": "Open Relay Registry",
+  "kind": "directory",
+  "owner": "Open Relay Foundation",
+  "hostname": "ORR-PUB-1",
+  "address": "194.56.201.3",
+  "city": "Zurich",
+  "country": "Switzerland",
+  "lat": 47.37,
+  "lon": 8.54,
+  "blurb": "Public directory of hosts that answer on the open network.",
+  "listed": true,
+  "banner": [
+    "OPEN RELAY REGISTRY",
+    "A public service of the Open Relay Foundation, Zurich",
+    "Listings are supplied by host operators and are not verified.",
+    "Queries are logged for 30 days."
+  ],
+  "accounts": [
+    { "user": "guest", "role": "guest", "name": "Public access" },
+    { "user": "registrar", "role": "admin", "name": "M. Egli" }
+  ],
+  "files": [
+    { "name": "README.txt", "sizeGq": 1, "access": "guest" },
+    { "name": "listing_policy_2034.txt", "sizeGq": 1, "access": "guest" },
+    { "name": "registry_export_0313.dat", "sizeGq": 6, "access": "admin" },
+    { "name": "abuse_reports_q1.dat", "sizeGq": 3, "access": "admin" },
+    { "name": "query.log", "sizeGq": 2, "access": "admin" }
+  ],
+  "logs": [
+    { "minutesAgo": 1310, "text": "login registrar from 194.56.201.10" },
+    { "minutesAgo": 1295, "text": "listing updated: Polar Mesh Exchange" },
+    { "minutesAgo": 1290, "text": "logout registrar" },
+    { "minutesAgo": 610, "text": "login guest from 88.14.203.71" },
+    { "minutesAgo": 604, "text": "logout guest" },
+    { "minutesAgo": 212, "text": "login guest from 5.61.90.144" },
+    { "minutesAgo": 209, "text": "directory query: relay" },
+    { "minutesAgo": 201, "text": "logout guest" },
+    { "minutesAgo": 47, "text": "nightly integrity check: 0 errors" }
+  ]
+}

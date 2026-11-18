@@ -1,6 +1,8 @@
 import { gameDate, isConnected } from '../../core';
 import { formatDay, formatMoney, formatTime } from '../format';
-import { useGame } from '../hooks';
+import { useGame, useWorld } from '../hooks';
+import { session } from '../session';
+import { activeConnection, useDesk } from './deskStore';
 import { SpeedControl } from './SpeedControl';
 import { WINDOW_DEFS, WINDOW_IDS, useWindows, windows } from './windowStore';
 
@@ -15,11 +17,15 @@ export function BottomBar() {
   const day = useGame((game) => formatDay(gameDate(game)));
   const connected = useGame(isConnected);
   const layouts = useWindows();
+  const desk = useDesk();
+  const active = useWorld((game) => activeConnection(game, desk));
+  // The server window only exists while connected.
+  const pills = WINDOW_IDS.filter((id) => id !== 'server' || connected);
 
   return (
     <footer class="bottombar">
       <span class="bottombar__handle">{handle}</span>
-      {WINDOW_IDS.map((id) => (
+      {pills.map((id) => (
         <button
           key={id}
           type="button"
@@ -39,7 +45,12 @@ export function BottomBar() {
         {balance} · {time}
       </span>
       <SpeedControl />
-      <button class="pill pill--danger" type="button" disabled={!connected}>
+      <button
+        class="pill pill--danger"
+        type="button"
+        disabled={!active}
+        onClick={() => active && session.dispatch({ type: 'disconnect', connectionId: active.id })}
+      >
         Disconnect
       </button>
     </footer>

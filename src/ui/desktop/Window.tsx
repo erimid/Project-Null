@@ -8,8 +8,12 @@ const TITLE_HEIGHT = 40;
 
 interface Props {
   id: WindowId;
-  /** Small dim text on the right of the title bar. */
+  /** Shown instead of the window's usual title. */
+  title?: string;
+  /** Small dim text next to the title. */
   note?: string;
+  /** Buttons shown on the right of the title bar. */
+  actions?: ComponentChildren;
   children: ComponentChildren;
 }
 
@@ -17,7 +21,7 @@ interface Props {
  * A floating window. Drag it by its title bar; click anywhere on it to
  * bring it to the front; × closes it (its bottom-bar pill reopens it).
  */
-export function Window({ id, note, children }: Props) {
+export function Window({ id, title, note, actions, children }: Props) {
   const layout = useWindows()[id];
   const def = WINDOW_DEFS[id];
   const frame = useRef<HTMLElement>(null);
@@ -57,7 +61,7 @@ export function Window({ id, note, children }: Props) {
       ref={frame}
       class={`window${windows.isOnTop(id) ? ' window--front' : ''}`}
       style={{ left: `${x}px`, top: `${y}px`, width: `${def.width}px`, zIndex: layout.z }}
-      aria-label={def.title}
+      aria-label={title ?? def.title}
       onPointerDownCapture={() => windows.focus(id)}
     >
       <div
@@ -67,9 +71,11 @@ export function Window({ id, note, children }: Props) {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
       >
-        <span>{def.title}</span>
+        <span class="window__title-text">{title ?? def.title}</span>
         {note && <span class="window__title-note">{note}</span>}
-        <button class="window__close" type="button" aria-label={`Close ${def.title}`} onClick={() => windows.close(id)}>
+        <span class="window__title-gap" />
+        {actions}
+        <button class="window__close" type="button" aria-label={`Close ${title ?? def.title}`} onClick={() => windows.close(id)}>
           ×
         </button>
       </div>

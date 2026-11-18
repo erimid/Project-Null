@@ -1,5 +1,6 @@
 {
   "title": "Project Null",
   "defaultHandle": "GHOST_7",
-  "currencySuffix": "c"
+  "currencySuffix": "c",
+  "startingServers": ["relay-registry", "backroom", "tallis-library"]
 }

@@ -1,0 +1,39 @@
+{
+  "id": "polar-mesh",
+  "name": "Polar Mesh Exchange",
+  "kind": "relay",
+  "owner": "Polar Mesh AS",
+  "hostname": "PMX-TOS-CORE",
+  "address": "158.39.77.141",
+  "city": "Tromsø",
+  "country": "Norway",
+  "lat": 69.65,
+  "lon": 18.96,
+  "blurb": "Research traffic exchange above the Arctic Circle. Slow to answer subpoenas.",
+  "listed": true,
+  "banner": [
+    "POLAR MESH EXCHANGE · TROMSØ CORE",
+    "Peering point for Arctic research networks.",
+    "Transit sessions are permitted under the member charter.",
+    "Abuse desk: staffed weekdays 10:00 to 14:00."
+  ],
+  "accounts": [
+    { "user": "transit", "role": "guest", "name": "Member transit" },
+    { "user": "operator", "role": "admin", "name": "I. Nordvik" }
+  ],
+  "files": [
+    { "name": "member_charter.txt", "sizeGq": 1, "access": "guest" },
+    { "name": "peering_table.dat", "sizeGq": 4, "access": "guest" },
+    { "name": "ionosonde_feed_0313.dat", "sizeGq": 18, "access": "admin" },
+    { "name": "abuse_desk_inbox.dat", "sizeGq": 2, "access": "admin" },
+    { "name": "session.log", "sizeGq": 3, "access": "admin" }
+  ],
+  "logs": [
+    { "minutesAgo": 3020, "text": "login operator from 158.39.77.130" },
+    { "minutesAgo": 3001, "text": "abuse ticket 2291 closed: no action" },
+    { "minutesAgo": 3000, "text": "logout operator" },
+    { "minutesAgo": 880, "text": "transit opened 129.242.4.19 > 193.156.90.2" },
+    { "minutesAgo": 610, "text": "transit closed 129.242.4.19" },
+    { "minutesAgo": 240, "text": "link flap: svalbard-2 (aurora)" }
+  ]
+}
