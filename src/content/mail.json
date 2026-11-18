@@ -83,5 +83,10 @@
     "from": "Wren",
     "subject": "Two doors at once",
     "body": "{handle}, a word about the better-defended systems. The best ones are not defended by the company that owns them. A security firm runs their firewall, or a desk in another building watches their monitor, and each of those has a login of its own.\n\nIf you hold an administrator session on that other machine, the layer it guards switches off while you are there. Close the session and it comes back on.\n\nYou will need a gateway that holds two connections at once. Read what is on the small servers before you go for the big ones. Their handover notes say a lot.\n\nWren"
+  },
+  "skills": {
+    "from": "Wren",
+    "subject": "Habits",
+    "body": "{handle}, you have been at this long enough to have habits, and habits are worth choosing.\n\nSome people get faster at breaking in. Some get better at not being seen. Some would rather build their own tools than buy them. Nobody does all three well. Open Skills on your bar and pick what you want to be good at. You will get another choice every few steps up the board.\n\nIf you pick wrong, the Backroom will help you forget. For a fee, naturally.\n\nWren"
   }
 }

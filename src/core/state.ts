@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 10;
+export const STATE_VERSION = 11;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -35,6 +35,12 @@ export interface PlayerState {
   passwords: Record<string, string[]>;
   /** Standing on the contracts board. Finished contracts raise it; being traced lowers it. */
   rating: number;
+  /** The highest rating the player has ever had. Skill points come from it, so losing rating doesn't take skills away. */
+  bestRating: number;
+  /** Rank learned in each skill, by skill id (see content/skills.json). Missing = not learned. */
+  skills: Record<string, number>;
+  /** Times the player has paid to unlearn every skill. Each time costs more. */
+  unlearns: number;
   /** Game time until which the board gives the player no work. 0 = never traced. */
   lieLowUntilMs: number;
   /** Ids of people the player has come across in files. */
@@ -310,6 +316,9 @@ export function createGame(options: NewGameOptions): GameState {
       files: [],
       passwords: {},
       rating: 0,
+      bestRating: 0,
+      skills: {},
+      unlearns: 0,
       lieLowUntilMs: 0,
       contacts: [],
       facts: [],

@@ -3144,3 +3144,119 @@ button.tabbar__contract--live:hover {
 .parts {
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 }
+
+/* ---- skills ---- */
+
+.count--mint {
+  background: rgba(78, 230, 200, 0.85);
+  color: #02241d;
+  animation: count-pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.6);
+}
+
+.skills__intro {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+}
+
+.skills__free {
+  color: var(--mint-text);
+  font-size: 18px;
+}
+
+.skills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.skills__title {
+  margin-top: 0;
+}
+
+.skills__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skill {
+  padding: 9px 11px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: rgba(95, 212, 255, 0.03);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.skill.is-ready {
+  border-color: rgba(78, 230, 200, 0.45);
+}
+
+.skill.is-learned {
+  border-color: rgba(78, 230, 200, 0.6);
+  background: rgba(78, 230, 200, 0.07);
+}
+
+.skill.is-locked {
+  opacity: 0.6;
+}
+
+.skill__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.skill__name {
+  color: var(--text-bright);
+  font-size: 16px;
+}
+
+.skill.is-learned .skill__name {
+  color: var(--mint-text);
+}
+
+.skill__pips {
+  display: flex;
+  gap: 4px;
+}
+
+.skill__pip {
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgba(78, 230, 200, 0.6);
+  border-radius: 50%;
+}
+
+.skill__pip.is-on {
+  background: var(--mint);
+  box-shadow: 0 0 6px rgba(78, 230, 200, 0.7);
+}
+
+.skill__blurb {
+  margin: 4px 0 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.skill__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.skill__cost {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.skills__unlearn {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+}

@@ -3,6 +3,7 @@
  * its access log. Lines that show what the player did there cost a fine.
  */
 import type { GameState, LogEntry } from './state';
+import { effect } from './skills';
 import { findServer, sendMail, type Content } from './world';
 
 /** Log lines that say someone logged in or changed something. A connection opening or closing proves nothing. */
@@ -28,7 +29,8 @@ export function baseFine(content: Content, serverId: string): number {
 /** Books a look through a server's logs, unless one is already coming. */
 export function scheduleReview(state: GameState, content: Content, serverId: string): void {
   if (state.reviews.some((review) => review.serverId === serverId)) return;
-  state.reviews.push({ serverId, dueMs: state.clock.gameTimeMs + content.rules.reviewHours * 3_600_000 });
+  const hours = content.rules.reviewHours * (1 + effect(state, content, 'coldTrail'));
+  state.reviews.push({ serverId, dueMs: state.clock.gameTimeMs + hours * 3_600_000 });
 }
 
 /** The server already knows who it was: nothing left there counts against the player again. */
@@ -43,7 +45,8 @@ export function runReviews(state: GameState, content: Content): void {
   for (const review of due) {
     const found = evidenceCount(state, review.serverId);
     if (found > 0) {
-      const fine = Math.min(state.player.balance, Math.round(baseFine(content, review.serverId) * content.rules.reviewFineFactor));
+      const factor = content.rules.reviewFineFactor * (1 - effect(state, content, 'coldTrail'));
+      const fine = Math.min(state.player.balance, Math.round(baseFine(content, review.serverId) * factor));
       state.player.balance -= fine;
       sendMail(state, content, 'review', {
         target: findServer(content, review.serverId)?.name ?? 'The target',

@@ -16,6 +16,7 @@ import {
   isLyingLow,
   ownedProgram,
   ringAngle,
+  ringTolerance,
   type Action,
   type Connection,
   type EchoPuzzle,
@@ -389,7 +390,7 @@ function PortLineup({ taskId, rings }: { taskId: string; rings: number }) {
   if (!frame) return null;
   const [anglesText = '', secondsLeft = '0'] = frame.split('|');
   const angles = anglesText.split(',');
-  const tolerance = content.rules.ringToleranceDegrees;
+  const tolerance = ringTolerance(session.getState(), content);
   const lockedCount = angles.filter((angle) => angle === 'L').length;
   const lock = (ring: number) => session.dispatch({ type: 'lockRing', taskId, ring });
   const point = (radius: number, degrees: number) => {

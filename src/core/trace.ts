@@ -5,17 +5,25 @@
 import type { ServerDef } from '../content/schema';
 import type { Connection, GameState, TraceState } from './state';
 import { monitorHeld } from './link';
+import { effect } from './skills';
 import { findServer, type Content } from './world';
 
-/** How long the trace needs for each step back along a route, last relay first. */
-export function traceHopMs(content: Content, target: ServerDef, route: readonly string[]): number[] {
-  const perHopMs = target.traceSecondsPerHop * 1000;
+/** How long the trace needs for each step back along a route, last relay first. `slow` comes from the player's skills. */
+export function traceHopMs(content: Content, target: ServerDef, route: readonly string[], slow = 1): number[] {
+  const perHopMs = target.traceSecondsPerHop * 1000 * slow;
   if (route.length === 0) return [perHopMs * content.rules.directTraceFactor];
   return [...route].reverse().map((id) => perHopMs * (findServer(content, id)?.relayDelay ?? 1));
 }
 
-export function newTrace(content: Content, target: ServerDef, route: readonly string[]): TraceState {
-  const trace: TraceState = { status: 'none', graceMs: 0, elapsedMs: 0, hopMs: traceHopMs(content, target, route) };
+/** How much longer each step of a trace takes, from the Long way round skill. */
+export const traceSlow = (state: GameState, content: Content): number => 1 + effect(state, content, 'traceSlow');
+
+/** Reroutes allowed on one connection, with the player's skills. */
+export const maxReroutes = (state: GameState, content: Content): number => content.rules.maxReroutes + effect(state, content, 'slipAway');
+
+export function newTrace(state: GameState, content: Content, target: ServerDef, route: readonly string[]): TraceState {
+  const hopMs = traceHopMs(content, target, route, traceSlow(state, content));
+  const trace: TraceState = { status: 'none', graceMs: 0, elapsedMs: 0, hopMs };
   // The strongest monitors start tracing the moment a connection opens.
   if (target.security.monitor >= content.rules.monitorGraceSeconds.length) trace.status = 'active';
   return trace;
@@ -31,7 +39,7 @@ export function noteIntrusion(state: GameState, content: Content, connection: Co
   // A monitor whose alerts wait on a console the player is sitting at notices nothing.
   if (monitorHeld(state, content, connection)) return;
   const monitor = findServer(content, connection.serverId)?.security.monitor ?? 0;
-  const graceSeconds = content.rules.monitorGraceSeconds[monitor] ?? 0;
+  const graceSeconds = (content.rules.monitorGraceSeconds[monitor] ?? 0) * (1 + effect(state, content, 'monitorGrace'));
   connection.trace.status = graceSeconds > 0 ? 'pending' : 'active';
   connection.trace.graceMs = graceSeconds * 1000;
 }
@@ -137,7 +145,7 @@ export function reroute(state: GameState, content: Content, connection: Connecti
   const index = hopUnderTrace(connection);
   if (connection.trace.status !== 'active') return 'There is no trace to get away from.';
   if (index < 0) return 'This connection has no relays to swap.';
-  if (connection.reroutes >= content.rules.maxReroutes) return 'This connection cannot be rerouted again.';
+  if (connection.reroutes >= maxReroutes(state, content)) return 'This connection cannot be rerouted again.';
   const target = findServer(content, connection.serverId);
   const relay = findServer(content, serverId);
   if (!target || !relay || !state.knownServers.includes(relay.id)) return 'You do not have that address.';
@@ -146,9 +154,10 @@ export function reroute(state: GameState, content: Content, connection: Connecti
 
   const step = connection.route.length - 1 - index;
   connection.route[index] = relay.id;
-  connection.trace.hopMs[step] = target.traceSecondsPerHop * 1000 * relay.relayDelay;
-  // Back to the start of this step.
-  connection.trace.elapsedMs = connection.trace.hopMs.slice(0, step).reduce((sum, ms) => sum + ms, 0);
+  connection.trace.hopMs[step] = target.traceSecondsPerHop * 1000 * relay.relayDelay * traceSlow(state, content);
+  // Back to the start of this step, or further with Slip away.
+  const back = Math.max(0, step - effect(state, content, 'slipAway'));
+  connection.trace.elapsedMs = connection.trace.hopMs.slice(0, back).reduce((sum, ms) => sum + ms, 0);
   connection.reroutes++;
   return null;
 }

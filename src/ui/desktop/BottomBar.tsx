@@ -1,4 +1,4 @@
-import { findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, traceHeld, traceReport, tracesByUrgency, type GameState } from '../../core';
+import { findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, pointsFree, traceHeld, traceReport, tracesByUrgency, type GameState } from '../../core';
 import { useEffect, useRef } from 'preact/hooks';
 import { formatDay, formatTime, ratingStep } from '../format';
 import { useGame, useWorld } from '../hooks';
@@ -167,6 +167,7 @@ export function BottomBar() {
   const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
   const running = useGame((game) => game.tasks.length);
   const unread = useGame((game) => game.messages.filter((message) => !message.read).length);
+  const points = useGame((game) => pointsFree(game, content));
   const connections = useGame((game) => game.connections.length);
   const layouts = useWindows();
   const desk = useDesk();
@@ -191,6 +192,7 @@ export function BottomBar() {
             {WINDOW_DEFS[id].pill}
             {id === 'programs' && running > 0 && <span class="count data">{running}</span>}
             {id === 'messages' && unread > 0 && <span class="count count--alert data">{unread}</span>}
+            {id === 'skills' && points > 0 && <span class="count count--mint data">{points}</span>}
           </button>
         ))}
       </nav>
