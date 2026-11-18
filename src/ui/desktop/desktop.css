@@ -4892,3 +4892,155 @@ body {
   padding: 8px 16px;
   font-size: 15px;
 }
+
+/* ---- phone: the route map, gateway and server read top to bottom ---- */
+
+.is-phone .map {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.is-phone .map__globe {
+  justify-content: center;
+}
+
+.is-phone .globe {
+  width: min(100%, 340px);
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.is-phone .route {
+  flex-wrap: wrap;
+}
+
+/* Rows: the name and its blurb get the whole width, the figures and buttons go on the line under it. */
+.is-phone .row--file,
+.is-phone .row--market,
+.is-phone .row--listing,
+.is-phone .row--task,
+.is-phone .row--stored,
+.is-phone .row--program {
+  grid-template-columns: auto auto minmax(0, 1fr);
+  row-gap: 6px;
+  column-gap: 14px;
+}
+
+.is-phone .row--file > .row__main,
+.is-phone .row--market > .row__main,
+.is-phone .row--listing > .row__main,
+.is-phone .row--task > :first-child,
+.is-phone .row--stored > :first-child,
+.is-phone .row--program > :first-child {
+  grid-column: 1 / -1;
+}
+
+.is-phone .row--file > .row__actions,
+.is-phone .row--market > :last-child,
+.is-phone .row--listing > :last-child {
+  justify-self: end;
+}
+
+.is-phone .row--file > .row__actions {
+  flex-wrap: wrap;
+}
+
+/* A module's grade buttons take the whole second line. */
+.is-phone .row--market > .market__grades {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.is-phone .row--listing {
+  grid-template-columns: auto auto minmax(0, 1fr);
+}
+
+.is-phone .row--listing > .row__dim.data {
+  display: none;
+}
+
+.is-phone .row--contract:not(.row--market) {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.is-phone .row--contract:not(.row--market) > .row__main {
+  grid-column: 1 / -1;
+}
+
+.is-phone .row--contract:not(.row--market) > :last-child {
+  justify-self: end;
+}
+
+.is-phone .row--log,
+.is-phone .row--account {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.is-phone .logline {
+  grid-template-columns: 14px minmax(0, 1fr);
+  row-gap: 2px;
+  padding: 10px 8px;
+}
+
+.is-phone .logline > .row__main {
+  grid-column: 2;
+}
+
+.is-phone .rows--scroll {
+  max-height: none;
+}
+
+.is-phone .scrub {
+  flex-wrap: wrap;
+}
+
+.is-phone .scrub__hint {
+  flex-basis: 100%;
+}
+
+.is-phone .records {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.is-phone .lineup {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.is-phone .lineup__dial,
+.is-phone .echo__grid {
+  align-self: center;
+}
+
+.is-phone .lineup__dial {
+  width: 220px;
+  height: 220px;
+}
+
+.is-phone .echo__grid {
+  grid-template-columns: repeat(3, 72px);
+  grid-auto-rows: 72px;
+}
+
+.is-phone .window__title-note {
+  min-width: 0;
+}
+
+.is-phone .row--account > :last-child {
+  grid-column: 1 / -1;
+  justify-self: end;
+}
+
+/* While a trace runs, the window moves down to make room for the alarm, so nothing is hidden under it. */
+.desktop--phone.is-tracing .window--phone {
+  top: 84px;
+}
+
+.pdock .alarm {
+  padding: 8px 16px 10px;
+}
