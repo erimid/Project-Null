@@ -1,3 +1,4 @@
+import { STATE_VERSION } from './state';
 import { describe, expect, it } from 'vitest';
 import {
   applyAction,
@@ -171,7 +172,7 @@ describe('saves and progress', () => {
     delete file.state.player.contacts;
     delete file.state.player.facts;
     const loaded = deserializeGame(JSON.stringify(file)).state;
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(STATE_VERSION);
     expect(loaded.player).toMatchObject({ contacts: [], facts: [] });
     expect(loaded.phish).toEqual({ sent: [], strikes: {}, waryUntilMs: {}, done: [] });
   });

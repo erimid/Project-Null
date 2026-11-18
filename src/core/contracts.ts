@@ -6,7 +6,7 @@
 import type { ContractDef } from '../content/schema';
 import { baseFine, closeCase } from './forensics';
 import type { Connection, GameState } from './state';
-import { usedStorageGq } from './tasks';
+import { freeStorageGb } from './tasks';
 import { noteIntrusion } from './trace';
 import { findConnection, findProgram, findServer, noteProgress, once, sendMail, type Content } from './world';
 
@@ -145,7 +145,7 @@ export function buyProgram(state: GameState, content: Content, connectionId: str
   if (!program || (program.price <= 0 && !content.startingPrograms.includes(programId))) return 'That is not for sale.';
   if (state.player.programs.includes(program.id)) return 'You already own that.';
   if (state.player.balance < program.price) return 'You cannot afford that.';
-  if (usedStorageGq(state, content) + program.sizeGq > content.rules.storageGq) return 'Not enough room on your gateway.';
+  if (program.sizeGq > freeStorageGb(state, content)) return 'Not enough room on your gateway.';
   state.player.balance -= program.price;
   state.player.programs.push(program.id);
   return null;

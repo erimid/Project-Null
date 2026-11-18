@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'preact/hooks';
 import {
-  usedStorageGq,
+  HARDWARE_SLOT_LABELS,
+  freeStorageGb,
+  installed,
+  rackStorageGb,
   activeContract,
   availableContracts,
   canLogIn,
-  hasSkill,
   isEvidence,
+  modelWith,
   rentedModel,
   isLyingLow,
   ownedProgram,
@@ -30,6 +33,7 @@ import { windows } from '../windowStore';
 const SECTION_LABELS: Record<Section, string> = {
   contracts: 'Contracts',
   market: 'Market',
+  hardware: 'Hardware',
   files: 'Files',
   logs: 'Logs',
   records: 'Records',
@@ -61,7 +65,7 @@ function sectionsFor(server: ServerDef, connection: Connection): Section[] {
   const admin = connection.role === 'admin';
   const sections: Section[] = [];
   if (server.kind === 'directory') sections.push('directory');
-  if (server.kind === 'board') sections.push('contracts', 'market');
+  if (server.kind === 'board') sections.push('contracts', 'market', 'hardware');
   sections.push('files');
   if (admin) sections.push('logs');
   if (admin && server.records) sections.push('records');
@@ -412,7 +416,7 @@ function Files({ game, state, connection, run, act }: View) {
   if (files.length === 0) return <p class="empty">No files.</p>;
   // A firewall keeps files shut as well as stopping copies.
   const walled = (findServer(content, connection.serverId)?.security.firewall ?? 0) > 0 && !connection.bypassed.firewall;
-  const reader = hasSkill(game, content, 'read') ? rentedModel(game, content) : undefined;
+  const reader = modelWith(game, content, 'read');
   const readAll = () => {
     const before = game.player.contacts.length + game.player.facts.length;
     if (!act({ type: 'modelRead', connectionId: connection.id })) return;
@@ -483,7 +487,7 @@ function Files({ game, state, connection, run, act }: View) {
 function Logs({ game, state, connection, run }: View) {
   // Lines picked for removal. Picking is the hands-on part: knowing which lines are yours.
   const [picked, setPicked] = useState<readonly number[]>([]);
-  const scrubber = hasSkill(game, content, 'scrub') ? rentedModel(game, content) : undefined;
+  const scrubber = modelWith(game, content, 'scrub');
   if (state.logs.length === 0) return <p class="empty">The access log is empty.</p>;
 
   const running = game.tasks.find((task) => task.connectionId === connection.id && task.target.kind === 'deleteLog');
@@ -683,7 +687,7 @@ function Market({ game, connection, act }: View) {
   const forSale = content.programs.filter(
     (program) => program.price > 0 || (content.startingPrograms.includes(program.id) && !game.player.programs.includes(program.id)),
   );
-  const free = content.rules.storageGq - usedStorageGq(game, content);
+  const free = freeStorageGb(game, content);
   const rented = rentedModel(game, content);
   return (
     <>
@@ -746,6 +750,66 @@ function Market({ game, connection, act }: View) {
   );
 }
 
+/** The Hardware shelf: for each slot, what is installed and the parts above it. Parts install as soon as they are paid for. */
+function Hardware({ game, connection, act }: View) {
+  const [fresh, setFresh] = useState<string | null>(null);
+  const free = freeStorageGb(game, content);
+  return (
+    <>
+      <p class="board__note">Parts install the moment you pay. Nothing is bought back.</p>
+      {HARDWARE_SLOT_LABELS.map(([slot, label]) => {
+        const tiers = content.hardware.filter((part) => part.slot === slot).sort((a, b) => a.tier - b.tier);
+        const now = installed(game, content, slot);
+        const tier = game.player.hardware[slot];
+        const upgrades = tiers.filter((part) => part.tier > tier);
+        return (
+          <section key={slot} class="section-gap">
+            <h3 class="map__heading">
+              {label}
+              <span class="part__pips" aria-label={`tier ${tier} of ${tiers.length}`}>
+                {tiers.map((part) => (
+                  <span key={part.id} class={`part__pip${part.tier <= tier ? ' is-on' : ''}`} />
+                ))}
+              </span>
+              <span class="heading__note">{now ? now.name : 'empty'}</span>
+            </h3>
+            {upgrades.length === 0 ? (
+              <p class="empty">Nothing better on the shelf.</p>
+            ) : (
+              <ul class="rows">
+                {upgrades.map((part) => {
+                  const extraGb = slot === 'rack' ? (part.sizeGb ?? 0) - rackStorageGb(game, content) : 0;
+                  const tooBig = extraGb > free;
+                  return (
+                    <li key={part.id} class={`row row--contract row--part${fresh === part.id ? ' is-new' : ''}`}>
+                      <span class="row__main">
+                        <strong>{part.name}</strong>
+                        <span class="contract__summary">{part.blurb}</span>
+                      </span>
+                      <span class="data contract__pay">{formatMoney(part.price)}</span>
+                      <button
+                        type="button"
+                        class="btn btn--go"
+                        disabled={game.player.balance < part.price || tooBig}
+                        title={tooBig ? 'Not enough room on your gateway for the model' : undefined}
+                        onClick={() => {
+                          if (act({ type: 'buyHardware', connectionId: connection.id, partId: part.id })) setFresh(part.id);
+                        }}
+                      >
+                        Install
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        );
+      })}
+    </>
+  );
+}
+
 /** The server at the far end of the connection whose tab is in front. */
 export function ServerWindow() {
   const desk = useDesk();
@@ -803,6 +867,7 @@ export function ServerWindow() {
       {!loggedIn && <LoginScreen {...view} />}
       {section === 'contracts' && <Contracts {...view} />}
       {section === 'market' && <Market {...view} />}
+      {section === 'hardware' && <Hardware {...view} />}
       {section === 'files' && <Files {...view} />}
       {section === 'logs' && <Logs {...view} />}
       {section === 'records' && <Records {...view} />}

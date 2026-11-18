@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { contracts, findPage, gameInfo, mail, people, programs, servers, sites, tuning } from './index';
+import { contracts, findPage, gameInfo, hardware, mail, models, people, programs, servers, sites, tuning } from './index';
+import { parseHardware } from './hardware';
 import { checkPeople, parsePeople } from './people';
 import { parseSites } from './sites';
 import { ContentError, MAIL_KEYS, checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
@@ -231,7 +232,7 @@ describe('shipped contracts', () => {
   });
 
   it('only use placeholders the rules fill in', () => {
-    const known = ['handle', 'client', 'title', 'pay', 'target', 'fine', 'hours', 'lines', 'name', 'label', 'model'];
+    const known = ['handle', 'client', 'title', 'pay', 'target', 'fine', 'hours', 'lines', 'name', 'label', 'model', 'part', 'now'];
     for (const letter of Object.values(mail)) {
       for (const [, name] of `${letter.from} ${letter.subject} ${letter.body}`.matchAll(/\{(\w+)\}/g)) {
         expect(known).toContain(name);
@@ -274,5 +275,35 @@ describe('people checks', () => {
     const data = copy();
     data.facts[0] = { ...data.facts[0], source: { serverId: 'polar-mesh', file: 'nope.txt' } };
     expect(() => checkPeople(parsePeople(data), servers, tuning.phishMaxDetails)).toThrow(/no file/);
+  });
+});
+
+describe('hardware', () => {
+  const cpu = (tier: number, price: number) => ({ id: `cpu-${tier}`, slot: 'cpu', tier, name: 'C', blurb: 'b', price, speed: tier, programs: 3 });
+  const stock = [
+    cpu(1, 0),
+    { id: 's', slot: 'storage', tier: 1, name: 'S', blurb: 'b', price: 0, storageGb: 40 },
+    { id: 'm', slot: 'modem', tier: 1, name: 'M', blurb: 'b', price: 0, fileSpeed: 1 },
+    { id: 'p', slot: 'ports', tier: 1, name: 'P', blurb: 'b', price: 0, connections: 1 },
+  ];
+
+  it('ships a stock part for every core slot, free, and racks that host real models', () => {
+    for (const slot of ['cpu', 'storage', 'modem', 'ports'] as const) {
+      expect(hardware.find((part) => part.slot === slot && part.tier === 1)?.price, slot).toBe(0);
+    }
+    for (const part of hardware.filter((item) => item.slot === 'rack')) {
+      expect(models.some((model) => model.id === part.model)).toBe(true);
+    }
+  });
+
+  it('accepts a minimal set and rejects gaps, paid stock parts, missing values and unknown models', () => {
+    expect(parseHardware(stock, [])).toHaveLength(4);
+    expect(() => parseHardware([...stock, cpu(3, 10)], [])).toThrow(/no gaps/);
+    expect(() => parseHardware([cpu(1, 5), ...stock.slice(1)], [])).toThrow(/price must be 0/);
+    expect(() => parseHardware([{ ...cpu(1, 0), programs: undefined }, ...stock.slice(1)], [])).toThrow(/programs/);
+    expect(() => parseHardware(stock.slice(1), [])).toThrow(/tier 1/);
+    const rack = { id: 'r', slot: 'rack', tier: 1, name: 'R', blurb: 'b', price: 9, sizeGb: 4, model: 'ghost' };
+    expect(() => parseHardware([...stock, rack], ['magpie'])).toThrow(/models.json/);
+    expect(parseHardware([...stock, { ...rack, model: 'magpie' }], ['magpie'])).toHaveLength(5);
   });
 });

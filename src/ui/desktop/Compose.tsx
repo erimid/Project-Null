@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { findPerson, hasSkill, judge, knownFacts, knownPeople, marks, openAsks, rentedModel, standing, type GameState, type Standing, type Verdict } from '../../core';
+import { findPerson, hasSkill, judge, knownFacts, knownPeople, marks, openAsks, modelWith, standing, type GameState, type Standing, type Verdict } from '../../core';
 import { content, session } from '../session';
 
 const STANDING_NOTES: Record<Standing, string> = {
@@ -22,7 +22,7 @@ export function Compose({ game, onSent }: { game: GameState; onSent: (notice: st
   const [notice, setNotice] = useState('');
   // What the rented model said about the message, and which message it was about.
   const [review, setReview] = useState<{ of: string; verdict: Verdict } | null>(null);
-  const model = rentedModel(game, content);
+  const model = modelWith(game, content, 'review');
   const canReview = hasSkill(game, content, 'review');
 
   const targets = marks(game, content);

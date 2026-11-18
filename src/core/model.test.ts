@@ -1,3 +1,4 @@
+import { STATE_VERSION } from './state';
 import { describe, expect, it } from 'vitest';
 import {
   applyAction,
@@ -90,7 +91,7 @@ describe('what a model does', () => {
   it('reads every file the connection can open in one go', () => {
     const h = game();
     const id = h.login('directory', 'guest');
-    h.refused({ type: 'modelRead', connectionId: id }, /not renting/);
+    h.refused({ type: 'modelRead', connectionId: id }, /no model/);
     h.ok({ type: 'disconnect', connectionId: id });
     h.rent('small');
     h.ok({ type: 'modelRead', connectionId: h.login('directory', 'guest') });
@@ -132,7 +133,7 @@ describe('old saves', () => {
     file.state.version = 7;
     delete file.state.player.model;
     const loaded = deserializeGame(JSON.stringify(file)).state;
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(STATE_VERSION);
     expect(loaded.player.model).toBeNull();
   });
 });

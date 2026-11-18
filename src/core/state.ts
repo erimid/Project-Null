@@ -5,7 +5,7 @@
 import type { Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 8;
+export const STATE_VERSION = 9;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -25,8 +25,8 @@ export interface PlayerState {
   handle: string;
   /** Money, in credits. */
   balance: number;
-  /** How many connections can be open at once. Starts at 1; upgrades raise it. */
-  maxConnections: number;
+  /** Tier of the part in each hardware slot (see content/hardware.json). 0 = empty. */
+  hardware: HardwareState;
   /** Ids of the programs the player owns. */
   programs: string[];
   /** Files copied to the gateway. */
@@ -43,6 +43,16 @@ export interface PlayerState {
   facts: string[];
   /** The language model being rented, and the game time the rental runs out. */
   model: { id: string; untilMs: number } | null;
+}
+
+/** Tier installed in each slot of the gateway. */
+export interface HardwareState {
+  cpu: number;
+  storage: number;
+  modem: number;
+  ports: number;
+  /** 0 = no model hosted at home. */
+  rack: number;
 }
 
 /** A message sent to someone under a borrowed name, waiting for its answer. */
@@ -287,7 +297,7 @@ export function createGame(options: NewGameOptions): GameState {
     player: {
       handle: options.handle,
       balance: options.startingBalance,
-      maxConnections: 1,
+      hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0 },
       programs: [],
       files: [],
       passwords: {},

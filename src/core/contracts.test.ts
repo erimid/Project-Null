@@ -1,3 +1,4 @@
+import { STATE_VERSION } from './state';
 import { describe, expect, it } from 'vitest';
 import {
   activeContract,
@@ -371,7 +372,7 @@ describe('saves', () => {
     delete old.state.player.rating;
     delete old.state.player.lieLowUntilMs;
     const loaded = deserializeGame(JSON.stringify(old)).state;
-    expect(loaded).toMatchObject({ version: 8, contracts: { activeId: null, completed: [] }, flags: [] });
+    expect(loaded).toMatchObject({ version: STATE_VERSION, contracts: { activeId: null, completed: [] }, flags: [] });
     expect(loaded.player).toMatchObject({ rating: 0, lieLowUntilMs: 0 });
   });
 

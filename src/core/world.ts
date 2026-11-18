@@ -6,6 +6,7 @@
  * worlds and the real data can change without touching the rules.
  */
 import type { AccountDef, ContractDef, FileContent, MailDef, MailKey, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
+import type { HardwareDef } from '../content/hardware';
 import type { ModelDef } from '../content/models';
 import type { PeopleDef } from '../content/people';
 import type { Connection, GameState, ServerState } from './state';
@@ -16,8 +17,6 @@ export interface Rules {
   readonly gameMinutesPerRealSecond: number;
   /** Seconds between an intrusion and the trace starting, by monitor level. Past the end = on connect. */
   readonly monitorGraceSeconds: readonly number[];
-  readonly maxRunningPrograms: number;
-  readonly storageGq: number;
   /** With no relays, the trace takes this fraction of the server's per-hop time. */
   readonly directTraceFactor: number;
   /** In-game hours without contracts after being traced. */
@@ -58,6 +57,10 @@ export interface Rules {
   readonly modelRentHours: number;
   /** A watching model cuts the connection when a trace has this many seconds left. */
   readonly modelWatchSeconds: number;
+  /** Delivered contracts before the fixer writes about gateway hardware. */
+  readonly hardwareAfter: number;
+  /** Being traced by a server with a layer at this level or above costs a hardware tier. */
+  readonly hardwareLossLevel: number;
 }
 
 export interface Content {
@@ -74,6 +77,8 @@ export interface Content {
   readonly people: PeopleDef;
   /** Language models for rent on the board. */
   readonly models: readonly ModelDef[];
+  /** Parts for the gateway, sold on the board. */
+  readonly hardware: readonly HardwareDef[];
   readonly rules: Rules;
 }
 
@@ -102,6 +107,9 @@ export function noteProgress(state: GameState, content: Content): void {
   }
   if (state.contracts.completed.length >= content.rules.phishingAfter && content.people.asks.length > 0) {
     once(state, 'phishing', () => sendMail(state, content, 'phishing'));
+  }
+  if (state.contracts.completed.length >= content.rules.hardwareAfter && content.hardware.some((part) => part.price > 0)) {
+    once(state, 'hardware', () => sendMail(state, content, 'hardware'));
   }
   if (state.contracts.completed.length >= content.rules.modelsAfter && content.models.length > 0) {
     once(state, 'models', () => sendMail(state, content, 'models'));

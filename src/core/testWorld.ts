@@ -1,6 +1,7 @@
 /** A tiny made-up world for unit tests, so tests don't depend on the real data files. */
 import type { ServerDef } from '../content/schema';
 import type { ContractDef, MailDef, MailKey, ProgramDef } from '../content/schema';
+import type { HardwareDef } from '../content/hardware';
 import type { PeopleDef } from '../content/people';
 import type { Content, Rules } from './world';
 
@@ -108,8 +109,6 @@ export const testPrograms: ProgramDef[] = [
 export const testRules: Rules = {
   gameMinutesPerRealSecond: 1,
   monitorGraceSeconds: [20, 8, 3],
-  maxRunningPrograms: 3,
-  storageGq: 20,
   directTraceFactor: 0.5,
   lieLowHours: 6,
   finePerSecurityLevel: 20,
@@ -131,7 +130,33 @@ export const testRules: Rules = {
   modelsAfter: 2,
   modelRentHours: 24,
   modelWatchSeconds: 5,
+  hardwareAfter: 2,
+  hardwareLossLevel: 3,
 };
+
+const part = (slot: HardwareDef['slot'], tier: number, price: number, values: Partial<HardwareDef>): HardwareDef => ({
+  id: `${slot}-${tier}`,
+  slot,
+  tier,
+  name: `${slot} ${tier}`,
+  blurb: 'A test part.',
+  price,
+  ...values,
+});
+
+/** Stock parts match the old fixed limits: 3 programs, 20 GB, one connection. */
+export const testHardware: HardwareDef[] = [
+  part('cpu', 1, 0, { speed: 1, programs: 3 }),
+  part('cpu', 2, 100, { speed: 2, programs: 4 }),
+  part('storage', 1, 0, { storageGb: 20 }),
+  part('storage', 2, 50, { storageGb: 60 }),
+  part('modem', 1, 0, { fileSpeed: 1 }),
+  part('modem', 2, 80, { fileSpeed: 2 }),
+  part('ports', 1, 0, { connections: 1 }),
+  part('ports', 2, 70, { connections: 2 }),
+  part('ports', 3, 150, { connections: 3 }),
+  part('rack', 1, 200, { model: 'small', sizeGb: 8 }),
+];
 
 /** Two extra programs that are only for sale, never owned at the start. */
 export const shopPrograms: ProgramDef[] = [
@@ -161,6 +186,8 @@ export const testMail: Record<MailKey, MailDef> = {
   modelExpired: { from: 'Farm', subject: 'Ended: {model}', body: '{model}' },
   phishRefused: { from: '{name}', subject: 'Refused: {label}', body: '{hours}' },
   phishReported: { from: 'Fixer', subject: 'Reported by {name}', body: '{title}' },
+  hardware: letter('hardware'),
+  hardwareLost: { from: 'Fixer', subject: 'Lost {part}', body: 'now {now}' },
 };
 
 /** The directory's readme names a clerk and holds one detail; corp's secret names the boss and holds two more. */
@@ -193,5 +220,6 @@ export const content: Content = {
     { id: 'small', name: 'Small', blurb: 'b', price: 40, skills: ['read', 'scrub'] },
     { id: 'big', name: 'Big', blurb: 'b', price: 90, skills: ['read', 'scrub', 'review', 'watch'] },
   ],
+  hardware: testHardware,
   rules: testRules,
 };

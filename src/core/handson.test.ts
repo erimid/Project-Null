@@ -1,3 +1,4 @@
+import { STATE_VERSION } from './state';
 import { describe, expect, it } from 'vitest';
 import {
   applyAction,
@@ -347,7 +348,7 @@ describe('saves from before the hands-on moments (version 4)', () => {
     old.state.tasks[0].target = { kind: 'deleteLog', logId };
 
     const loaded = deserializeGame(JSON.stringify(old)).state;
-    expect(loaded.version).toBe(8);
+    expect(loaded.version).toBe(STATE_VERSION);
     expect(loaded.reviews).toEqual([]);
     expect(loaded.connections[0]!.reroutes).toBe(0);
     expect(loaded.tasks[0]!.target).toEqual({ kind: 'deleteLog', logIds: [logId] });

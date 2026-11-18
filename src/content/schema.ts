@@ -131,7 +131,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -218,10 +218,6 @@ export interface Tuning {
    * starts the trace the moment you connect.
    */
   readonly monitorGraceSeconds: readonly number[];
-  /** How many programs can run at once. */
-  readonly maxRunningPrograms: number;
-  /** How much the gateway can store, in gigabytes. */
-  readonly storageGq: number;
   /** With no relays, the trace takes this fraction of the server's per-hop time. */
   readonly directTraceFactor: number;
   /** In-game hours you can't take contracts after being traced. */
@@ -264,6 +260,10 @@ export interface Tuning {
   readonly modelRentHours: number;
   /** A watching model cuts the connection when a trace has this many seconds left. */
   readonly modelWatchSeconds: number;
+  /** Delivered contracts before the fixer writes about gateway hardware. */
+  readonly hardwareAfter: number;
+  /** Being traced by a server with a layer at this level or above costs a hardware tier. */
+  readonly hardwareLossLevel: number;
 }
 
 export interface GameInfo {
@@ -636,8 +636,6 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
       }
       return value;
     }),
-    maxRunningPrograms: num(file, 'tuning', data, 'maxRunningPrograms', 1, 20),
-    storageGq: num(file, 'tuning', data, 'storageGq', 1, 100_000),
     directTraceFactor: num(file, 'tuning', data, 'directTraceFactor', 0.05, 5),
     lieLowHours: num(file, 'tuning', data, 'lieLowHours', 0, 24 * 365),
     finePerSecurityLevel: num(file, 'tuning', data, 'finePerSecurityLevel', 0, 1_000_000),
@@ -659,6 +657,8 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     modelsAfter: num(file, 'tuning', data, 'modelsAfter', 0, 1000),
     modelRentHours: num(file, 'tuning', data, 'modelRentHours', 1, 24 * 365),
     modelWatchSeconds: num(file, 'tuning', data, 'modelWatchSeconds', 1, 600),
+    hardwareAfter: num(file, 'tuning', data, 'hardwareAfter', 0, 1000),
+    hardwareLossLevel: num(file, 'tuning', data, 'hardwareLossLevel', 1, 6),
   };
 }
 

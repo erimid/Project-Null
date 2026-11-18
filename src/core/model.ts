@@ -3,6 +3,7 @@
  * some of the reading, checking and watching off the player's hands.
  */
 import type { ModelDef, ModelSkill } from '../content/models';
+import { hostedModel } from './hardware';
 import { readEverything } from './phish';
 import type { Connection, GameState } from './state';
 import { traceReport } from './trace';
@@ -16,8 +17,18 @@ export function rentedModel(state: GameState, content: Content): ModelDef | unde
   return rental && rental.untilMs > state.clock.gameTimeMs ? findModel(content, rental.id) : undefined;
 }
 
+/** Every model working for the player: the one on the gateway's own rack, and the one rented. */
+export function workingModels(state: GameState, content: Content): ModelDef[] {
+  return [hostedModel(state, content), rentedModel(state, content)].filter((model): model is ModelDef => model !== undefined);
+}
+
+/** A working model that has this skill, if any. */
+export function modelWith(state: GameState, content: Content, skill: ModelSkill): ModelDef | undefined {
+  return workingModels(state, content).find((model) => model.skills.includes(skill));
+}
+
 export function hasSkill(state: GameState, content: Content, skill: ModelSkill): boolean {
-  return rentedModel(state, content)?.skills.includes(skill) ?? false;
+  return modelWith(state, content, skill) !== undefined;
 }
 
 /**
@@ -45,7 +56,7 @@ export function rentModel(state: GameState, content: Content, connectionId: stri
 export function modelRead(state: GameState, content: Content, connectionId: string): string | null {
   const connection = findConnection(state, connectionId);
   if (!connection || connection.user === null) return 'Log in first.';
-  if (!hasSkill(state, content, 'read')) return 'You are not renting a model that can do that.';
+  if (!hasSkill(state, content, 'read')) return 'You have no model that can do that.';
   readEverything(state, content, connection.serverId);
   return null;
 }

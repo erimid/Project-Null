@@ -15,9 +15,10 @@ import {
   uninstallProgram,
 } from './contracts';
 import { scheduleReview } from './forensics';
+import { buyHardware, loseHardware, maxConnections } from './hardware';
 import { modelRead, rentModel } from './model';
 import { readFile, sendPhish } from './phish';
-import { canLogIn, echoCell, lockRing, startTask } from './tasks';
+import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
 import { hopUnderTrace, newTrace, noteIntrusion, reroute } from './trace';
 import { findAccount, findConnection, findServer, gatewayOf, sendMail, sourceAddress, type Content } from './world';
 
@@ -55,6 +56,8 @@ export type Action =
   | { readonly type: 'buyProgram'; readonly connectionId: string; readonly programId: string }
   /** Remove an installed program from the gateway to free its room. */
   | { readonly type: 'uninstallProgram'; readonly programId: string }
+  /** Buy a hardware part from the board you are logged in to. It is installed at once. */
+  | { readonly type: 'buyHardware'; readonly connectionId: string; readonly partId: string }
   /** Rent a language model from the board you are logged in to. */
   | { readonly type: 'rentModel'; readonly connectionId: string; readonly modelId: string }
   /** Have the rented model read every file on a connection. */
@@ -114,6 +117,7 @@ export function caught(state: GameState, content: Content, connection: Connectio
   const { fine, hours } = punish(state, content, connection.serverId);
   const target = server?.name ?? 'the target';
   sendMail(state, content, 'caught', { target, fine: String(fine), hours: String(hours) });
+  loseHardware(state, content, connection.serverId);
 }
 
 export function applyAction(state: GameState, action: Action, content: Content): ActionResult {
@@ -156,11 +160,12 @@ export function applyAction(state: GameState, action: Action, content: Content):
       if (state.connections.some((connection) => connection.serverId === server.id)) {
         return refuse(`You are already connected to ${server.name}.`);
       }
-      if (state.connections.length >= state.player.maxConnections) {
+      const most = maxConnections(state, content);
+      if (state.connections.length >= most) {
         return refuse(
-          state.player.maxConnections === 1
+          most === 1
             ? 'Your gateway can hold one connection at a time. Disconnect first.'
-            : `Your gateway can hold ${state.player.maxConnections} connections at a time.`,
+            : `Your gateway can hold ${most} connections at a time. Disconnect one first.`,
         );
       }
       const connection: Connection = {
@@ -236,6 +241,8 @@ export function applyAction(state: GameState, action: Action, content: Content):
       return reason === null ? OK : refuse(reason);
     }
 
+    case 'buyHardware':
+      return answer(buyHardware(state, content, action.connectionId, action.partId, usedStorageGq(state, content)));
     case 'rentModel':
       return answer(rentModel(state, content, action.connectionId, action.modelId));
     case 'modelRead':

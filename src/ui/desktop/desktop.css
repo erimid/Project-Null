@@ -1337,6 +1337,15 @@
   background: var(--mint);
 }
 
+.storage__part--model,
+.storage__dot--model {
+  background: #b48cff;
+}
+
+.storage.is-over {
+  box-shadow: 0 0 0 1px var(--red);
+}
+
 .storage__key {
   display: flex;
   align-items: center;
@@ -2646,4 +2655,81 @@ button.tabbar__contract--live:hover {
 .review.is-details {
   border-color: rgba(255, 196, 107, 0.45);
   color: #ffc46b;
+}
+
+/* ---- hardware: the shelf on the board, and the parts list in the Gateway window ---- */
+
+.row--part {
+  grid-template-columns: minmax(0, 1fr) 76px 92px;
+  align-items: center;
+}
+
+.part__slot {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.part__now {
+  display: block;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.part__pips {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.part__pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  border: 1px solid var(--line-strong);
+}
+
+.part__pip.is-on {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 0 0 6px rgba(95, 212, 255, 0.6);
+}
+
+.row--part.is-new {
+  animation: part-installed 1.2s ease-out;
+}
+
+@keyframes part-installed {
+  0% {
+    background: rgba(78, 230, 200, 0.28);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.readout__parts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.readout__parts li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.storage__key {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+
+.storage__key .data {
+  white-space: nowrap;
+  margin-right: 8px;
 }

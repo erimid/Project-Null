@@ -109,6 +109,12 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   }),
   // 7 -> 8: models for rent. Nobody had one before.
   7: (old) => ({ ...old, player: { ...(old.player as object), model: null } }),
+  // 8 -> 9: gateway hardware. Everyone had stock parts; the old connection limit becomes the ports part.
+  8: (old) => {
+    const { maxConnections, ...player } = old.player as Record<string, unknown>;
+    const ports = typeof maxConnections === 'number' ? Math.min(3, Math.max(1, Math.floor(maxConnections))) : 1;
+    return { ...old, player: { ...player, hardware: { cpu: 1, storage: 1, modem: 1, ports, rack: 0 } } };
+  },
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -218,6 +224,9 @@ const isConnection = (c: unknown): c is Obj =>
       isNum(c.monitor.echo.entered) &&
       ['open', 'won', 'lost'].includes(c.monitor.echo.result as string)));
 
+const isHardware = (h: unknown) =>
+  isObj(h) && ['cpu', 'storage', 'modem', 'ports', 'rack'].every((slot) => isNum(h[slot]) && Number.isInteger(h[slot]) && (h[slot] as number) >= 0);
+
 const isLevel = (value: unknown) => value === undefined || isNum(value);
 
 const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'deleteLog'];
@@ -265,7 +274,7 @@ function checkState(raw: Obj): GameState {
   if (!isObj(clock) || !isNum(clock.gameTimeMs) || !(SPEEDS as readonly unknown[]).includes(clock.speed)) {
     throw damaged;
   }
-  if (!isObj(player) || !isText(player.handle) || !isNum(player.balance) || !isNum(player.maxConnections)) {
+  if (!isObj(player) || !isText(player.handle) || !isNum(player.balance) || !isHardware(player.hardware)) {
     throw damaged;
   }
   if (
