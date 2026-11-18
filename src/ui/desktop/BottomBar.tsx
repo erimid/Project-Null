@@ -1,6 +1,6 @@
 import { findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, traceHeld, traceReport, tracesByUrgency, type GameState } from '../../core';
 import { useEffect, useRef } from 'preact/hooks';
-import { formatDay, formatTime } from '../format';
+import { formatDay, formatTime, ratingStep } from '../format';
 import { useGame, useWorld } from '../hooks';
 import { content, session } from '../session';
 import { activeConnection, deskStore, useDesk } from './deskStore';
@@ -138,6 +138,12 @@ function TraceAlarm() {
  * Bottom bar: the game menu, a tab per window, then the trace light,
  * credits, date and time, the speed control and Disconnect.
  */
+/** "3 more to Operator", for the rating's tooltip. */
+function ratingTitle(rating: number): string {
+  const next = ratingStep(rating).next;
+  return next ? `${next.min - rating} more to ${next.title}` : 'Top of the ladder';
+}
+
 export function BottomBar() {
   const balance = useGame((game) => Math.floor(game.player.balance).toLocaleString('en-US'));
   // Flash the figure green or red when it changes, but not when the bar first appears.
@@ -148,6 +154,13 @@ export function BottomBar() {
     const timer = setTimeout(() => (lastAmount.current = amount), 900);
     return () => clearTimeout(timer);
   }, [amount]);
+  const rating = useGame((game) => game.player.rating);
+  const lastRating = useRef(rating);
+  const ratingMoved = rating > lastRating.current ? ' is-up' : rating < lastRating.current ? ' is-down' : '';
+  useEffect(() => {
+    const timer = setTimeout(() => (lastRating.current = rating), 900);
+    return () => clearTimeout(timer);
+  }, [rating]);
   const time = useGame((game) => formatTime(gameDate(game)));
   const day = useGame((game) => formatDay(gameDate(game)));
   const connected = useGame(isConnected);
@@ -193,6 +206,13 @@ export function BottomBar() {
         <span class="dock__label">Credits</span>
         <span key={balance} class={`dock__value data${balanceMoved}`}>
           {balance}
+        </span>
+      </div>
+      <div class="dock__stat" title={ratingTitle(rating)}>
+        <span class="dock__label">Rating</span>
+        <span key={rating} class={`dock__value${ratingMoved}`}>
+          <span class="data">{rating}</span>
+          <span class="dock__title">{ratingStep(rating).title}</span>
         </span>
       </div>
       <div class="dock__stat">

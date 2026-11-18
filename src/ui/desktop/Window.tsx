@@ -12,6 +12,8 @@ interface Props {
   note?: string;
   /** Buttons shown on the right of the title bar. */
   actions?: ComponentChildren;
+  /** Section tabs, shown in a strip of their own under the title bar. */
+  tabs?: ComponentChildren;
   children: ComponentChildren;
 }
 
@@ -23,7 +25,7 @@ type Drag = { pointerId: number; dx: number; dy: number };
  * click anywhere on it to bring it to the front. The dash minimizes it
  * to its bottom-bar tab, × closes it.
  */
-export function Window({ id, title, note, actions, children }: Props) {
+export function Window({ id, title, note, actions, tabs, children }: Props) {
   const layout = useWindows()[id];
   const def = WINDOW_DEFS[id];
   const frame = useRef<HTMLElement>(null);
@@ -117,6 +119,11 @@ export function Window({ id, title, note, actions, children }: Props) {
           ×
         </button>
       </div>
+      {tabs && (
+        <nav class="window__tabs" aria-label={`${name} sections`}>
+          {tabs}
+        </nav>
+      )}
       <div class="window__body">{children}</div>
       <div
         class="window__grip"

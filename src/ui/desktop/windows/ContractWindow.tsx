@@ -57,7 +57,12 @@ export function ContractWindow() {
           {target?.name} <span class="data row__dim">{target?.address}</span>
         </dd>
         <dt>pays</dt>
-        <dd class="data">{formatMoney(contract.pay)}</dd>
+        <dd>
+          <span class="data">{formatMoney(contract.pay)}</span>{' '}
+          <span class="contract__rating">
+            +<span class="data">{contract.rating}</span> rating
+          </span>
+        </dd>
       </dl>
       <div class="contract__brief">
         {contract.brief.split('\n\n').map((paragraph, index) => (
