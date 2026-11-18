@@ -117,6 +117,12 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   },
   // 9 -> 10: repeatable jobs against generated companies. The board posts them on the next tick.
   9: (old) => ({ ...old, contracts: { ...(old.contracts as object), jobs: [] } }),
+  // 10 -> 11: the skill tree. The points a player's rating has already earned are there to spend.
+  10: (old) => {
+    const player = old.player as Record<string, unknown>;
+    const rating = typeof player.rating === 'number' ? player.rating : 0;
+    return { ...old, player: { ...player, bestRating: rating, skills: {}, unlearns: 0 } };
+  },
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -295,6 +301,9 @@ function checkState(raw: Obj): GameState {
     throw damaged;
   }
   if (!isNum(player.rating) || !isNum(player.lieLowUntilMs)) throw damaged;
+  if (!isNum(player.bestRating) || !isNum(player.unlearns) || !isObj(player.skills) || !Object.values(player.skills).every(isNum)) {
+    throw damaged;
+  }
   if (!isList(player.contacts, isText) || !isList(player.facts, isText)) throw damaged;
   if (!(player.model === null || (isObj(player.model) && isText(player.model.id) && isNum(player.model.untilMs)))) throw damaged;
   const phish = raw.phish;

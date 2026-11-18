@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'preact/hooks';
 
-export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'contract', 'web', 'dark', 'viewer', 'saves'] as const;
+export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'contract', 'skills', 'web', 'dark', 'viewer', 'saves'] as const;
 export type WindowId = (typeof WINDOW_IDS)[number];
 
 export interface WindowDef {
@@ -44,6 +44,7 @@ export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
   programs: { title: 'Programs', pill: 'Programs', width: 460, x: 184, y: 92, open: false },
   messages: { title: 'Messages', pill: 'Messages', width: 560, x: EDGE, y: TOP, open: false },
   contract: { title: 'Contract', pill: 'Contract', width: 440, x: 144, y: 56, open: false },
+  skills: { title: 'Skills', pill: 'Skills', width: 900, height: 640, x: 64, y: 40, open: false },
   web: { title: 'Lumen', pill: 'Web', width: 620, height: 500, x: 104, y: 56, open: false },
   dark: { title: 'Undertow', pill: 'Darknet', width: 620, height: 500, x: 144, y: 92, open: false },
   viewer: { title: 'File viewer', pill: 'Viewer', width: 640, x: 224, y: 128, open: false },
