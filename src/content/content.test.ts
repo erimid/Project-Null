@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { contracts, findPage, gameInfo, hardware, mail, models, people, programs, servers, sites, tuning } from './index';
+import { companies, contracts, findPage, gameInfo, hardware, mail, models, people, programs, servers, sites, tuning } from './index';
+import companiesJson from './companies.json';
+import { parseCompanies } from './companies';
 import { parseHardware } from './hardware';
 import { checkPeople, parsePeople } from './people';
 import { parseSites } from './sites';
@@ -326,5 +328,24 @@ describe('layers run from another server', () => {
     expect(() => checkContent(info, target({ serverId: 'nope', layer: 'firewall' }), [])).toThrow(/not another server/);
     expect(() => checkContent(info, target({ serverId: 't', layer: 'firewall' }), [])).toThrow(/not another server/);
     expect(() => checkContent(info, target({ serverId: 'r', layer: 'monitor' }), [])).toThrow(/has none/);
+  });
+});
+
+describe('company pools', () => {
+  it('ship enough stems for every company and at least one sector with records', () => {
+    expect(companies.stems.length).toBeGreaterThanOrEqual(companies.count);
+    expect(companies.sectors.some((sector) => sector.records)).toBe(true);
+  });
+
+  it('reject a sector with no admin file, a bad network prefix, and too few stems', () => {
+    const good = JSON.parse(JSON.stringify(companiesJson));
+    expect(() => parseCompanies(good)).not.toThrow();
+    const noAdmin = JSON.parse(JSON.stringify(good));
+    noAdmin.sectors[0].files = [{ name: 'a.txt', sizeGb: [1, 1], access: 'guest', text: 'x' }];
+    expect(() => parseCompanies(noAdmin)).toThrow(/admin file/);
+    const badNet = JSON.parse(JSON.stringify(good));
+    badNet.cities[0].net = '300.1';
+    expect(() => parseCompanies(badNet)).toThrow(/net/);
+    expect(() => parseCompanies({ ...good, count: good.stems.length + 1 })).toThrow(/stems/);
   });
 });

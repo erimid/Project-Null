@@ -12,8 +12,10 @@ import {
   deserializeGame,
   readSummary,
   serializeGame,
+  postJobs,
   syncWithContent,
   tick,
+  worldFor,
   traceReport,
   type Action,
   type ActionResult,
@@ -21,12 +23,12 @@ import {
   type GameState,
   type SaveSummary,
 } from '../core';
-import { contracts, gameInfo, hardware, mail, models, people, programs, servers, tuning } from '../content';
+import { companies, contracts, gameInfo, hardware, mail, models, people, programs, servers, tuning } from '../content';
 import { diff, snapshot, type GameEvent, type Snapshot } from './events';
 import { createMemoryStore, openSaveStore, type SaveStore } from './storage/saveStore';
 
-/** The data files, in the form the simulation takes them. */
-export const content: Content = {
+/** The data files, in the form the simulation takes them, before any game's companies are added. */
+const baseContent: Content = {
   servers,
   startingServers: gameInfo.startingServers,
   programs,
@@ -36,8 +38,24 @@ export const content: Content = {
   people,
   models,
   hardware,
+  companies,
   rules: tuning,
 };
+
+/**
+ * The world of the game being played: the data files plus that game's
+ * generated companies. Replaced whenever another game is loaded or
+ * started; screens that import it see the new value.
+ */
+export let content: Content = baseContent;
+
+/** Brings a game in line with its world: makes its companies and fills in anything missing. */
+function prepare(game: GameState): GameState {
+  content = worldFor(baseContent, game.seed);
+  syncWithContent(game, content);
+  postJobs(game, content);
+  return game;
+}
 
 export const SLOT_COUNT = 3;
 const ACTIVE_SLOT_KEY = 'active-slot';
@@ -143,19 +161,18 @@ function report(notice: string, noticeIsError = false): void {
 
 function freshGame(): GameState {
   const seed = crypto.getRandomValues(new Uint32Array(1))[0] ?? Date.now();
-  return syncWithContent(
+  return prepare(
     createGame({
       seed,
       handle: gameInfo.defaultHandle,
       startDate: tuning.startDate,
       startingBalance: tuning.startingBalance,
     }),
-    content,
   );
 }
 
 /** Reads save text into a game that matches the current data files. */
-const loadGame = (text: string): GameState => syncWithContent(deserializeGame(text).state, content);
+const loadGame = (text: string): GameState => prepare(deserializeGame(text).state);
 
 function replaceGame(next: GameState): void {
   state = next;

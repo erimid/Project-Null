@@ -2790,3 +2790,18 @@ button.tabbar__contract--live:hover {
 .link-note {
   margin: 8px 0 0;
 }
+
+/* ---- registry pages ---- */
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.pager--pages {
+  justify-content: space-between;
+  margin: 10px 0 0;
+}

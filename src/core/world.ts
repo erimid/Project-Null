@@ -6,6 +6,7 @@
  * worlds and the real data can change without touching the rules.
  */
 import type { AccountDef, ContractDef, FileContent, MailDef, MailKey, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
+import type { CompanyPools } from '../content/companies';
 import type { HardwareDef } from '../content/hardware';
 import type { ModelDef } from '../content/models';
 import type { PeopleDef } from '../content/people';
@@ -61,6 +62,12 @@ export interface Rules {
   readonly hardwareAfter: number;
   /** Being traced by a server with a layer at this level or above costs a hardware tier. */
   readonly hardwareLossLevel: number;
+  /** Repeatable jobs the board keeps posted. */
+  readonly boardJobs: number;
+  /** In-game hours a repeatable job stays on the board. */
+  readonly jobHours: number;
+  /** A repeatable job pays this much per tier of the company's security, plus a little. */
+  readonly jobPayPerTier: number;
 }
 
 export interface Content {
@@ -79,6 +86,8 @@ export interface Content {
   readonly models: readonly ModelDef[];
   /** Parts for the gateway, sold on the board. */
   readonly hardware: readonly HardwareDef[];
+  /** Pools the ordinary companies and their jobs are made from (see generate.ts and jobs.ts). */
+  readonly companies: CompanyPools;
   readonly rules: Rules;
 }
 
@@ -218,7 +227,10 @@ export function syncWithContent(state: GameState, content: Content): GameState {
   once(state, 'welcome', () => sendMail(state, content, 'welcome'));
   noteProgress(state, content);
   // A contract that was removed from the game can't be finished.
-  const isContract = (id: string) => content.contracts.some((contract) => contract.id === id);
+  const isContract = (id: string) =>
+    content.contracts.some((contract) => contract.id === id) ||
+    state.contracts.jobs.some((job) => job.id === id && exists(job.targetId));
+  state.contracts.jobs = state.contracts.jobs.filter((job) => exists(job.targetId));
   if (state.contracts.activeId !== null && !isContract(state.contracts.activeId)) state.contracts.activeId = null;
 
   if (state.player.model && !content.models.some((model) => model.id === state.player.model?.id)) state.player.model = null;

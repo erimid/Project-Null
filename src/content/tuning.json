@@ -30,5 +30,8 @@
   "modelRentHours": 24,
   "modelWatchSeconds": 5,
   "hardwareAfter": 2,
-  "hardwareLossLevel": 4
+  "hardwareLossLevel": 4,
+  "boardJobs": 4,
+  "jobHours": 36,
+  "jobPayPerTier": 350
 }

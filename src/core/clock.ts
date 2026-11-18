@@ -6,6 +6,7 @@
  * so trace timers stay tense.
  */
 import { caught, pullOut } from './actions';
+import { postJobs } from './contracts';
 import { endRental, shouldPullOut } from './model';
 import { runReviews } from './forensics';
 import { monitorHeld } from './link';
@@ -28,6 +29,7 @@ export function effectiveSpeed(state: GameState): Speed {
 export function tick(state: GameState, realMs: number, content: Content): number {
   if (!(realMs > 0)) return 0;
   const simMs = realMs * effectiveSpeed(state);
+  const minuteBefore = Math.floor(state.clock.gameTimeMs / 60_000);
   state.clock.gameTimeMs += simMs * 60 * content.rules.gameMinutesPerRealSecond;
 
   const sighted = state.connections.filter((connection) => connection.monitor.blindMs <= 0);
@@ -46,6 +48,8 @@ export function tick(state: GameState, realMs: number, content: Content): number
   if (state.reviews.length > 0) runReviews(state, content);
   if (state.phish.sent.length > 0) runPhish(state, content);
   if (state.player.model) endRental(state, content);
+  // The board looks at its repeatable jobs once a game minute.
+  if (Math.floor(state.clock.gameTimeMs / 60_000) !== minuteBefore) postJobs(state, content);
   return simMs;
 }
 

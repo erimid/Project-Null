@@ -21,6 +21,10 @@ import {
   type GameState,
   type ServerState,
   type TaskTarget,
+  REGIONS,
+  isJob,
+  regionOf,
+  type Region,
 } from '../../../core';
 import { findServer, type ServerDef } from '../../../core/content';
 import { formatGameTime, formatMoney } from '../../format';
@@ -640,33 +644,78 @@ function Records({ game, server, state, connection, act }: View) {
   );
 }
 
+const PAGE_SIZE = 8;
+
+/** The registry's listing: by region, a page at a time. */
 function Directory({ game, connection }: View) {
   const listed = content.servers.filter((server) => server.listed && server.id !== connection.serverId);
+  const [region, setRegion] = useState<Region>(REGIONS[1]);
+  const [page, setPage] = useState(0);
+  const inRegion = listed.filter((server) => regionOf(server) === region);
+  const pages = Math.max(1, Math.ceil(inRegion.length / PAGE_SIZE));
+  const current = Math.min(page, pages - 1);
+  const shown = inRegion.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE);
   return (
-    <ul class="rows">
-      {listed.map((server) => {
-        const known = game.knownServers.includes(server.id);
-        return (
-          <li key={server.id} class="row row--listing">
-            <span class="row__main">{server.name}</span>
-            <span class="row__dim">{KIND_LABELS[server.kind]}</span>
-            <span class="row__dim">{server.city}</span>
-            <span class="row__dim data">{server.address}</span>
-            {known ? (
-              <span class="row__done">In address book</span>
-            ) : (
-              <button
-                type="button"
-                class="btn"
-                onClick={() => session.dispatch({ type: 'learnServer', connectionId: connection.id, serverId: server.id })}
-              >
-                Add address
-              </button>
-            )}
-          </li>
-        );
-      })}
-    </ul>
+    <>
+      <div class="pager" role="tablist" aria-label="Regions">
+        {REGIONS.map((name) => {
+          const count = listed.filter((server) => regionOf(server) === name).length;
+          return (
+            <button
+              key={name}
+              type="button"
+              role="tab"
+              class={`tabbtn${name === region ? ' is-current' : ''}`}
+              aria-selected={name === region}
+              onClick={() => {
+                setRegion(name);
+                setPage(0);
+              }}
+            >
+              {name} <span class="data row__dim">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+      {shown.length === 0 && <p class="empty">Nothing listed in this region.</p>}
+      <ul class="rows">
+        {shown.map((server) => {
+          const known = game.knownServers.includes(server.id);
+          return (
+            <li key={server.id} class="row row--listing">
+              <span class="row__main">{server.name}</span>
+              <span class="row__dim">{KIND_LABELS[server.kind]}</span>
+              <span class="row__dim">{server.city}</span>
+              <span class="row__dim data">{server.address}</span>
+              {known ? (
+                <span class="row__done">In address book</span>
+              ) : (
+                <button
+                  type="button"
+                  class="btn"
+                  onClick={() => session.dispatch({ type: 'learnServer', connectionId: connection.id, serverId: server.id })}
+                >
+                  Add address
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {pages > 1 && (
+        <div class="pager pager--pages">
+          <button type="button" class="btn" disabled={current === 0} onClick={() => setPage(current - 1)}>
+            Previous
+          </button>
+          <span class="data row__dim">
+            page {current + 1} of {pages}
+          </span>
+          <button type="button" class="btn" disabled={current >= pages - 1} onClick={() => setPage(current + 1)}>
+            Next
+          </button>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -696,6 +745,7 @@ function Contracts({ game, connection, act }: View) {
               <span class="contract__summary">{contract.summary}</span>
               <span class="row__dim">
                 {contract.client} · target {findServer(content, contract.targetId)?.name}
+                {isJob(contract) && <> · standing work, off the board {formatGameTime(contract.expiresMs)}</>}
               </span>
             </span>
             <span class="data contract__pay">{formatMoney(contract.pay)}</span>
