@@ -66,8 +66,8 @@ export interface Rules {
   readonly boardJobs: number;
   /** In-game hours a repeatable job stays on the board. */
   readonly jobHours: number;
-  /** A repeatable job pays this much per tier of the company's security, plus a little. */
-  readonly jobPayPerTier: number;
+  /** What a repeatable job pays, by the tier of the company, tier 1 first. Each job adds a little on top. */
+  readonly jobPay: readonly number[];
   /** The lowest rating that is offered work against companies of each tier, tier 1 first. */
   readonly tierRatings: readonly number[];
   /** Rating a delivered job earns, by the tier of the company, tier 1 first. */

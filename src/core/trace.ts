@@ -36,6 +36,11 @@ export function noteIntrusion(state: GameState, content: Content, connection: Co
   connection.trace.graceMs = graceSeconds * 1000;
 }
 
+/** True while the connection is logged in to an account a password protects. A monitor that can see notices that. */
+export function intruding(content: Content, connection: Connection): boolean {
+  return connection.role === 'admin' && (findServer(content, connection.serverId)?.security.password ?? 0) > 0;
+}
+
 /**
  * Counts down the time a monitor stays blind. Returns how much of `simMs`
  * is left over for the trace: nothing while the monitor is blind.

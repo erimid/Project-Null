@@ -28,23 +28,31 @@
       "title": "Runner"
     },
     {
-      "min": 5,
+      "min": 7,
       "title": "Operator"
     },
     {
-      "min": 8,
+      "min": 12,
       "title": "Ghost"
     },
     {
-      "min": 12,
+      "min": 18,
       "title": "Shade"
     },
     {
-      "min": 18,
+      "min": 25,
+      "title": "Wraith"
+    },
+    {
+      "min": 33,
       "title": "Phantom"
     },
     {
-      "min": 26,
+      "min": 41,
+      "title": "Spectre"
+    },
+    {
+      "min": 50,
       "title": "Legend"
     }
   ]

@@ -50,14 +50,27 @@ export function objectivePossible(state: GameState, content: Content, contract: 
   return state.servers[contract.targetId]?.files.some((file) => file.name === goal.file) ?? false;
 }
 
+/**
+ * The rating at which the next written contract comes onto the board,
+ * if every one that is left is still out of reach. Undefined when there
+ * is one to take now, or none left.
+ */
+export function nextContractRating(state: GameState, content: Content): number | undefined {
+  const left = content.contracts.filter((contract) => !state.contracts.completed.includes(contract.id) && objectivePossible(state, content, contract));
+  if (left.length === 0 || left.some((contract) => contract.minRating <= state.player.rating)) return undefined;
+  return Math.min(...left.map((contract) => contract.minRating));
+}
+
 export function isLyingLow(state: GameState): boolean {
   return state.clock.gameTimeMs < state.player.lieLowUntilMs;
 }
 
 /**
- * The contracts the board would show right now. If the player's rating
- * is too low for everything that is left, the easiest remaining job is
- * offered anyway, so there is always a way forward.
+ * The contracts the board would show right now. A written contract
+ * waits until the player's rating is high enough for it; the standing
+ * jobs are how the rating gets there. Only if the board has nothing else
+ * at all is the easiest remaining contract offered anyway, so there is
+ * always a way forward.
  */
 export function availableContracts(state: GameState, content: Content): ContractDef[] {
   const open = content.contracts.filter(
@@ -70,7 +83,7 @@ export function availableContracts(state: GameState, content: Content): Contract
     (job) => job.id !== state.contracts.activeId && job.expiresMs > state.clock.gameTimeMs && objectivePossible(state, content, job),
   );
   const offered = open.filter((contract) => contract.minRating <= state.player.rating);
-  if (offered.length > 0 || state.contracts.activeId !== null) return [...offered, ...jobs];
+  if (offered.length > 0 || jobs.length > 0 || state.contracts.activeId !== null) return [...offered, ...jobs];
   const easiest = [...open].sort((a, b) => a.minRating - b.minRating)[0];
   return [...(easiest ? [easiest] : []), ...jobs];
 }

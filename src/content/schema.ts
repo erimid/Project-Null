@@ -287,8 +287,8 @@ export interface Tuning {
   readonly boardJobs: number;
   /** In-game hours a repeatable job stays on the board. */
   readonly jobHours: number;
-  /** A repeatable job pays this much per tier of the company's security, plus a little. */
-  readonly jobPayPerTier: number;
+  /** What a repeatable job pays, by the tier of the company, tier 1 first. Each job adds a little on top. */
+  readonly jobPay: readonly number[];
   /** The lowest rating that is offered work against companies of each tier, tier 1 first. */
   readonly tierRatings: readonly number[];
   /** Rating a delivered job earns, by the tier of the company, tier 1 first. */
@@ -713,7 +713,7 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     hardwareLossLevel: num(file, 'tuning', data, 'hardwareLossLevel', 1, 6),
     boardJobs: num(file, 'tuning', data, 'boardJobs', 0, 20),
     jobHours: num(file, 'tuning', data, 'jobHours', 1, 24 * 365),
-    jobPayPerTier: num(file, 'tuning', data, 'jobPayPerTier', 0, 1_000_000),
+    jobPay: tierList(file, data, 'jobPay', false),
     tierRatings: tierList(file, data, 'tierRatings', true),
     jobRatings: tierList(file, data, 'jobRatings', false),
     jobsAfter: num(file, 'tuning', data, 'jobsAfter', 0, 1000),

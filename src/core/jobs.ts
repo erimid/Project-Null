@@ -81,7 +81,7 @@ function makeJob(state: GameState, content: Content): Job | undefined {
     title: rng.pick(wording.titles),
     client: rng.pick(pools.clients),
     targetId: server.id,
-    pay: content.rules.jobPayPerTier * serverTier + rng.int(0, 4) * 50,
+    pay: (content.rules.jobPay[serverTier - 1] ?? 0) + rng.int(0, 4) * 50,
     rating: content.rules.jobRatings[serverTier - 1] ?? 0,
     minRating: 0,
     summary: fill(rng.pick(wording.summaries), values),

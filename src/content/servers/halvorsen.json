@@ -11,13 +11,8 @@
   "lon": 10.75,
   "blurb": "Clinical research records server.",
   "listed": true,
-  "security": {
-    "password": 2,
-    "proxy": 1,
-    "firewall": 1,
-    "monitor": 1
-  },
-  "traceSecondsPerHop": 14,
+  "security": { "password": 2, "proxy": 2, "firewall": 2, "monitor": 2 },
+  "traceSecondsPerHop": 12,
   "relayDelay": 1.0,
   "banner": [
     "HALVORSEN BIOGENETICS ASA",

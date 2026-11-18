@@ -13,7 +13,7 @@ import { monitorHeld } from './link';
 import { runPhish } from './phish';
 import { isConnected, type GameState, type Speed } from './state';
 import { advanceTasks } from './tasks';
-import { advanceMonitor, advanceTrace } from './trace';
+import { advanceMonitor, advanceTrace, intruding, noteIntrusion } from './trace';
 import type { Content } from './world';
 
 /** The speed the clock is actually running at right now. */
@@ -39,8 +39,13 @@ export function tick(state: GameState, realMs: number, content: Content): number
     if (connection.monitor.blindMs > 0 && sighted.includes(connection)) continue;
     // A monitor kept busy from another server stands still, like a blind one.
     if (monitorHeld(state, content, connection)) continue;
+    const wasBlind = connection.monitor.blindMs > 0;
     const traceMs = advanceMonitor(connection, simMs);
     if (traceMs <= 0) continue;
+    // A monitor that comes back sees an administrator who should not be there, and anything still running.
+    if (wasBlind && (intruding(content, connection) || state.tasks.some((task) => task.connectionId === connection.id))) {
+      noteIntrusion(state, content, connection);
+    }
     // A watching model hangs up first, if the trace would otherwise get there.
     if (shouldPullOut(state, content, connection)) pullOut(state, content, connection);
     else if (advanceTrace(connection.trace, traceMs)) caught(state, content, connection);

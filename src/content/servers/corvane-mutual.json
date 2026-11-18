@@ -11,13 +11,8 @@
   "lon": -79.38,
   "blurb": "Policy and claims records.",
   "listed": true,
-  "security": {
-    "password": 3,
-    "proxy": 1,
-    "firewall": 1,
-    "monitor": 2
-  },
-  "traceSecondsPerHop": 12,
+  "security": { "password": 3, "proxy": 2, "firewall": 2, "monitor": 2 },
+  "traceSecondsPerHop": 10,
   "relayDelay": 1.0,
   "banner": [
     "CORVANE MUTUAL INSURANCE CO.",

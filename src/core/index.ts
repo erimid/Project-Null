@@ -74,6 +74,7 @@ export {
   availableContracts,
   findContract,
   isLyingLow,
+  nextContractRating,
   objectiveMet,
   objectivePossible,
   postJobs,

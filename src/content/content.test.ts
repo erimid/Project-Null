@@ -216,13 +216,16 @@ describe('contract checks', () => {
 });
 
 describe('shipped contracts', () => {
-  it('can be started by a new player and reach every job by doing them in order', () => {
+  it('can be started by a new player, and each one is only a few standing jobs past the one before', () => {
     expect(contracts.some((contract) => contract.minRating === 0)).toBe(true);
     let rating = 0;
     for (const contract of [...contracts].sort((a, b) => a.minRating - b.minRating)) {
-      expect(contract.minRating, contract.id).toBeLessThanOrEqual(rating);
-      rating += contract.rating;
+      // The gap is made up with standing jobs. More than a handful in a row would be a grind.
+      expect(contract.minRating - rating, contract.id).toBeLessThanOrEqual(4);
+      rating = Math.max(rating, contract.minRating) + contract.rating;
     }
+    // The top title takes all of them and then some.
+    expect(gameInfo.ratings[gameInfo.ratings.length - 1]!.min).toBeGreaterThan(rating - 4);
   });
 
   it('only need layers a program on sale or owned at the start can beat', () => {
