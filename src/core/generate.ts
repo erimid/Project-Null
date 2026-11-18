@@ -5,7 +5,7 @@
  * state (files, logs, records) is saved like any other server's.
  */
 import type { CompanyPools, SectorDef } from '../content/companies';
-import type { FileDef, LogDef, ServerDef } from '../content/schema';
+import type { FileDef, LogDef, PartDef, ServerDef } from '../content/schema';
 import { createRng, type Rng } from './rng';
 import type { Content } from './world';
 
@@ -30,7 +30,10 @@ const slug = (text: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
-function makeFiles(rng: Rng, sector: SectorDef, values: Record<string, string>): FileDef[] {
+/** One grade better for the better-defended companies, never past the best module grade. */
+const bump = (part: PartDef, tier: number): PartDef => (tier >= 4 ? { ...part, grade: Math.min(3, part.grade + 1) } : part);
+
+function makeFiles(rng: Rng, sector: SectorDef, values: Record<string, string>, tier: number): FileDef[] {
   const files: FileDef[] = [];
   for (const template of sector.files) {
     const name = fill(template.name, values);
@@ -40,6 +43,20 @@ function makeFiles(rng: Rng, sector: SectorDef, values: Record<string, string>):
       sizeGq: rng.int(template.sizeGb[0], template.sizeGb[1]),
       access: template.access ?? 'admin',
       ...(template.text ? { content: { kind: 'text' as const, text: fill(template.text, values) } } : {}),
+    });
+  }
+  // Module installers and program files come from their own streams, so adding or changing one
+  // never moves anything else in the company, or in any other.
+  for (const template of sector.installers ?? []) {
+    const own = rng.fork(`installer:${values['company']}:${template.name}`);
+    if (!own.chance(template.chance) || files.some((file) => file.name === template.name)) continue;
+    files.push({
+      name: template.name,
+      sizeGq: own.int(template.sizeGb[0], template.sizeGb[1]),
+      access: 'admin',
+      ...(template.text ? { content: { kind: 'text' as const, text: fill(template.text, values) } } : {}),
+      ...(template.part ? { part: bump(template.part, tier) } : {}),
+      ...(template.program ? { program: { ...template.program, modules: template.program.modules.map((part) => bump(part, tier)) } } : {}),
     });
   }
   return files;
@@ -107,7 +124,7 @@ function makeCompany(rng: Rng, pools: CompanyPools, index: number, stem: string,
       { user: 'guest', role: 'guest', name: 'Public access' },
       { user: 'admin', role: 'admin', name: staff },
     ],
-    files: makeFiles(rng, sector, values),
+    files: makeFiles(rng, sector, values, tier),
     logs,
     ...(records ? { records } : {}),
     generated: { tier, sector: sector.id },

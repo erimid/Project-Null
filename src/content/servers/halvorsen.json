@@ -11,7 +11,12 @@
   "lon": 10.75,
   "blurb": "Clinical research records server.",
   "listed": true,
-  "security": { "password": 2, "proxy": 2, "firewall": 2, "monitor": 2 },
+  "security": {
+    "password": 2,
+    "proxy": 2,
+    "firewall": 2,
+    "monitor": 2
+  },
   "traceSecondsPerHop": 12,
   "relayDelay": 1.0,
   "banner": [
@@ -108,6 +113,23 @@
             "at": 29,
             "who": "Halvorsen",
             "text": "Good night, Solveig."
+          }
+        ]
+      }
+    },
+    {
+      "name": "lab_scheduler.bin",
+      "sizeGq": 4,
+      "access": "admin",
+      "program": {
+        "modules": [
+          {
+            "id": "compact",
+            "grade": 2
+          },
+          {
+            "id": "quiet",
+            "grade": 2
           }
         ]
       }

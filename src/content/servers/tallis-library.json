@@ -95,6 +95,19 @@
           }
         ]
       }
+    },
+    {
+      "name": "shelfmark_tool.bin",
+      "sizeGq": 2,
+      "access": "admin",
+      "program": {
+        "modules": [
+          {
+            "id": "compact",
+            "grade": 1
+          }
+        ]
+      }
     }
   ],
   "logs": [

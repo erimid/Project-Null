@@ -55,6 +55,15 @@
       "name": "time_sheets_march.dat",
       "sizeGq": 2,
       "access": "admin"
+    },
+    {
+      "name": "docs_indexer.mod",
+      "sizeGq": 1,
+      "access": "admin",
+      "part": {
+        "id": "compact",
+        "grade": 3
+      }
     }
   ],
   "logs": [

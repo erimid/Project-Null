@@ -65,6 +65,23 @@
       "name": "billing_run_0312.arc",
       "sizeGq": 11,
       "access": "admin"
+    },
+    {
+      "name": "uplink_scheduler.bin",
+      "sizeGq": 3,
+      "access": "admin",
+      "program": {
+        "modules": [
+          {
+            "id": "swift",
+            "grade": 1
+          },
+          {
+            "id": "compact",
+            "grade": 1
+          }
+        ]
+      }
     }
   ],
   "logs": [

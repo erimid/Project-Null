@@ -275,6 +275,18 @@ export function syncWithContent(state: GameState, content: Content): GameState {
     }
   });
 
+  // Module installers and program files were added to servers after some saves were made; give those saves the files once.
+  once(state, 'installers-added', () => {
+    for (const server of content.servers) {
+      const files = state.servers[server.id]?.files;
+      for (const file of server.files) {
+        if (!files || !(file.part || file.program) || files.some((other) => other.name === file.name)) continue;
+        if (state.flags.includes(`part:${server.id}/${file.name}`)) continue;
+        files.push({ name: file.name, sizeGq: file.sizeGq, access: file.access });
+      }
+    }
+  });
+
   // Files that name people or hold details were added after some saves were made; give those saves the files once.
   once(state, 'people-files', () => {
     const sources = [...content.people.people.flatMap((person) => (person.source ? [person.source] : [])), ...content.people.facts.map((fact) => fact.source)];

@@ -31,6 +31,9 @@ function possibleObjectives(state: GameState, server: ServerDef): Objective[] {
   const goals: Objective[] = [];
   for (const file of live.files) {
     if (file.access !== 'admin') continue;
+    // A module installer or program file is loot, not what a client asks for.
+    const written = server.files.find((item) => item.name === file.name);
+    if (written?.part || written?.program) continue;
     // Only files whose copy the player would not already have.
     if (!state.player.files.some((own) => own.name === file.name)) goals.push({ kind: 'steal', file: file.name });
     goals.push({ kind: 'destroy', file: file.name });

@@ -11,7 +11,12 @@
   "lon": -0.09,
   "blurb": "Client matters and sealed documents.",
   "listed": true,
-  "security": { "password": 2, "proxy": 0, "firewall": 1, "monitor": 2 },
+  "security": {
+    "password": 2,
+    "proxy": 0,
+    "firewall": 1,
+    "monitor": 2
+  },
   "traceSecondsPerHop": 14,
   "relayDelay": 1.0,
   "banner": [
@@ -73,6 +78,23 @@
       "content": {
         "kind": "text",
         "text": "To: P. Okafor, Corvane Mutual\nFrom: R. Finch\nRe: Reinsurance treaty, draft 6\n\nPeter,\n\nDraft 6 is attached with your clause 3 as asked. Signature is set for Friday the 17th at our offices.\n\nYou told me you are locked out of the claims system again and will have the service desk reset it before then. Please do. I am not sending the signed copy to a personal address a second time.\n\nRosalind"
+      }
+    },
+    {
+      "name": "docket_agent.bin",
+      "sizeGq": 3,
+      "access": "admin",
+      "program": {
+        "modules": [
+          {
+            "id": "quiet",
+            "grade": 2
+          },
+          {
+            "id": "tidy",
+            "grade": 1
+          }
+        ]
       }
     }
   ],

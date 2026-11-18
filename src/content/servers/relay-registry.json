@@ -87,6 +87,15 @@
         "kind": "text",
         "text": "13 Mar 23:02  lookup HB-REC-02        from 81.204.17.9\n13 Mar 23:02  lookup MERIDIAN-OPS     from 81.204.17.9\n13 Mar 23:40  lookup TALLIS-OPAC      from 62.48.133.2\n14 Mar 01:15  lookup POLARMESH-IX     from 129.242.4.60\n14 Mar 02:02  lookup HB-REC-02        from 81.204.17.9\n14 Mar 02:03  lookup MERIDIAN-OPS     from 81.204.17.9\n14 Mar 06:30  export written: registry_export_0313.dat"
       }
+    },
+    {
+      "name": "export_filter.mod",
+      "sizeGq": 1,
+      "access": "admin",
+      "part": {
+        "id": "swift",
+        "grade": 1
+      }
     }
   ],
   "logs": [

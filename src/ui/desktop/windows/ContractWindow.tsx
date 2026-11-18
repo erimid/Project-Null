@@ -59,9 +59,11 @@ export function ContractWindow() {
         <dt>pays</dt>
         <dd>
           <span class="data">{formatMoney(contract.pay)}</span>{' '}
-          <span class="contract__rating">
-            +<span class="data">{contract.rating}</span> rating
-          </span>
+          {contract.rating > 0 && (
+            <span class="contract__rating">
+              +<span class="data">{contract.rating}</span> rating
+            </span>
+          )}
         </dd>
       </dl>
       <div class="contract__brief">

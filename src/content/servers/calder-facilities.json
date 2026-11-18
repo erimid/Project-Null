@@ -11,7 +11,12 @@
   "lon": -3.19,
   "blurb": "Building management for Calder Re's Edinburgh offices: doors, cameras, the security desk.",
   "listed": true,
-  "security": { "password": 2, "proxy": 0, "firewall": 0, "monitor": 2 },
+  "security": {
+    "password": 2,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 2
+  },
   "traceSecondsPerHop": 14,
   "relayDelay": 1.0,
   "banner": [
@@ -60,6 +65,23 @@
       "name": "camera_index.dat",
       "sizeGq": 4,
       "access": "admin"
+    },
+    {
+      "name": "door_controller.bin",
+      "sizeGq": 4,
+      "access": "admin",
+      "program": {
+        "modules": [
+          {
+            "id": "quiet",
+            "grade": 2
+          },
+          {
+            "id": "swift",
+            "grade": 2
+          }
+        ]
+      }
     }
   ],
   "logs": [

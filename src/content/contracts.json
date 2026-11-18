@@ -267,5 +267,119 @@
       "kind": "steal",
       "file": "loss_model_q1.dat"
     }
+  },
+  {
+    "id": "meridian-gatecam",
+    "title": "Gate B, after dark",
+    "client": "A haulier's night driver",
+    "targetId": "meridian-freight",
+    "pay": 1000,
+    "rating": 0,
+    "minRating": 8,
+    "summary": "Delete the Gate B camera footage from Meridian Freight.",
+    "brief": "A pallet left Meridian's Gate B on Tuesday night and my name is on the sign-out sheet. The footage shows who was really driving.\n\nDelete gate_b_cam_0312.mp4. It is a big file and the deletion takes a while. Meridian's customs desk reads the access log after anything goes missing, and a line that says a file was deleted is the first thing they look for. I hear there are ways to build a File Deleter that does not leave one. A Tidy build, they call it. I would not go in without one, or without time to scrub.",
+    "objective": {
+      "kind": "destroy",
+      "file": "gate_b_cam_0312.mp4"
+    },
+    "part": {
+      "id": "tidy",
+      "grade": 2
+    }
+  },
+  {
+    "id": "ashgrove-misconduct",
+    "title": "Not on my record",
+    "client": "A graduate student",
+    "targetId": "ashgrove-poly",
+    "pay": 1100,
+    "rating": 0,
+    "minRating": 10,
+    "summary": "Delete the academic misconduct file at Ashgrove Polytechnic.",
+    "brief": "A complaint was filed against me in my second year. It was dismissed, and it still follows me into every reference the registrar writes.\n\nDelete academic_misconduct_cases.dat from the registrar's server. It is small and the registrar's office does not watch it closely. I cannot pay much, but I can give you a tool I took off a university machine once. It makes a program a good deal smaller. You will know what to do with it.",
+    "objective": {
+      "kind": "destroy",
+      "file": "academic_misconduct_cases.dat"
+    },
+    "part": {
+      "id": "compact",
+      "grade": 2
+    }
+  },
+  {
+    "id": "aldergate-billing",
+    "title": "Hours not worked",
+    "client": "A junior associate",
+    "targetId": "aldergate-finch",
+    "pay": 1700,
+    "rating": 0,
+    "minRating": 16,
+    "summary": "Delete a month of billing records at Aldergate & Finch.",
+    "brief": "I was told to bill forty hours to a client I never met. When the client queried it, the partners blamed me. The real time sheets are in one file.\n\nDelete client_billing_march.dat. Aldergate's IT contractor compares the access log with the file list every night, so a deletion that writes its line gets found by morning. Either scrub it well, or use a build of the File Deleter that does not write one.\n\nThe firewall is light. The monitor is not.",
+    "objective": {
+      "kind": "destroy",
+      "file": "client_billing_march.dat"
+    },
+    "part": {
+      "id": "quiet",
+      "grade": 2
+    }
+  },
+  {
+    "id": "sunderby-meters",
+    "title": "What the meters say",
+    "client": "A tenants' association",
+    "targetId": "sunderby-kraft",
+    "pay": 1800,
+    "rating": 0,
+    "minRating": 22,
+    "summary": "Copy the meter readings from Sunderby Kraft, past a monitor that starts tracing on connect.",
+    "brief": "Sunderby Kraft says our building used three times what we did. The meter readings would say who is right.\n\nCopy meter_readings_0313.dat. It is a large file, and Sunderby's monitor starts a trace the second anything connects. The ordinary Monitor Bypass buys you a few minutes at most. A Quiet build of your Password Breaker, Proxy Bypass and File Copier does not set the monitor off in the first place, so the trace never starts. Slower, but you have time to be slower.",
+    "objective": {
+      "kind": "steal",
+      "file": "meter_readings_0313.dat"
+    },
+    "part": {
+      "id": "quiet",
+      "grade": 2
+    }
+  },
+  {
+    "id": "calder-doors",
+    "title": "Who was in the building",
+    "client": "A security guard, dismissed",
+    "targetId": "calder-facilities",
+    "pay": 3000,
+    "rating": 0,
+    "minRating": 37,
+    "summary": "Delete the door log from Calder Re's Edinburgh building system.",
+    "brief": "I was let go for letting someone into the Calder Re offices after hours. I did not. The door log would say who did, and so Calder Re would rather it said nothing.\n\nDelete door_events_0313.dat from the building management server. The security desk reads that log every morning and its monitor is a good one. Nobody has ever managed this with an ordinary File Deleter and a clean conscience.\n\nI cannot offer much money. I can offer something from the building's own maintenance kit, which I have kept.",
+    "objective": {
+      "kind": "destroy",
+      "file": "door_events_0313.dat"
+    },
+    "part": {
+      "id": "swift",
+      "grade": 3
+    }
+  },
+  {
+    "id": "corvane-payout",
+    "title": "Not a penny",
+    "client": "A claimant's brother",
+    "targetId": "corvane-mutual",
+    "pay": 4000,
+    "rating": 0,
+    "minRating": 42,
+    "summary": "Delete the March payout batch at Corvane Mutual before it runs.",
+    "brief": "Corvane's payout batch runs on the 15th. Four hundred claims, and my sister's is the only one in it that is correct. The rest are wrong, and Corvane will use the money to settle with the loudest.\n\nDelete payout_batch_0315.dat before it runs. Corvane's monitor is among the fastest in the country and its password is not a weak one. Anything you can do to look like an ordinary user helps.",
+    "objective": {
+      "kind": "destroy",
+      "file": "payout_batch_0315.dat"
+    },
+    "part": {
+      "id": "quiet",
+      "grade": 3
+    }
   }
 ]

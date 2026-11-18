@@ -11,7 +11,12 @@
   "lon": -79.38,
   "blurb": "Policy and claims records.",
   "listed": true,
-  "security": { "password": 3, "proxy": 2, "firewall": 2, "monitor": 2 },
+  "security": {
+    "password": 3,
+    "proxy": 2,
+    "firewall": 2,
+    "monitor": 2
+  },
   "traceSecondsPerHop": 10,
   "relayDelay": 1.0,
   "banner": [
@@ -100,6 +105,15 @@
             "text": "Pay it. Then delete this call."
           }
         ]
+      }
+    },
+    {
+      "name": "claims_batcher.mod",
+      "sizeGq": 1,
+      "access": "admin",
+      "part": {
+        "id": "tidy",
+        "grade": 3
       }
     }
   ],

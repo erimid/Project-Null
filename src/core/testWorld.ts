@@ -237,6 +237,7 @@ export const testMail: Record<MailKey, MailDef> = {
   links: letter('links'),
   skills: letter('skills'),
   workbench: letter('workbench'),
+  decompiling: letter('decompiling'),
   hardwareLost: { from: 'Fixer', subject: 'Lost {part}', body: 'now {now}' },
 };
 

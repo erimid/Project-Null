@@ -10,7 +10,7 @@ import { checkBuild, finishBuild, finishDecompile, hasTrait, partTaken, programF
 import { effect } from './skills';
 import { stream } from './streams';
 import { noteIntrusion } from './trace';
-import { fileDef, findAccount, findConnection, findProgram, findServer, ownedProgram, type Content } from './world';
+import { fileDef, findAccount, findConnection, findProgram, findServer, ownedProgram, once, sendMail, type Content } from './world';
 
 /** A program this many levels below a layer can't touch it at all. */
 export const MAX_LEVEL_GAP = 2;
@@ -282,6 +282,10 @@ function finish(state: GameState, content: Content, connection: Connection, task
       if (takePartFile(state, content, connection.serverId, file.name)) {
         if (!tidy) serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file copied: ${file.name}`, byPlayer: true });
         return;
+      }
+      // The first compiled program taken home brings Wren's note on decompiling.
+      if (fileDef(content, connection.serverId, file.name)?.program && content.programs.some((item) => item.kind === 'decompile')) {
+        once(state, 'decompiling', () => sendMail(state, content, 'decompiling'));
       }
       state.player.files.push({
         name: file.name,
