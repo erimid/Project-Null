@@ -48,7 +48,18 @@ export {
 export type { Content, Rules } from './world';
 export { effectiveSpeed, gameDate, tick } from './clock';
 export type { GameDate } from './clock';
-export { MAX_LEVEL_GAP, blindSeconds, canLogIn, checkTask, layerSeconds, freeStorageGb, programStorageGq, ringAngle, usedStorageGq } from './tasks';
+export { MAX_LEVEL_GAP, blindSeconds, canLogIn, checkTask, layerSeconds, freeStorageGb, programStorageGq, ringAngle, ringTolerance, usedStorageGq } from './tasks';
+export {
+  effect,
+  findSkill,
+  nextPointRating,
+  pointsEarned,
+  pointsFree,
+  pointsSpent,
+  skillRank,
+  unlearnPrice,
+  whyNotLearn,
+} from './skills';
 export { evidenceCount, isEvidence } from './forensics';
 export { canRead, factsByFile, fileNotes, findAsk, findPerson, judge, knownFacts, knownPeople, leads, marks, openAsks, sendersFor, standing } from './phish';
 export type { Draft, Group, Leads, Standing, Verdict } from './phish';
@@ -66,7 +77,7 @@ export {
   rackStorageGb,
   storageGb,
 } from './hardware';
-export { hopUnderTrace, mostUrgentTrace, totalTraceMs, traceHeld, traceHopMs, traceReport, tracesByUrgency } from './trace';
+export { hopUnderTrace, maxReroutes, mostUrgentTrace, totalTraceMs, traceHeld, traceHopMs, traceReport, traceSlow, tracesByUrgency } from './trace';
 export { heldBy, holding, monitorHeld } from './link';
 export type { TraceReport } from './trace';
 export {

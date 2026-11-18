@@ -10,6 +10,7 @@ import type { CompanyPools } from '../content/companies';
 import type { HardwareDef } from '../content/hardware';
 import type { ModelDef } from '../content/models';
 import type { PeopleDef } from '../content/people';
+import type { SkillDef } from '../content/skills';
 import type { Connection, GameState, ServerState } from './state';
 
 /** Numbers that tune the rules. The real ones come from content/tuning.json. */
@@ -76,6 +77,10 @@ export interface Rules {
   readonly jobsAfter: number;
   /** Rating at which the fixer writes about jobs that need a second server. */
   readonly linksAfterRating: number;
+  /** Each time the best rating passes another multiple of this, the player earns a skill point. */
+  readonly skillPointRating: number;
+  /** Credits to unlearn every skill the first time; each time after costs this much more. */
+  readonly unlearnPrice: number;
 }
 
 export interface Content {
@@ -96,6 +101,8 @@ export interface Content {
   readonly hardware: readonly HardwareDef[];
   /** Pools the ordinary companies and their jobs are made from (see generate.ts and jobs.ts). */
   readonly companies: CompanyPools;
+  /** The skill tree. */
+  readonly skills: readonly SkillDef[];
   readonly rules: Rules;
 }
 
@@ -133,6 +140,11 @@ export function noteProgress(state: GameState, content: Content): void {
   }
   if (state.player.rating >= content.rules.linksAfterRating) {
     once(state, 'links', () => sendMail(state, content, 'links'));
+  }
+  // The best rating is what skill points come from (see skills.ts).
+  state.player.bestRating = Math.max(state.player.bestRating, state.player.rating);
+  if (state.player.bestRating >= content.rules.skillPointRating && content.skills.length > 0) {
+    once(state, 'skills', () => sendMail(state, content, 'skills'));
   }
   if (state.contracts.completed.length >= content.rules.modelsAfter && content.models.length > 0) {
     once(state, 'models', () => sendMail(state, content, 'models'));

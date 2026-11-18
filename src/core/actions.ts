@@ -18,6 +18,7 @@ import { scheduleReview } from './forensics';
 import { buyHardware, loseHardware, maxConnections } from './hardware';
 import { modelRead, rentModel } from './model';
 import { readFile, sendPhish } from './phish';
+import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
 import { hopUnderTrace, intruding, newTrace, noteIntrusion, reroute } from './trace';
 import { findAccount, findConnection, findServer, gatewayOf, sendMail, sourceAddress, type Content } from './world';
@@ -71,7 +72,11 @@ export type Action =
   /** Decrypt a file stored on the gateway. */
   | { readonly type: 'decryptFile'; readonly name: string }
   /** Delete a file stored on the gateway. */
-  | { readonly type: 'deleteStoredFile'; readonly name: string };
+  | { readonly type: 'deleteStoredFile'; readonly name: string }
+  /** Spend skill points on the next rank of a skill. */
+  | { readonly type: 'learnSkill'; readonly skillId: string }
+  /** Pay the board you are logged in to to forget every skill and get the points back. */
+  | { readonly type: 'unlearnSkills'; readonly connectionId: string };
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
@@ -176,7 +181,7 @@ export function applyAction(state: GameState, action: Action, content: Content):
         role: null,
         openedAtMs: state.clock.gameTimeMs,
         bypassed: { proxy: false, firewall: false },
-        trace: newTrace(content, server, state.route),
+        trace: newTrace(state, content, server, state.route),
         reroutes: 0,
         monitor: { blindMs: 0, used: false, echo: null },
       };
@@ -295,6 +300,10 @@ export function applyAction(state: GameState, action: Action, content: Content):
       return answer(uninstallProgram(state, action.programId));
     case 'deleteStoredFile':
       return answer(deleteStoredFile(state, action.name));
+    case 'learnSkill':
+      return answer(learnSkill(state, content, action.skillId));
+    case 'unlearnSkills':
+      return answer(unlearnSkills(state, content, action.connectionId));
 
     case 'readMessage': {
       const message = state.messages.find((item) => item.id === action.messageId);

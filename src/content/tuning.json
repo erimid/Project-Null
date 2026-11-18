@@ -55,5 +55,7 @@
     2
   ],
   "jobsAfter": 1,
-  "linksAfterRating": 4
+  "linksAfterRating": 4,
+  "skillPointRating": 3,
+  "unlearnPrice": 1500
 }

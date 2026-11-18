@@ -6,6 +6,7 @@ import type { ProgramDef, ProgramKind, ServerDef } from '../content/schema';
 import type { Connection, EchoPuzzle, GameState, RingPuzzle, Task, TaskTarget } from './state';
 import { cpuSpeed, fileSpeed, maxPrograms, rackStorageGb, storageGb } from './hardware';
 import { heldBy } from './link';
+import { effect } from './skills';
 import { stream } from './streams';
 import { noteIntrusion } from './trace';
 import { findAccount, findConnection, findProgram, findServer, ownedProgram, type Content } from './world';
@@ -26,14 +27,22 @@ const PROGRAM_FOR: Record<TaskTarget['kind'], ProgramKind> = {
 
 /**
  * How long a program needs against a layer. A program as strong as the
- * layer takes its base time; each level the layer is ahead doubles it,
- * each level the program is ahead halves it. Null = too weak to work.
+ * layer takes its base time; each level the layer is ahead doubles it
+ * (or multiplies it by `behind`), each level the program is ahead halves
+ * it. Null = too weak to work.
  */
-export function layerSeconds(program: ProgramDef, level: number): number | null {
+export function layerSeconds(program: ProgramDef, level: number, behind = 2): number | null {
   const gap = level - program.version;
   if (gap > MAX_LEVEL_GAP) return null;
-  return program.baseSeconds * 2 ** gap;
+  return program.baseSeconds * (gap > 0 ? behind ** gap : 2 ** gap);
 }
+
+/** Program kinds the Sharp tools skill speeds up. */
+const CRACKING: readonly TaskTarget['kind'][] = ['password', 'proxy', 'firewall'];
+
+/** How close (in degrees) a ring's port must be to the marker to lock, with the player's skills. */
+export const ringTolerance = (state: GameState, content: Content): number =>
+  content.rules.ringToleranceDegrees * (1 + effect(state, content, 'steadyHand'));
 
 /** Room taken on the gateway by installed programs. */
 export function programStorageGq(state: GameState, content: Content): number {
@@ -72,7 +81,10 @@ export function checkTask(state: GameState, content: Content, connection: Connec
   if (!check.ok) return check;
   // The modem moves files; the processor does everything else.
   const files = target.kind === 'copyFile' || target.kind === 'deleteFile';
-  return { ...check, seconds: check.seconds / (files ? fileSpeed(state, content) : cpuSpeed(state, content)) };
+  let speed = files ? fileSpeed(state, content) : cpuSpeed(state, content);
+  if (CRACKING.includes(target.kind)) speed *= 1 + effect(state, content, 'crackSpeed');
+  if (target.kind === 'deleteLog') speed *= 1 + effect(state, content, 'logSpeed');
+  return { ...check, seconds: check.seconds / speed };
 }
 
 /** checkTask on a stock gateway. */
@@ -86,7 +98,7 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
   if (state.tasks.some(same)) return no('That is already running.');
 
   const against = (layer: string, level: number): Check => {
-    const seconds = layerSeconds(program, level);
+    const seconds = layerSeconds(program, level, 2 - effect(state, content, 'overreach'));
     if (seconds === null) return no(`${program.name} v${program.version} is too weak for this ${layer} (level ${level}).`);
     return { ok: true, seconds, program, level };
   };
@@ -263,8 +275,13 @@ function finish(state: GameState, content: Content, connection: Connection, task
 
 const MAX_RINGS = 5;
 
-/** A port line-up for a firewall of this level: more rings, turning faster, as the level goes up. */
-function newPuzzle(state: GameState, level = 1): RingPuzzle {
+/**
+ * A port line-up for a firewall of this level: more rings, turning
+ * faster, as the level goes up. Steady hand slows the rings; Auto-align
+ * locks some of them before the player starts.
+ */
+function newPuzzle(state: GameState, content: Content, level = 1): RingPuzzle {
+  const steady = 1 - effect(state, content, 'steadyHand');
   const rng = stream(state, 'puzzle');
   const rings = Math.min(MAX_RINGS, 2 + level);
   const startAngles: number[] = [];
@@ -272,9 +289,11 @@ function newPuzzle(state: GameState, level = 1): RingPuzzle {
   for (let i = 0; i < rings; i++) {
     startAngles.push(rng.int(40, 320));
     const direction = i % 2 === 0 ? 1 : -1;
-    speeds.push(direction * (70 + 30 * i) * (1 + 0.15 * (level - 1)));
+    speeds.push(direction * (70 + 30 * i) * (1 + 0.15 * (level - 1)) * steady);
   }
-  return { startAngles, speeds, locked: startAngles.map(() => false) };
+  // Never all of them: the last ring is always the player's.
+  const auto = Math.min(rings - 1, effect(state, content, 'autoAlign'));
+  return { startAngles, speeds, locked: startAngles.map((_, i) => i < auto) };
 }
 
 /** Where a ring's port is right now, in degrees from the marker (0 to 360). */
@@ -298,7 +317,7 @@ export function lockRing(state: GameState, content: Content, taskId: string, rin
 
   const angle = ringAngle(task, ring);
   const offBy = Math.min(angle, 360 - angle);
-  if (offBy > content.rules.ringToleranceDegrees) {
+  if (offBy > ringTolerance(state, content)) {
     task.durationMs += content.rules.ringMissSeconds * 1000;
     return null;
   }
@@ -317,14 +336,17 @@ export function startTask(state: GameState, content: Content, connectionId: stri
   }
   const check = checkTask(state, content, connection, target);
   if (!check.ok) return check.reason;
+  const puzzle = target.kind === 'firewall' ? newPuzzle(state, content, check.level) : undefined;
+  // Rings that start locked have already taken their share off the time.
+  const open = puzzle ? puzzle.locked.filter((locked) => !locked).length / puzzle.locked.length : 1;
   state.tasks.push({
     id: `t${state.nextId++}`,
     programId: check.program.id,
     connectionId: connection?.id ?? null,
     target,
     progressMs: 0,
-    durationMs: check.seconds * 1000,
-    ...(target.kind === 'firewall' ? { puzzle: newPuzzle(state, check.level) } : {}),
+    durationMs: check.seconds * 1000 * open,
+    ...(puzzle ? { puzzle } : {}),
   });
   // Monitors notice programs working on their server. They don't notice being blinded, or work done at home.
   if (connection && target.kind !== 'monitor') noteIntrusion(state, content, connection);

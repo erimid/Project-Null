@@ -7,6 +7,7 @@
 import type { HardwareDef, HardwareSlot } from '../content/hardware';
 import type { ModelDef } from '../content/models';
 import type { GameState, HardwareState } from './state';
+import { effect } from './skills';
 import { stream } from './streams';
 import { findConnection, findServer, sendMail, type Content } from './world';
 
@@ -31,11 +32,16 @@ export function installed(state: GameState, content: Content, slot: HardwareSlot
   return findPart(content, slot, state.player.hardware[slot]);
 }
 
+/** How much the Tuned hardware skill speeds up the processor and modem. */
+const tuned = (state: GameState, content: Content): number => 1 + effect(state, content, 'hardwareSpeed');
 /** Programs run this many times faster than on a stock gateway. */
-export const cpuSpeed = (state: GameState, content: Content): number => installed(state, content, 'cpu')?.speed ?? 1;
+export const cpuSpeed = (state: GameState, content: Content): number =>
+  (installed(state, content, 'cpu')?.speed ?? 1) * tuned(state, content);
 /** Files copy and delete this many times faster than on a stock gateway. */
-export const fileSpeed = (state: GameState, content: Content): number => installed(state, content, 'modem')?.fileSpeed ?? 1;
-export const maxPrograms = (state: GameState, content: Content): number => installed(state, content, 'cpu')?.programs ?? 3;
+export const fileSpeed = (state: GameState, content: Content): number =>
+  (installed(state, content, 'modem')?.fileSpeed ?? 1) * tuned(state, content);
+export const maxPrograms = (state: GameState, content: Content): number =>
+  (installed(state, content, 'cpu')?.programs ?? 3) + effect(state, content, 'extraPrograms');
 export const storageGb = (state: GameState, content: Content): number => installed(state, content, 'storage')?.storageGb ?? 40;
 export const maxConnections = (state: GameState, content: Content): number =>
   installed(state, content, 'ports')?.connections ?? 1;

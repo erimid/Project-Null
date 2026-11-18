@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { hopUnderTrace, ownedProgram, traceReport } from '../../../core';
+import { hopUnderTrace, maxReroutes, ownedProgram, traceReport } from '../../../core';
 import { findServer, gatewayOf, type ServerDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
@@ -92,7 +92,7 @@ export function MapWindow() {
   // During a trace, a spare server can take the place of the relay the trace is working on.
   const tracingHop = live ? hopUnderTrace(live) : -1;
   const tracingId = live && tracingHop >= 0 ? live.route[tracingHop] : undefined;
-  const reroutesLeft = live ? content.rules.maxReroutes - live.reroutes : 0;
+  const reroutesLeft = live ? maxReroutes(game, content) - live.reroutes : 0;
   const canReroute =
     !!live && !!selected && tracingHop >= 0 && selected.id !== gateway.id && selected.id !== live.serverId && !live.route.includes(selected.id);
 

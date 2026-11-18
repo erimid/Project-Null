@@ -150,7 +150,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -297,6 +297,10 @@ export interface Tuning {
   readonly jobsAfter: number;
   /** Rating at which the fixer writes about jobs that need a second server. */
   readonly linksAfterRating: number;
+  /** Each time the player's best rating passes another multiple of this, they earn a skill point. */
+  readonly skillPointRating: number;
+  /** Credits to unlearn every skill the first time. Each time after costs this much more. */
+  readonly unlearnPrice: number;
 }
 
 export interface GameInfo {
@@ -718,6 +722,8 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     jobRatings: tierList(file, data, 'jobRatings', false),
     jobsAfter: num(file, 'tuning', data, 'jobsAfter', 0, 1000),
     linksAfterRating: num(file, 'tuning', data, 'linksAfterRating', 0, 100_000),
+    skillPointRating: num(file, 'tuning', data, 'skillPointRating', 1, 1000),
+    unlearnPrice: num(file, 'tuning', data, 'unlearnPrice', 0, 10_000_000),
   };
 }
 

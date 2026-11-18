@@ -6,6 +6,7 @@
 import type { ContractDef } from '../content/schema';
 import { baseFine, closeCase } from './forensics';
 import type { Connection, GameState } from './state';
+import { noteRating } from './skills';
 import { freeStorageGb } from './tasks';
 import { refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
@@ -127,6 +128,7 @@ export function deliverContract(state: GameState, content: Content): string | nu
   if (goal.kind === 'steal') state.player.files = state.player.files.filter((file) => file.name !== goal.file);
   state.player.balance += contract.pay;
   state.player.rating += contract.rating;
+  noteRating(state);
   state.contracts.completed.push(contract.id);
   state.contracts.activeId = null;
   // A delivered job comes off the board and another takes its place.
