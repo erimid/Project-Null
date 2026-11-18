@@ -19,10 +19,11 @@ export function SpeedControl() {
           class={`speed__option${speed === current ? ' is-current' : ''}`}
           aria-pressed={speed === current}
           disabled={locked}
-          title={locked ? 'Time is locked while a connection is open' : `Key: ${KEYS[speed]}`}
+          aria-label={speed === 0 ? 'Pause' : undefined}
+          title={locked ? 'Time is locked while a connection is open' : `${speed === 0 ? 'Pause. ' : ''}Key: ${KEYS[speed]}`}
           onClick={() => session.dispatch({ type: 'setSpeed', speed })}
         >
-          {LABELS[speed]}
+          {speed === 0 ? <span class="speed__pause" aria-hidden="true" /> : LABELS[speed]}
         </button>
       ))}
     </div>

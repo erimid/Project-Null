@@ -111,6 +111,55 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
       { freq: 784, at: 0.28, seconds: 0.5, wave: 'triangle' },
       { freq: 1175, at: 0.28, seconds: 0.5, level: 0.04 },
     ]),
+  // Two soft bells: something to spend.
+  pointEarned: () =>
+    play([
+      { freq: 880, at: 0.5, seconds: 0.3, level: 0.06 },
+      { freq: 1319, at: 0.62, seconds: 0.45, level: 0.06 },
+    ]),
+  // A low note that locks in under a bright one.
+  skillLearned: () =>
+    play([
+      { freq: 196, seconds: 0.35, wave: 'triangle', level: 0.08, to: 262 },
+      { freq: 784, at: 0.1, seconds: 0.12, wave: 'triangle', level: 0.06 },
+      { freq: 1047, at: 0.2, seconds: 0.4, wave: 'triangle', level: 0.06 },
+    ]),
+  skillsUnlearned: () =>
+    play([
+      { freq: 784, seconds: 0.14, wave: 'triangle', level: 0.06 },
+      { freq: 523, at: 0.12, seconds: 0.14, wave: 'triangle', level: 0.06 },
+      { freq: 262, at: 0.24, seconds: 0.5, wave: 'triangle', level: 0.07, to: 131 },
+    ]),
+  // A ratchet, then the part seating.
+  built: () => {
+    play([0, 0.05, 0.1, 0.15].map((at, i) => ({ freq: 500 + 120 * i, at, seconds: 0.035, wave: 'square' as const, level: 0.04 })));
+    play([
+      { freq: 330, at: 0.24, seconds: 0.3, wave: 'triangle', level: 0.08 },
+      { freq: 660, at: 0.24, seconds: 0.45, level: 0.06 },
+      { freq: 990, at: 0.34, seconds: 0.5, level: 0.04 },
+    ]);
+  },
+  scrapped: () => {
+    burst(0.1, 0.05);
+    play([
+      { freq: 440, seconds: 0.07, wave: 'square', level: 0.04, to: 300 },
+      { freq: 300, at: 0.08, seconds: 0.12, wave: 'square', level: 0.04, to: 160 },
+    ]);
+  },
+  refined: () =>
+    play([
+      { freq: 300, seconds: 0.5, wave: 'sawtooth', level: 0.035, to: 1200 },
+      { freq: 1568, at: 0.45, seconds: 0.5, level: 0.06 },
+    ]),
+  // A buyer has already heard the money go.
+  moduleGained: (event) => {
+    if (event.type === 'moduleGained' && event.bought) return;
+    play([
+      { freq: 659, at: 0.3, seconds: 0.1, wave: 'triangle', level: 0.07 },
+      { freq: 988, at: 0.39, seconds: 0.1, wave: 'triangle', level: 0.07 },
+      { freq: 1319, at: 0.48, seconds: 0.35, wave: 'triangle', level: 0.07 },
+    ]);
+  },
 };
 
 /** Starts the sound effects. Call once, after the game has loaded. */

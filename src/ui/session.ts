@@ -142,7 +142,7 @@ let lastSnapshot: Snapshot | null = null;
 
 /** Compares the game with how it was last time and tells the event listeners what happened. */
 function announce(byClock: boolean): void {
-  const now = snapshot(state);
+  const now = snapshot(state, content);
   if (lastSnapshot) {
     for (const event of diff(lastSnapshot, now, content, byClock)) eventListeners.forEach((listener) => listener(event));
   }
@@ -179,7 +179,7 @@ const loadGame = (text: string): GameState => prepare(deserializeGame(text).stat
 function replaceGame(next: GameState): void {
   state = next;
   // A different game: nothing "happened", so start comparing afresh.
-  lastSnapshot = snapshot(state);
+  lastSnapshot = snapshot(state, content);
   changed();
 }
 
@@ -278,7 +278,7 @@ export const session = {
       }
     }
     state = loaded ?? freshGame();
-    lastSnapshot = snapshot(state);
+    lastSnapshot = snapshot(state, content);
     await refreshSlots();
     // Only write a brand-new game if the slot is really empty, never over a save that failed to load.
     if (text === null) await writeSlot(activeSlot).catch(() => undefined);
