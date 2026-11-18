@@ -7,6 +7,7 @@ import {
   createGame,
   deserializeGame,
   isLyingLow,
+  nextContractRating,
   objectiveMet,
   objectivePossible,
   programStorageGq,
@@ -124,6 +125,19 @@ describe('the contracts board', () => {
     expect(offered(state)).toEqual(['elite']);
     state.contracts.completed.push('elite');
     expect(offered(state)).toEqual([]);
+  });
+
+  it('holds a contract back while there is standing work to raise the rating with', () => {
+    const { state } = harness();
+    state.contracts.completed = ['steal', 'destroy', 'record'];
+    state.contracts.jobs = [{ ...testContracts[0]!, id: 'job-1', expiresMs: state.clock.gameTimeMs + 3_600_000 }];
+    expect(offered(state)).toEqual(['job-1']);
+    expect(nextContractRating(state, content)).toBe(50);
+    state.player.rating = 50;
+    expect(offered(state)).toEqual(['elite', 'job-1']);
+    expect(nextContractRating(state, content)).toBeUndefined();
+    state.contracts.completed.push('elite');
+    expect(nextContractRating(state, content)).toBeUndefined();
   });
 
   it('stops offering a copy job once the file is gone for good', () => {

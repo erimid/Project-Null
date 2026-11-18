@@ -165,7 +165,7 @@ export const testRules: Rules = {
   hardwareLossLevel: 3,
   boardJobs: 3,
   jobHours: 24,
-  jobPayPerTier: 100,
+  jobPay: [100, 200, 300, 400, 500],
   tierRatings: [0, 2, 4, 6, 8],
   jobRatings: [0, 1, 1, 2, 2],
   jobsAfter: 99,

@@ -51,7 +51,7 @@
     "targetId": "ashgrove-poly",
     "pay": 1400,
     "rating": 1,
-    "minRating": 2,
+    "minRating": 3,
     "summary": "Change one student's standing at Ashgrove Polytechnic.",
     "brief": "My son was suspended over something that was not his doing and the appeal will take until next year.\n\nStudent 20322410, Tomas Ferrand. Set his standing to Good. Their records sit behind a proxy, so you will need a way past that before the system lets you change anything.",
     "objective": {
@@ -68,7 +68,7 @@
     "targetId": "meridian-freight",
     "pay": 1500,
     "rating": 1,
-    "minRating": 2,
+    "minRating": 5,
     "summary": "Copy the March customs holds list from Meridian Freight.",
     "brief": "Some of my clients' containers have not moved in two weeks and Meridian will not say why.\n\nCopy customs_holds_march.dat. Be aware that Meridian watches its systems. Use relays, and do not linger.",
     "objective": {
@@ -83,7 +83,7 @@
     "targetId": "paulista-teleport",
     "pay": 1600,
     "rating": 1,
-    "minRating": 3,
+    "minRating": 7,
     "summary": "Delete this month's billing archive at Paulista Teleport.",
     "brief": "Paulista is about to bill us for capacity we never received. If the run file is gone they have to rebuild it by hand, and by then our dispute will be on record.\n\nDelete billing_run_0312.arc. It is a large file, so the deletion takes a while. Plan your route for that.",
     "objective": {
@@ -98,7 +98,7 @@
     "targetId": "polar-mesh",
     "pay": 2400,
     "rating": 2,
-    "minRating": 4,
+    "minRating": 9,
     "summary": "Copy the ionosonde feed from Polar Mesh Exchange.",
     "brief": "Polar Mesh records the upper atmosphere every night and sells the data at a price no club can pay.\n\nCopy ionosonde_feed_0313.dat. It is big, and it sits behind a firewall. Make room on your gateway first.",
     "objective": {
@@ -113,7 +113,7 @@
     "targetId": "halvorsen",
     "pay": 4000,
     "rating": 2,
-    "minRating": 5,
+    "minRating": 21,
     "summary": "Copy the Project Lantern file from Halvorsen Biogenetics.",
     "brief": "Halvorsen Biogenetics is running a trial it has not registered anywhere. The internal name is Lantern.\n\nCopy HB-2207_PROJECT_LANTERN.dat from their records server. Ask no questions about what is in it. The client asks that you do not open it.",
     "objective": {
@@ -128,7 +128,7 @@
     "targetId": "corvane-mutual",
     "pay": 5000,
     "rating": 2,
-    "minRating": 7,
+    "minRating": 30,
     "summary": "Delete the fraud watchlist at Corvane Mutual.",
     "brief": "Corvane keeps a list of people it has decided are frauds. Being on it means no insurer in the country will touch you. Nobody on it was ever told.\n\nDelete fraud_watchlist.dat. Corvane's monitor is the fastest you will have met and its password is strong. Do not go in with old tools.",
     "objective": {
@@ -143,7 +143,7 @@
     "targetId": "aldergate-finch",
     "pay": 2800,
     "rating": 2,
-    "minRating": 5,
+    "minRating": 15,
     "summary": "Copy a sealed settlement from Aldergate & Finch and decrypt it.",
     "brief": "Nineteen of our neighbours signed something and now will not talk to us. We want to know what they were paid to keep quiet about.\n\nCopy harlow_v_tessera_settlement.txt from Aldergate & Finch. It is encrypted, so the copy is no use to us as it is. Run a Decrypter on it at home, then deliver.",
     "objective": {
@@ -158,7 +158,7 @@
     "targetId": "sunderby-kraft",
     "pay": 3000,
     "rating": 2,
-    "minRating": 5,
+    "minRating": 18,
     "summary": "Mark a health station's account as paid at Sunderby Kraft.",
     "brief": "The power company is cutting off our health station on Thursday over a bill the county already paid. Nobody can find the payment and nobody will stop the order.\n\nIn the customer accounts, set the Status of SK-40118 to Paid. Their monitor traces every connection from the second it opens. Take plenty of relays and something to blind it with.",
     "objective": {
@@ -175,7 +175,7 @@
     "targetId": "tessera-water",
     "pay": 4500,
     "rating": 2,
-    "minRating": 6,
+    "minRating": 27,
     "summary": "Copy the Brackley Reservoir test results from Tessera Water and decrypt them.",
     "brief": "Tessera Water paid nineteen families to stop talking about a set of test results from June 2032. I want the results.\n\nCopy brackley_results_june_2032.txt from Tessera's records archive and decrypt it. The archive is not listed anywhere, so you will not find its address in a directory. Their lawyers at Aldergate & Finch write to it. Somebody at Tessera will tell the right person where it is.",
     "objective": {
@@ -190,7 +190,7 @@
     "targetId": "calder-re",
     "pay": 5500,
     "rating": 2,
-    "minRating": 5,
+    "minRating": 24,
     "summary": "Copy the treaty book from Calder Re while its security desk is kept busy.",
     "brief": "Calder Re's underwriting server traces everything the moment you connect, and it is quick. You will not out-run it. You do not need to.\n\nIts monitor does not raise the alarm itself. It reports to the security desk console on Calder Re Facilities, and while someone is logged in at that desk the alerts wait for them. So be that someone.\n\nYou need two connections open at once: log in as the desk on Calder Re Facilities and stay there, then copy treaty_book_2034.dat from Calder Reinsurance. If the desk session drops, their trace starts moving again.",
     "objective": {
@@ -205,7 +205,7 @@
     "targetId": "brennan-marsh",
     "pay": 4200,
     "rating": 2,
-    "minRating": 4,
+    "minRating": 12,
     "summary": "Delete a disclosure bundle at Brennan & Marsh, through their firewall company.",
     "brief": "Corvane's lawyers are about to serve me with a bundle of papers built to scare me quiet. I want it gone before Friday.\n\nTheir firewall is far beyond anything you can buy. But they do not run it. Gatehouse Managed Security does, from a console in Cork, and when an engineer opens a session there the firewall passes everything until it closes.\n\nHold an admin session on Gatehouse open, and while it is open, delete disclosure_bundle_7.dat from Brennan & Marsh. You will need a gateway that can hold two connections.",
     "objective": {
@@ -220,7 +220,7 @@
     "targetId": "halvorsen",
     "pay": 6500,
     "rating": 3,
-    "minRating": 8,
+    "minRating": 34,
     "summary": "Delete assay batch 14 at Halvorsen Biogenetics.",
     "brief": "Halvorsen has a six-month head start on a compound we have been working on for two years. Their results are in one file.\n\nDelete HB-2209_assay_batch_14.dat from their records server. Their security has grown teeth since you last saw it. Go in with proper tools and leave before anyone reads the audit log.",
     "objective": {
@@ -235,7 +235,7 @@
     "targetId": "corvane-mutual",
     "pay": 8000,
     "rating": 3,
-    "minRating": 10,
+    "minRating": 39,
     "summary": "Change claim C-88214 at Corvane Mutual to Approved.",
     "brief": "Corvane has had our claim under review for four months. Our staff have not been paid since January.\n\nIn the open claims register, set the Status of C-88214 to Approved. Corvane's monitor is among the fastest in the country, and its password is not a weak one. Come prepared.",
     "objective": {
@@ -252,7 +252,7 @@
     "targetId": "calder-re",
     "pay": 9000,
     "rating": 3,
-    "minRating": 12,
+    "minRating": 44,
     "summary": "Copy the Q1 loss model from Calder Re while its security desk is kept busy.",
     "brief": "The regulator has been told that Calder Re's loss models are sound. Someone who has seen them says otherwise.\n\nCopy loss_model_q1.dat from Calder Reinsurance. You know how its monitor is kept quiet: hold the security desk at Calder Re Facilities open while you work. You will need a gateway that can hold two connections.",
     "objective": {

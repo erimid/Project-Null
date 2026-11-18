@@ -60,10 +60,37 @@ describe('Monitor Bypass', () => {
     h.wait(20);
     expect(h.connection().trace.status).toBe('none');
 
-    // The monitor comes back after 30 seconds and notices the next thing.
+    // The monitor comes back after 30 seconds and finds an administrator who should not be there.
     h.wait(11);
     expect(h.connection().monitor).toMatchObject({ blindMs: 0, echo: null });
-    h.ok({ type: 'runProgram', connectionId: id, target: { kind: 'deleteLog', logIds: [h.state.servers.corp!.logs[0]!.id] } });
+    expect(h.connection().trace.status).toBe('pending');
+  });
+
+  it('sees nothing when it comes back if the player has logged out and nothing is running', () => {
+    const h = game();
+    const id = h.connect('corp');
+    h.ok({ type: 'runProgram', connectionId: id, target: { kind: 'monitor' } });
+    h.wait(4);
+    h.ok({ type: 'login', connectionId: id, user: 'admin' });
+    h.wait(5);
+    h.ok({ type: 'logout', connectionId: id });
+    h.wait(40);
+    expect(h.connection().monitor.blindMs).toBe(0);
+    expect(h.connection().trace.status).toBe('none');
+  });
+
+  it('sees a program that is still running when it comes back', () => {
+    const h = game();
+    h.state.player.passwords = {};
+    const id = h.connect('corp');
+    h.ok({ type: 'runProgram', connectionId: id, target: { kind: 'monitor' } });
+    h.wait(4);
+    // Blind for 30 seconds. Start breaking the password just before it ends.
+    h.wait(29);
+    h.ok({ type: 'runProgram', connectionId: id, target: { kind: 'password', user: 'admin' } });
+    expect(h.connection().trace.status).toBe('none');
+    h.wait(2);
+    expect(h.state.tasks).toHaveLength(1);
     expect(h.connection().trace.status).toBe('pending');
   });
 

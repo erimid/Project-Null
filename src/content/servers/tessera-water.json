@@ -11,13 +11,8 @@
   "lon": -0.97,
   "blurb": "Records and compliance archive. Not listed.",
   "listed": false,
-  "security": {
-    "password": 2,
-    "proxy": 0,
-    "firewall": 1,
-    "monitor": 2
-  },
-  "traceSecondsPerHop": 12,
+  "security": { "password": 2, "proxy": 0, "firewall": 2, "monitor": 2 },
+  "traceSecondsPerHop": 10,
   "relayDelay": 1.0,
   "banner": [
     "TESSERA WATER SERVICES PLC",

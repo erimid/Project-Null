@@ -8,6 +8,7 @@ import {
   rackStorageGb,
   activeContract,
   availableContracts,
+  nextContractRating,
   canLogIn,
   isEvidence,
   modelWith,
@@ -27,7 +28,7 @@ import {
   type Region,
 } from '../../../core';
 import { findServer, type ServerDef } from '../../../core/content';
-import { formatGameTime, formatMoney } from '../../format';
+import { formatGameTime, formatMoney, formatRating } from '../../format';
 import { useGame, useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { activeConnection, deskStore, useDesk, type Section } from '../deskStore';
@@ -723,6 +724,7 @@ function Contracts({ game, connection, act }: View) {
   const active = activeContract(game, content);
   const offers = availableContracts(game, content);
   const lyingLow = isLyingLow(game);
+  const nextAt = nextContractRating(game, content);
   return (
     <>
       {lyingLow && (
@@ -734,6 +736,12 @@ function Contracts({ game, connection, act }: View) {
       {active && (
         <p class="board__note">
           You are working on <strong>{active.title}</strong>. Deliver it or give it up before taking another.
+        </p>
+      )}
+      {nextAt !== undefined && (
+        <p class="board__note">
+          Your rating is <span class="data">{formatRating(game.player.rating)}</span>. The next contract is held back until rating{' '}
+          <span class="data">{nextAt}</span>. Standing work raises it.
         </p>
       )}
       {offers.length === 0 && <p class="empty">Nothing on the board right now.</p>}

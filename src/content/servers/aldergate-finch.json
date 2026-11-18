@@ -11,12 +11,7 @@
   "lon": -0.09,
   "blurb": "Client matters and sealed documents.",
   "listed": true,
-  "security": {
-    "password": 2,
-    "proxy": 0,
-    "firewall": 1,
-    "monitor": 1
-  },
+  "security": { "password": 2, "proxy": 0, "firewall": 1, "monitor": 2 },
   "traceSecondsPerHop": 14,
   "relayDelay": 1.0,
   "banner": [

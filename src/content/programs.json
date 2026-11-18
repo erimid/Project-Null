@@ -36,6 +36,18 @@
     "blurb": "Slips past a proxy so you can change records and logs."
   },
   {
+    "id": "proxy-bypass-2",
+    "name": "Proxy Bypass",
+    "short": "Proxy",
+    "kind": "bypassProxy",
+    "version": 2,
+    "baseSeconds": 9,
+    "secondsPerGq": 0,
+    "price": 2400,
+    "sizeGq": 5,
+    "blurb": "Twice as fast as version 1, and can take on stronger proxies."
+  },
+  {
     "id": "firewall-bypass",
     "name": "Firewall Bypass",
     "short": "Firewall",
@@ -46,6 +58,18 @@
     "price": 1300,
     "sizeGq": 3,
     "blurb": "Opens a path through a firewall so you can copy and delete files."
+  },
+  {
+    "id": "firewall-bypass-2",
+    "name": "Firewall Bypass",
+    "short": "Firewall",
+    "kind": "bypassFirewall",
+    "version": 2,
+    "baseSeconds": 9,
+    "secondsPerGq": 0,
+    "price": 3000,
+    "sizeGq": 5,
+    "blurb": "Twice as fast as version 1, and can take on stronger firewalls."
   },
   {
     "id": "file-copier",
@@ -105,7 +129,7 @@
     "secondsPerGq": 0,
     "price": 1600,
     "sizeGq": 3,
-    "blurb": "Blinds a server's monitor for a short while. Nothing you do is noticed, and a running trace stands still. Works once per connection."
+    "blurb": "Blinds a server's monitor for a short while. Nothing you do is noticed, and a running trace stands still. When it comes back it sees you if you are still inside. Works once per connection."
   },
   {
     "id": "monitor-bypass-2",
