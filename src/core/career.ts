@@ -7,21 +7,23 @@
  *
  * It is a tool for tests and tuning. The game itself never runs it.
  */
-import type { ContractDef, ProgramDef, ServerDef } from '../content/schema';
+import type { ContractDef, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
 import type { HardwareDef } from '../content/hardware';
 import { applyAction, type Action } from './actions';
 import { tick } from './clock';
 import { activeContract, availableContracts, isLyingLow, objectiveMet, postJobs } from './contracts';
+import { buildBases, findModule, hasTrait, marketGrade, moduleSlots, partTaken } from './crafting';
 import { evidenceCount, isEvidence } from './forensics';
 import { worldFor } from './generate';
 import { maxConnections } from './hardware';
 import { isJob } from './jobs';
 import { heldBy, monitorHeld } from './link';
 import { canRead, judge, knownFacts, knownPeople, standing } from './phish';
-import { createGame, MAX_HOPS, type Connection, type GameState, type TaskTarget } from './state';
+import { skillRank } from './skills';
+import { createGame, MAX_HOPS, type Connection, type Fitted, type GameState, type TaskTarget } from './state';
 import { checkTask, freeStorageGb, layerSeconds, MAX_LEVEL_GAP, ringAngle } from './tasks';
 import { intruding, totalTraceMs } from './trace';
-import { findProgram, findServer, ownedProgram, syncWithContent, type Content } from './world';
+import { fileDef, findProgram, findServer, ownedProgram, syncWithContent, type Content } from './world';
 
 /** How a player plays. The numbers stand in for a person's habits. */
 export interface Profile {
@@ -46,13 +48,28 @@ export interface Profile {
   readonly reserve: number;
   /** False buys only what a job cannot be done without. */
   readonly upgrades: boolean;
+  /** Skills learned as the points come, in this order: an id once for each rank. Left out, it learns none. */
+  readonly skills?: readonly string[];
+  /** Fits modules to its programs at the Workbench as they come, takes installers it passes, and buys more with spare money. */
+  readonly craft?: boolean;
 }
+
+/** A career's worth of points for someone who lets the programs do the work. */
+const SKILLS_TYPICAL: readonly string[] = [
+  'sharp-tools', 'patience', 'long-way-round', 'sharp-tools', 'tuned-hardware', 'second-slot', 'sharp-tools',
+  'long-way-round', 'clean-sweep', 'tuned-hardware', 'long-way-round', 'tight-builds', 'overreach',
+];
+/** The same for someone who lines the ports up by hand. */
+const SKILLS_CAREFUL: readonly string[] = [
+  'steady-hand', 'sharp-tools', 'patience', 'auto-align', 'second-slot', 'sharp-tools', 'long-way-round',
+  'tuned-hardware', 'sharp-tools', 'clean-sweep', 'long-way-round', 'tuned-hardware', 'long-way-round', 'tight-builds',
+];
 
 export const PROFILES = {
   /** Uses everything the game teaches. */
-  careful: { name: 'careful', hops: MAX_HOPS, bestRelays: true, thinkSeconds: 1.5, rings: true, echo: true, scrub: true, phish: true, marginSeconds: 4, reserve: 1000, upgrades: true },
+  careful: { name: 'careful', hops: MAX_HOPS, bestRelays: true, thinkSeconds: 1.5, rings: true, echo: true, scrub: true, phish: true, marginSeconds: 4, reserve: 1000, upgrades: true, skills: SKILLS_CAREFUL, craft: true },
   /** Uses a few relays, scrubs, ignores the hands-on shortcuts. */
-  typical: { name: 'typical', hops: 5, bestRelays: false, thinkSeconds: 3, rings: false, echo: false, scrub: true, phish: true, marginSeconds: 5, reserve: 500, upgrades: true },
+  typical: { name: 'typical', hops: 5, bestRelays: false, thinkSeconds: 3, rings: false, echo: false, scrub: true, phish: true, marginSeconds: 5, reserve: 500, upgrades: true, skills: SKILLS_TYPICAL, craft: true },
   /** Two relays, slow hands, never cleans up. */
   careless: { name: 'careless', hops: 2, bestRelays: false, thinkSeconds: 4, rings: false, echo: false, scrub: false, phish: false, marginSeconds: 2, reserve: 0, upgrades: true },
 } as const satisfies Record<string, Profile>;
@@ -68,6 +85,10 @@ export interface JobLine {
   readonly balanceAfter: number;
   readonly caught: number;
   readonly visits: number;
+  /** The least time, in seconds, a running trace had left at any moment of the job. Null if none ran. */
+  readonly closest: number | null;
+  /** Fines that landed while it was being worked, for this job or an earlier one. */
+  readonly fined: number;
 }
 
 export interface TitleLine {
@@ -96,6 +117,12 @@ export interface CareerReport {
   readonly written: number;
   /** Everything bought, in order, with the real minute it was bought at. */
   readonly bought: readonly { readonly name: string; readonly price: number; readonly atMinutes: number }[];
+  /** Skill ranks learned, in order, with the real minute. */
+  readonly learned: readonly { readonly name: string; readonly atMinutes: number }[];
+  /** Programs built at the Workbench, in order. */
+  readonly built: readonly { readonly name: string; readonly atMinutes: number }[];
+  /** Module installers taken from servers on the way. */
+  readonly found: number;
   /** Real minute at which nothing was left to buy, if that happened. */
   readonly kitCompleteMinutes: number | null;
 }
@@ -148,6 +175,52 @@ const WISHES: readonly string[] = [
   'rack-2',
 ];
 
+/** The same list for someone who uses the Workbench: modules ("mod:id:grade") and the Decompiler among the rest. */
+const CRAFT_WISHES: readonly string[] = [
+  'proxy-bypass',
+  'firewall-bypass',
+  'ports-2',
+  'monitor-bypass',
+  'cpu-2',
+  'mod:tidy:1',
+  'decrypter',
+  'modem-2',
+  'storage-2',
+  'password-breaker-2',
+  'firewall-bypass-2',
+  'mod:swift:2',
+  'proxy-bypass-2',
+  'cpu-3',
+  'mod:quiet:2',
+  'monitor-bypass-2',
+  'modem-3',
+  'storage-3',
+  'decompiler',
+  'mod:tidy:2',
+  'ports-3',
+  'rack-1',
+  'mod:swift:3',
+  'cpu-4',
+  'mod:quiet:3',
+  'modem-4',
+  'storage-4',
+  'mod:tidy:3',
+  'rack-2',
+];
+
+/** Which programs each module goes on, most wanted first. */
+const FITS: Record<string, readonly ProgramKind[]> = {
+  quiet: ['breakPassword', 'copyFile', 'deleteFile', 'bypassFirewall'],
+  swift: ['bypassFirewall', 'bypassProxy', 'breakPassword', 'bypassMonitor', 'deleteLog'],
+  tidy: ['copyFile', 'deleteFile'],
+  compact: [],
+};
+
+const moduleWish = (id: string): Fitted | undefined => {
+  const [mark, module, grade] = id.split(':');
+  return mark === 'mod' && module ? { id: module, grade: Number(grade) } : undefined;
+};
+
 export function playCareer(base: Content, seed: number, profile: Profile, options: CareerOptions): CareerReport {
   const content = worldFor(base, seed);
   const state: GameState = syncWithContent(
@@ -161,10 +234,16 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
   let fines = 0;
   let caughtTotal = 0;
   let kitCompleteMinutes: number | null = null;
+  /** The least a running trace has had left since this was last reset, in ms. */
+  let closestMs = Infinity;
   const stuck: string[] = [];
   const jobs: JobLine[] = [];
   const titles: TitleLine[] = [];
   const bought: { name: string; price: number; atMinutes: number }[] = [];
+  const learned: { name: string; atMinutes: number }[] = [];
+  const built: { name: string; atMinutes: number }[] = [];
+  let found = 0;
+  const wishes = profile.craft ? CRAFT_WISHES : WISHES;
   const skipped = new Set<string>();
   const minutes = () => Math.round((realMs / 60_000) * 10) / 10;
 
@@ -195,6 +274,10 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       realMs += TICK_MS;
       // Money only goes down inside a tick through a fine.
       if (state.player.balance < balance) fines += balance - state.player.balance;
+      for (const connection of state.connections) {
+        const trace = connection.trace;
+        if (trace.status === 'active') closestMs = Math.min(closestMs, totalTraceMs(trace) - trace.elapsedMs);
+      }
       if (state.player.lieLowUntilMs !== lowBefore || held.some((id) => !state.connections.some((connection) => connection.id === id))) {
         throw new Caught();
       }
@@ -258,7 +341,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     if (!check.ok) throw new Stuck(`${target.kind} on ${connection.serverId}: ${check.reason}`);
     // A firewall bypass done by hand takes about half the time.
     const seconds = target.kind === 'firewall' && profile.rings ? check.seconds / 2 : check.seconds;
-    checkTime(connection, seconds, target.kind !== 'monitor');
+    // A Quiet build is not noticed; blinding a monitor never is.
+    checkTime(connection, seconds, target.kind !== 'monitor' && !hasTrait(state, content, check.program.id, 'quiet'));
     think();
     note(`run ${target.kind} on ${connection.serverId} (${Math.round(seconds * 10) / 10}s)`);
     must({ type: 'runProgram', connectionId: connection.id, target });
@@ -363,6 +447,27 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
   /** A second connection is worth opening if it switches off a layer the job has to get past. */
   const wantsHolder = (server: ServerDef): boolean => server.link !== undefined && maxConnections(state, content) >= 2;
 
+  /** Takes any module installer lying on the server, if the trace leaves time for it and the cleaning up after. */
+  const loot = (connection: Connection): void => {
+    if (!profile.craft) return;
+    const server = findServer(content, connection.serverId)!;
+    if (fileBlocked(server, connection)) return;
+    for (const file of [...(state.servers[server.id]?.files ?? [])]) {
+      if (!fileDef(content, server.id, file.name)?.part || partTaken(state, server.id, file.name)) continue;
+      const target: TaskTarget = { kind: 'copyFile', file: file.name };
+      const check = checkTask(state, content, connection, target);
+      if (!check.ok) continue;
+      try {
+        checkTime(connection, check.seconds + 12, true);
+        run(connection, target);
+        found++;
+      } catch (error) {
+        if (!(error instanceof Bail)) throw error;
+        return;
+      }
+    }
+  };
+
   /** One trip to the target. Returns false if it had to leave early. */
   const visit = (contract: ContractDef): boolean => {
     const server = findServer(content, contract.targetId)!;
@@ -376,6 +481,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       becomeAdmin(connection);
       if (!fieldworkDone(contract)) doObjective(connection, contract);
       if (!fileBlocked(server, connection)) read(connection);
+      loot(connection);
       if (profile.scrub) {
         scrub(connection);
         if (holder) scrub(holder);
@@ -392,7 +498,20 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     }
   };
 
+  /** How many of a module the player has at this grade or better, loose or fitted. */
+  const modulesHeld = (wish: Fitted): number => {
+    let count = 0;
+    for (const [key, held] of Object.entries(state.player.parts)) {
+      const [id, grade] = key.split(':');
+      if (id === wish.id && Number(grade) >= wish.grade) count += held;
+    }
+    for (const build of state.player.builds) count += build.modules.filter((fitted) => fitted.id === wish.id && fitted.grade >= wish.grade).length;
+    return count;
+  };
+
   const owns = (id: string): boolean => {
+    const wish = moduleWish(id);
+    if (wish) return modulesHeld(wish) > 0;
     const part = content.hardware.find((item) => item.id === id);
     if (part) return state.player.hardware[part.slot] >= part.tier;
     const program = findProgram(content, id);
@@ -403,12 +522,19 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
 
   /** Buys one thing on the board connection. Returns false if it can't. */
   const buy = (connectionId: string, id: string): boolean => {
+    const wish = moduleWish(id);
+    if (wish) {
+      const module = findModule(content, wish.id);
+      const ok = act({ type: 'buyModule', connectionId, moduleId: wish.id, grade: wish.grade }).ok;
+      if (ok && module) bought.push({ name: `${module.name} ${wish.grade} module`, price: module.grades[wish.grade - 1]!.price, atMinutes: minutes() });
+      return ok;
+    }
     const part: HardwareDef | undefined = content.hardware.find((item) => item.id === id);
     const program: ProgramDef | undefined = findProgram(content, id);
     if (!part && !program) return false;
     if (program) {
       // An older version only takes up room.
-      const older = state.player.programs.map((own) => findProgram(content, own)!).find((own) => own.kind === program.kind && own.version < program.version);
+      const older = content.programs.find((own) => state.player.programs.includes(own.id) && own.kind === program.kind && own.version < program.version);
       if (state.player.balance < program.price) return false;
       if (older && program.sizeGq - older.sizeGq <= freeStorageGb(state, content)) act({ type: 'uninstallProgram', programId: older.id });
     }
@@ -465,7 +591,61 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     return list;
   };
 
-  const price = (id: string): number => content.hardware.find((part) => part.id === id)?.price ?? findProgram(content, id)?.price ?? 0;
+  const price = (id: string): number => {
+    const wish = moduleWish(id);
+    if (wish) return findModule(content, wish.id)?.grades[wish.grade - 1]?.price ?? 0;
+    return content.hardware.find((part) => part.id === id)?.price ?? findProgram(content, id)?.price ?? 0;
+  };
+
+  /** At home between jobs: spends skill points, and fits whatever modules it has to its programs. */
+  const tinker = (): void => {
+    const wanted = new Map<string, number>();
+    for (const id of profile.skills ?? []) {
+      const rank = (wanted.get(id) ?? 0) + 1;
+      wanted.set(id, rank);
+      if (skillRank(state, id) >= rank) continue;
+      if (!act({ type: 'learnSkill', skillId: id }).ok) break;
+      learned.push({ name: content.skills.find((skill) => skill.id === id)?.name ?? id, atMinutes: minutes() });
+    }
+    if (!profile.craft) return;
+
+    // Everything it has, best first, shared out over the newest program of each kind.
+    const pool: Fitted[] = state.player.builds.flatMap((build) => build.modules.map((fitted) => ({ ...fitted })));
+    for (const [key, held] of Object.entries(state.player.parts)) {
+      const [id, grade] = key.split(':');
+      for (let i = 0; i < held; i++) pool.push({ id: id!, grade: Number(grade) });
+    }
+    pool.sort((a, b) => b.grade - a.grade);
+    const bases = new Map<ProgramKind, ProgramDef>();
+    for (const program of buildBases(state, content)) {
+      if ((bases.get(program.kind)?.version ?? 0) < program.version) bases.set(program.kind, program);
+    }
+    const slots = moduleSlots(state, content);
+    const plan = new Map<string, Fitted[]>();
+    for (const part of pool) {
+      for (const kind of FITS[part.id] ?? []) {
+        const base = bases.get(kind);
+        const fitted = base ? (plan.get(base.id) ?? []) : [];
+        if (!base || fitted.length >= slots || fitted.some((other) => other.id === part.id)) continue;
+        plan.set(base.id, [...fitted, part]);
+        break;
+      }
+    }
+    const same = (a: readonly Fitted[], b: readonly Fitted[]) => a.length === b.length && a.every((x) => b.some((y) => y.id === x.id && y.grade === x.grade));
+    for (const build of [...state.player.builds]) {
+      const want = plan.get(build.base);
+      if (want && same(want, build.modules)) plan.delete(build.base);
+      else act({ type: 'scrapProgram', programId: build.id });
+    }
+    for (const [base, modules] of plan) {
+      if (!act({ type: 'buildProgram', base, modules }).ok) continue;
+      idle(() => state.tasks.length === 0);
+      const build = state.player.builds[state.player.builds.length - 1];
+      if (!build) continue;
+      act({ type: 'preferProgram', programId: build.id });
+      built.push({ name: findProgram(content, build.id, state)?.name ?? build.id, atMinutes: minutes() });
+    }
+  };
 
   /** Logs in to the board, takes the best contract it can do, and shops. Returns the contract taken. */
   const visitBoard = (): ContractDef | undefined => {
@@ -492,13 +672,16 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     // Spare money goes on the next thing worth having.
     for (let again = profile.upgrades; again; ) {
       again = false;
-      for (const id of WISHES) {
+      for (const id of wishes) {
         if (owns(id)) continue;
+        // A grade the market does not sell at this rating yet: on to the next thing.
+        const wish = moduleWish(id);
+        if (wish && wish.grade > marketGrade(state, content)) continue;
         if (state.player.balance >= price(id) + profile.reserve && buy(connection.id, id)) again = true;
         break;
       }
     }
-    if (kitCompleteMinutes === null && WISHES.every(owns)) kitCompleteMinutes = minutes();
+    if (kitCompleteMinutes === null && wishes.every(owns)) kitCompleteMinutes = minutes();
     think();
     act({ type: 'disconnectAll' });
     return pick?.contract;
@@ -592,9 +775,12 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     !(state.player.rating >= options.untilRating && content.contracts.every((contract) => state.contracts.completed.includes(contract.id) || skipped.has(contract.id)))
   ) {
     const startMs = realMs;
+    closestMs = Infinity;
+    const finesBefore = fines;
     let contract: ContractDef | undefined;
     try {
       if (isLyingLow(state)) idle(() => !isLyingLow(state));
+      tinker();
       contract = visitBoard();
       if (!contract) {
         // Nothing it can do right now: wait for the board to change, or an answer to arrive.
@@ -618,6 +804,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
           balanceAfter: state.player.balance,
           caught: result.caught,
           visits: result.visits,
+          closest: Number.isFinite(closestMs) ? Math.round(closestMs / 100) / 10 : null,
+          fined: fines - finesBefore,
         });
         noteTitle();
       }
@@ -651,6 +839,9 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     finalBalance: state.player.balance,
     written: content.contracts.filter((contract) => state.contracts.completed.includes(contract.id)).length,
     bought,
+    learned,
+    built,
+    found,
     kitCompleteMinutes,
   };
 }
@@ -664,6 +855,10 @@ export function formatCareer(report: CareerReport): string {
     `${report.minutes} min played, ${report.jobs.length} delivered (${report.written} written), rating ${report.finalRating}, earned ${report.earned}c, fines ${report.fines}c, traced ${report.caught}x, ` +
       `${Math.round(report.earned / Math.max(1, report.minutes / 60))}c per hour`,
   );
+  const close = report.jobs.flatMap((job) => (job.closest === null ? [] : [job.closest]));
+  if (close.length > 0) {
+    lines.push(`Traces: ran on ${close.length} jobs, closest ${Math.min(...close)}s, typically ${[...close].sort((a, b) => a - b)[Math.floor(close.length / 2)]}s to spare`);
+  }
   lines.push('Titles:');
   report.titles.forEach((line, index) => {
     const next = report.titles[index + 1];
@@ -676,11 +871,16 @@ export function formatCareer(report: CareerReport): string {
   lines.push('Work:');
   for (const job of report.jobs) {
     lines.push(
-      `  ${pad(job.job ? 'job' : 'written', 8)}${pad(job.title.slice(0, 30), 31)}${pad(`${job.pay}c`, 7)}${pad(`${job.seconds}s`, 6)}rating ${pad(job.ratingAfter, 3)} bal ${pad(job.balanceAfter, 7)}${job.caught ? ` traced ${job.caught}x` : ''}${job.visits > 1 ? ` ${job.visits} visits` : ''}`,
+      `  ${pad(job.job ? 'job' : 'written', 8)}${pad(job.title.slice(0, 30), 31)}${pad(`${job.pay}c`, 7)}${pad(`${job.seconds}s`, 6)}rating ${pad(job.ratingAfter, 3)} bal ${pad(job.balanceAfter, 7)}${job.caught ? ` traced ${job.caught}x` : ''}${job.visits > 1 ? ` ${job.visits} visits` : ''}${job.closest === null ? '' : `  trace ${job.closest}s off`}${job.fined > 0 ? `  fined ${job.fined}c` : ''}`,
     );
   }
   lines.push('Bought:');
   for (const item of report.bought) lines.push(`  ${pad(`${item.atMinutes} min`, 10)}${pad(item.name, 32)}${item.price}c`);
+  if (report.learned.length > 0) lines.push(`Skills: ${report.learned.map((item) => `${item.name} (${item.atMinutes})`).join(', ')}`);
+  if (report.built.length > 0) {
+    lines.push(`Built (${report.found} installers found):`);
+    for (const item of report.built) lines.push(`  ${pad(`${item.atMinutes} min`, 10)}${item.name}`);
+  }
   lines.push(report.kitCompleteMinutes === null ? 'Kit: not everything bought' : `Kit: everything bought by ${report.kitCompleteMinutes} min`);
   if (report.stuck.length > 0) {
     lines.push('Stuck:');

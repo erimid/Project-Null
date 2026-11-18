@@ -39,9 +39,16 @@ export function closeCase(state: GameState, serverId: string): void {
   for (const entry of state.servers[serverId]?.logs ?? []) entry.byPlayer = false;
 }
 
-/** Carries out every review that has come due. */
+/**
+ * Carries out every review that has come due. One for a server the
+ * player is connected to again waits until they have left: nobody reads
+ * the log of a break-in that is still going on, and the player gets the
+ * same chance to clean up as on any other visit.
+ */
 export function runReviews(state: GameState, content: Content): void {
-  const due = state.reviews.filter((review) => review.dueMs <= state.clock.gameTimeMs);
+  const due = state.reviews.filter(
+    (review) => review.dueMs <= state.clock.gameTimeMs && !state.connections.some((connection) => connection.serverId === review.serverId),
+  );
   for (const review of due) {
     const found = evidenceCount(state, review.serverId);
     if (found > 0) {

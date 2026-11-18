@@ -58,6 +58,9 @@ const SLOW: Profile = { ...PROFILES.typical, name: 'slow', thinkSeconds: 8, hops
 /** Someone who buys only what a job cannot be done without. */
 const FRUGAL: Profile = { ...PROFILES.typical, name: 'frugal', thinkSeconds: 5, hops: 8, upgrades: false };
 
+/** Someone who never opens the Skills window or the Workbench: the game as it was before them. */
+const PLAIN: Profile = { ...PROFILES.typical, name: 'plain', skills: [], craft: false };
+
 const SEEDS = [1, 7, 2034];
 // The shelf: every program, every part of hardware, and every grade of every module the market sells.
 const everything =
@@ -89,11 +92,11 @@ describe('a whole career', () => {
     }
   });
 
-  it.each(SEEDS)('the climb needs the standing jobs, about one for every written contract (seed %i)', (seed) => {
+  it.each(SEEDS)('the climb needs the standing jobs, about one for every two or three written contracts (seed %i)', (seed) => {
     const report = career(PROFILES.typical, seed);
     const standing = report.jobs.filter((job) => job.job).length;
-    expect(standing).toBeGreaterThanOrEqual(10);
-    expect(standing).toBeLessThanOrEqual(24);
+    expect(standing).toBeGreaterThanOrEqual(8);
+    expect(standing).toBeLessThanOrEqual(16);
     // No stretch of more than three standing jobs between two written contracts.
     let run = 0;
     for (const job of report.jobs.slice(0, report.jobs.findLastIndex((item) => !item.job))) {
@@ -109,6 +112,26 @@ describe('a whole career', () => {
       // Each title takes at least two deliveries: none is skipped over.
       expect(line.contracts - report.titles[index + 1]!.contracts, line.title).toBeGreaterThanOrEqual(2);
     });
+  });
+
+  it.each(SEEDS)('skills and the Workbench are not needed, and worth having (seed %i)', (seed) => {
+    // Someone who never opens either window still gets every contract done.
+    const plain = career(PLAIN, seed);
+    expect(plain.stuck).toEqual([]);
+    expect(plain.written).toBe(contracts.length);
+    expect(plain.finalRating).toBeGreaterThanOrEqual(top.min);
+    // Someone who does spends nearly every point and fits what the work turns up...
+    const report = career(PROFILES.typical, seed);
+    expect(report.learned.length).toBeGreaterThanOrEqual(12);
+    expect(report.found).toBeGreaterThanOrEqual(4);
+    expect(report.built.length).toBeGreaterThanOrEqual(8);
+    // ...and for it sets off fewer traces, with more time in hand when one runs, at no cost in pace.
+    const traced = (jobs: typeof report.jobs) => jobs.flatMap((job) => (job.closest === null ? [] : [job.closest]));
+    const spare = (jobs: typeof report.jobs) => traced(jobs).sort((a, b) => a - b)[Math.floor(traced(jobs).length / 2)]!;
+    expect(traced(report.jobs).length).toBeLessThanOrEqual(traced(plain.jobs).length - 3);
+    expect(Math.min(...traced(report.jobs))).toBeGreaterThan(Math.min(...traced(plain.jobs)));
+    expect(spare(report.jobs)).toBeGreaterThan(spare(plain.jobs));
+    expect(report.minutes).toBeLessThan(plain.minutes * 1.05);
   });
 
   it('the work pays better the higher the title', () => {
