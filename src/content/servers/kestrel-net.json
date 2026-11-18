@@ -73,6 +73,15 @@
       "name": "router_configs.arc",
       "sizeGq": 7,
       "access": "admin"
+    },
+    {
+      "name": "mesh_shaper.mod",
+      "sizeGq": 1,
+      "access": "admin",
+      "part": {
+        "id": "compact",
+        "grade": 1
+      }
     }
   ],
   "logs": [

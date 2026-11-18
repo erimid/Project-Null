@@ -249,7 +249,7 @@ const isLevel = (value: unknown) => value === undefined || isNum(value);
 const isFitted = (f: unknown): f is Obj => isObj(f) && isText(f.id) && isNum(f.grade);
 const isBuild = (b: unknown): b is Obj => isObj(b) && isText(b.id) && isText(b.base) && isList(b.modules, isFitted);
 
-const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'deleteLog', 'build'];
+const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'deleteLog', 'build', 'decompile'];
 
 const isTask = (t: unknown): t is Obj =>
   isObj(t) &&
@@ -262,6 +262,7 @@ const isTask = (t: unknown): t is Obj =>
   TARGET_KINDS.includes(t.target.kind as string) &&
   (t.target.kind !== 'deleteLog' || isList(t.target.logIds, isNum)) &&
   (t.target.kind !== 'decrypt' || (isText(t.target.file) && t.connectionId === null)) &&
+  (t.target.kind !== 'decompile' || (isText(t.target.file) && t.connectionId === null)) &&
   (t.target.kind !== 'build' || (isText(t.target.base) && isList(t.target.modules, isFitted) && t.connectionId === null)) &&
   (t.puzzle === undefined ||
     (isObj(t.puzzle) &&

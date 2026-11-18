@@ -18,7 +18,7 @@ import { scheduleReview } from './forensics';
 import { buyHardware, loseHardware, maxConnections } from './hardware';
 import { modelRead, rentModel } from './model';
 import { readFile, sendPhish } from './phish';
-import { preferProgram, refineModule, returnModules, scrapBuild } from './crafting';
+import { buyModule, preferProgram, refineModule, returnModules, scrapBuild } from './crafting';
 import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
 import { hopUnderTrace, intruding, newTrace, noteIntrusion, reroute } from './trace';
@@ -85,7 +85,11 @@ export type Action =
   /** Melt two modules of one grade into one of the next. */
   | { readonly type: 'refineModule'; readonly moduleId: string; readonly grade: number }
   /** Pick which installed program runs for its kind. */
-  | { readonly type: 'preferProgram'; readonly programId: string };
+  | { readonly type: 'preferProgram'; readonly programId: string }
+  /** Buy a module from the board you are logged in to. */
+  | { readonly type: 'buyModule'; readonly connectionId: string; readonly moduleId: string; readonly grade: number }
+  /** Take a program file stored on the gateway apart into modules. */
+  | { readonly type: 'decompileFile'; readonly name: string };
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
@@ -325,6 +329,10 @@ export function applyAction(state: GameState, action: Action, content: Content):
       return answer(refineModule(state, content, action.moduleId, action.grade));
     case 'preferProgram':
       return answer(preferProgram(state, content, action.programId));
+    case 'buyModule':
+      return answer(buyModule(state, content, action.connectionId, action.moduleId, action.grade));
+    case 'decompileFile':
+      return answer(startTask(state, content, null, { kind: 'decompile', file: action.name }));
 
     case 'readMessage': {
       const message = state.messages.find((item) => item.id === action.messageId);

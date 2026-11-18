@@ -70,6 +70,15 @@
         "kind": "text",
         "text": "13 Mar 21:00  ionosonde run started, station TROMSO-2\n13 Mar 21:00  sweep 1.0 to 22.6 MHz, every 5 min\n13 Mar 23:47  F2 layer critical frequency dropped 38% in one sweep\n13 Mar 23:52  echo at 4.1 MHz with no natural source. bearing 201, steady\n14 Mar 00:20  echo still present. operator note: \"this is a transmitter, not weather\"\n14 Mar 05:00  run ended. feed written: ionosonde_feed_0313.dat\n14 Mar 05:02  feed sold: 1 licence (commercial, name withheld)"
       }
+    },
+    {
+      "name": "quiet_pacer.mod",
+      "sizeGq": 1,
+      "access": "admin",
+      "part": {
+        "id": "quiet",
+        "grade": 1
+      }
     }
   ],
   "logs": [

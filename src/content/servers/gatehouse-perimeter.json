@@ -60,6 +60,19 @@
       "name": "client_configs.dat",
       "sizeGq": 5,
       "access": "admin"
+    },
+    {
+      "name": "gp_sentry_agent.bin",
+      "sizeGq": 3,
+      "access": "admin",
+      "program": {
+        "modules": [
+          {
+            "id": "quiet",
+            "grade": 2
+          }
+        ]
+      }
     }
   ],
   "logs": [

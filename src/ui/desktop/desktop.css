@@ -3488,3 +3488,14 @@ button.lead:hover {
   min-width: 42px;
   text-align: right;
 }
+
+.market__grades {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.row--market:has(.market__grades) {
+  grid-template-columns: minmax(0, 1fr) auto;
+}

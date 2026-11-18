@@ -176,6 +176,7 @@ export const testRules: Rules = {
   unlearnPrice: 1000,
   buildSeconds: 10,
   workbenchAfter: 50,
+  moduleGradeRatings: [0, 5, 10],
 };
 
 const part = (slot: HardwareDef['slot'], tier: number, price: number, values: Partial<HardwareDef>): HardwareDef => ({
@@ -206,6 +207,7 @@ export const testHardware: HardwareDef[] = [
 export const shopPrograms: ProgramDef[] = [
   { ...program('breaker-2', 'breakPassword', 10), version: 2, price: 60 },
   { ...program('gold-plated', 'copyFile', 1), price: 5000 },
+  { ...program('decompiler', 'decompile', 10, 1), price: 50 },
 ];
 
 export const testContracts: ContractDef[] = [
@@ -285,6 +287,7 @@ export const testSkills: readonly SkillDef[] = [
   skill('slot', 'engineering', 2, 'secondSlot', 1),
   skill('tight', 'engineering', 2, 'tightBuilds', 0.25, { ranks: 2 }),
   skill('refine', 'engineering', 3, 'refine', 1, { needs: 'slot' }),
+  skill('teardown', 'engineering', 1, 'teardown', 1),
 ];
 
 const grades = (speed: number[], size: number[]) => speed.map((value, i) => ({ speed: value, size: size[i]!, price: 100 * (i + 1) }));

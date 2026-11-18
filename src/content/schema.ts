@@ -89,6 +89,7 @@ export const PROGRAM_KINDS = [
   'deleteFile',
   'deleteLog',
   'traceTracker',
+  'decompile',
 ] as const;
 export type ProgramKind = (typeof PROGRAM_KINDS)[number];
 
@@ -140,6 +141,8 @@ export interface ContractDef {
   /** The full brief, in the client's voice. Blank lines separate paragraphs. */
   readonly brief: string;
   readonly objective: ObjectiveDef;
+  /** A module paid on top of the credits. */
+  readonly part?: PartDef;
 }
 
 /** A message the game sends the player. Text in {braces} is filled in when it is sent. */
@@ -181,6 +184,24 @@ export interface FileDef {
   readonly encrypted?: number;
   /** What you get when you open the file. Files without it show as raw data. */
   readonly content?: FileContent;
+  /** A module installer: copying it home adds this module to the player's parts, once. */
+  readonly part?: PartDef;
+  /** A compiled program: copied home, a Decompiler takes it apart into these. */
+  readonly program?: ProgramFileDef;
+}
+
+/** A module and its grade, as data files name one. */
+export interface PartDef {
+  /** Module id (modules.json). */
+  readonly id: string;
+  readonly grade: number;
+}
+
+/** What decompiling a program file gives. */
+export interface ProgramFileDef {
+  readonly modules: readonly PartDef[];
+  /** A market program it turns out to be a copy of. Installed for free if the player hasn't got it. */
+  readonly unlocks?: string;
 }
 
 /** One line of a recording, and when it is said. */
@@ -305,6 +326,8 @@ export interface Tuning {
   readonly buildSeconds: number;
   /** Delivered contracts before the fixer writes about the Workbench and sends the first modules. */
   readonly workbenchAfter: number;
+  /** Rating needed before the market sells each grade of module, grade 1 first. */
+  readonly moduleGradeRatings: readonly number[];
 }
 
 export interface GameInfo {
@@ -468,6 +491,7 @@ export function parseContracts(data: unknown, file = 'contracts.json'): Contract
       summary: text(file, where, raw, 'summary'),
       brief: text(file, where, raw, 'brief'),
       objective,
+      ...(raw['part'] === undefined ? {} : { part: parsePart(file, where, raw['part']) }),
     };
   });
   unique(file, 'contracts', 'id', contracts.map((contract) => contract.id));
@@ -534,6 +558,22 @@ function parseFileContent(file: string, where: string, value: unknown): FileCont
   throw new ContentError(file, `${where}: content kind must be text, audio or video`);
 }
 
+export function parsePart(file: string, where: string, value: unknown): PartDef {
+  const raw = entry(file, `${where} part`, value);
+  const grade = num(file, `${where} part`, raw, 'grade', 1, 3);
+  if (!Number.isInteger(grade)) throw new ContentError(file, `${where}: a part's grade must be 1, 2 or 3`);
+  return { id: text(file, `${where} part`, raw, 'id'), grade };
+}
+
+function parseProgramFile(file: string, where: string, value: unknown): ProgramFileDef {
+  const raw = entry(file, `${where} program`, value);
+  const modules = list(file, `${where} program`, raw, 'modules').map((part) => parsePart(file, where, part));
+  if (modules.length === 0) throw new ContentError(file, `${where}: a program file needs at least one module`);
+  const unlocks = raw['unlocks'];
+  if (unlocks !== undefined && typeof unlocks !== 'string') throw new ContentError(file, `${where}: unlocks must be a program id`);
+  return { modules, ...(unlocks !== undefined ? { unlocks } : {}) };
+}
+
 function parseFiles(file: string, where: string, raw: Obj): FileDef[] {
   const files = list(file, where, raw, 'files').map((value, i): FileDef => {
     const item = entry(file, `${where} file ${i}`, value);
@@ -544,6 +584,8 @@ function parseFiles(file: string, where: string, raw: Obj): FileDef[] {
       access: role(file, `${where} file ${i}`, item, 'access'),
       ...(item['encrypted'] === undefined ? {} : { encrypted: num(file, `${where} file "${name}"`, item, 'encrypted', 1, 5) }),
       ...(item['content'] === undefined ? {} : { content: parseFileContent(file, `${where} file "${name}"`, item['content']) }),
+      ...(item['part'] === undefined ? {} : { part: parsePart(file, `${where} file "${name}"`, item['part']) }),
+      ...(item['program'] === undefined ? {} : { program: parseProgramFile(file, `${where} file "${name}"`, item['program']) }),
     };
   });
   unique(file, where, 'file', files.map((item) => item.name));
@@ -730,6 +772,13 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     unlearnPrice: num(file, 'tuning', data, 'unlearnPrice', 0, 10_000_000),
     buildSeconds: num(file, 'tuning', data, 'buildSeconds', 0, 3600),
     workbenchAfter: num(file, 'tuning', data, 'workbenchAfter', 0, 1000),
+    moduleGradeRatings: (() => {
+      const values = list(file, 'tuning', data, 'moduleGradeRatings');
+      if (values.length !== 3 || values[0] !== 0 || values.some((v, i) => typeof v !== 'number' || (i > 0 && v <= (values[i - 1] as number)))) {
+        throw new ContentError(file, 'moduleGradeRatings must be three rising numbers starting at 0');
+      }
+      return values as number[];
+    })(),
   };
 }
 

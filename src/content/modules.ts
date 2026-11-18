@@ -3,7 +3,7 @@
  * crafted version of it (see core/crafting.ts). Written in
  * modules.json; checked here when the game starts.
  */
-import { ContentError, PROGRAM_KINDS, type ProgramKind } from './schema';
+import { ContentError, PROGRAM_KINDS, type ContractDef, type PartDef, type ProgramDef, type ProgramKind, type ServerDef } from './schema';
 
 /** Highest grade a module comes in. Grades run 1 to this. */
 export const MAX_GRADE = 3;
@@ -81,4 +81,33 @@ export function parseModules(data: unknown, file = 'modules.json'): ModuleDef[] 
       }),
     };
   });
+}
+
+/** Checks that every module a server file or contract names exists, and every program a program file unlocks. */
+export function checkParts(
+  modules: readonly ModuleDef[],
+  servers: readonly ServerDef[],
+  contracts: readonly ContractDef[],
+  programs: readonly ProgramDef[],
+): void {
+  const check = (file: string, where: string, part: PartDef) => {
+    const module = modules.find((item) => item.id === part.id);
+    if (!module) throw new ContentError(file, `${where}: module "${part.id}" is not in modules.json`);
+    if (!module.grades[part.grade - 1]) throw new ContentError(file, `${where}: ${module.name} has no grade ${part.grade}`);
+  };
+  for (const server of servers) {
+    for (const file of server.files) {
+      const where = `server "${server.id}" file "${file.name}"`;
+      if (file.part && file.program) throw new ContentError('servers/', `${where} cannot be both a module and a program`);
+      if (file.part) check('servers/', where, file.part);
+      if (file.program) {
+        for (const part of file.program.modules) check('servers/', where, part);
+        const unlocks = file.program.unlocks;
+        if (unlocks !== undefined && !programs.some((program) => program.id === unlocks && program.price > 0)) {
+          throw new ContentError('servers/', `${where}: unlocks "${unlocks}", which is not a program on the market`);
+        }
+      }
+    }
+  }
+  for (const contract of contracts) if (contract.part) check('contracts.json', `contract "${contract.id}"`, contract.part);
 }

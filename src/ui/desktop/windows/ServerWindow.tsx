@@ -17,6 +17,8 @@ import {
   ownedProgram,
   ringAngle,
   ringTolerance,
+  partTaken,
+  marketGrade,
   type Action,
   type Connection,
   type EchoPuzzle,
@@ -478,7 +480,8 @@ function Files({ game, state, connection, run, act }: View) {
       {files.map((file) => {
         const copying = findTask(game, connection, { kind: 'copyFile', file: file.name });
         const deleting = findTask(game, connection, { kind: 'deleteFile', file: file.name });
-        const owned = game.player.files.some((own) => own.name === file.name);
+        const taken = partTaken(game, connection.serverId, file.name);
+        const owned = taken || game.player.files.some((own) => own.name === file.name);
         return (
           <li key={file.name} class="row row--file">
             <span class="row__main">
@@ -505,7 +508,7 @@ function Files({ game, state, connection, run, act }: View) {
                     Open
                   </button>
                   {owned ? (
-                    <span class="row__done">Copied</span>
+                    <span class="row__done">{taken ? 'Taken' : 'Copied'}</span>
                   ) : (
                     <button type="button" class="btn" onClick={() => run({ kind: 'copyFile', file: file.name })}>
                       Copy
@@ -821,6 +824,42 @@ function Market({ game, connection, act }: View) {
                 {program.price > 0 ? 'Buy' : 'Install'}
               </button>
             )}
+          </li>
+        );
+      })}
+    </ul>
+    <h3 class="map__heading section-gap">
+      Modules <span class="heading__note">for your Workbench</span>
+    </h3>
+    <ul class="rows">
+      {content.modules.map((module) => {
+        const best = marketGrade(game, content);
+        const next = content.rules.moduleGradeRatings[best];
+        return (
+          <li key={module.id} class="row row--contract row--market">
+            <span class="row__main">
+              <span>
+                <strong>{module.name}</strong>
+              </span>
+              <span class="contract__summary">
+                {module.blurb}
+                {next !== undefined ? ` Grade ${best + 1} at rating ${next}.` : ''}
+              </span>
+            </span>
+            <span class="market__grades">
+              {module.grades.slice(0, best).map((grade, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  class="btn btn--go"
+                  disabled={game.player.balance < grade.price}
+                  title={`${module.name} ${index + 1}: ${formatMoney(grade.price)}`}
+                  onClick={() => act({ type: 'buyModule', connectionId: connection.id, moduleId: module.id, grade: index + 1 })}
+                >
+                  {index + 1} · {formatMoney(grade.price)}
+                </button>
+              ))}
+            </span>
           </li>
         );
       })}

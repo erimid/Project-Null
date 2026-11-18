@@ -125,6 +125,17 @@
     "blurb": "Your processor and modem run 10% faster for each rank."
   },
   {
+    "id": "teardown",
+    "branch": "engineering",
+    "row": 1,
+    "name": "Teardown",
+    "ranks": 1,
+    "cost": 2,
+    "effect": "teardown",
+    "amount": 1,
+    "blurb": "Decompiling a program gives one more module than it would."
+  },
+  {
     "id": "second-slot",
     "branch": "engineering",
     "row": 2,

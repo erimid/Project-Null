@@ -89,6 +89,10 @@
     "objective": {
       "kind": "destroy",
       "file": "billing_run_0312.arc"
+    },
+    "part": {
+      "id": "tidy",
+      "grade": 1
     }
   },
   {
@@ -104,6 +108,10 @@
     "objective": {
       "kind": "steal",
       "file": "ionosonde_feed_0313.dat"
+    },
+    "part": {
+      "id": "swift",
+      "grade": 2
     }
   },
   {

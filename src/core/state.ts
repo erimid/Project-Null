@@ -207,6 +207,8 @@ export type TaskTarget =
   | { kind: 'deleteFile'; file: string }
   /** Remove one or more lines from the access log in a single run. */
   | { kind: 'deleteLog'; logIds: number[] }
+  /** Take a program file stored on the gateway apart into modules. Runs at home. */
+  | { kind: 'decompile'; file: string }
   /** Build a crafted program at the Workbench. Runs at home. Its modules are taken when it starts. */
   | { kind: 'build'; base: string; modules: Fitted[] };
 

@@ -41,7 +41,7 @@ import { checkPeople, parsePeople } from './people';
 import { parseSites } from './sites';
 import skillsJson from './skills.json';
 import modulesJson from './modules.json';
-import { parseModules } from './modules';
+import { checkParts, parseModules } from './modules';
 import { parseSkills } from './skills';
 import { checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
 
@@ -95,6 +95,7 @@ export const hardware = parseHardware(hardwareJson, models.map((model) => model.
 export const people = parsePeople(peopleJson);
 export const skills = parseSkills(skillsJson);
 export const modules = parseModules(modulesJson);
+checkParts(modules, servers, contracts, programs);
 checkPeople(people, servers, tuning.phishMaxDetails);
 
 /**

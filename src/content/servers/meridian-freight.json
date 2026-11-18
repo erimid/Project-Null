@@ -99,6 +99,24 @@
           }
         ]
       }
+    },
+    {
+      "name": "manifest_sync.bin",
+      "sizeGq": 2,
+      "access": "admin",
+      "program": {
+        "modules": [
+          {
+            "id": "swift",
+            "grade": 1
+          },
+          {
+            "id": "tidy",
+            "grade": 1
+          }
+        ],
+        "unlocks": "proxy-bypass"
+      }
     }
   ],
   "logs": [
