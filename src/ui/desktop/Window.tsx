@@ -1,9 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useRef } from 'preact/hooks';
-import { WINDOW_DEFS, windows, useWindows, type WindowId } from './windowStore';
+import { KEEP_VISIBLE, MIN_HEIGHT, MIN_WIDTH, WINDOW_DEFS, windows, useWindows, type WindowId } from './windowStore';
 
-/** How much of a window must stay on screen so it can always be grabbed again. */
-const KEEP_VISIBLE = 80;
 const TITLE_HEIGHT = 40;
 
 interface Props {
@@ -17,23 +15,29 @@ interface Props {
   children: ComponentChildren;
 }
 
+type Drag = { pointerId: number; dx: number; dy: number };
+
 /**
- * A floating window. Drag it by its title bar; click anywhere on it to
- * bring it to the front; × closes it (its bottom-bar tab reopens it).
+ * A floating window. Drag it by its title bar; drag its bottom-right
+ * corner to resize it (double-click the corner for its usual size);
+ * click anywhere on it to bring it to the front. The dash minimizes it
+ * to its bottom-bar tab, × closes it.
  */
 export function Window({ id, title, note, actions, children }: Props) {
   const layout = useWindows()[id];
   const def = WINDOW_DEFS[id];
   const frame = useRef<HTMLElement>(null);
-  const drag = useRef<{ pointerId: number; dx: number; dy: number } | null>(null);
+  const drag = useRef<Drag | null>(null);
+  const sizing = useRef<Drag | null>(null);
 
-  if (!layout.open) return null;
+  if (!layout.open || layout.minimized) return null;
 
+  const width = layout.w ?? def.width;
   const clamp = (x: number, y: number): [number, number] => {
     const area = frame.current?.parentElement;
     if (!area) return [x, y];
     return [
-      Math.min(Math.max(x, KEEP_VISIBLE - def.width), area.clientWidth - KEEP_VISIBLE),
+      Math.min(Math.max(x, KEEP_VISIBLE - width), area.clientWidth - KEEP_VISIBLE),
       Math.min(Math.max(y, 0), area.clientHeight - TITLE_HEIGHT),
     ];
   };
@@ -56,12 +60,43 @@ export function Window({ id, title, note, actions, children }: Props) {
     windows.settle();
   };
 
+  // The corner grip: dx and dy are how far the pointer is from the window's bottom-right corner.
+  const onGripDown = (event: PointerEvent) => {
+    const box = frame.current?.getBoundingClientRect();
+    if (event.button !== 0 || !box) return;
+    sizing.current = { pointerId: event.pointerId, dx: box.right - event.clientX, dy: box.bottom - event.clientY };
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  };
+  const onGripMove = (event: PointerEvent) => {
+    const active = sizing.current;
+    const box = frame.current?.getBoundingClientRect();
+    const area = frame.current?.parentElement?.getBoundingClientRect();
+    if (!active || active.pointerId !== event.pointerId || !box || !area) return;
+    const w = Math.min(Math.max(event.clientX + active.dx - box.left, def.minWidth ?? MIN_WIDTH), area.right - box.left);
+    const h = Math.min(Math.max(event.clientY + active.dy - box.top, MIN_HEIGHT), area.bottom - box.top);
+    windows.resize(id, Math.round(w), Math.round(h));
+  };
+  const endGrip = (event: PointerEvent) => {
+    if (sizing.current?.pointerId !== event.pointerId) return;
+    sizing.current = null;
+    windows.settle();
+  };
+
+  const name = title ?? def.title;
   return (
     <section
       ref={frame}
       class={`window${windows.isOnTop(id) ? ' window--front' : ''}`}
-      style={{ left: `${x}px`, top: `${y}px`, width: `${def.width}px`, zIndex: layout.z }}
-      aria-label={title ?? def.title}
+      style={{
+        left: `${x}px`,
+        top: `${y}px`,
+        width: `${width}px`,
+        height: layout.h === null ? undefined : `${layout.h}px`,
+        // Never taller than the room below its top edge; the contents scroll instead.
+        maxHeight: `calc(100% - ${y}px)`,
+        zIndex: layout.z,
+      }}
+      aria-label={name}
       onPointerDownCapture={() => windows.focus(id)}
     >
       <div
@@ -71,15 +106,27 @@ export function Window({ id, title, note, actions, children }: Props) {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
       >
-        <span class="window__title-text">{title ?? def.title}</span>
+        <span class="window__title-text">{name}</span>
         {note && <span class="window__title-note">{note}</span>}
         <span class="window__title-gap" />
         {actions}
-        <button class="window__close" type="button" aria-label={`Close ${title ?? def.title}`} onClick={() => windows.close(id)}>
+        <button class="window__close" type="button" aria-label={`Minimize ${name}`} onClick={() => windows.minimize(id)}>
+          –
+        </button>
+        <button class="window__close" type="button" aria-label={`Close ${name}`} onClick={() => windows.close(id)}>
           ×
         </button>
       </div>
       <div class="window__body">{children}</div>
+      <div
+        class="window__grip"
+        title="Drag to resize. Double-click for the usual size."
+        onPointerDown={onGripDown}
+        onPointerMove={onGripMove}
+        onPointerUp={endGrip}
+        onPointerCancel={endGrip}
+        onDblClick={() => windows.resetSize(id)}
+      />
     </section>
   );
 }
