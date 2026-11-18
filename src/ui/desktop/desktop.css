@@ -1312,3 +1312,10 @@ button.tabbar__contract--live:hover {
     text-decoration: underline;
   }
 }
+
+.tabbtn--exit {
+  margin-left: 6px;
+  border-left: 1px solid var(--line-soft);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-dim);
+}
