@@ -1,0 +1,173 @@
+.desktop {
+  position: relative;
+  height: 100%;
+  /* Desktop-first: below this width the page scrolls sideways instead of squashing. */
+  min-width: 1280px;
+  display: grid;
+  grid-template-rows: var(--bar-height) minmax(0, 1fr) var(--bar-height);
+  background: radial-gradient(circle at 70% 35%, var(--bg-glow) 0%, var(--bg) 60%);
+}
+
+/* ---- top bar: one tab per connected server ---- */
+
+.tabbar {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 0 16px;
+  background: var(--bar);
+  border-bottom: 1px solid var(--line);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.tabbar__hint {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.tabbar__add {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  color: var(--text-dim);
+  font-size: 20px;
+}
+
+.tabbar__add:not(:disabled):hover {
+  color: var(--text-bright);
+}
+
+.tabbar__contract {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* ---- middle: where program windows float ---- */
+
+.workspace {
+  position: relative;
+  overflow: hidden;
+}
+
+.window {
+  position: absolute;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-window);
+  background: var(--panel);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.window__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.window__title-note {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.window__body {
+  padding: 14px 16px 16px;
+}
+
+.readout {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 8px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.readout dt {
+  color: var(--text-dim);
+}
+
+.readout dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.readout .is-ok {
+  color: var(--mint);
+}
+
+/* ---- bottom bar ---- */
+
+.bottombar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: rgba(4, 12, 20, 0.95);
+  border-top: 1px solid var(--line);
+  font-weight: 600;
+}
+
+.bottombar__handle {
+  margin-right: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+.bottombar__spacer {
+  flex: 1;
+}
+
+.bottombar__status {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px;
+  border: 1px solid rgba(95, 212, 255, 0.25);
+  border-radius: var(--radius-pill);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.pill--quiet {
+  color: var(--text-dim);
+  border-color: rgba(95, 212, 255, 0.16);
+}
+
+.pill--danger {
+  padding: 5px 16px;
+  border-color: var(--red);
+  background: rgba(255, 59, 78, 0.16);
+  color: var(--red-text);
+}
+
+.pill--danger:disabled {
+  border-color: rgba(255, 59, 78, 0.3);
+  background: transparent;
+  /* Dim, but still readable against the bar. */
+  color: #b9808a;
+}
+
+.pill__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}

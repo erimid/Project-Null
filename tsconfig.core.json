@@ -1,0 +1,11 @@
+{
+  // The game simulation and its data must not touch the browser.
+  // This config type-checks src/core and src/content WITHOUT the DOM
+  // library, so any use of window/document there fails the build.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": []
+  },
+  "include": ["src/core", "src/content"]
+}
