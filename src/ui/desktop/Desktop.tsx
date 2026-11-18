@@ -8,6 +8,7 @@ import { useGame } from '../hooks';
 import type { Speed } from '../../core';
 import { content, session } from '../session';
 import { Alerts } from './Alerts';
+import { TouchTips } from './TouchTips';
 import { BrowserWindow } from './windows/BrowserWindow';
 import { ContractWindow } from './windows/ContractWindow';
 import { GatewayWindow } from './windows/GatewayWindow';
@@ -87,6 +88,7 @@ export function Desktop() {
         <ViewerWindow />
         <SavesWindow />
         <Alerts />
+        <TouchTips />
       </main>
       {phone ? <PhoneDock /> : <BottomBar />}
     </div>

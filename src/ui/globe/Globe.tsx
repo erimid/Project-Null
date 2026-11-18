@@ -131,11 +131,40 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
 
   const pxPerUnit = () => (svg.current ? svg.current.clientWidth / SIZE : 1);
 
+  // Two fingers pinch to zoom. Each finger is tracked by its pointer id.
+  const fingers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<number | null>(null);
+  const spread = () => {
+    const [a, b] = [...fingers.current.values()];
+    return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0;
+  };
+
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== 0) return;
+    if (event.pointerType === 'touch') fingers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (fingers.current.size === 2) {
+      // A second finger turns the drag into a pinch.
+      drag.current = null;
+      pinch.current = spread();
+      svg.current?.setPointerCapture(event.pointerId);
+      return;
+    }
     drag.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
   };
   const onPointerMove = (event: PointerEvent) => {
+    if (fingers.current.has(event.pointerId)) fingers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pinch.current !== null && fingers.current.size === 2) {
+      const now = spread();
+      // The zoom has three steps, so a pinch moves one step each time the fingers spread or close by a quarter.
+      if (now > pinch.current * 1.25) {
+        zoomBy(1);
+        pinch.current = now;
+      } else if (now < pinch.current * 0.8) {
+        zoomBy(-1);
+        pinch.current = now;
+      }
+      return;
+    }
     const active = drag.current;
     if (!active || active.pointerId !== event.pointerId) return;
     const dx = event.clientX - active.x;
@@ -151,6 +180,8 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
     setView((current) => dragView(current, dx, dy, R * pxPerUnit()));
   };
   const onPointerUp = (event: PointerEvent) => {
+    fingers.current.delete(event.pointerId);
+    if (fingers.current.size < 2) pinch.current = null;
     if (drag.current?.pointerId === event.pointerId) drag.current = null;
   };
 
