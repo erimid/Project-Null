@@ -4833,3 +4833,62 @@ button.lead:hover {
     top: calc(46px + env(safe-area-inset-top));
   }
 }
+
+/* ---- touch screens ----
+ * No double-tap zoom or pull-to-refresh, bigger buttons, and a dotted
+ * underline on anything that explains itself when tapped (see TouchTips).
+ */
+
+html {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+.touch-tip {
+  position: fixed;
+  z-index: 5000;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: rgba(6, 17, 29, 0.97);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  color: var(--text-bright);
+  font-size: 15px;
+  line-height: 1.35;
+  transform: translateY(-100%);
+  pointer-events: none;
+  animation: fade-in 0.15s ease-out;
+}
+
+.touch-tip--below {
+  transform: none;
+}
+
+@media (pointer: coarse) {
+  [title]:not(button):not(.window__grip):not(.dock__stat) {
+    text-decoration: underline dotted rgba(95, 212, 255, 0.45);
+    text-underline-offset: 3px;
+  }
+
+  .btn {
+    min-height: 36px;
+    padding: 6px 14px;
+  }
+
+  .window__grip {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.is-phone .btn {
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 15px;
+}

@@ -97,3 +97,25 @@ export function noiseBuffer(ctx: AudioContext): AudioBuffer {
   }
   return noise;
 }
+
+/**
+ * Phones keep sound off until the player touches the page, and only let
+ * it start inside that touch. So the first tap (or key) wakes the
+ * synthesiser and plays a moment of silence, which is what iOS needs to
+ * let later sounds through. After that this stops listening.
+ */
+function unlock(): void {
+  const audio = output();
+  if (!audio) return;
+  const silence = audio.ctx.createBuffer(1, 1, audio.ctx.sampleRate);
+  const source = audio.ctx.createBufferSource();
+  source.buffer = silence;
+  source.connect(audio.ctx.destination);
+  source.start();
+  void audio.ctx.resume().then(() => {
+    if (audio.ctx.state !== 'running') return;
+    for (const type of UNLOCK_EVENTS) window.removeEventListener(type, unlock, true);
+  }, () => undefined);
+}
+const UNLOCK_EVENTS = ['pointerdown', 'touchend', 'keydown'] as const;
+if (typeof window !== 'undefined') for (const type of UNLOCK_EVENTS) window.addEventListener(type, unlock, true);
