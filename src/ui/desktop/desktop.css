@@ -2592,8 +2592,171 @@ button.tabbar__contract--live:hover {
   color: #ffc46b;
 }
 
-.compose__facts {
-  max-height: 190px;
+/* The leads list: one card per thing the player could still get. */
+.leads {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lead {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--mint);
+  border-radius: 10px;
+  text-align: left;
+  color: var(--text);
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    transform 0.15s;
+}
+
+button.lead:hover {
+  border-color: var(--cyan);
+  background: rgba(95, 212, 255, 0.06);
+  transform: translateX(2px);
+}
+
+.lead.is-waiting,
+.lead.is-wary {
+  border-left-color: #ffc46b;
+}
+
+.lead.is-burned {
+  border-left-color: var(--text-dim);
+  opacity: 0.7;
+}
+
+.lead--head {
+  border-color: rgba(78, 230, 200, 0.35);
+  background: rgba(78, 230, 200, 0.06);
+}
+
+.lead__want {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.lead__who {
+  color: var(--text-muted);
+}
+
+.lead__who strong {
+  color: var(--text);
+}
+
+.leads__done {
+  margin-top: 12px;
+}
+
+.leads__done-list {
+  margin: 4px 0 0;
+  padding-left: 24px;
+  list-style: none;
+  color: var(--text-muted);
+}
+
+.lead__check {
+  color: var(--mint);
+}
+
+/* A row that folds a section open and shut. */
+.fold {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+
+.fold:hover {
+  color: var(--text-bright);
+  background: rgba(95, 212, 255, 0.06);
+}
+
+.fold__arrow {
+  width: 12px;
+  color: var(--cyan);
+}
+
+.compose__back {
+  margin: 0 0 8px -6px;
+}
+
+.step {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  font-size: 12px;
+  color: var(--cyan);
+}
+
+.pick-group + .pick-group {
+  margin-top: 8px;
+}
+
+.pick-group__label {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.picked-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chip--static {
+  cursor: default;
+}
+
+.files__facts.chips {
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.compose__picked {
+  margin: 0 0 6px;
+  padding: 4px;
+  border: 1px solid rgba(78, 230, 200, 0.3);
+  border-radius: 10px;
+}
+
+.files {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.files__head {
+  width: 100%;
+  text-align: left;
+}
+
+.files__name {
+  flex: 1;
+  min-width: 0;
+}
+
+.files__count {
+  color: var(--text-dim);
+}
+
+.files__facts {
+  margin: 0 0 6px 18px;
 }
 
 .fact {
@@ -2635,12 +2798,6 @@ button.tabbar__contract--live:hover {
 .fact.is-picked .fact__mark {
   border-color: var(--mint);
   background: rgba(78, 230, 200, 0.14);
-}
-
-.fact__source {
-  display: block;
-  font-size: 12px;
-  color: var(--text-dim);
 }
 
 .compose__preview {
