@@ -4478,3 +4478,358 @@ button.lead:hover {
     padding: 0 8px;
   }
 }
+
+/* ---- phone: one window at a time, full screen ----
+ * Picked by layout.ts (narrow screens, and phones on their side). The
+ * windows fill the space between the bars, only the front one shows, and
+ * the bottom bar becomes a status row over four big tabs and More.
+ */
+
+.window[hidden] {
+  display: none;
+}
+
+.desktop--phone {
+  min-width: 0;
+  height: 100dvh;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.desktop--phone .tabbar {
+  height: calc(46px + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.desktop--phone .tabbar::-webkit-scrollbar {
+  display: none;
+}
+
+.desktop--phone .tab,
+.desktop--phone .tabbar__add {
+  flex: none;
+}
+
+.desktop--phone .tab__main {
+  padding-left: 12px;
+  white-space: nowrap;
+}
+
+.desktop--phone .tab__close,
+.desktop--phone .tabbar__add {
+  min-width: 44px;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+.desktop--phone .tabbar__contract {
+  flex: 0 1 auto;
+  min-width: 96px;
+  max-width: 55%;
+  padding-left: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.desktop--phone .tabbar__contract-label {
+  display: none;
+}
+
+.window--phone {
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  animation: phone-window-in 0.18s ease-out;
+}
+
+@keyframes phone-window-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.window--phone .window__title {
+  height: 48px;
+  padding: 0 max(4px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+  cursor: default;
+  touch-action: auto;
+  font-size: 18px;
+}
+
+.window--phone .window__close {
+  width: 44px;
+  height: 44px;
+  font-size: 24px;
+}
+
+.window--phone .window__tabs {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.window--phone .window__body {
+  padding: 12px max(14px, env(safe-area-inset-right)) 20px max(14px, env(safe-area-inset-left));
+  overscroll-behavior: contain;
+}
+
+.workspace__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 17px;
+}
+
+.desktop--phone .alerts {
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  transform: none;
+}
+
+.desktop--phone .alert {
+  min-width: 0;
+  width: 100%;
+}
+
+/* The phone's bottom bar. */
+.pdock {
+  position: relative;
+  z-index: 1;
+  padding: 0 max(0px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(0px, env(safe-area-inset-left));
+  background: var(--bar);
+  border-top: 1px solid var(--line);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pdock.is-tracing {
+  border-top-color: rgba(255, 59, 78, 0.7);
+  box-shadow: 0 -18px 40px -22px rgba(255, 59, 78, 0.55);
+}
+
+.pdock__status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 46px;
+  padding-right: 8px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.pdock__status .menu__button {
+  height: 46px;
+  padding: 0 12px;
+}
+
+.pdock__status .menu__handle {
+  display: none;
+}
+
+.pdock__stat {
+  padding: 0 8px;
+  color: var(--text-bright);
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.pdock__status .speed,
+.pdock__status .dock__cut {
+  margin-left: 0;
+}
+
+.pdock__status .speed__option {
+  min-width: 40px;
+  min-height: 36px;
+  padding: 6px 8px;
+}
+
+.pdock__status .dock__cut {
+  min-height: 36px;
+}
+
+.pdock__tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.pdock__tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 4px;
+  color: var(--text-muted);
+  font-size: 15px;
+  white-space: nowrap;
+  border-top: 2px solid transparent;
+}
+
+.pdock__tab.is-front {
+  color: var(--text-bright);
+  background: rgba(95, 212, 255, 0.08);
+  border-top-color: var(--cyan);
+}
+
+.pdock__tab:disabled {
+  opacity: 0.4;
+}
+
+.pdock__tab .count,
+.pdock__item .count {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 17px;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.pdock__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  background: rgba(1, 4, 9, 0.55);
+  animation: fade-in 0.15s ease-out;
+}
+
+.pdock__sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  z-index: 3;
+  padding: 14px max(14px, env(safe-area-inset-right)) 12px max(14px, env(safe-area-inset-left));
+  border-top: 1px solid rgba(95, 212, 255, 0.6);
+  border-radius: var(--radius-window) var(--radius-window) 0 0;
+  background: var(--panel);
+  box-shadow: 0 -24px 50px rgba(0, 0, 0, 0.6);
+  animation: sheet-up 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.pdock__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+}
+
+.pdock__item {
+  position: relative;
+  min-height: 56px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(95, 212, 255, 0.04);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.pdock__item.is-open {
+  border-color: var(--line-strong);
+  color: var(--text-bright);
+}
+
+.pdock__item.is-front {
+  border-color: var(--cyan);
+  background: rgba(95, 212, 255, 0.12);
+}
+
+.pdock__facts {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+/* The trace alarm drops from the top on a phone, over whatever is open. */
+.pdock .alarm {
+  position: fixed;
+  top: calc(54px + env(safe-area-inset-top));
+  bottom: auto;
+  left: 8px;
+  right: 8px;
+  min-width: 0;
+  transform: none;
+  border-bottom: 1px solid var(--red);
+  border-radius: 14px;
+  animation:
+    alarm-drop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2),
+    alarm-glow 1s ease-in-out infinite;
+}
+
+@keyframes alarm-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
+.pdock .alarm__main {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.desktop--phone .menu__panel {
+  max-width: calc(100vw - 24px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .window--phone,
+  .pdock__sheet,
+  .pdock__scrim,
+  .pdock .alarm {
+    animation: none;
+  }
+}
+
+/* A phone on its side: the status row and the tabs share one line, to leave room for the window. */
+@media (max-height: 500px) {
+  .pdock {
+    display: flex;
+  }
+
+  .pdock__status {
+    flex: none;
+    border-bottom: 0;
+    border-right: 1px solid var(--line-soft);
+  }
+
+  .pdock__tabs {
+    flex: 1;
+  }
+
+  .pdock__tab {
+    min-height: 46px;
+  }
+
+  .desktop--phone .tabbar {
+    height: calc(40px + env(safe-area-inset-top));
+  }
+
+  .pdock .alarm {
+    top: calc(46px + env(safe-area-inset-top));
+  }
+}

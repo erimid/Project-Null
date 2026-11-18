@@ -1,5 +1,7 @@
 import { BottomBar } from './BottomBar';
 import { TopBar } from './TopBar';
+import { PhoneDock } from './PhoneDock';
+import { useLayout } from './layout';
 import { useEffect, useRef } from 'preact/hooks';
 import { mostUrgentTrace } from '../../core';
 import { useGame } from '../hooks';
@@ -49,6 +51,7 @@ export function Desktop() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const phone = useLayout() === 'phone';
   const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
   // The whole desk jolts when a trace cuts the line.
   const desk = useRef<HTMLDivElement>(null);
@@ -67,9 +70,10 @@ export function Desktop() {
   );
 
   return (
-    <div ref={desk} class={`desktop${tracing ? ' is-tracing' : ''}`}>
+    <div ref={desk} class={`desktop${phone ? ' desktop--phone' : ''}${tracing ? ' is-tracing' : ''}`}>
       <TopBar />
       <main class="workspace">
+        {phone && <p class="workspace__empty">Pick a window below.</p>}
         <GatewayWindow />
         <MapWindow />
         <ServerWindow />
@@ -84,7 +88,7 @@ export function Desktop() {
         <SavesWindow />
         <Alerts />
       </main>
-      <BottomBar />
+      {phone ? <PhoneDock /> : <BottomBar />}
     </div>
   );
 }
