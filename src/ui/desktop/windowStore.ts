@@ -77,21 +77,38 @@ type Layouts = Readonly<Record<WindowId, WindowLayout>>;
 // Bumped whenever the default layout changes, so everyone gets the new one once.
 const STORAGE_KEY = 'project-null.windows.v9';
 
+/**
+ * On a screen narrower than the usual desk (a tablet held wide, a small
+ * laptop) the server and the map column are narrowed to share what there
+ * is, so nothing starts on top of anything else.
+ */
+function fittedWidths(): Partial<Record<WindowId, number>> {
+  const room = window.innerWidth - EDGE * 2 - GAP;
+  if (room >= WINDOW_DEFS.server.width + MAP_WIDTH) return {};
+  const serverMin = WINDOW_DEFS.server.minWidth ?? MIN_WIDTH;
+  const column = Math.max(560, room - 540);
+  const server = Math.max(serverMin, room - column);
+  return { server, map: column, gateway: column };
+}
+
 function defaults(): Layouts {
   const desk = window.innerHeight - BARS_HEIGHT;
+  const fitted = fittedWidths();
   // The map takes what the gateway's readout leaves of the right-hand column, within reason.
   const mapHeight = Math.round(Math.min(640, Math.max(430, desk - TOP - GAP - GATEWAY_HEIGHT - GAP)));
   const entries = WINDOW_IDS.map((id, index) => {
     const def = WINDOW_DEFS[id];
-    const x = def.x >= 0 ? def.x : Math.max(EDGE, window.innerWidth + def.x - def.width);
+    const width = fitted[id] ?? def.width;
+    const x = def.x >= 0 ? def.x : Math.max(EDGE, window.innerWidth + def.x - width);
     const y = id === 'gateway' ? TOP + mapHeight + GAP : def.y;
     const h = id === 'map' ? mapHeight : (def.height ?? null);
-    return [id, { x, y, open: def.open, z: index + 1, minimized: false, w: null, h }] as const;
+    return [id, { x, y, open: def.open, z: index + 1, minimized: false, w: fitted[id] ?? null, h }] as const;
   });
   return Object.fromEntries(entries) as Layouts;
 }
 
 /** The height a window goes back to when its corner is double-clicked. */
+const usualWidth = (id: WindowId): number | null => defaults()[id].w;
 const usualHeight = (id: WindowId): number | null => defaults()[id].h;
 
 function load(): Layouts {
@@ -176,7 +193,7 @@ export const windows = {
   },
   /** Back to its usual size. */
   resetSize(id: WindowId): void {
-    set(patch(id, { w: null, h: usualHeight(id) }), true);
+    set(patch(id, { w: usualWidth(id), h: usualHeight(id) }), true);
   },
   /** While dragging. Call `settle` when the drag ends. */
   move(id: WindowId, x: number, y: number): void {
