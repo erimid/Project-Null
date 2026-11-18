@@ -192,3 +192,62 @@ export function runPhish(state: GameState, content: Content): void {
     }
   }
 }
+
+/** Something the player can still get by writing to someone they have found. */
+export interface Leads {
+  /** Asks whose person the player knows and that are not done yet. */
+  readonly open: AskDef[];
+  /** Asks that have already paid off. */
+  readonly done: AskDef[];
+}
+
+export function leads(state: GameState, content: Content): Leads {
+  const known = (ask: AskDef) => {
+    const mark = findPerson(content, ask.markId);
+    return mark !== undefined && knowsPerson(state, mark);
+  };
+  return {
+    open: content.people.asks.filter((ask) => known(ask) && !state.phish.done.includes(ask.id)),
+    done: content.people.asks.filter((ask) => state.phish.done.includes(ask.id)),
+  };
+}
+
+/** A set of things the player learned from one place. */
+export interface Group<T> {
+  /** Server the things came from, or null for things the player always knew. */
+  readonly serverId: string | null;
+  /** File they came from, if they all came from one. */
+  readonly file: string | null;
+  readonly items: T[];
+}
+
+/** Known details, grouped by the file they were read in, in the order the files were first met. */
+export function factsByFile(state: GameState, content: Content): Group<FactDef>[] {
+  const groups: Group<FactDef>[] = [];
+  for (const fact of knownFacts(state, content)) {
+    const group = groups.find((item) => item.serverId === fact.source.serverId && item.file === fact.source.file);
+    if (group) group.items.push(fact);
+    else groups.push({ serverId: fact.source.serverId, file: fact.source.file, items: [fact] });
+  }
+  return groups;
+}
+
+/**
+ * The people the player could sign a message to this person as, grouped
+ * by the server they were found on. People found on the same server as
+ * the person being written to come first; people the player always knew
+ * come last.
+ */
+export function sendersFor(state: GameState, content: Content, markId: string): Group<PersonDef>[] {
+  const mark = findPerson(content, markId);
+  const groups: Group<PersonDef>[] = [];
+  for (const person of knownPeople(state, content)) {
+    if (person.id === markId) continue;
+    const serverId = person.source?.serverId ?? null;
+    const group = groups.find((item) => item.serverId === serverId);
+    if (group) group.items.push(person);
+    else groups.push({ serverId, file: null, items: [person] });
+  }
+  const rank = (group: Group<PersonDef>) => (group.serverId === null ? 2 : group.serverId === mark?.source?.serverId ? 0 : 1);
+  return groups.sort((a, b) => rank(a) - rank(b));
+}

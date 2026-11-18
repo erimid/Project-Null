@@ -4,10 +4,13 @@ import {
   applyAction,
   createGame,
   deserializeGame,
+  factsByFile,
   judge,
   knownFacts,
+  leads,
   knownPeople,
   marks,
+  sendersFor,
   serializeGame,
   standing,
   syncWithContent,
@@ -150,6 +153,38 @@ describe('writing to someone', () => {
     expect(judge(content, { askId: 'reset', senderId: 'boss', factIds: ['dog', 'audit'] })).toBe('good');
     expect(judge(content, { askId: 'reset', senderId: 'fixer', factIds: ['dog', 'audit'] })).toBe('sender');
     expect(judge(content, { askId: 'reset', senderId: 'boss', factIds: ['dog'] })).toBe('details');
+  });
+});
+
+describe('keeping the lists short', () => {
+  it('lists what is still to get, and folds away what is done', () => {
+    const h = game();
+    expect(leads(h.state, content).open).toEqual([]);
+    learnAll(h.state);
+    expect(leads(h.state, content).open.map((ask) => ask.id)).toEqual(['reset', 'where']);
+    h.ok({ type: 'sendPhish', askId: 'where', senderId: 'boss', factIds: ['door'] });
+    h.minutes(30);
+    const after = leads(h.state, content);
+    expect(after.open.map((ask) => ask.id)).toEqual(['reset']);
+    expect(after.done.map((ask) => ask.id)).toEqual(['where']);
+  });
+
+  it('groups details by the file they were read in', () => {
+    const h = game();
+    learnAll(h.state);
+    expect(factsByFile(h.state, content).map((group) => [group.serverId, group.file, group.items.map((fact) => fact.id)])).toEqual([
+      ['directory', 'readme.txt', ['door']],
+      ['corp', 'secret.dat', ['audit', 'dog']],
+    ]);
+  });
+
+  it('puts people found where the person was found first, and people always known last', () => {
+    const h = game();
+    learnAll(h.state);
+    expect(sendersFor(h.state, content, 'clerk').map((group) => [group.serverId, group.items.map((person) => person.id)])).toEqual([
+      ['corp', ['boss']],
+      [null, ['fixer']],
+    ]);
   });
 });
 
