@@ -189,10 +189,10 @@ export function BottomBar() {
             aria-pressed={layouts[id].open}
             onClick={() => windows.toggle(id)}
           >
-            {WINDOW_DEFS[id].pill}
-            {id === 'programs' && running > 0 && <span class="count data">{running}</span>}
-            {id === 'messages' && unread > 0 && <span class="count count--alert data">{unread}</span>}
-            {id === 'skills' && points > 0 && <span class="count count--mint data">{points}</span>}
+            <span class="dock__name">{WINDOW_DEFS[id].pill}</span>
+            {id === 'programs' && running > 0 && <span class="count data" aria-label={`${running} running`}>{running}</span>}
+            {id === 'messages' && unread > 0 && <span class="count count--alert data" aria-label={`${unread} unread`}>{unread}</span>}
+            {id === 'skills' && points > 0 && <span class="count count--mint data" aria-label={`${points} to spend`}>{points}</span>}
           </button>
         ))}
       </nav>

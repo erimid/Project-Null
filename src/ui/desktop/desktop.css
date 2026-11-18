@@ -3499,3 +3499,982 @@ button.lead:hover {
 .row--market:has(.market__grades) {
   grid-template-columns: minmax(0, 1fr) auto;
 }
+
+
+/* ---- stage 3 polish: the bottom bar at eleven tabs ----
+ * The counts ride on the tab's corner instead of taking a place in the
+ * row, Pause is a glyph, and on a narrow screen everything sits a little
+ * closer. A tab that still has no room shortens its name with an ellipsis.
+ */
+
+.dock__tab {
+  position: relative;
+  flex: 0 1 auto;
+  padding: 0 12px;
+  overflow: visible;
+}
+
+.dock__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dock__tab .count {
+  position: absolute;
+  top: 5px;
+  right: 1px;
+  min-width: 17px;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 16px;
+  box-shadow: 0 0 0 2px #050d17;
+  pointer-events: none;
+}
+
+.dock__tab:has(.count) {
+  padding-right: 20px;
+}
+
+.dock__tab::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 9px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--cyan);
+  opacity: 0;
+  transform: scaleX(0.2);
+  transition:
+    opacity 0.2s,
+    transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+}
+
+.dock__tab:hover::after {
+  opacity: 0.55;
+  transform: none;
+}
+
+.speed__option {
+  display: grid;
+  place-items: center;
+}
+
+.speed__pause {
+  width: 10px;
+  height: 13px;
+  border: solid currentColor;
+  border-width: 0 3.5px;
+}
+
+@media (max-width: 1560px) {
+  .dock {
+    gap: 0;
+    padding-right: 12px;
+  }
+
+  .dock__tabs {
+    gap: 0;
+  }
+
+  .dock__tab {
+    padding: 0 9px;
+  }
+
+  .dock__tab:has(.count) {
+    padding-right: 18px;
+  }
+
+  .dock__tab::after {
+    left: 9px;
+    right: 9px;
+  }
+
+  .dock__stat {
+    padding: 0 9px;
+  }
+
+  .dock__stat--trace {
+    min-width: 0;
+  }
+
+  .speed,
+  .dock__cut {
+    margin-left: 6px;
+  }
+
+  .speed__option {
+    min-width: 34px;
+    padding: 7px 8px;
+  }
+
+  .dock__cut {
+    padding: 7px 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock__tab::after {
+    transition: none;
+  }
+}
+
+
+/* ---- stage 3 polish: the skill tree ----
+ * Each branch has its own colour (--hue). The points sit in a bank across
+ * the top; the cards hang off a spine that runs down each branch.
+ */
+
+.skills__bank {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(95, 212, 255, 0.07), rgba(95, 212, 255, 0.01));
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+
+.skills__bank.has-free {
+  border-color: rgba(78, 230, 200, 0.55);
+  background: linear-gradient(90deg, rgba(78, 230, 200, 0.12), rgba(78, 230, 200, 0.02));
+  box-shadow: inset 0 0 24px rgba(78, 230, 200, 0.08);
+}
+
+.skills__count {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--text-muted);
+}
+
+.skills__free {
+  display: inline-block;
+  min-width: 22px;
+  color: var(--text-dim);
+  font-size: 30px;
+  line-height: 1;
+  text-align: center;
+  animation: count-pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.5);
+}
+
+.has-free .skills__free {
+  color: var(--mint);
+  text-shadow: 0 0 16px rgba(78, 230, 200, 0.6);
+}
+
+.skills__points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.skills__point {
+  width: 11px;
+  height: 11px;
+  transform: rotate(45deg);
+  border: 1px solid rgba(78, 230, 200, 0.55);
+  border-radius: 2px;
+}
+
+.skills__point.is-spent {
+  border-color: rgba(95, 212, 255, 0.35);
+  background: rgba(95, 212, 255, 0.28);
+}
+
+.skills__point.is-free {
+  background: var(--mint);
+  box-shadow: 0 0 9px rgba(78, 230, 200, 0.8);
+  animation: point-breathe 1.8s ease-in-out infinite;
+}
+
+@keyframes point-breathe {
+  50% {
+    box-shadow: 0 0 3px rgba(78, 230, 200, 0.5);
+    opacity: 0.75;
+  }
+}
+
+.skills__none {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.skills__next {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.skills__meter {
+  display: flex;
+  gap: 4px;
+}
+
+.skills__meter i {
+  width: 30px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(95, 212, 255, 0.16);
+}
+
+.skills__meter i.is-on {
+  background: var(--cyan);
+  box-shadow: 0 0 6px rgba(95, 212, 255, 0.6);
+}
+
+.skills {
+  gap: 18px;
+}
+
+.skills__branch {
+  --hue: 95, 212, 255;
+}
+
+.skills__branch--ghost {
+  --hue: 185, 162, 255;
+}
+
+.skills__branch--engineering {
+  --hue: 255, 196, 107;
+}
+
+.skills__title {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 10px;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(var(--hue), 0.35);
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.skills__mark {
+  grid-row: span 2;
+  width: 30px;
+  height: 30px;
+  padding: 5px;
+  border: 1px solid rgba(var(--hue), 0.5);
+  border-radius: 9px;
+  background: rgba(var(--hue), 0.1);
+  fill: none;
+  stroke: rgb(var(--hue));
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+}
+
+.skills__name {
+  color: rgb(var(--hue));
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.skills__motto {
+  grid-column: 2;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.skills__spent {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  min-width: 26px;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: rgba(var(--hue), 0.14);
+  color: rgb(var(--hue));
+  font-size: 13px;
+  text-align: center;
+}
+
+.skills__list {
+  position: relative;
+  gap: 10px;
+  padding-left: 18px;
+}
+
+/* The spine. */
+.skills__list::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 22px;
+  left: 5px;
+  width: 1px;
+  background: linear-gradient(rgba(var(--hue), 0.55), rgba(var(--hue), 0.12));
+}
+
+.skill {
+  position: relative;
+  border-color: rgba(var(--hue), 0.2);
+  background: rgba(var(--hue), 0.03);
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform 0.15s,
+    box-shadow 0.2s;
+}
+
+/* A skill that needs another sits in from the spine, under it. */
+.skill--row3 {
+  margin-left: 14px;
+}
+
+.skill__node {
+  position: absolute;
+  top: 15px;
+  left: -17px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgba(var(--hue), 0.7);
+  border-radius: 50%;
+  background: var(--panel);
+}
+
+.skill--row3 .skill__node {
+  left: -31px;
+}
+
+.skill--row3 .skill__node::after,
+.skill__node::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 8px;
+  width: 8px;
+  height: 1px;
+  background: rgba(var(--hue), 0.45);
+}
+
+.skill--row3 .skill__node::after {
+  width: 22px;
+}
+
+.skill.is-learned .skill__node {
+  background: rgb(var(--hue));
+  box-shadow: 0 0 8px rgba(var(--hue), 0.8);
+}
+
+.skill.is-ready {
+  border-color: rgba(var(--hue), 0.5);
+}
+
+.skill.is-ready:hover {
+  transform: translateX(2px);
+  border-color: rgba(var(--hue), 0.85);
+  box-shadow: 0 0 18px rgba(var(--hue), 0.14);
+}
+
+.skill.is-learned {
+  border-color: rgba(var(--hue), 0.6);
+  background: linear-gradient(135deg, rgba(var(--hue), 0.13), rgba(var(--hue), 0.04));
+}
+
+.skill.is-full {
+  border-color: rgba(var(--hue), 0.8);
+}
+
+.skill.is-locked {
+  opacity: 1;
+  border-style: dashed;
+  background: none;
+}
+
+.skill.is-locked .skill__name,
+.skill.is-locked .skill__blurb {
+  color: var(--text-dim);
+}
+
+.skill.is-learned .skill__name {
+  color: rgb(var(--hue));
+}
+
+.skill__pip {
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  border-color: rgba(var(--hue), 0.6);
+  border-radius: 2px;
+}
+
+.skill__pips {
+  gap: 6px;
+  padding-right: 2px;
+}
+
+.skill__pip.is-on {
+  background: rgb(var(--hue));
+  box-shadow: 0 0 7px rgba(var(--hue), 0.8);
+}
+
+.skill__pip.is-new {
+  animation: pip-set 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.6);
+}
+
+@keyframes pip-set {
+  from {
+    transform: rotate(45deg) scale(3);
+    opacity: 0;
+  }
+}
+
+.skill.is-fresh {
+  animation: skill-learned 0.9s ease-out;
+}
+
+.skill.is-fresh::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(100deg, transparent 30%, rgba(var(--hue), 0.35) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: skill-sweep 0.8s ease-out both;
+  pointer-events: none;
+}
+
+@keyframes skill-learned {
+  from {
+    box-shadow: 0 0 34px rgba(var(--hue), 0.75);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes skill-sweep {
+  from {
+    background-position: 120% 0;
+  }
+
+  to {
+    background-position: -120% 0;
+    opacity: 0;
+  }
+}
+
+.skill__cost {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+.skill__price {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.skill__price i {
+  width: 7px;
+  height: 7px;
+  transform: rotate(45deg);
+  border-radius: 1px;
+  background: rgba(78, 230, 200, 0.75);
+}
+
+.skill.is-locked .skill__price i,
+.skill:not(.is-ready) .skill__price i {
+  background: rgba(143, 184, 204, 0.45);
+}
+
+.skill__done {
+  color: rgb(var(--hue));
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.skill__after {
+  color: var(--text-dim);
+}
+
+.skill.is-ready .btn--go {
+  border-color: rgb(var(--hue));
+  color: var(--text-bright);
+  background: rgba(var(--hue), 0.14);
+}
+
+.skill.is-ready .btn--go:not(:disabled):hover {
+  background: rgba(var(--hue), 0.3);
+  box-shadow: 0 0 14px rgba(var(--hue), 0.35);
+}
+
+/* ---- stage 3 polish: the workbench ----
+ * Modules have a colour each (--mod), used on their plates everywhere.
+ */
+
+.plate,
+.part,
+.bench__slot {
+  --mod: 95, 212, 255;
+}
+
+.plate--swift,
+.part--swift,
+.bench__slot--swift {
+  --mod: 255, 196, 107;
+}
+
+.plate--quiet,
+.part--quiet,
+.bench__slot--quiet {
+  --mod: 185, 162, 255;
+}
+
+.plate--tidy,
+.part--tidy,
+.bench__slot--tidy {
+  --mod: 78, 230, 200;
+}
+
+.plate {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 1px 8px 1px 7px;
+  border: 1px solid rgba(var(--mod), 0.55);
+  border-left-width: 3px;
+  border-radius: 5px;
+  background: rgba(var(--mod), 0.1);
+  white-space: nowrap;
+}
+
+.plate__name {
+  color: rgb(var(--mod));
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.plate__grade {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.plate__grade i {
+  width: 4px;
+  height: 11px;
+  border-radius: 1px;
+  background: rgba(var(--mod), 0.22);
+}
+
+.plate__grade i.is-on {
+  background: rgb(var(--mod));
+  box-shadow: 0 0 5px rgba(var(--mod), 0.7);
+}
+
+.plate__count {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.bench {
+  padding: 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background:
+    linear-gradient(rgba(95, 212, 255, 0.04) 1px, transparent 1px) 0 0 / 100% 14px,
+    rgba(95, 212, 255, 0.025);
+}
+
+.bench__line {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.bench__pair {
+  display: contents;
+}
+
+.bench__slot {
+  flex: 1 1 0;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 4px;
+  min-width: 0;
+  min-height: 62px;
+  padding: 8px 12px;
+  border: 1px dashed rgba(var(--mod), 0.35);
+  border-radius: 10px;
+  background: rgba(3, 8, 15, 0.6);
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.bench__slot--program {
+  flex: 1.4 1 0;
+}
+
+.bench__slot.is-filled {
+  border-style: solid;
+  border-color: rgba(var(--mod), 0.7);
+  background: rgba(var(--mod), 0.08);
+  animation: slot-seat 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+@keyframes slot-seat {
+  from {
+    transform: scale(0.94);
+    box-shadow: 0 0 22px rgba(var(--mod), 0.6);
+  }
+}
+
+.bench__slot strong {
+  color: var(--text-bright);
+  font-size: 16px;
+}
+
+.bench__tag {
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bench__hint {
+  color: var(--text-dim);
+}
+
+.bench__plus {
+  align-self: center;
+  color: var(--text-dim);
+  font-size: 20px;
+}
+
+.bench.is-building .bench__slot.is-filled {
+  animation: slot-work 0.9s ease-in-out infinite;
+}
+
+@keyframes slot-work {
+  50% {
+    box-shadow:
+      0 0 18px rgba(var(--mod), 0.45),
+      inset 0 0 14px rgba(var(--mod), 0.2);
+  }
+}
+
+.bench__result {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px 16px;
+  align-items: center;
+  margin-top: 12px;
+  padding: 11px 13px;
+  border: 1px solid rgba(78, 230, 200, 0.45);
+  border-radius: 10px;
+  background: rgba(78, 230, 200, 0.06);
+  animation: row-in 0.25s ease-out;
+}
+
+/* The line from the slots down to what they make. */
+.bench__result::before {
+  content: '';
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  width: 1px;
+  height: 12px;
+  background: rgba(78, 230, 200, 0.5);
+}
+
+.bench__result > * {
+  grid-column: 1;
+}
+
+.bench__result.is-building {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.bench__result.is-building > * {
+  grid-column: auto;
+}
+
+.bench__result.is-building strong {
+  color: var(--mint-text);
+}
+
+.bench__name {
+  color: var(--mint-text);
+  font-size: 17px;
+}
+
+.bench__go {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+  align-self: center;
+  padding: 10px 18px;
+  font-size: 16px;
+}
+
+.bench__prompt {
+  margin: 12px 0 0;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.gauge {
+  display: grid;
+  grid-template-columns: 76px minmax(60px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.gauge__label {
+  color: var(--text-muted);
+}
+
+.gauge__bars {
+  display: grid;
+  gap: 2px;
+}
+
+.gauge__bars i {
+  height: 4px;
+  border-radius: 2px;
+  transition: width 0.3s ease-out;
+}
+
+.gauge__was {
+  background: rgba(143, 184, 204, 0.4);
+}
+
+.gauge__now {
+  background: var(--text-muted);
+}
+
+.gauge.is-better .gauge__now {
+  background: var(--mint);
+  box-shadow: 0 0 6px rgba(78, 230, 200, 0.6);
+}
+
+.gauge.is-worse .gauge__now {
+  background: #ffc46b;
+}
+
+.gauge__figures {
+  min-width: 118px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: right;
+}
+
+.gauge__figures strong {
+  color: var(--text-bright);
+  font-weight: 400;
+}
+
+.gauge.is-better .gauge__figures strong {
+  color: var(--mint);
+}
+
+.gauge.is-worse .gauge__figures strong {
+  color: #ffc46b;
+}
+
+.gauge__arrow {
+  color: var(--text-dim);
+}
+
+.bench__trait {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.bench__trait b {
+  margin-right: 6px;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: rgba(185, 162, 255, 0.18);
+  color: #cdbcff;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.bench__trait--tidy b {
+  background: rgba(78, 230, 200, 0.18);
+  color: var(--mint-text);
+}
+
+.bench__step {
+  margin: 14px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.bench__chips .chip.is-picked {
+  border-color: var(--cyan);
+  background: rgba(95, 212, 255, 0.12);
+  color: var(--text-bright);
+  box-shadow: 0 0 12px rgba(95, 212, 255, 0.2);
+}
+
+.bench__shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.part {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid rgba(var(--mod), 0.25);
+  border-radius: 10px;
+  background: rgba(var(--mod), 0.035);
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    transform 0.15s,
+    opacity 0.2s;
+}
+
+.part__pick {
+  flex: 1;
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+  min-width: 0;
+  padding: 8px 10px 9px;
+  border-radius: inherit;
+  text-align: left;
+}
+
+.part__blurb {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.part:has(.part__pick:not(:disabled)):hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--mod), 0.8);
+}
+
+.part.is-picked {
+  border-color: rgb(var(--mod));
+  background: rgba(var(--mod), 0.13);
+  box-shadow: 0 0 16px rgba(var(--mod), 0.22);
+}
+
+.part.is-unfit {
+  opacity: 0.4;
+}
+
+.part__refine {
+  align-self: center;
+  margin-right: 10px;
+}
+
+.row--build {
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: auto;
+}
+
+.row--build .row__main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.build__plates {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.row--build.is-used {
+  background: rgba(78, 230, 200, 0.04);
+}
+
+.row--build.is-new {
+  animation: build-new 1.3s ease-out;
+}
+
+@keyframes build-new {
+  from {
+    background: rgba(78, 230, 200, 0.4);
+    box-shadow: 0 0 28px rgba(78, 230, 200, 0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skills__free,
+  .skills__point.is-free,
+  .skill.is-fresh,
+  .skill.is-fresh::after,
+  .skill__pip.is-new,
+  .bench__slot.is-filled,
+  .bench.is-building .bench__slot.is-filled,
+  .bench__result,
+  .row--build.is-new {
+    animation: none;
+  }
+
+  .skill,
+  .part,
+  .gauge__bars i {
+    transition: none;
+  }
+}
+
+.skill__cost {
+  flex-wrap: wrap;
+}
+
+.skill__after {
+  flex-basis: 100%;
+}
+
+.part__pick {
+  align-content: start;
+}
+
+.bench__line {
+  flex-wrap: wrap;
+}
+
+.bench__slot {
+  min-width: 130px;
+}
+
+/* On a small screen the trace light goes: the bar's red edge and the alarm already say it. */
+@media (max-width: 1360px) {
+  .dock__stat--trace {
+    display: none;
+  }
+
+  .dock__tab {
+    padding: 0 8px;
+  }
+}
