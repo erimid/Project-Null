@@ -61,8 +61,8 @@ export {
   whyNotLearn,
 } from './skills';
 export { evidenceCount, isEvidence } from './forensics';
-export { canRead, fileNotes, findAsk, findPerson, judge, knownFacts, knownPeople, marks, openAsks, standing } from './phish';
-export type { Draft, Standing, Verdict } from './phish';
+export { canRead, factsByFile, fileNotes, findAsk, findPerson, judge, knownFacts, knownPeople, leads, marks, openAsks, sendersFor, standing } from './phish';
+export type { Draft, Group, Leads, Standing, Verdict } from './phish';
 export { findModel, hasSkill, modelWith, rentedModel, workingModels } from './model';
 export {
   HARDWARE_SLOT_LABELS,
