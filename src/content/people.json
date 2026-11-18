@@ -1,0 +1,248 @@
+{
+  "people": [
+    {
+      "id": "wren",
+      "name": "Wren",
+      "title": "Your fixer",
+      "address": "wren@backroom.example"
+    },
+    {
+      "id": "signe-dahl",
+      "name": "Signe Dahl",
+      "title": "Abuse desk and member accounts, Polar Mesh Exchange",
+      "address": "signe.dahl@polarmesh.example",
+      "source": {
+        "serverId": "relay-registry",
+        "file": "operator_contacts.txt"
+      }
+    },
+    {
+      "id": "ivar-nordvik",
+      "name": "Ivar Nordvik",
+      "title": "Operator, Polar Mesh Exchange",
+      "address": "operator@polarmesh.example",
+      "source": {
+        "serverId": "relay-registry",
+        "file": "operator_contacts.txt"
+      }
+    },
+    {
+      "id": "peter-okafor",
+      "name": "Peter Okafor",
+      "title": "Claims Systems, Corvane Mutual",
+      "address": "p.okafor@corvane.example",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "client_contacts.txt"
+      }
+    },
+    {
+      "id": "dana-reyes",
+      "name": "Dana Reyes",
+      "title": "Service desk, Corvane Mutual",
+      "address": "dana.reyes@corvane.example",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "client_contacts.txt"
+      }
+    },
+    {
+      "id": "rosalind-finch",
+      "name": "Rosalind Finch",
+      "title": "Records Partner, Aldergate & Finch",
+      "address": "r.finch@aldergatefinch.example",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "client_contacts.txt"
+      }
+    },
+    {
+      "id": "marcus-okonjo",
+      "name": "Marcus Okonjo",
+      "title": "Records and Compliance, Tessera Water",
+      "address": "m.okonjo@tesserawater.example",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "harlow_v_tessera_settlement.txt"
+      }
+    },
+    {
+      "id": "lena-engstrom",
+      "name": "Lena Engström",
+      "title": "Billing, Sunderby Kraft",
+      "address": "l.engstrom@sunderbykraft.example",
+      "source": {
+        "serverId": "sunderby-kraft",
+        "file": "disconnection_orders_week11.txt"
+      }
+    },
+    {
+      "id": "jo-whitlock",
+      "name": "Jo Whitlock",
+      "title": "Deputy Registrar, Ashgrove Polytechnic",
+      "address": "j.whitlock@ashgrove.example",
+      "source": {
+        "serverId": "ashgrove-poly",
+        "file": "academic_misconduct_cases.dat"
+      }
+    }
+  ],
+  "facts": [
+    {
+      "id": "polar-window",
+      "text": "Polar Mesh does maintenance on Thursdays from 02:00 to 03:00.",
+      "source": {
+        "serverId": "relay-registry",
+        "file": "operator_contacts.txt"
+      }
+    },
+    {
+      "id": "polar-port",
+      "text": "The TROMSO-2 station is on port ix-07, which moves to the backup switch during maintenance.",
+      "source": {
+        "serverId": "relay-registry",
+        "file": "operator_contacts.txt"
+      }
+    },
+    {
+      "id": "polar-away",
+      "text": "Ivar Nordvik is at the TROMSO-2 site until the 20th.",
+      "source": {
+        "serverId": "relay-registry",
+        "file": "operator_contacts.txt"
+      }
+    },
+    {
+      "id": "registry-lookups",
+      "text": "The Open Relay Registry keeps lookup records for ninety days.",
+      "source": {
+        "serverId": "relay-registry",
+        "file": "listing_policy_2034.txt"
+      }
+    },
+    {
+      "id": "okafor-line",
+      "text": "Peter Okafor's direct line ends 4417.",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "client_contacts.txt"
+      }
+    },
+    {
+      "id": "treaty-friday",
+      "text": "Corvane's reinsurance treaty, draft 6, is to be signed on Friday the 17th at Aldergate & Finch.",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "corvane_treaty_cover_note.txt"
+      }
+    },
+    {
+      "id": "okafor-locked",
+      "text": "Peter Okafor is locked out of the claims system again.",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "corvane_treaty_cover_note.txt"
+      }
+    },
+    {
+      "id": "sealed-policy",
+      "text": "Aldergate & Finch stores sealed documents encrypted.",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "note_to_partners.txt"
+      }
+    },
+    {
+      "id": "harlow-matter",
+      "text": "The Harlow settlement is matter AF-2033-0417.",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "harlow_v_tessera_settlement.txt"
+      }
+    },
+    {
+      "id": "harlow-signed",
+      "text": "Nineteen of the twenty-three Harlow households signed.",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "harlow_v_tessera_settlement.txt"
+      }
+    },
+    {
+      "id": "harlow-sum",
+      "text": "Tessera is paying the Harlow claimants 11,400,000 in three instalments.",
+      "source": {
+        "serverId": "aldergate-finch",
+        "file": "harlow_v_tessera_settlement.txt"
+      }
+    },
+    {
+      "id": "clinic-order",
+      "text": "Norrfjärden Health Station is due to be disconnected on Thursday 16 March at 07:00.",
+      "source": {
+        "serverId": "sunderby-kraft",
+        "file": "disconnection_orders_week11.txt"
+      }
+    },
+    {
+      "id": "ashgrove-upload",
+      "text": "In case AM-34-017 the matching portfolio was uploaded from a staff account two days before the student's.",
+      "source": {
+        "serverId": "ashgrove-poly",
+        "file": "academic_misconduct_cases.dat"
+      }
+    }
+  ],
+  "asks": [
+    {
+      "id": "polar-operator-password",
+      "markId": "signe-dahl",
+      "label": "Operator password at Polar Mesh",
+      "text": "I am locked out of the operator account and cannot get back to the office to reset it. Could you send me the current password?",
+      "senderId": "ivar-nordvik",
+      "needs": [
+        "polar-away",
+        "polar-port"
+      ],
+      "reward": {
+        "kind": "password",
+        "serverId": "polar-mesh",
+        "user": "operator"
+      },
+      "reply": "Ivar,\n\nYou and that station. The operator password is in the usual place, but since you cannot reach the usual place: I have set it to the one from the winter rota. You know the one.\n\nChange it when you are back.\n\nSigne\n\n(The operator account at Polar Mesh Exchange will now let you in without breaking the password.)"
+    },
+    {
+      "id": "corvane-admin-password",
+      "markId": "dana-reyes",
+      "label": "Claims system reset at Corvane",
+      "text": "I am locked out of the claims system again and I need it before the end of the week. Please reset the admin account and send me the new password.",
+      "senderId": "peter-okafor",
+      "needs": [
+        "okafor-line",
+        "treaty-friday"
+      ],
+      "reward": {
+        "kind": "password",
+        "serverId": "corvane-mutual",
+        "user": "admin"
+      },
+      "reply": "Mr. Okafor,\n\nReset as asked. The temporary password is on its way to you by the usual route, and I have noted the reason as the treaty signing.\n\nPlease change it at first login this time.\n\nDana Reyes\nService Desk\n\n(The admin account at Corvane Mutual will now let you in without breaking the password.)"
+    },
+    {
+      "id": "tessera-address",
+      "markId": "marcus-okonjo",
+      "label": "Where to send the Harlow certificates",
+      "text": "We have the certificates of destruction for the Harlow matter ready. Which address should my office send them to?",
+      "senderId": "rosalind-finch",
+      "needs": [
+        "harlow-matter",
+        "harlow-signed"
+      ],
+      "reward": {
+        "kind": "address",
+        "serverId": "tessera-water"
+      },
+      "reply": "Rosalind,\n\nNineteen certificates, then. Have your office upload them to the records archive directly. It is not listed, so here is the address: 86.12.140.33.\n\nPlease do not pass it on.\n\nMarcus\n\n(Tessera Water is now in your address book.)"
+    }
+  ]
+}

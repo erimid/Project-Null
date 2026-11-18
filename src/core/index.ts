@@ -17,6 +17,8 @@ export type {
   GameState,
   LogEntry,
   Message,
+  PhishAttempt,
+  PhishState,
   MonitorState,
   NewGameOptions,
   PlayerState,
@@ -46,6 +48,8 @@ export { effectiveSpeed, gameDate, tick } from './clock';
 export type { GameDate } from './clock';
 export { MAX_LEVEL_GAP, blindSeconds, canLogIn, checkTask, layerSeconds, programStorageGq, ringAngle, usedStorageGq } from './tasks';
 export { evidenceCount, isEvidence } from './forensics';
+export { canRead, fileNotes, findAsk, findPerson, judge, knownFacts, knownPeople, marks, openAsks, standing } from './phish';
+export type { Draft, Standing, Verdict } from './phish';
 export { hopUnderTrace, mostUrgentTrace, totalTraceMs, traceHopMs, traceReport } from './trace';
 export type { TraceReport } from './trace';
 export {

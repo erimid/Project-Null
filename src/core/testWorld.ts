@@ -1,6 +1,7 @@
 /** A tiny made-up world for unit tests, so tests don't depend on the real data files. */
 import type { ServerDef } from '../content/schema';
 import type { ContractDef, MailDef, MailKey, ProgramDef } from '../content/schema';
+import type { PeopleDef } from '../content/people';
 import type { Content, Rules } from './world';
 
 const base = {
@@ -122,6 +123,11 @@ export const testRules: Rules = {
   echoBonusFactor: 1.5,
   echoPenaltyFactor: 0.5,
   harderSecurityAfter: 3,
+  phishingAfter: 2,
+  phishReplyMinutes: 30,
+  phishMaxDetails: 2,
+  phishWaryHours: 4,
+  phishStrikes: 2,
 };
 
 /** Two extra programs that are only for sale, never owned at the start. */
@@ -147,6 +153,27 @@ export const testMail: Record<MailKey, MailDef> = {
   caught: { from: 'Fixer', subject: 'Traced by {target}', body: 'fine {fine}, {hours} hours' },
   review: { from: 'Fixer', subject: 'Logs read at {target}', body: '{lines}, fine {fine}' },
   harderSecurity: letter('harderSecurity'),
+  phishing: letter('phishing'),
+  phishRefused: { from: '{name}', subject: 'Refused: {label}', body: '{hours}' },
+  phishReported: { from: 'Fixer', subject: 'Reported by {name}', body: '{title}' },
+};
+
+/** The directory's readme names a clerk and holds one detail; corp's secret names the boss and holds two more. */
+export const testPeople: PeopleDef = {
+  people: [
+    { id: 'fixer', name: 'Fixer', title: 'Your fixer', address: 'fixer@test' },
+    { id: 'clerk', name: 'Clerk', title: 'Help desk, Test Corp', address: 'clerk@corp.test', source: { serverId: 'directory', file: 'readme.txt' } },
+    { id: 'boss', name: 'Boss', title: 'Director, Test Corp', address: 'boss@corp.test', source: { serverId: 'corp', file: 'secret.dat' } },
+  ],
+  facts: [
+    { id: 'door', text: 'The door code is 4417.', source: { serverId: 'directory', file: 'readme.txt' } },
+    { id: 'audit', text: 'The audit is on Friday.', source: { serverId: 'corp', file: 'secret.dat' } },
+    { id: 'dog', text: 'The boss has a dog called Rex.', source: { serverId: 'corp', file: 'secret.dat' } },
+  ],
+  asks: [
+    { id: 'reset', markId: 'clerk', label: 'Password reset', text: 'Reset my password.', senderId: 'boss', needs: ['audit', 'dog'], reward: { kind: 'password', serverId: 'vault', user: 'admin' }, reply: 'Done. It is hunter2.' },
+    { id: 'where', markId: 'clerk', label: 'Board address', text: 'Where is the board?', senderId: 'boss', needs: ['door'], reward: { kind: 'address', serverId: 'hidden' }, reply: 'It is at 10.0.0.6.' },
+  ],
 };
 
 export const content: Content = {
@@ -156,5 +183,6 @@ export const content: Content = {
   startingPrograms: testPrograms.map((item) => item.id),
   contracts: testContracts,
   mail: testMail,
+  people: testPeople,
   rules: testRules,
 };

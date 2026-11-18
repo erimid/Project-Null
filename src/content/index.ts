@@ -25,6 +25,9 @@ import corvaneMutual from './servers/corvane-mutual.json';
 import ashgrovePoly from './servers/ashgrove-poly.json';
 import aldergateFinch from './servers/aldergate-finch.json';
 import sunderbyKraft from './servers/sunderby-kraft.json';
+import tesseraWater from './servers/tessera-water.json';
+import peopleJson from './people.json';
+import { checkPeople, parsePeople } from './people';
 import { parseSites } from './sites';
 import { checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
 
@@ -51,19 +54,22 @@ export type {
 } from './schema';
 
 export { findPage } from './sites';
+export type { AskDef, FactDef, FileRef, PeopleDef, PersonDef, RewardDef } from './people';
 export type { BlockDef, LinkDef, Net, PageDef, SiteDef } from './sites';
 
 export const gameInfo = parseGameInfo(gameJson);
 export const sites = parseSites(sitesJson);
 export const tuning = parseTuning(tuningJson);
 export const servers = parseServers(
-  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft],
+  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater],
   'servers/',
 );
 export const programs = parsePrograms(programsJson);
 export const contracts = parseContracts(contractsJson);
 export const mail = parseMail(mailJson);
 checkContent(gameInfo, servers, programs, contracts);
+export const people = parsePeople(peopleJson);
+checkPeople(people, servers, tuning.phishMaxDetails);
 
 /**
  * Dots that draw the continents on the globe: [lat, lon, lat, lon, ...]

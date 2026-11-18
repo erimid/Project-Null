@@ -2491,3 +2491,138 @@ button.tabbar__contract--live:hover {
 .row__decrypt .progress {
   width: 200px;
 }
+
+/* ---- writing to people ---- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: grid;
+  gap: 1px;
+  max-width: 100%;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  text-align: left;
+  font-size: 14px;
+  color: var(--text);
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.chip strong {
+  font-size: 15px;
+  color: var(--text-bright);
+}
+
+.chip:hover {
+  border-color: var(--cyan);
+}
+
+.chip.is-picked {
+  border-color: var(--mint);
+  background: rgba(78, 230, 200, 0.1);
+}
+
+.chip__note {
+  color: var(--text-muted);
+}
+
+.chip__flag {
+  color: #ffc46b;
+}
+
+.compose__facts {
+  max-height: 190px;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: 8px;
+  text-align: left;
+  color: var(--text);
+}
+
+.fact:not(:disabled):hover {
+  background: rgba(95, 212, 255, 0.08);
+}
+
+.fact:disabled {
+  color: var(--text-dim);
+}
+
+.fact.is-picked {
+  color: var(--text-bright);
+}
+
+.fact__mark {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--mint);
+}
+
+.fact.is-picked .fact__mark {
+  border-color: var(--mint);
+  background: rgba(78, 230, 200, 0.14);
+}
+
+.fact__source {
+  display: block;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.compose__preview {
+  margin-top: 14px;
+}
+
+.compose__state,
+.compose__sent {
+  color: #ffc46b;
+}
+
+.compose__state {
+  margin-right: auto;
+}
+
+.compose__sent {
+  margin: 0 0 10px;
+}
+
+.noted {
+  margin: 0 0 12px;
+  padding: 8px 12px 10px;
+  border: 1px solid rgba(78, 230, 200, 0.35);
+  border-radius: 10px;
+  background: rgba(78, 230, 200, 0.06);
+  animation: noted-in 0.4s ease-out;
+}
+
+.noted ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: var(--mint-text);
+}
+
+@keyframes noted-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

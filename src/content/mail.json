@@ -38,5 +38,20 @@
     "from": "Wren",
     "subject": "Harder doors",
     "body": "{handle}, you have enough work behind you that the board will start showing you jobs with better locks on them. Two things you have not met yet.\n\nSome monitors are quick, and the best start tracing the moment you connect. The Market now sells a Monitor Bypass. Run it from the security strip before you log in. While the monitor is blind, nothing you do is noticed and a trace that is already running stands still. It works once per connection and it does not last, so know what you are there to do before you start it. When it lands, you are shown the monitor's check-in pattern. Repeat it and you stay hidden longer. Get it wrong and you lose some of the time, so leave it alone if you did not catch it.\n\nSome files are encrypted. You can copy one like any other, but you cannot read it and no client will pay for it until it is open. Buy the Decrypter and run it on the file from Programs, on your own gateway. It takes a while. It keeps working after you disconnect.\n\nWren"
+  },
+  "phishing": {
+    "from": "Wren",
+    "subject": "People are the soft part",
+    "body": "{handle}, breaking a password is slow and loud. Asking for it is neither.\n\nPeople hand things over to someone they trust who sounds like they belong. So when you are on a server, open the files and read them. Your gateway keeps a note of every person a file names and every detail worth repeating.\n\nThen open Messages and press Write to someone. Pick who you are writing to and what you want from them. Pick whose name goes on it. It has to be somebody that person would do this for. Then pick up to three details that person would know. The right name with the right details gets you an answer in under an hour.\n\nGet it wrong and they go quiet for a few hours. Get it wrong twice with the same person and they report it. Their side changes its passwords and the board hears about it.\n\nStart at the Open Relay Registry. Its public files say more than they should about the people at Polar Mesh, and Polar Mesh has a strong password on its operator account.\n\nWren"
+  },
+  "phishRefused": {
+    "from": "{name}",
+    "subject": "Re: {label}",
+    "body": "I am not sure who this is, but it does not read like who it says it is from.\n\nI am not doing anything on the strength of this message. If it really is you, come and ask me in person.\n\n{name}\n{title}\n\n(They did not believe it. They will not read another message from you for {hours} hours. One more like it and they will report it.)"
+  },
+  "phishReported": {
+    "from": "Wren",
+    "subject": "You were reported",
+    "body": "{name} did not believe your second message either, and this time they passed it up the line.\n\nTheir side has changed its passwords, so anything you had broken there is gone, and {name} will not answer you again. The board has heard, and your rating has taken the knock.\n\nRead more before you write. The details have to be ones that person would know.\n\nWren"
   }
 }

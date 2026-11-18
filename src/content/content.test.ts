@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { contracts, findPage, gameInfo, mail, programs, servers, sites, tuning } from './index';
+import { contracts, findPage, gameInfo, mail, people, programs, servers, sites, tuning } from './index';
+import { checkPeople, parsePeople } from './people';
 import { parseSites } from './sites';
 import { ContentError, MAIL_KEYS, checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
 
@@ -105,7 +106,9 @@ describe('shipped servers', () => {
 
   it('can all be reached: every server is a starting server or listed in the registry', () => {
     for (const server of servers.filter((s) => s.kind !== 'gateway')) {
-      expect(server.listed || gameInfo.startingServers.includes(server.id), server.id).toBe(true);
+      // An unlisted server has to be one somebody can be talked into giving the address of.
+      const told = people.asks.some((ask) => ask.reward.kind === 'address' && ask.reward.serverId === server.id);
+      expect(server.listed || told || gameInfo.startingServers.includes(server.id), server.id).toBe(true);
     }
   });
 
@@ -228,7 +231,7 @@ describe('shipped contracts', () => {
   });
 
   it('only use placeholders the rules fill in', () => {
-    const known = ['handle', 'client', 'title', 'pay', 'target', 'fine', 'hours', 'lines'];
+    const known = ['handle', 'client', 'title', 'pay', 'target', 'fine', 'hours', 'lines', 'name', 'label'];
     for (const letter of Object.values(mail)) {
       for (const [, name] of `${letter.from} ${letter.subject} ${letter.body}`.matchAll(/\{(\w+)\}/g)) {
         expect(known).toContain(name);
@@ -243,5 +246,33 @@ describe('tuning checks', () => {
   });
   it('reject a negative starting balance', () => {
     expect(() => parseTuning({ ...tuning, startingBalance: -1 })).toThrow(ContentError);
+  });
+});
+
+describe('people checks', () => {
+  const copy = () => JSON.parse(JSON.stringify(people)) as { people: object[]; facts: object[]; asks: Record<string, unknown>[] };
+
+  it('accept the shipped people, with every ask answerable by someone the player can come across', () => {
+    expect(() => checkPeople(people, servers, tuning.phishMaxDetails)).not.toThrow();
+    expect(people.asks.length).toBeGreaterThan(0);
+  });
+
+  it('reject an ask that names a missing person, fact, account or server', () => {
+    const broken = (change: object) => () => {
+      const data = copy();
+      data.asks[0] = { ...data.asks[0], ...change };
+      checkPeople(parsePeople(data), servers, tuning.phishMaxDetails);
+    };
+    expect(broken({ senderId: 'nobody' })).toThrow(/not in people/);
+    expect(broken({ needs: ['nothing'] })).toThrow(/not a fact/);
+    expect(broken({ reward: { kind: 'password', serverId: 'polar-mesh', user: 'root' } })).toThrow(/no account/);
+    expect(broken({ reward: { kind: 'address', serverId: 'nowhere' } })).toThrow(/does not exist/);
+    expect(broken({ reward: { kind: 'money' } })).toThrow(ContentError);
+  });
+
+  it('reject a detail from a file that does not exist', () => {
+    const data = copy();
+    data.facts[0] = { ...data.facts[0], source: { serverId: 'polar-mesh', file: 'nope.txt' } };
+    expect(() => checkPeople(parsePeople(data), servers, tuning.phishMaxDetails)).toThrow(/no file/);
   });
 });

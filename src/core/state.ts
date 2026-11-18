@@ -5,7 +5,7 @@
 import type { Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 6;
+export const STATE_VERSION = 7;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -37,6 +37,29 @@ export interface PlayerState {
   rating: number;
   /** Game time until which the board gives the player no work. 0 = never traced. */
   lieLowUntilMs: number;
+  /** Ids of people the player has come across in files. */
+  contacts: string[];
+  /** Ids of details the player has read in files. */
+  facts: string[];
+}
+
+/** A message sent to someone under a borrowed name, waiting for its answer. */
+export interface PhishAttempt {
+  askId: string;
+  /** Game time the answer arrives. */
+  dueMs: number;
+  /** Whether it will be believed. Decided when it is sent. */
+  ok: boolean;
+}
+
+export interface PhishState {
+  sent: PhishAttempt[];
+  /** Times each person has seen through a message, by person id. */
+  strikes: Record<string, number>;
+  /** Game time until which a person who saw through a message will not read another, by person id. */
+  waryUntilMs: Record<string, number>;
+  /** Ids of the asks that worked. */
+  done: string[];
 }
 
 export interface ContractsState {
@@ -229,6 +252,7 @@ export interface GameState {
   /** The player's inbox, oldest first. */
   messages: Message[];
   contracts: ContractsState;
+  phish: PhishState;
   /** Log reviews still to come, in no particular order. */
   reviews: Review[];
   /** Names of one-off things that have already happened (e.g. the welcome message was sent). */
@@ -267,6 +291,8 @@ export function createGame(options: NewGameOptions): GameState {
       passwords: {},
       rating: 0,
       lieLowUntilMs: 0,
+      contacts: [],
+      facts: [],
     },
     knownServers: [],
     route: [],
@@ -274,6 +300,7 @@ export function createGame(options: NewGameOptions): GameState {
     tasks: [],
     messages: [],
     contracts: { activeId: null, completed: [] },
+    phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
     reviews: [],
     flags: [],
     servers: {},

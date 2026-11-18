@@ -17,4 +17,5 @@ export type {
   ServerDef,
   ServerKind,
 } from '../content/schema';
+export type { AskDef, FactDef, PeopleDef, PersonDef, RewardDef } from '../content/people';
 export { findAccount, findProgram, findServer, gatewayOf, ownedProgram } from './world';

@@ -1,0 +1,70 @@
+{
+  "id": "tessera-water",
+  "name": "Tessera Water",
+  "kind": "company",
+  "owner": "Tessera Water Services plc",
+  "hostname": "TWS-RECORDS-1",
+  "address": "86.12.140.33",
+  "city": "Reading",
+  "country": "United Kingdom",
+  "lat": 51.45,
+  "lon": -0.97,
+  "blurb": "Records and compliance archive. Not listed.",
+  "listed": false,
+  "security": {
+    "password": 2,
+    "proxy": 0,
+    "firewall": 1,
+    "monitor": 2
+  },
+  "traceSecondsPerHop": 12,
+  "relayDelay": 1.0,
+  "banner": [
+    "TESSERA WATER SERVICES PLC",
+    "Records and Compliance Archive",
+    "This host is not for public use. If you were not given this address, leave."
+  ],
+  "accounts": [
+    {
+      "user": "admin",
+      "role": "admin",
+      "name": "M. Okonjo, Records and Compliance"
+    }
+  ],
+  "files": [
+    {
+      "name": "brackley_results_june_2032.txt",
+      "sizeGq": 3,
+      "access": "admin",
+      "encrypted": 2,
+      "content": {
+        "kind": "text",
+        "text": "BRACKLEY RESERVOIR · ROUTINE SAMPLING · JUNE 2032\nLaboratory copy. Not for release.\n\nsample   date     lead (µg/l)   limit   result\nBR-061   3 Jun    8             10      pass\nBR-062   10 Jun   31            10      FAIL\nBR-063   17 Jun   44            10      FAIL\nBR-064   24 Jun   47            10      FAIL\n\nLab note: three fails in a row. Source is the old feeder main at Harlow Lane. Supply should be stopped and households told today.\n\nReply from operations, 25 Jun: supply stays on. Retest in the autumn. Do not write to households. Do not send this to the regulator until legal has seen it.\n\nNothing was sent to the regulator."
+      }
+    },
+    {
+      "name": "certificates_of_destruction.dat",
+      "sizeGq": 1,
+      "access": "admin"
+    },
+    {
+      "name": "regulator_returns_2032.dat",
+      "sizeGq": 4,
+      "access": "admin"
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 2900,
+      "text": "login admin from 86.12.140.9"
+    },
+    {
+      "minutesAgo": 2890,
+      "text": "file opened: brackley_results_june_2032.txt"
+    },
+    {
+      "minutesAgo": 2885,
+      "text": "logout admin"
+    }
+  ]
+}
