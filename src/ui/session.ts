@@ -12,14 +12,19 @@ import {
   deserializeGame,
   readSummary,
   serializeGame,
+  syncWithContent,
   tick,
   type Action,
   type ActionResult,
+  type Content,
   type GameState,
   type SaveSummary,
 } from '../core';
-import { gameInfo, tuning } from '../content';
+import { gameInfo, servers, tuning } from '../content';
 import { createMemoryStore, openSaveStore, type SaveStore } from './storage/saveStore';
+
+/** The data files, in the form the simulation takes them. */
+export const content: Content = { servers, startingServers: gameInfo.startingServers };
 
 export const SLOT_COUNT = 3;
 const ACTIVE_SLOT_KEY = 'active-slot';
@@ -86,7 +91,18 @@ let saveStatus: SaveStatus = {
   noticeIsError: false,
 };
 
+/** Told about every change, including each tick of the clock. */
 const gameListeners = new Set<Listener>();
+/** Told only when the player does something or a game is loaded, not on clock ticks. */
+const changeListeners = new Set<Listener>();
+let revision = 0;
+
+function changed(): void {
+  revision++;
+  emit(changeListeners);
+  emit(gameListeners);
+}
+
 const saveListeners = new Set<Listener>();
 const emit = (listeners: Set<Listener>) => listeners.forEach((listener) => listener());
 
@@ -101,17 +117,23 @@ function report(notice: string, noticeIsError = false): void {
 
 function freshGame(): GameState {
   const seed = crypto.getRandomValues(new Uint32Array(1))[0] ?? Date.now();
-  return createGame({
-    seed,
-    handle: gameInfo.defaultHandle,
-    startDate: tuning.startDate,
-    startingBalance: tuning.startingBalance,
-  });
+  return syncWithContent(
+    createGame({
+      seed,
+      handle: gameInfo.defaultHandle,
+      startDate: tuning.startDate,
+      startingBalance: tuning.startingBalance,
+    }),
+    content,
+  );
 }
+
+/** Reads save text into a game that matches the current data files. */
+const loadGame = (text: string): GameState => syncWithContent(deserializeGame(text).state, content);
 
 function replaceGame(next: GameState): void {
   state = next;
-  emit(gameListeners);
+  changed();
 }
 
 async function refreshSlots(): Promise<void> {
@@ -187,7 +209,7 @@ export const session = {
     let loaded: GameState | null = null;
     if (text !== null) {
       try {
-        loaded = deserializeGame(text).state;
+        loaded = loadGame(text);
       } catch (error) {
         report(`Slot ${activeSlot} could not be loaded: ${message(error)}`, true);
       }
@@ -211,9 +233,16 @@ export const session = {
     return () => saveListeners.delete(listener);
   },
 
+  /** A number that goes up whenever the player does something or a game is loaded. */
+  getRevision: (): number => revision,
+  subscribeChanges(listener: Listener): () => void {
+    changeListeners.add(listener);
+    return () => changeListeners.delete(listener);
+  },
+
   dispatch(action: Action): ActionResult {
-    const result = applyAction(state, action);
-    if (result.ok) emit(gameListeners);
+    const result = applyAction(state, action, content);
+    if (result.ok) changed();
     return result;
   },
 
@@ -224,7 +253,7 @@ export const session = {
     attempt(`Loaded slot ${slot}.`, async () => {
       const text = await store.read(slotKey(slot));
       if (text === null) throw new Error(`Slot ${slot} is empty.`);
-      replaceGame(deserializeGame(text).state);
+      replaceGame(loadGame(text));
       await store.write(ACTIVE_SLOT_KEY, String(slot));
       setSaveStatus({ activeSlot: slot });
     }),
@@ -250,7 +279,7 @@ export const session = {
   /** Puts a save file's text into a slot and loads it. */
   importInto: (slot: number, text: string) =>
     attempt(`Imported into slot ${slot}.`, async () => {
-      replaceGame(deserializeGame(text).state);
+      replaceGame(loadGame(text));
       await writeSlot(slot);
     }),
 };

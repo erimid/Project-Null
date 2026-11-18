@@ -5,6 +5,7 @@
  * when without loading the game) and the full GameState. Where the text
  * is stored (browser storage, a downloaded file) is the UI's business.
  */
+import { ROLES } from '../content/schema';
 import { SPEEDS, STATE_VERSION, type GameState } from './state';
 
 export const SAVE_FORMAT = 'project-null-save';
@@ -41,7 +42,18 @@ export class SaveError extends Error {
  */
 export type Migration = (old: Record<string, unknown>) => Record<string, unknown>;
 
-export const MIGRATIONS: Readonly<Record<number, Migration>> = {};
+export const MIGRATIONS: Readonly<Record<number, Migration>> = {
+  // 1 -> 2: connecting was added. Version 1 never had an open connection.
+  1: (old) => ({
+    ...old,
+    nextId: 1,
+    player: { ...(old.player as Record<string, unknown>), maxConnections: 1 },
+    knownServers: [],
+    route: [],
+    connections: [],
+    servers: {},
+  }),
+};
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
   return {
@@ -120,21 +132,39 @@ function isObj(value: unknown): value is Obj {
 
 const isNum = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
+const isText = (value: unknown): value is string => typeof value === 'string';
+const isList = <T,>(value: unknown, item: (entry: unknown) => entry is T): value is T[] =>
+  Array.isArray(value) && value.every(item);
+const isRole = (value: unknown) => (ROLES as readonly unknown[]).includes(value);
+
+const isConnection = (c: unknown): c is Obj =>
+  isObj(c) &&
+  isText(c.id) &&
+  isText(c.serverId) &&
+  isList(c.route, isText) &&
+  isNum(c.openedAtMs) &&
+  ((c.user === null && c.role === null) || (isText(c.user) && isRole(c.role)));
+
+const isServerState = (s: unknown): s is Obj =>
+  isObj(s) &&
+  isList(s.files, (f): f is Obj => isObj(f) && isText(f.name) && isNum(f.sizeGq) && isRole(f.access)) &&
+  isList(s.logs, (l): l is Obj => isObj(l) && isNum(l.timeMs) && isText(l.text) && typeof l.byPlayer === 'boolean') &&
+  isList(s.records, (row): row is string[] => isList(row, isText));
+
 function checkState(raw: Obj): GameState {
   const damaged = new SaveError('This save is damaged.');
-  const { clock, player, rngStreams, connections } = raw;
+  const { clock, player, rngStreams, servers } = raw;
 
-  if (!isNum(raw.seed)) throw damaged;
+  if (!isNum(raw.seed) || !isNum(raw.nextId)) throw damaged;
   if (!isObj(clock) || !isNum(clock.gameTimeMs) || !(SPEEDS as readonly unknown[]).includes(clock.speed)) {
     throw damaged;
   }
-  if (!isObj(player) || typeof player.handle !== 'string' || !isNum(player.balance)) throw damaged;
-  if (!isObj(rngStreams) || !Object.values(rngStreams).every(isNum)) throw damaged;
-  if (
-    !Array.isArray(connections) ||
-    !connections.every((c) => isObj(c) && typeof c.id === 'string' && typeof c.serverId === 'string')
-  ) {
+  if (!isObj(player) || !isText(player.handle) || !isNum(player.balance) || !isNum(player.maxConnections)) {
     throw damaged;
   }
+  if (!isObj(rngStreams) || !Object.values(rngStreams).every(isNum)) throw damaged;
+  if (!isList(raw.knownServers, isText) || !isList(raw.route, isText)) throw damaged;
+  if (!isList(raw.connections, isConnection)) throw damaged;
+  if (!isObj(servers) || !Object.values(servers).every(isServerState)) throw damaged;
   return raw as unknown as GameState;
 }

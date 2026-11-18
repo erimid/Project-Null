@@ -7,8 +7,20 @@
 export { createRng, restoreRng, hashSeed } from './rng';
 export type { Rng, RngState } from './rng';
 export { stream } from './streams';
-export { SPEEDS, STATE_VERSION, createGame, isConnected } from './state';
-export type { ClockState, Connection, GameState, NewGameOptions, PlayerState, Speed } from './state';
+export { MAX_HOPS, SPEEDS, STATE_VERSION, createGame, isConnected } from './state';
+export type {
+  ClockState,
+  Connection,
+  FileState,
+  GameState,
+  LogEntry,
+  NewGameOptions,
+  PlayerState,
+  ServerState,
+  Speed,
+} from './state';
+export { findAccount, findConnection, findServer, gatewayOf, sourceAddress, syncWithContent } from './world';
+export type { Content } from './world';
 export { effectiveSpeed, gameDate, tick } from './clock';
 export type { ClockRules, GameDate } from './clock';
 export { applyAction } from './actions';

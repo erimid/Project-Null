@@ -3,21 +3,144 @@
  * "action": a small plain object. The UI never changes GameState itself.
  * That keeps the rules in one place and makes them testable.
  */
-import { SPEEDS, isConnected, type GameState, type Speed } from './state';
+import { MAX_HOPS, SPEEDS, isConnected, type Connection, type GameState, type Speed } from './state';
+import { findAccount, findConnection, findServer, gatewayOf, sourceAddress, type Content } from './world';
 
-export type Action = { readonly type: 'setSpeed'; readonly speed: Speed };
+export type Action =
+  | { readonly type: 'setSpeed'; readonly speed: Speed }
+  /** Add a relay to the end of the planned route. */
+  | { readonly type: 'addHop'; readonly serverId: string }
+  | { readonly type: 'removeHop'; readonly serverId: string }
+  | { readonly type: 'clearRoute' }
+  /** Open a connection to a server through the planned route. */
+  | { readonly type: 'connect'; readonly serverId: string }
+  | { readonly type: 'disconnect'; readonly connectionId: string }
+  | { readonly type: 'disconnectAll' }
+  | { readonly type: 'login'; readonly connectionId: string; readonly user: string }
+  /** Copy an address from a directory server into the player's address book. */
+  | { readonly type: 'learnServer'; readonly connectionId: string; readonly serverId: string };
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
 const OK: ActionResult = { ok: true };
 const refuse = (reason: string): ActionResult => ({ ok: false, reason });
 
-export function applyAction(state: GameState, action: Action): ActionResult {
+function writeLog(state: GameState, serverId: string, text: string): void {
+  state.servers[serverId]?.logs.push({ timeMs: state.clock.gameTimeMs, text, byPlayer: true });
+}
+
+/** Every server on the way notes the connection passing through, and the target notes it ending. */
+function logConnection(state: GameState, content: Content, connection: Connection, opened: boolean): void {
+  const chain = [gatewayOf(content).id, ...connection.route, connection.serverId];
+  for (let i = 1; i < chain.length - 1; i++) {
+    const from = findServer(content, chain[i - 1]!)?.address;
+    const to = findServer(content, chain[i + 1]!)?.address;
+    writeLog(state, chain[i]!, opened ? `relay opened ${from} > ${to}` : `relay closed ${from}`);
+  }
+  const source = sourceAddress(content, connection);
+  writeLog(state, connection.serverId, opened ? `connection opened from ${source}` : `connection closed ${source}`);
+}
+
+function closeConnection(state: GameState, content: Content, connection: Connection): void {
+  if (connection.user !== null) writeLog(state, connection.serverId, `logout ${connection.user}`);
+  logConnection(state, content, connection, false);
+  state.connections = state.connections.filter((other) => other !== connection);
+}
+
+export function applyAction(state: GameState, action: Action, content: Content): ActionResult {
   switch (action.type) {
     case 'setSpeed': {
       if (!SPEEDS.includes(action.speed)) return refuse('Unknown speed.');
       if (isConnected(state)) return refuse('Time is locked while a connection is open.');
       state.clock.speed = action.speed;
+      return OK;
+    }
+
+    case 'addHop': {
+      const server = findServer(content, action.serverId);
+      if (!server || !state.knownServers.includes(server.id)) return refuse('You do not have that address.');
+      if (server.kind === 'gateway') return refuse('Your gateway is always the start of the route.');
+      if (state.route.includes(server.id)) return refuse(`${server.name} is already in the route.`);
+      if (state.route.length >= MAX_HOPS) return refuse(`A route can have at most ${MAX_HOPS} relays.`);
+      state.route.push(server.id);
+      return OK;
+    }
+
+    case 'removeHop': {
+      if (!state.route.includes(action.serverId)) return refuse('That server is not in the route.');
+      state.route = state.route.filter((id) => id !== action.serverId);
+      return OK;
+    }
+
+    case 'clearRoute': {
+      state.route = [];
+      return OK;
+    }
+
+    case 'connect': {
+      const server = findServer(content, action.serverId);
+      if (!server || !state.knownServers.includes(server.id)) return refuse('You do not have that address.');
+      if (server.kind === 'gateway') return refuse('You are already at your gateway.');
+      if (state.route.includes(server.id)) {
+        return refuse(`${server.name} is a relay in your route. Remove it from the route to connect to it.`);
+      }
+      if (state.connections.some((connection) => connection.serverId === server.id)) {
+        return refuse(`You are already connected to ${server.name}.`);
+      }
+      if (state.connections.length >= state.player.maxConnections) {
+        return refuse(
+          state.player.maxConnections === 1
+            ? 'Your gateway can hold one connection at a time. Disconnect first.'
+            : `Your gateway can hold ${state.player.maxConnections} connections at a time.`,
+        );
+      }
+      const connection: Connection = {
+        id: `c${state.nextId++}`,
+        serverId: server.id,
+        route: [...state.route],
+        user: null,
+        role: null,
+        openedAtMs: state.clock.gameTimeMs,
+      };
+      state.connections.push(connection);
+      logConnection(state, content, connection, true);
+      return OK;
+    }
+
+    case 'disconnect': {
+      const connection = findConnection(state, action.connectionId);
+      if (!connection) return refuse('That connection is already closed.');
+      closeConnection(state, content, connection);
+      return OK;
+    }
+
+    case 'disconnectAll': {
+      for (const connection of [...state.connections]) closeConnection(state, content, connection);
+      return OK;
+    }
+
+    case 'login': {
+      const connection = findConnection(state, action.connectionId);
+      if (!connection) return refuse('That connection is closed.');
+      if (connection.user !== null) return refuse(`Already logged in as ${connection.user}.`);
+      const server = findServer(content, connection.serverId);
+      const account = server && findAccount(server, action.user);
+      if (!account) return refuse('No such account.');
+      // Security layers (passwords and the rest) arrive in the next step; until then every login succeeds.
+      connection.user = account.user;
+      connection.role = account.role;
+      writeLog(state, connection.serverId, `login ${account.user} from ${sourceAddress(content, connection)}`);
+      return OK;
+    }
+
+    case 'learnServer': {
+      const connection = findConnection(state, action.connectionId);
+      if (!connection || connection.user === null) return refuse('Log in first.');
+      if (findServer(content, connection.serverId)?.kind !== 'directory') return refuse('This server has no directory.');
+      const server = findServer(content, action.serverId);
+      if (!server || !server.listed) return refuse('That server is not listed here.');
+      if (state.knownServers.includes(server.id)) return refuse('You already have that address.');
+      state.knownServers.push(server.id);
       return OK;
     }
   }

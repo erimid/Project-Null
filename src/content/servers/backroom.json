@@ -1,0 +1,25 @@
+{
+  "id": "backroom",
+  "name": "The Backroom",
+  "kind": "board",
+  "owner": "Unknown",
+  "hostname": "backroom",
+  "address": "185.73.44.209",
+  "city": "Tallinn",
+  "country": "Estonia",
+  "lat": 59.44,
+  "lon": 24.75,
+  "blurb": "Invite-only board where contracts are posted and paid.",
+  "listed": false,
+  "banner": [
+    "the backroom",
+    "members only. no names. no refunds.",
+    "work is posted when there is work."
+  ],
+  "accounts": [{ "user": "member", "role": "guest", "name": "Your invite" }],
+  "files": [
+    { "name": "house_rules.txt", "sizeGq": 1, "access": "guest" },
+    { "name": "escrow_terms.txt", "sizeGq": 1, "access": "guest" }
+  ],
+  "logs": []
+}

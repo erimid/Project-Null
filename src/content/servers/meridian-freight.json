@@ -1,0 +1,48 @@
+{
+  "id": "meridian-freight",
+  "name": "Meridian Freight",
+  "kind": "company",
+  "owner": "Meridian Freight Pte. Ltd.",
+  "hostname": "MF-SGP-OPS1",
+  "address": "103.6.151.22",
+  "city": "Singapore",
+  "country": "Singapore",
+  "lat": 1.35,
+  "lon": 103.82,
+  "blurb": "Shipping manifests and customs filings.",
+  "listed": true,
+  "banner": [
+    "MERIDIAN FREIGHT PTE. LTD.",
+    "Operations System · Pasir Panjang Terminal",
+    "For use by Meridian staff and licensed customs brokers.",
+    "Report faults to the duty controller, ext. 4410."
+  ],
+  "accounts": [{ "user": "admin", "role": "admin", "name": "L. Tan, Duty Controller" }],
+  "files": [
+    { "name": "manifest_MV_Corellia_0312.dat", "sizeGq": 6, "access": "admin" },
+    { "name": "manifest_MV_Asta_Harbour_0314.dat", "sizeGq": 5, "access": "admin" },
+    { "name": "customs_holds_march.dat", "sizeGq": 3, "access": "admin" },
+    { "name": "berth_schedule_wk11.txt", "sizeGq": 1, "access": "admin" },
+    { "name": "broker_licences.dat", "sizeGq": 2, "access": "admin" },
+    { "name": "gate_camera_index.dat", "sizeGq": 9, "access": "admin" }
+  ],
+  "logs": [
+    { "minutesAgo": 980, "text": "login admin from 103.6.151.30" },
+    { "minutesAgo": 964, "text": "customs hold placed: container MRDU 441872-0" },
+    { "minutesAgo": 960, "text": "logout admin" },
+    { "minutesAgo": 415, "text": "manifest received: MV Asta Harbour" },
+    { "minutesAgo": 122, "text": "login admin from 103.6.151.30" },
+    { "minutesAgo": 119, "text": "berth 6 reassigned" },
+    { "minutesAgo": 118, "text": "logout admin" }
+  ],
+  "records": {
+    "title": "Customs holds",
+    "columns": ["Container", "Vessel", "Reason", "Status"],
+    "rows": [
+      ["MRDU 441872-0", "MV Corellia", "Paperwork mismatch", "Held"],
+      ["TKLU 209911-4", "MV Corellia", "Random inspection", "Released"],
+      ["MRDU 518830-7", "MV Asta Harbour", "Undeclared weight", "Held"],
+      ["HPCU 773105-2", "MV Asta Harbour", "Random inspection", "Pending"]
+    ]
+  }
+}

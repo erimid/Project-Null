@@ -9,21 +9,29 @@ import {
   readSummary,
   serializeGame,
   stream,
+  syncWithContent,
   tick,
+  type Action,
   type GameState,
   type Migration,
 } from './index';
 
+import { content } from './testWorld';
+
 const rules = { gameMinutesPerRealSecond: 1 };
 const newGame = (): GameState =>
-  createGame({ seed: 7, handle: 'TESTER', startDate: '2034-03-14T08:00:00Z', startingBalance: 2500 });
-const connect = (state: GameState) => state.connections.push({ id: 'c1', serverId: 'halvorsen' });
+  syncWithContent(
+    createGame({ seed: 7, handle: 'TESTER', startDate: '2034-03-14T08:00:00Z', startingBalance: 2500 }),
+    content,
+  );
+const act = (state: GameState, action: Action) => applyAction(state, action, content);
+const connect = (state: GameState) => expect(act(state, { type: 'connect', serverId: 'directory' })).toEqual({ ok: true });
 
 describe('new game', () => {
   it('starts at the configured date with the starting balance', () => {
     const state = newGame();
     expect(gameDate(state)).toEqual({ year: 2034, month: 3, day: 14, weekday: 2, hours: 8, minutes: 0 });
-    expect(state.player).toEqual({ handle: 'TESTER', balance: 2500 });
+    expect(state.player).toEqual({ handle: 'TESTER', balance: 2500, maxConnections: 1 });
     expect(state.connections).toEqual([]);
   });
 
@@ -42,7 +50,7 @@ describe('clock', () => {
   it('runs faster at 2× and 4×, and stops when paused', () => {
     for (const [speed, minutes] of [[2, 20], [4, 40], [0, 0]] as const) {
       const state = newGame();
-      expect(applyAction(state, { type: 'setSpeed', speed })).toEqual({ ok: true });
+      expect(act(state, { type: 'setSpeed', speed })).toEqual({ ok: true });
       expect(tick(state, 10_000, rules)).toBe(10_000 * speed);
       expect(gameDate(state)).toMatchObject({ hours: 8, minutes });
     }
@@ -80,7 +88,7 @@ describe('time lock while connected', () => {
   it('forces 1× whatever speed was chosen', () => {
     for (const speed of [0, 4] as const) {
       const state = newGame();
-      applyAction(state, { type: 'setSpeed', speed });
+      act(state, { type: 'setSpeed', speed });
       connect(state);
       expect(effectiveSpeed(state)).toBe(1);
       expect(tick(state, 1_000, rules)).toBe(1_000);
@@ -90,17 +98,17 @@ describe('time lock while connected', () => {
   it('refuses speed changes, then allows them again after disconnecting', () => {
     const state = newGame();
     connect(state);
-    const refused = applyAction(state, { type: 'setSpeed', speed: 4 });
+    const refused = act(state, { type: 'setSpeed', speed: 4 });
     expect(refused.ok).toBe(false);
     expect(state.clock.speed).toBe(1);
-    state.connections.length = 0;
-    expect(applyAction(state, { type: 'setSpeed', speed: 4 }).ok).toBe(true);
+    act(state, { type: 'disconnectAll' });
+    expect(act(state, { type: 'setSpeed', speed: 4 }).ok).toBe(true);
     expect(effectiveSpeed(state)).toBe(4);
   });
 
   it('refuses a speed that does not exist', () => {
     const state = newGame();
-    expect(applyAction(state, { type: 'setSpeed', speed: 3 as never }).ok).toBe(false);
+    expect(act(state, { type: 'setSpeed', speed: 3 as never }).ok).toBe(false);
   });
 });
 
@@ -144,7 +152,7 @@ describe('random streams', () => {
 describe('save and load', () => {
   it('round-trips the whole game', () => {
     const state = newGame();
-    applyAction(state, { type: 'setSpeed', speed: 2 });
+    act(state, { type: 'setSpeed', speed: 2 });
     tick(state, 123_456, rules);
     state.player.balance = 9_001;
     stream(state, 'world').next();
@@ -183,6 +191,10 @@ describe('save and load', () => {
       (s) => ((s.clock.gameTimeMs as unknown) = 'noon'),
       (s) => ((s.player.balance as unknown) = null),
       (s) => ((s.connections as unknown) = [{ id: 1 }]),
+      (s) => ((s.connections as unknown) = [{ id: 'c1', serverId: 'x', route: [], openedAtMs: 0, user: 'a', role: 'king' }]),
+      (s) => ((s.knownServers as unknown) = [7]),
+      (s) => ((s.servers as unknown) = { x: { files: [], logs: [{ timeMs: 0 }], records: [] } }),
+      (s) => ((s.player.maxConnections as unknown) = 'two'),
       (s) => ((s.rngStreams as unknown) = { trace: 'x' }),
     ];
     for (const damage of cases) {
@@ -193,26 +205,50 @@ describe('save and load', () => {
   });
 
   it('upgrades old saves step by step through migrations', () => {
-    // Pretend version 1 kept money in "credits" and version 2 had no connections list.
+    // A made-up history: version 5 kept money in "credits"; version 6 had no handle.
     const migrations: Record<number, Migration> = {
-      1: (old) => {
+      5: (old) => {
         const { credits, ...player } = old.player as Record<string, unknown>;
         return { ...old, player: { ...player, balance: credits } };
       },
-      2: (old) => ({ ...old, connections: [] }),
+      6: (old) => ({ ...old, player: { ...(old.player as object), handle: 'RESTORED' } }),
     };
-    const { player, connections: _dropped, ...rest } = newGame();
-    const oldState = { ...rest, version: 1, player: { handle: player.handle, credits: 777 } };
-    const text = JSON.stringify({ format: 'project-null-save', version: 1, summary: {}, state: oldState });
+    const { player, ...rest } = newGame();
+    const oldState = { ...rest, version: 5, player: { maxConnections: player.maxConnections, credits: 777 } };
+    const text = JSON.stringify({ format: 'project-null-save', version: 5, summary: {}, state: oldState });
 
-    const loaded = deserializeGame(text, migrations, 3).state;
-    expect(loaded.player).toEqual({ handle: 'TESTER', balance: 777 });
-    expect(loaded.connections).toEqual([]);
-    expect(loaded.version).toBe(3);
+    const loaded = deserializeGame(text, migrations, 7).state;
+    expect(loaded.player).toEqual({ handle: 'RESTORED', balance: 777, maxConnections: 1 });
+    expect(loaded.version).toBe(7);
+  });
+
+  it('loads a save from before connecting existed (version 1)', () => {
+    const v1 = {
+      format: 'project-null-save',
+      version: 1,
+      summary: { handle: 'OLD', balance: 1200, gameTimeMs: 2025936000000, savedAt: '2026-11-18T03:20:00Z' },
+      state: {
+        version: 1,
+        seed: 99,
+        rngStreams: { world: 12345 },
+        clock: { gameTimeMs: 2025936000000, speed: 2 },
+        player: { handle: 'OLD', balance: 1200 },
+        connections: [],
+      },
+    };
+    const loaded = syncWithContent(deserializeGame(JSON.stringify(v1)).state, content);
+    expect(loaded.version).toBe(2);
+    expect(loaded.player).toEqual({ handle: 'OLD', balance: 1200, maxConnections: 1 });
+    expect(loaded.clock).toEqual({ gameTimeMs: 2025936000000, speed: 2 });
+    expect(loaded.rngStreams).toEqual({ world: 12345 });
+    expect(loaded.knownServers).toEqual(['gateway', 'directory']);
+    expect(Object.keys(loaded.servers).sort()).toEqual(content.servers.map((s) => s.id).sort());
+    expect(act(loaded, { type: 'connect', serverId: 'directory' }).ok).toBe(true);
   });
 
   it('refuses a save too old to have a migration', () => {
     const text = JSON.stringify({ format: 'project-null-save', version: 0, state: newGame() });
+    // (there is no migration from version 0)
     expect(() => deserializeGame(text)).toThrow(/too old/);
   });
 });

@@ -1,0 +1,49 @@
+{
+  "id": "halvorsen",
+  "name": "Halvorsen Biogenetics",
+  "kind": "company",
+  "owner": "Halvorsen Biogenetics ASA",
+  "hostname": "HB-REC-02",
+  "address": "193.212.9.48",
+  "city": "Oslo",
+  "country": "Norway",
+  "lat": 59.91,
+  "lon": 10.75,
+  "blurb": "Clinical research records server.",
+  "listed": true,
+  "banner": [
+    "HALVORSEN BIOGENETICS ASA",
+    "Clinical Records System · HB-REC-02",
+    "Authorised personnel only. Activity on this system is monitored",
+    "and recorded under the Research Data Act §14."
+  ],
+  "accounts": [{ "user": "admin", "role": "admin", "name": "K. Aasen, Records Office" }],
+  "files": [
+    { "name": "HB-2206_trial_summary.dat", "sizeGq": 4, "access": "admin" },
+    { "name": "HB-2207_PROJECT_LANTERN.dat", "sizeGq": 11, "access": "admin" },
+    { "name": "HB-2209_assay_batch_14.dat", "sizeGq": 7, "access": "admin" },
+    { "name": "staff_roster_q1.dat", "sizeGq": 2, "access": "admin" },
+    { "name": "ethics_board_minutes_feb.txt", "sizeGq": 1, "access": "admin" },
+    { "name": "audit.log", "sizeGq": 1, "access": "admin" }
+  ],
+  "logs": [
+    { "minutesAgo": 1210, "text": "login admin from 193.212.9.50" },
+    { "minutesAgo": 1204, "text": "file opened: HB-2209_assay_batch_14.dat" },
+    { "minutesAgo": 1188, "text": "file opened: HB-2207_PROJECT_LANTERN.dat" },
+    { "minutesAgo": 1187, "text": "logout admin" },
+    { "minutesAgo": 720, "text": "scheduled backup to HB-VAULT-01: ok" },
+    { "minutesAgo": 64, "text": "login admin from 193.212.9.50" },
+    { "minutesAgo": 58, "text": "audit.log rotated" },
+    { "minutesAgo": 57, "text": "logout admin" }
+  ],
+  "records": {
+    "title": "Trial register",
+    "columns": ["Trial", "Lead", "Phase", "Status"],
+    "rows": [
+      ["HB-2206", "Dr. S. Lunde", "II", "Reporting"],
+      ["HB-2207", "Dr. E. Halvorsen", "Restricted", "Active"],
+      ["HB-2209", "Dr. T. Brekke", "I", "Recruiting"],
+      ["HB-2211", "Dr. S. Lunde", "Preclinical", "On hold"]
+    ]
+  }
+}

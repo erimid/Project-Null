@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'preact/hooks';
 
-export const WINDOW_IDS = ['gateway', 'saves'] as const;
+export const WINDOW_IDS = ['gateway', 'map', 'server', 'saves'] as const;
 export type WindowId = (typeof WINDOW_IDS)[number];
 
 export interface WindowDef {
@@ -13,14 +13,18 @@ export interface WindowDef {
   /** Short name on the bottom-bar pill. */
   readonly pill: string;
   readonly width: number;
+  /** Starting position. A negative x is measured from the right edge of the screen. */
   readonly x: number;
   readonly y: number;
   readonly open: boolean;
 }
 
 export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
-  gateway: { title: 'Gateway', pill: 'Gateway', width: 400, x: 30, y: 28, open: true },
-  saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 460, y: 28, open: true },
+  gateway: { title: 'Gateway', pill: 'Gateway', width: 360, x: 24, y: 20, open: true },
+  // x: -24 means 24px in from the right edge of the screen.
+  map: { title: 'Route map', pill: 'Route map', width: 700, x: -24, y: 20, open: true },
+  server: { title: 'Server', pill: 'Server', width: 668, x: 24, y: 292, open: true },
+  saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 200, y: 120, open: false },
 };
 
 export interface WindowLayout {
@@ -33,12 +37,13 @@ export interface WindowLayout {
 
 type Layouts = Readonly<Record<WindowId, WindowLayout>>;
 
-const STORAGE_KEY = 'project-null.windows.v1';
+const STORAGE_KEY = 'project-null.windows.v2';
 
 function defaults(): Layouts {
   const entries = WINDOW_IDS.map((id, index) => {
     const def = WINDOW_DEFS[id];
-    return [id, { x: def.x, y: def.y, open: def.open, z: index + 1 }] as const;
+    const x = def.x >= 0 ? def.x : Math.max(24, window.innerWidth + def.x - def.width);
+    return [id, { x, y: def.y, open: def.open, z: index + 1 }] as const;
   });
   return Object.fromEntries(entries) as Layouts;
 }
