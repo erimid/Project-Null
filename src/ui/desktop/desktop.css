@@ -1152,3 +1152,163 @@ button.tabbar__contract--live:hover {
 .message-body p {
   margin: 0 0 10px;
 }
+
+/* ---- hands-on moments ---- */
+
+.lineup {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 0 0 14px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.lineup__dial {
+  flex: none;
+  width: 180px;
+  height: 180px;
+  touch-action: none;
+}
+
+.lineup__window {
+  fill: rgba(78, 230, 200, 0.12);
+}
+
+.lineup__marker {
+  fill: var(--mint);
+}
+
+.lineup__ring {
+  cursor: pointer;
+  outline: none;
+}
+
+.lineup__track {
+  fill: none;
+  stroke: rgba(95, 212, 255, 0.28);
+  stroke-width: 9;
+  pointer-events: stroke;
+}
+
+.lineup__ring:hover .lineup__track,
+.lineup__ring:focus-visible .lineup__track {
+  stroke: rgba(95, 212, 255, 0.6);
+}
+
+.lineup__port {
+  fill: var(--text-bright);
+  pointer-events: none;
+}
+
+.lineup__ring.is-locked {
+  cursor: default;
+}
+
+.lineup__ring.is-locked .lineup__track {
+  stroke: rgba(78, 230, 200, 0.55);
+}
+
+.lineup__ring.is-locked .lineup__port {
+  fill: var(--mint);
+}
+
+.lineup__text p {
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
+.lineup__status {
+  font-size: 13px;
+  color: var(--mint);
+}
+
+.scrub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.scrub__hint {
+  flex: 1;
+  color: var(--text-dim);
+}
+
+.scrub .progress {
+  width: 170px;
+}
+
+.logline {
+  display: grid;
+  grid-template-columns: 14px 150px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 7px 8px;
+  border-bottom: 1px solid rgba(95, 212, 255, 0.08);
+  border-radius: 6px;
+  font: inherit;
+  text-align: left;
+}
+
+.logline:not(:disabled):hover {
+  background: rgba(95, 212, 255, 0.08);
+}
+
+.logline__mark {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+}
+
+.logline.is-picked {
+  background: rgba(255, 59, 78, 0.12);
+}
+
+.logline.is-picked .logline__mark {
+  border-color: var(--red);
+  background: var(--red);
+}
+
+.logline.is-picked .row__main {
+  color: var(--red-text);
+}
+
+.logline.is-going {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.map__reroute {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 59, 78, 0.4);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--red-text);
+}
+
+.map__reroute strong {
+  color: #fff;
+}
+
+.route__hop--tracing {
+  animation: hop-pulse 0.8s ease-in-out infinite;
+  color: #ff8a95;
+}
+
+@keyframes hop-pulse {
+  50% {
+    color: #fff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route__hop--tracing {
+    animation: none;
+    text-decoration: underline;
+  }
+}

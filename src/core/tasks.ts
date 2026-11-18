@@ -3,7 +3,8 @@
  * time; when it finishes, its effect is applied.
  */
 import type { ProgramDef, ProgramKind, ServerDef } from '../content/schema';
-import type { Connection, GameState, ServerState, Task, TaskTarget } from './state';
+import type { Connection, GameState, RingPuzzle, ServerState, Task, TaskTarget } from './state';
+import { stream } from './streams';
 import { noteIntrusion } from './trace';
 import { findAccount, findConnection, findProgram, findServer, ownedProgram, type Content } from './world';
 
@@ -42,7 +43,7 @@ export function canLogIn(state: GameState, server: ServerDef, user: string): boo
   return state.player.passwords[server.id]?.includes(user) ?? false;
 }
 
-type Check = { ok: true; seconds: number; program: ProgramDef } | { ok: false; reason: string };
+type Check = { ok: true; seconds: number; program: ProgramDef; level?: number } | { ok: false; reason: string };
 const no = (reason: string): Check => ({ ok: false, reason });
 
 /** Decides whether a program can start on a target, and how long it will take. */
@@ -63,7 +64,7 @@ export function checkTask(state: GameState, content: Content, connection: Connec
   const against = (layer: string, level: number): Check => {
     const seconds = layerSeconds(program, level);
     if (seconds === null) return no(`${program.name} v${program.version} is too weak for this ${layer} (level ${level}).`);
-    return { ok: true, seconds, program };
+    return { ok: true, seconds, program, level };
   };
   const admin = connection.role === 'admin';
   const fileTime = (sizeGq: number): Check => ({
@@ -103,9 +104,12 @@ export function checkTask(state: GameState, content: Content, connection: Connec
     }
     case 'deleteLog': {
       if (!admin) return no('Only an administrator can change the log.');
-      if (!serverState.logs.some((entry) => entry.id === target.logId)) return no('That log line is gone.');
+      if (target.logIds.length === 0) return no('Pick the lines to remove first.');
+      if (!target.logIds.every((id) => serverState.logs.some((entry) => entry.id === id))) return no('That log line is gone.');
       if (server.security.proxy > 0 && !connection.bypassed.proxy) return no('The proxy is blocking changes.');
-      return { ok: true, seconds: program.baseSeconds / program.version, program };
+      // The first line takes the base time; each further line a third of that.
+      const lines = 1 + (target.logIds.length - 1) / 3;
+      return { ok: true, seconds: (program.baseSeconds * lines) / program.version, program };
     }
   }
 }
@@ -136,9 +140,57 @@ function finish(state: GameState, serverState: ServerState, connection: Connecti
       return;
     }
     case 'deleteLog':
-      serverState.logs = serverState.logs.filter((entry) => entry.id !== target.logId);
+      serverState.logs = serverState.logs.filter((entry) => !target.logIds.includes(entry.id));
       return;
   }
+}
+
+const MAX_RINGS = 5;
+
+/** A port line-up for a firewall of this level: more rings, turning faster, as the level goes up. */
+function newPuzzle(state: GameState, level = 1): RingPuzzle {
+  const rng = stream(state, 'puzzle');
+  const rings = Math.min(MAX_RINGS, 2 + level);
+  const startAngles: number[] = [];
+  const speeds: number[] = [];
+  for (let i = 0; i < rings; i++) {
+    startAngles.push(rng.int(40, 320));
+    const direction = i % 2 === 0 ? 1 : -1;
+    speeds.push(direction * (70 + 30 * i) * (1 + 0.15 * (level - 1)));
+  }
+  return { startAngles, speeds, locked: startAngles.map(() => false) };
+}
+
+/** Where a ring's port is right now, in degrees from the marker (0 to 360). */
+export function ringAngle(task: Task, ring: number): number {
+  const puzzle = task.puzzle;
+  if (!puzzle || puzzle.locked[ring]) return 0;
+  const angle = (puzzle.startAngles[ring] ?? 0) + ((puzzle.speeds[ring] ?? 0) * task.progressMs) / 1000;
+  return ((angle % 360) + 360) % 360;
+}
+
+/**
+ * Tries to lock one ring of a task's port line-up. A hit takes that
+ * ring's share off the time left (the last ring finishes the task); a
+ * miss adds time. Returns a reason only if there was nothing to lock.
+ */
+export function lockRing(state: GameState, content: Content, taskId: string, ring: number): string | null {
+  const task = state.tasks.find((item) => item.id === taskId);
+  const puzzle = task?.puzzle;
+  if (!task || !puzzle) return 'That program has already stopped.';
+  if (puzzle.locked[ring] !== false) return 'That port is already lined up.';
+
+  const angle = ringAngle(task, ring);
+  const offBy = Math.min(angle, 360 - angle);
+  if (offBy > content.rules.ringToleranceDegrees) {
+    task.durationMs += content.rules.ringMissSeconds * 1000;
+    return null;
+  }
+  const openBefore = puzzle.locked.filter((locked) => !locked).length;
+  puzzle.locked[ring] = true;
+  const remaining = Math.max(0, task.durationMs - task.progressMs);
+  task.durationMs = task.progressMs + (remaining * (openBefore - 1)) / openBefore;
+  return null;
 }
 
 /** Starts a program. Returns a reason if it can't start. */
@@ -154,6 +206,7 @@ export function startTask(state: GameState, content: Content, connectionId: stri
     target,
     progressMs: 0,
     durationMs: check.seconds * 1000,
+    ...(target.kind === 'firewall' ? { puzzle: newPuzzle(state, check.level) } : {}),
   });
   // Monitors notice programs working on their server.
   noteIntrusion(content, connection);

@@ -5,7 +5,7 @@
 import type { Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 4;
+export const STATE_VERSION = 5;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -89,6 +89,8 @@ export interface Connection {
   /** Layers bypassed for as long as this connection stays open. */
   bypassed: { proxy: boolean; firewall: boolean };
   trace: TraceState;
+  /** How many times this connection has been rerouted around a trace. */
+  reroutes: number;
 }
 
 /** What a running program is working on. */
@@ -98,7 +100,8 @@ export type TaskTarget =
   | { kind: 'firewall' }
   | { kind: 'copyFile'; file: string }
   | { kind: 'deleteFile'; file: string }
-  | { kind: 'deleteLog'; logId: number };
+  /** Remove one or more lines from the access log in a single run. */
+  | { kind: 'deleteLog'; logIds: number[] };
 
 /** A program that is running against a connection. */
 export interface Task {
@@ -110,6 +113,29 @@ export interface Task {
   progressMs: number;
   /** Simulated time it needs in total. */
   durationMs: number;
+  /** The hands-on shortcut for this task, if it has one. */
+  puzzle?: RingPuzzle;
+}
+
+/**
+ * The port line-up: rings that turn, each with one port on it. Locking a
+ * ring while its port is under the marker (0 degrees) shortens the task;
+ * locking them all finishes it. Where a ring is depends only on how long
+ * the task has run, so it needs no state of its own.
+ */
+export interface RingPuzzle {
+  /** Where each ring's port was when the task started, in degrees. */
+  startAngles: number[];
+  /** Degrees per second; negative turns the other way. */
+  speeds: number[];
+  locked: boolean[];
+}
+
+/** A look through a server's logs that will happen some time after the player left. */
+export interface Review {
+  serverId: string;
+  /** Game time it happens. */
+  dueMs: number;
 }
 
 /** A message in the player's inbox. */
@@ -167,6 +193,8 @@ export interface GameState {
   /** The player's inbox, oldest first. */
   messages: Message[];
   contracts: ContractsState;
+  /** Log reviews still to come, in no particular order. */
+  reviews: Review[];
   /** Names of one-off things that have already happened (e.g. the welcome message was sent). */
   flags: string[];
   /** Changeable state of each server, by server id. */
@@ -210,6 +238,7 @@ export function createGame(options: NewGameOptions): GameState {
     tasks: [],
     messages: [],
     contracts: { activeId: null, completed: [] },
+    reviews: [],
     flags: [],
     servers: {},
   };

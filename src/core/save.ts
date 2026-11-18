@@ -84,6 +84,15 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     contracts: { activeId: null, completed: [] },
     flags: [],
   }),
+  // 4 -> 5: reroutes, log reviews, and removing several log lines in one run.
+  4: (old) => ({
+    ...old,
+    reviews: [],
+    connections: (old.connections as object[]).map((connection) => ({ ...connection, reroutes: 0 })),
+    tasks: (old.tasks as { target: { kind: string; logId?: number } }[]).map((task) =>
+      task.target.kind === 'deleteLog' ? { ...task, target: { kind: 'deleteLog', logIds: [task.target.logId] } } : task,
+    ),
+  }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -182,7 +191,8 @@ const isConnection = (c: unknown): c is Obj =>
   ['none', 'pending', 'active'].includes(c.trace.status as string) &&
   isNum(c.trace.graceMs) &&
   isNum(c.trace.elapsedMs) &&
-  isList(c.trace.hopMs, isNum);
+  isList(c.trace.hopMs, isNum) &&
+  isNum(c.reroutes);
 
 const TARGET_KINDS = ['password', 'proxy', 'firewall', 'copyFile', 'deleteFile', 'deleteLog'];
 
@@ -194,7 +204,13 @@ const isTask = (t: unknown): t is Obj =>
   isNum(t.progressMs) &&
   isNum(t.durationMs) &&
   isObj(t.target) &&
-  TARGET_KINDS.includes(t.target.kind as string);
+  TARGET_KINDS.includes(t.target.kind as string) &&
+  (t.target.kind !== 'deleteLog' || isList(t.target.logIds, isNum)) &&
+  (t.puzzle === undefined ||
+    (isObj(t.puzzle) &&
+      isList(t.puzzle.startAngles, isNum) &&
+      isList(t.puzzle.speeds, isNum) &&
+      isList(t.puzzle.locked, (v): v is boolean => typeof v === 'boolean')));
 
 const isMessage = (m: unknown): m is Obj =>
   isObj(m) &&
@@ -239,6 +255,7 @@ function checkState(raw: Obj): GameState {
     throw damaged;
   }
   if (!isList(raw.flags, isText)) throw damaged;
+  if (!isList(raw.reviews, (r): r is Obj => isObj(r) && isText(r.serverId) && isNum(r.dueMs))) throw damaged;
   if (!isList(raw.tasks, isTask) || !isList(raw.messages, isMessage)) throw damaged;
   if (!isObj(rngStreams) || !Object.values(rngStreams).every(isNum)) throw damaged;
   if (!isList(raw.knownServers, isText) || !isList(raw.route, isText)) throw damaged;

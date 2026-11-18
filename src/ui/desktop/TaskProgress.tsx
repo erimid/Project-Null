@@ -21,7 +21,7 @@ export function describeTarget(target: TaskTarget): string {
     case 'deleteFile':
       return `deleting ${target.file}`;
     case 'deleteLog':
-      return 'removing a log line';
+      return target.logIds.length === 1 ? 'removing a log line' : `removing ${target.logIds.length} log lines`;
   }
 }
 

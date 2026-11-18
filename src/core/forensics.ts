@@ -1,0 +1,56 @@
+/**
+ * Cleanup has stakes: some hours after an intrusion, the target reads
+ * its access log. Lines that show what the player did there cost a fine.
+ */
+import type { GameState, LogEntry } from './state';
+import { findServer, sendMail, type Content } from './world';
+
+/** Log lines that say someone logged in or changed something. A connection opening or closing proves nothing. */
+const EVIDENCE = /^(login |file copied|file deleted|record updated)/;
+
+/** True for a line that would give the player away in a review. */
+export function isEvidence(entry: LogEntry): boolean {
+  return entry.byPlayer && EVIDENCE.test(entry.text);
+}
+
+/** How many lines on a server would give the player away right now. */
+export function evidenceCount(state: GameState, serverId: string): number {
+  return state.servers[serverId]?.logs.filter(isEvidence).length ?? 0;
+}
+
+/** What a server charges someone it has identified: more for better-defended servers. */
+export function baseFine(content: Content, serverId: string): number {
+  const server = findServer(content, serverId);
+  const levels = server ? Object.values(server.security).reduce((sum, level) => sum + level, 0) : 0;
+  return content.rules.finePerSecurityLevel * Math.max(1, levels);
+}
+
+/** Books a look through a server's logs, unless one is already coming. */
+export function scheduleReview(state: GameState, content: Content, serverId: string): void {
+  if (state.reviews.some((review) => review.serverId === serverId)) return;
+  state.reviews.push({ serverId, dueMs: state.clock.gameTimeMs + content.rules.reviewHours * 3_600_000 });
+}
+
+/** The server already knows who it was: nothing left there counts against the player again. */
+export function closeCase(state: GameState, serverId: string): void {
+  state.reviews = state.reviews.filter((review) => review.serverId !== serverId);
+  for (const entry of state.servers[serverId]?.logs ?? []) entry.byPlayer = false;
+}
+
+/** Carries out every review that has come due. */
+export function runReviews(state: GameState, content: Content): void {
+  const due = state.reviews.filter((review) => review.dueMs <= state.clock.gameTimeMs);
+  for (const review of due) {
+    const found = evidenceCount(state, review.serverId);
+    if (found > 0) {
+      const fine = Math.min(state.player.balance, Math.round(baseFine(content, review.serverId) * content.rules.reviewFineFactor));
+      state.player.balance -= fine;
+      sendMail(state, content, 'review', {
+        target: findServer(content, review.serverId)?.name ?? 'The target',
+        lines: found === 1 ? '1 line' : `${found} lines`,
+        fine: String(fine),
+      });
+    }
+    closeCase(state, review.serverId);
+  }
+}

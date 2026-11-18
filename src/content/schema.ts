@@ -127,7 +127,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -195,6 +195,16 @@ export interface Tuning {
   readonly finePerSecurityLevel: number;
   /** Rating lost for being traced. */
   readonly caughtRatingLoss: number;
+  /** How many times one connection can be rerouted around a trace. */
+  readonly maxReroutes: number;
+  /** In-game hours after an intrusion before the target reads its logs. */
+  readonly reviewHours: number;
+  /** A fine from a log review is this fraction of the fine for being traced. */
+  readonly reviewFineFactor: number;
+  /** Port line-up: how close (in degrees) a ring's port must be to the marker to lock. */
+  readonly ringToleranceDegrees: number;
+  /** Port line-up: seconds a missed lock adds to the bypass. */
+  readonly ringMissSeconds: number;
 }
 
 export interface GameInfo {
@@ -539,6 +549,11 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     lieLowHours: num(file, 'tuning', data, 'lieLowHours', 0, 24 * 365),
     finePerSecurityLevel: num(file, 'tuning', data, 'finePerSecurityLevel', 0, 1_000_000),
     caughtRatingLoss: num(file, 'tuning', data, 'caughtRatingLoss', 0, 100),
+    maxReroutes: num(file, 'tuning', data, 'maxReroutes', 0, 20),
+    reviewHours: num(file, 'tuning', data, 'reviewHours', 0, 24 * 365),
+    reviewFineFactor: num(file, 'tuning', data, 'reviewFineFactor', 0, 10),
+    ringToleranceDegrees: num(file, 'tuning', data, 'ringToleranceDegrees', 1, 90),
+    ringMissSeconds: num(file, 'tuning', data, 'ringMissSeconds', 0, 60),
   };
 }
 
