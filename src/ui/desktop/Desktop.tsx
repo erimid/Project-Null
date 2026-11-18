@@ -9,6 +9,7 @@ import { GatewayWindow } from './windows/GatewayWindow';
 import { MapWindow } from './windows/MapWindow';
 import { MessagesWindow } from './windows/MessagesWindow';
 import { ProgramsWindow } from './windows/ProgramsWindow';
+import { ViewerWindow } from './windows/ViewerWindow';
 import { SavesWindow } from './windows/SavesWindow';
 import { ServerWindow } from './windows/ServerWindow';
 import './desktop.css';
@@ -53,6 +54,7 @@ export function Desktop() {
         <ProgramsWindow />
         <MessagesWindow />
         <ContractWindow />
+        <ViewerWindow />
         <SavesWindow />
         <Alerts />
       </main>

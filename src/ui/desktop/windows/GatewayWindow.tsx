@@ -21,7 +21,7 @@ export function GatewayWindow() {
 
   const rating = useGame((game) => formatRating(game.player.rating));
   const lyingLow = useGame((game) => (isLyingLow(game) ? formatGameTime(game.player.lieLowUntilMs) : ''));
-  const usedGb = useGame(usedStorageGq);
+  const usedGb = useGame((game) => usedStorageGq(game, content));
   const running = useGame((game) => `${game.tasks.length} of ${content.rules.maxRunningPrograms}`);
   const gateway = gatewayOf(content);
 

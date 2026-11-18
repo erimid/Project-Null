@@ -8,6 +8,7 @@
     "baseSeconds": 12,
     "secondsPerGq": 0,
     "price": 0,
+    "sizeGq": 2,
     "blurb": "Works out an account's password one character at a time."
   },
   {
@@ -19,6 +20,7 @@
     "baseSeconds": 12,
     "secondsPerGq": 0,
     "price": 2000,
+    "sizeGq": 4,
     "blurb": "Twice as fast as version 1, and can take on stronger passwords."
   },
   {
@@ -30,6 +32,7 @@
     "baseSeconds": 9,
     "secondsPerGq": 0,
     "price": 900,
+    "sizeGq": 3,
     "blurb": "Slips past a proxy so you can change records and logs."
   },
   {
@@ -41,6 +44,7 @@
     "baseSeconds": 9,
     "secondsPerGq": 0,
     "price": 1300,
+    "sizeGq": 3,
     "blurb": "Opens a path through a firewall so you can copy and delete files."
   },
   {
@@ -52,6 +56,7 @@
     "baseSeconds": 2,
     "secondsPerGq": 1,
     "price": 0,
+    "sizeGq": 1,
     "blurb": "Copies a file to your gateway."
   },
   {
@@ -63,6 +68,7 @@
     "baseSeconds": 2,
     "secondsPerGq": 0.5,
     "price": 0,
+    "sizeGq": 1,
     "blurb": "Deletes a file from a server."
   },
   {
@@ -74,6 +80,7 @@
     "baseSeconds": 3,
     "secondsPerGq": 0,
     "price": 0,
+    "sizeGq": 1,
     "blurb": "Removes one line from an access log."
   },
   {
@@ -85,6 +92,7 @@
     "baseSeconds": 0,
     "secondsPerGq": 0,
     "price": 0,
+    "sizeGq": 1,
     "blurb": "Shows how far a trace has got and how long you have left."
   }
 ]

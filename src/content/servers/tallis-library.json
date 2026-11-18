@@ -46,7 +46,11 @@
     {
       "name": "new_acquisitions_march.txt",
       "sizeGq": 1,
-      "access": "guest"
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "BIBLIOTECA TALLIS · NEW THIS MONTH\n\nFiction\n  The Salt Road                      M. Abrantes\n  A Small Hotel in Winter            C. Deveraux\n  Nine Kinds of Rain                 Y. Okonkwo\n\nNon-fiction\n  Tide Tables of the Tagus, 2034     Port Authority\n  How Networks Forget                R. Lindqvist\n  The Lamp-Makers: A History         E. Halvorsen (donated by the author)\n\nReserve at the desk or from any guest terminal."
+      }
     },
     {
       "name": "overdue_notices.dat",
@@ -56,12 +60,41 @@
     {
       "name": "member_cards.dat",
       "sizeGq": 4,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "MEMBER CARDS · EXPORT\n\ncard     name                 joined       on loan\n00412    A. Figueira          2019-04-11   Tide Tables of the Tagus, 2034\n00877    M. Santos Leal       2021-09-02   (none)\n01203    J. Whitcombe         2026-01-20   How Networks Forget\n01204    J. Whitcombe         2026-01-20   The Lamp-Makers: A History\n01590    R. Lindqvist         2033-11-30   (none)\n01611    \"K. Aasen\"           2034-02-27   The Lamp-Makers: A History   << paid cash, no address given"
+      }
     },
     {
       "name": "backup_sunday.arc",
       "sizeGq": 14,
       "access": "admin"
+    },
+    {
+      "name": "reading_room_cam_2.mp4",
+      "sizeGq": 6,
+      "access": "admin",
+      "content": {
+        "kind": "video",
+        "title": "CAM 2 · READING ROOM",
+        "seconds": 24,
+        "scene": "room",
+        "lines": [
+          {
+            "at": 2,
+            "text": "Closing time. One reader still at the terminals."
+          },
+          {
+            "at": 9,
+            "text": "A second person comes in. They do not sign the book."
+          },
+          {
+            "at": 16,
+            "text": "Something is handed over. Card 01611 is issued two minutes later."
+          }
+        ]
+      }
     }
   ],
   "logs": [

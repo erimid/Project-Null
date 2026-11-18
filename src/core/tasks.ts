@@ -31,8 +31,14 @@ export function layerSeconds(program: ProgramDef, level: number): number | null 
   return program.baseSeconds * 2 ** gap;
 }
 
-export function usedStorageGq(state: GameState): number {
-  return state.player.files.reduce((sum, file) => sum + file.sizeGq, 0);
+/** Room taken on the gateway by installed programs. */
+export function programStorageGq(state: GameState, content: Content): number {
+  return state.player.programs.reduce((sum, id) => sum + (findProgram(content, id)?.sizeGq ?? 0), 0);
+}
+
+/** Room taken on the gateway: installed programs plus stored files. */
+export function usedStorageGq(state: GameState, content: Content): number {
+  return programStorageGq(state, content) + state.player.files.reduce((sum, file) => sum + file.sizeGq, 0);
 }
 
 /** True if the player has broken (or never needed) the password for this account. */
@@ -96,7 +102,7 @@ export function checkTask(state: GameState, content: Content, connection: Connec
       if (server.security.firewall > 0 && !connection.bypassed.firewall) return no('The firewall is blocking file access.');
       if (target.kind === 'copyFile') {
         if (state.player.files.some((own) => own.name === file.name)) return no('You already have a copy of that file.');
-        if (usedStorageGq(state) + file.sizeGq > content.rules.storageGq) return no('Not enough room on your gateway.');
+        if (usedStorageGq(state, content) + file.sizeGq > content.rules.storageGq) return no('Not enough room on your gateway.');
       } else if (!admin) {
         return no('Only an administrator can delete files.');
       }

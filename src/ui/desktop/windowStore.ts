@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'preact/hooks';
 
-export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'contract', 'saves'] as const;
+export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'contract', 'viewer', 'saves'] as const;
 export type WindowId = (typeof WINDOW_IDS)[number];
 
 export interface WindowDef {
@@ -27,6 +27,7 @@ export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
   programs: { title: 'Programs', pill: 'Programs', width: 440, x: 410, y: 60, open: false },
   messages: { title: 'Messages', pill: 'Messages', width: 520, x: -48, y: 56, open: false },
   contract: { title: 'Contract', pill: 'Contract', width: 440, x: 24, y: 20, open: false },
+  viewer: { title: 'File viewer', pill: 'Viewer', width: 640, x: 320, y: 90, open: false },
   saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 200, y: 120, open: false },
 };
 
@@ -40,7 +41,7 @@ export interface WindowLayout {
 
 type Layouts = Readonly<Record<WindowId, WindowLayout>>;
 
-const STORAGE_KEY = 'project-null.windows.v5';
+const STORAGE_KEY = 'project-null.windows.v6';
 
 function defaults(): Layouts {
   const entries = WINDOW_IDS.map((id, index) => {

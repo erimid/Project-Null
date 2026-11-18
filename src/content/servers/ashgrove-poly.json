@@ -46,17 +46,50 @@
     {
       "name": "academic_misconduct_cases.dat",
       "sizeGq": 2,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "ACADEMIC MISCONDUCT CASES · 2034\n\ncase        student     allegation                    status\nAM-34-009   20319947    late submission, falsified    probation\nAM-34-017   20322410    portfolio copied              suspended, appeal lodged\nAM-34-021   20318802    exam conduct                  dismissed\n\nAM-34-017 note (J. Whitlock): the matching portfolio was uploaded from a staff account two days BEFORE the student's. IT have not replied. Suspension stands until they do."
+      }
     },
     {
       "name": "graduation_list_april.txt",
       "sizeGq": 1,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "ASHGROVE POLYTECHNIC · GRADUATION, APRIL 2034 · DRAFT\n\nB. Engineering (Civil)     Amara Nwosu\nDip. Nursing               Mei-Lin Zhou\nB. Science (Data)          Priya Raman\nB. Business                Declan Shaw      (subject to probation review)\nB. Design                  Tomas Ferrand    (REMOVED: suspended, case AM-34-017)\n\nFinal list goes to the printer on the census date. Changes after that need the Registrar's signature."
+      }
     },
     {
       "name": "fee_waivers.dat",
       "sizeGq": 2,
       "access": "admin"
+    },
+    {
+      "name": "registry_corridor_0306.mp4",
+      "sizeGq": 5,
+      "access": "admin",
+      "content": {
+        "kind": "video",
+        "title": "CAM 7 · REGISTRY CORRIDOR",
+        "seconds": 22,
+        "scene": "corridor",
+        "lines": [
+          {
+            "at": 2,
+            "text": "23:41. Building is locked. Corridor lights on a timer."
+          },
+          {
+            "at": 8,
+            "text": "Someone walks to the Registrar's office. Staff lanyard."
+          },
+          {
+            "at": 16,
+            "text": "They leave. The misconduct upload is stamped 23:52 the same night."
+          }
+        ]
+      }
     }
   ],
   "logs": [

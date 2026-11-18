@@ -6,6 +6,7 @@
 import type { ContractDef } from '../content/schema';
 import { baseFine, closeCase } from './forensics';
 import type { Connection, GameState } from './state';
+import { usedStorageGq } from './tasks';
 import { noteIntrusion } from './trace';
 import { findConnection, findProgram, findServer, once, sendMail, type Content } from './world';
 
@@ -138,11 +139,28 @@ export function buyProgram(state: GameState, content: Content, connectionId: str
   const board = atBoard(state, content, connectionId);
   if (typeof board === 'string') return board;
   const program = findProgram(content, programId);
-  if (!program || program.price <= 0) return 'That is not for sale.';
+  // Starting programs cost nothing: the market gives them back if you removed one.
+  if (!program || (program.price <= 0 && !content.startingPrograms.includes(programId))) return 'That is not for sale.';
   if (state.player.programs.includes(program.id)) return 'You already own that.';
   if (state.player.balance < program.price) return 'You cannot afford that.';
+  if (usedStorageGq(state, content) + program.sizeGq > content.rules.storageGq) return 'Not enough room on your gateway.';
   state.player.balance -= program.price;
   state.player.programs.push(program.id);
+  return null;
+}
+
+/** Removes an installed program to free its room. */
+export function uninstallProgram(state: GameState, programId: string): string | null {
+  if (!state.player.programs.includes(programId)) return 'That program is not installed.';
+  if (state.tasks.some((task) => task.programId === programId)) return 'That program is running. Stop it first.';
+  state.player.programs = state.player.programs.filter((id) => id !== programId);
+  return null;
+}
+
+/** Deletes a file from the gateway. A contract that wanted it has to be done again. */
+export function deleteStoredFile(state: GameState, name: string): string | null {
+  if (!state.player.files.some((file) => file.name === name)) return 'You have no such file.';
+  state.player.files = state.player.files.filter((file) => file.name !== name);
   return null;
 }
 

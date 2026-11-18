@@ -7,8 +7,8 @@ import { GameMenu } from './GameMenu';
 import { SpeedControl } from './SpeedControl';
 import { WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId } from './windowStore';
 
-/** Windows that have a tab on the bar. Saved games opens from the game menu instead. */
-const TABS: readonly WindowId[] = WINDOW_IDS.filter((id) => id !== 'saves');
+/** Windows that have a tab on the bar. Saved games opens from the game menu, the file viewer from a file. */
+const TABS: readonly WindowId[] = WINDOW_IDS.filter((id) => id !== 'saves' && id !== 'viewer');
 
 const clockText = (ms: number) => {
   const seconds = Math.ceil(ms / 1000);

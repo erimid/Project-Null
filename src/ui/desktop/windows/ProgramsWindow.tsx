@@ -1,14 +1,24 @@
-import { findProgram, findServer, usedStorageGq } from '../../../core';
+import { findProgram, findServer, programStorageGq, usedStorageGq } from '../../../core';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
+import { ConfirmButton } from '../ConfirmButton';
 import { TaskProgress, describeTarget } from '../TaskProgress';
+import { viewer } from '../viewerStore';
 import { Window } from '../Window';
 
-/** What the gateway is running, which programs are installed, and the files it holds. */
+/**
+ * The gateway's programs and storage: what is running, how the room is
+ * used, and buttons to remove a program or delete a file to free some.
+ */
 export function ProgramsWindow() {
   const game = useWorld((state) => state);
-  const used = usedStorageGq(game);
+  const capacity = content.rules.storageGq;
+  const used = usedStorageGq(game, content);
+  const byPrograms = programStorageGq(game, content);
+  const byFiles = used - byPrograms;
+  const share = (gb: number) => `${(gb / capacity) * 100}%`;
   const serverName = (id: string) => findServer(content, id)?.name ?? id;
+  const isRunning = (programId: string) => game.tasks.some((task) => task.programId === programId);
 
   return (
     <Window id="programs" note={`${game.tasks.length} of ${content.rules.maxRunningPrograms} running`}>
@@ -35,8 +45,24 @@ export function ProgramsWindow() {
         </ul>
       )}
 
-      <h3 class="map__heading section-gap">Installed</h3>
-      <ul class="rows">
+      <h3 class="map__heading section-gap">
+        Storage{' '}
+        <span class="data heading__note">
+          {used} of {capacity} GB used
+        </span>
+      </h3>
+      <div class="storage" role="img" aria-label={`Programs ${byPrograms} GB, files ${byFiles} GB, free ${capacity - used} GB`}>
+        <span class="storage__part storage__part--programs" style={{ width: share(byPrograms) }} />
+        <span class="storage__part storage__part--files" style={{ width: share(byFiles) }} />
+      </div>
+      <p class="storage__key">
+        <span class="storage__dot storage__dot--programs" /> Programs <span class="data">{byPrograms} GB</span>
+        <span class="storage__dot storage__dot--files" /> Files <span class="data">{byFiles} GB</span>
+        <span class="storage__dot" /> Free <span class="data">{capacity - used} GB</span>
+      </p>
+
+      <h3 class="map__heading section-gap">Installed programs</h3>
+      <ul class="rows rows--scroll">
         {game.player.programs.map((id) => {
           const program = findProgram(content, id);
           return (
@@ -44,29 +70,53 @@ export function ProgramsWindow() {
               <li key={id} class="row row--program">
                 <span class="row__main">
                   <strong>{program.name}</strong> <span class="data row__dim">v{program.version}</span>
+                  <span class="program__blurb">{program.blurb}</span>
                 </span>
-                <span class="row__dim">{program.blurb}</span>
+                <span class="data row__dim">{program.sizeGq} GB</span>
+                {isRunning(id) ? (
+                  <span class="row__done">Running</span>
+                ) : (
+                  <ConfirmButton
+                    class="btn btn--danger"
+                    confirmLabel="Remove?"
+                    onConfirm={() => session.dispatch({ type: 'uninstallProgram', programId: id })}
+                  >
+                    Remove
+                  </ConfirmButton>
+                )}
               </li>
             )
           );
         })}
       </ul>
+      {game.player.programs.length === 0 && <p class="empty">No programs installed. The Backroom market has them.</p>}
 
-      <h3 class="map__heading section-gap">
-        Stored files{' '}
-        <span class="data heading__note">
-          {used} of {content.rules.storageGq} GB
-        </span>
-      </h3>
+      <h3 class="map__heading section-gap">Stored files</h3>
       {game.player.files.length === 0 ? (
-        <p class="empty">No files yet.</p>
+        <p class="empty">No files yet. Copy one from a server and it shows up here.</p>
       ) : (
-        <ul class="rows data">
+        <ul class="rows rows--scroll">
           {game.player.files.map((file) => (
             <li key={file.name} class="row row--stored">
-              <span class="row__main">{file.name}</span>
-              <span class="row__dim">{file.sizeGq} GB</span>
-              <span class="row__dim">{serverName(file.from)}</span>
+              <span class="row__main data">
+                {file.name}
+                <span class="program__blurb">from {serverName(file.from)}</span>
+              </span>
+              <span class="data row__dim">{file.sizeGq} GB</span>
+              <button
+                type="button"
+                class="btn"
+                onClick={() => viewer.open({ serverId: file.from, name: file.name, sizeGq: file.sizeGq })}
+              >
+                Open
+              </button>
+              <ConfirmButton
+                class="btn btn--danger"
+                confirmLabel="Delete?"
+                onConfirm={() => session.dispatch({ type: 'deleteStoredFile', name: file.name })}
+              >
+                Delete
+              </ConfirmButton>
             </li>
           ))}
         </ul>

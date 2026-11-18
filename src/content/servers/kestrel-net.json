@@ -40,7 +40,11 @@
     {
       "name": "how_to_join.txt",
       "sizeGq": 1,
-      "access": "guest"
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "KESTREL WIRELESS COOPERATIVE · HOW TO JOIN\n\n1. Come to the Thursday meeting at the hall. Bring your router if you have one.\n2. A volunteer will put a node on your roof. You pay for the cable and nothing else.\n3. Your node carries your neighbours' traffic and theirs carries yours. That is the whole idea.\n\nUse what you need. If the ledger says you use far more than you carry, the committee will come and talk to you."
+      }
     },
     {
       "name": "node_map_feb.dat",
@@ -50,12 +54,20 @@
     {
       "name": "volunteer_rota.txt",
       "sizeGq": 1,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "VOLUNTEER ROTA · MARCH\n\nWeek 1   Roof crew: Wanjiru, Otieno        Help desk: Achieng\nWeek 2   Roof crew: Otieno, Baraka         Help desk: Wanjiru\nWeek 3   Roof crew: Baraka, Njeri          Help desk: Achieng\nWeek 4   Roof crew: Wanjiru, Njeri         Help desk: (nobody yet)\n\nCommittee vote on the ledger cut-offs: Thursday week 3. Otieno has asked for the numbers to be checked first. Chair says there is no time."
+      }
     },
     {
       "name": "bandwidth_ledger.dat",
       "sizeGq": 5,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "BANDWIDTH LEDGER · FEBRUARY · carried / used (GB)\n\nnode         carried    used     ratio    action\nKST-014      210        190      1.10     none\nKST-022      12         480      0.03     CUT OFF\nKST-031      0          365      0.00     CUT OFF\nKST-047      154        171      0.90     none\nKST-052      3          512      0.01     CUT OFF\nKST-058      0          298      0.00     CUT OFF\n\nnote: nodes 022 to 058 sit behind the relay that failed on 2 Feb. \"carried\" was not counted for them after that date."
+      }
     },
     {
       "name": "router_configs.arc",

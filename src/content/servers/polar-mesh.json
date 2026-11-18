@@ -41,7 +41,11 @@
     {
       "name": "member_charter.txt",
       "sizeGq": 1,
-      "access": "guest"
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "POLAR MESH · MEMBER CHARTER\n\nPolar Mesh is a traffic exchange for research networks north of the Arctic Circle.\n\nMembers agree to carry each other's traffic without inspecting it, and to answer the abuse desk within thirty days.\n\nRequests from authorities outside Norway are answered in the order they arrive. The queue is long. We do not apologise for this."
+      }
     },
     {
       "name": "peering_table.dat",
@@ -61,7 +65,11 @@
     {
       "name": "session.log",
       "sizeGq": 3,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "13 Mar 21:00  ionosonde run started, station TROMSO-2\n13 Mar 21:00  sweep 1.0 to 22.6 MHz, every 5 min\n13 Mar 23:47  F2 layer critical frequency dropped 38% in one sweep\n13 Mar 23:52  echo at 4.1 MHz with no natural source. bearing 201, steady\n14 Mar 00:20  echo still present. operator note: \"this is a transmitter, not weather\"\n14 Mar 05:00  run ended. feed written: ionosonde_feed_0313.dat\n14 Mar 05:02  feed sold: 1 licence (commercial, name withheld)"
+      }
     }
   ],
   "logs": [

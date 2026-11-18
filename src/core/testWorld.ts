@@ -75,6 +75,7 @@ const program = (id: string, kind: ProgramDef['kind'], baseSeconds: number, seco
   baseSeconds,
   secondsPerGq,
   price: 0,
+  sizeGq: 0,
   blurb: 'A test program.',
 });
 

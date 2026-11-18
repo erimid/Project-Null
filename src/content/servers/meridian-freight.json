@@ -46,12 +46,20 @@
     {
       "name": "customs_holds_march.dat",
       "sizeGq": 3,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "CUSTOMS HOLDS · MARCH 2034\n\ncontainer        vessel             declared          reason                 status\nMRDU 441872-0    MV Corellia        machine parts     paperwork mismatch     HELD\nTKLU 209911-4    MV Corellia        textiles          random inspection      released\nMRDU 518830-7    MV Asta Harbour    lab glassware     undeclared weight      HELD\nHPCU 773105-2    MV Asta Harbour    furniture         random inspection      pending\n\nMRDU 441872-0: consignee is Halvorsen Biogenetics ASA, Oslo. Declared 2.1 t, weighed 6.8 t. Refrigerated. Owner has asked three times that it is not opened."
+      }
     },
     {
       "name": "berth_schedule_wk11.txt",
       "sizeGq": 1,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "PASIR PANJANG TERMINAL · BERTHS, WEEK 11\n\nMon 11   Berth 3   MV Tamsin Reach      discharge\nTue 12   Berth 5   MV Corellia          discharge, customs on board\nThu 14   Berth 2   MV Asta Harbour      discharge\nThu 14   Berth 5   (held)               \"private charter\", no name filed\nSat 16   Berth 3   MV Odile             load\n\nDuty controller: L. Tan. Gate B cameras are being serviced Tue night; index will have gaps."
+      }
     },
     {
       "name": "broker_licences.dat",
@@ -62,6 +70,35 @@
       "name": "gate_camera_index.dat",
       "sizeGq": 9,
       "access": "admin"
+    },
+    {
+      "name": "gate_b_cam_0312.mp4",
+      "sizeGq": 8,
+      "access": "admin",
+      "content": {
+        "kind": "video",
+        "title": "CAM 4 · GATE B",
+        "seconds": 26,
+        "scene": "gate",
+        "lines": [
+          {
+            "at": 2,
+            "text": "Tuesday, 02:14. The night the cameras were due for service."
+          },
+          {
+            "at": 8,
+            "text": "Refrigerated truck. No plates. No stop at the booth."
+          },
+          {
+            "at": 15,
+            "text": "Barrier is raised by hand from inside."
+          },
+          {
+            "at": 21,
+            "text": "Container number matches the one customs is holding."
+          }
+        ]
+      }
     }
   ],
   "logs": [

@@ -41,7 +41,11 @@
     {
       "name": "HB-2207_PROJECT_LANTERN.dat",
       "sizeGq": 11,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "HB-2207 · PROJECT LANTERN · RESTRICTED TO LEAD INVESTIGATOR\n\nsubjects enrolled:      14      (consent forms on file: 0)\nsite:                   not Oslo. see shipping.\nintervention:           [block encrypted]\nprimary outcome:        \"retention of instruction after sleep\", measured at 24 h, 7 d, 30 d\n\nresult summary, cohort A:\n  S-01 to S-09          outcome met at 30 d\n  S-10, S-12            withdrawn (see incident file, not on this server)\n  S-11, S-13, S-14      outcome met; subjects report they \"did not decide\" to comply\n\nthe rest of this file is encrypted and will not open here."
+      }
     },
     {
       "name": "HB-2209_assay_batch_14.dat",
@@ -56,12 +60,62 @@
     {
       "name": "ethics_board_minutes_feb.txt",
       "sizeGq": 1,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "HALVORSEN BIOGENETICS · ETHICS BOARD · MINUTES, 21 FEBRUARY 2034\n\nPresent: Dr. S. Lunde (chair), Dr. T. Brekke, K. Aasen (records). Apologies: Dr. E. Halvorsen.\n\n1. HB-2206: reporting on schedule. Approved.\n2. HB-2209: recruitment may begin. Approved.\n3. HB-2207: Dr. Lunde asked again for the protocol. Records office states the file is restricted to the lead investigator and cannot be shown to the board. Dr. Brekke asked how a trial can be active that this board has never seen. No answer was available.\n\nAction: chair to write to Dr. Halvorsen. Third time."
+      }
     },
     {
       "name": "audit.log",
       "sizeGq": 1,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "27 Feb 22:14  HB-2207_PROJECT_LANTERN.dat opened by e.halvorsen\n27 Feb 22:51  HB-2207_PROJECT_LANTERN.dat written (11 GB)\n28 Feb 09:03  access denied: s.lunde > HB-2207_PROJECT_LANTERN.dat\n28 Feb 09:04  access denied: s.lunde > HB-2207_PROJECT_LANTERN.dat\n02 Mar 03:30  external transfer: 11 GB to 190.2.44.17 (not a registered partner)\n02 Mar 03:31  transfer record removed by e.halvorsen"
+      }
+    },
+    {
+      "name": "lantern_call_0227.wav",
+      "sizeGq": 3,
+      "access": "admin",
+      "content": {
+        "kind": "audio",
+        "title": "Recorded call · ext. 2207",
+        "seconds": 34,
+        "lines": [
+          {
+            "at": 1,
+            "who": "Lunde",
+            "text": "Elin, the board has asked three times. What is Lantern?"
+          },
+          {
+            "at": 7,
+            "who": "Halvorsen",
+            "text": "It is a sleep study, Solveig. It is going very well."
+          },
+          {
+            "at": 13,
+            "who": "Lunde",
+            "text": "Then show us the protocol. Show us one consent form."
+          },
+          {
+            "at": 19,
+            "who": "Halvorsen",
+            "text": "The people paying for it would rather I didn't."
+          },
+          {
+            "at": 25,
+            "who": "Lunde",
+            "text": "Who is paying for it?"
+          },
+          {
+            "at": 29,
+            "who": "Halvorsen",
+            "text": "Good night, Solveig."
+          }
+        ]
+      }
     }
   ],
   "logs": [

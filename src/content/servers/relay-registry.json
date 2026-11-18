@@ -41,17 +41,29 @@
     {
       "name": "README.txt",
       "sizeGq": 1,
-      "access": "guest"
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "OPEN RELAY REGISTRY\n\nThis is a public directory of hosts that answer on the open network. It is run by the Open Relay Foundation in Zurich and paid for by its members.\n\nOpen the Directory section to see what is listed. Any address listed here can be added to your own address book.\n\nBeing listed does not mean a host welcomes you. It means the host exists and its operator has not asked us to remove it.\n\nQuestions: registrar@openrelay.example"
+      }
     },
     {
       "name": "listing_policy_2034.txt",
       "sizeGq": 1,
-      "access": "guest"
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "LISTING POLICY · IN FORCE FROM 1 JANUARY 2034\n\nA host is listed when it has answered on the open network for thirty days in a row.\n\nA host is removed when:\n  - its operator asks, in writing, and proves ownership\n  - a court with jurisdiction in Switzerland orders it\n  - it stops answering for ninety days\n\nThe Foundation does not record why a host is used, and does not publish who looks a host up. Lookup records are kept for ninety days for abuse handling and then destroyed."
+      }
     },
     {
       "name": "registry_export_0313.dat",
       "sizeGq": 6,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "REGISTRY EXPORT · 13 MAR 2034 · FULL (LISTINGS + LOOKUPS)\n\nhost                    listed since   lookups (30 d)   most frequent source\nTALLIS-OPAC             2029-06-02     41               Lisbon, residential\nKESTREL-GW              2031-11-19     388              Nairobi, mobile\nPOLARMESH-IX            2027-02-08     2,960            Oslo, research networks\nPAULISTA-TP1            2030-09-30     1,204            São Paulo, commercial\nASHGROVE-REG            2032-03-14     117              Melbourne, campus\nMERIDIAN-OPS            2028-07-21     73               81.204.0.0/16  << repeated, out of hours\nHB-REC-02               2033-10-05     19               81.204.0.0/16  << repeated, out of hours\nCORVANE-A               2026-01-12     64               Toronto, commercial\n\nnote (registrar): two hosts looked up nightly from the same Rotterdam block. Flag for abuse desk."
+      }
     },
     {
       "name": "abuse_reports_q1.dat",
@@ -61,7 +73,11 @@
     {
       "name": "query.log",
       "sizeGq": 2,
-      "access": "admin"
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "13 Mar 23:02  lookup HB-REC-02        from 81.204.17.9\n13 Mar 23:02  lookup MERIDIAN-OPS     from 81.204.17.9\n13 Mar 23:40  lookup TALLIS-OPAC      from 62.48.133.2\n14 Mar 01:15  lookup POLARMESH-IX     from 129.242.4.60\n14 Mar 02:02  lookup HB-REC-02        from 81.204.17.9\n14 Mar 02:03  lookup MERIDIAN-OPS     from 81.204.17.9\n14 Mar 06:30  export written: registry_export_0313.dat"
+      }
     }
   ],
   "logs": [

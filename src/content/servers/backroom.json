@@ -35,12 +35,52 @@
     {
       "name": "house_rules.txt",
       "sizeGq": 1,
-      "access": "guest"
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "THE BACKROOM · HOUSE RULES\n\n1. You are here because someone vouched for you. What you do reflects on them.\n2. One contract at a time. Finish it or give it up before you take another.\n3. Clients do not meet runners. Runners do not look for clients.\n4. Payment is on delivery, through the board, in credits. No exceptions and no advances.\n5. Get traced and the board goes quiet for you until the noise dies down.\n6. Nothing posted here leaves here.\n\nBreak a rule and your invite stops working. There is no appeal."
+      }
     },
     {
       "name": "escrow_terms.txt",
       "sizeGq": 1,
-      "access": "guest"
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "ESCROW TERMS\n\nWhen a client posts a contract, the full fee is already held by the board.\n\nCopy jobs: the fee is released when the file reaches the client. The file leaves your gateway when you deliver.\nDelete jobs: the fee is released when the file is gone from the target.\nRecord jobs: the fee is released when the record reads the way the client asked.\n\nIf you give a contract up, the fee goes back to the client and the job goes back on the board.\nIf a target traces you while the job is unfinished, the client may withdraw it.\n\nThe board takes nothing from the runner. The client pays the board."
+      }
+    },
+    {
+      "name": "voicemail_from_wren.wav",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "audio",
+        "title": "Voicemail · caller withheld",
+        "seconds": 26,
+        "lines": [
+          {
+            "at": 1,
+            "who": "Wren",
+            "text": "It's Wren. If you are hearing this, your invite works."
+          },
+          {
+            "at": 6,
+            "who": "Wren",
+            "text": "You can open most files you find, not only copy them. Read things. People leave a lot lying around."
+          },
+          {
+            "at": 14,
+            "who": "Wren",
+            "text": "Your gateway has room for forty gigabytes, and your programs live there too. Clear out what you don't need."
+          },
+          {
+            "at": 21,
+            "who": "Wren",
+            "text": "And don't call this number."
+          }
+        ]
+      }
     }
   ],
   "logs": []
