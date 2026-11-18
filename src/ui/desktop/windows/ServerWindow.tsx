@@ -34,6 +34,7 @@ import { content, session } from '../../session';
 import { activeConnection, deskStore, useDesk, type Section } from '../deskStore';
 import { TaskProgress, findTask } from '../TaskProgress';
 import { viewer } from '../viewerStore';
+import { FileName } from '../FileName';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
 
@@ -479,7 +480,9 @@ function Files({ game, state, connection, run, act }: View) {
         const owned = game.player.files.some((own) => own.name === file.name);
         return (
           <li key={file.name} class="row row--file">
-            <span class="row__main">{file.name}</span>
+            <span class="row__main">
+              <FileName name={file.name} />
+            </span>
             <span class="row__dim">{file.sizeGq} GB</span>
             <span class={file.encrypted ? 'sealed' : 'row__dim'} title={file.encrypted ? `Encrypted, level ${file.encrypted}. A copy needs a Decrypter before it can be read.` : undefined}>
               {file.encrypted ? 'encrypted' : file.access === 'admin' ? 'restricted' : 'public'}
@@ -740,8 +743,8 @@ function Contracts({ game, connection, act }: View) {
       )}
       {nextAt !== undefined && (
         <p class="board__note">
-          Your rating is <span class="data">{formatRating(game.player.rating)}</span>. The next contract is held back until rating{' '}
-          <span class="data">{nextAt}</span>. Standing work raises it.
+          Your rating is <strong>{formatRating(game.player.rating)}</strong>. The next contract is held back until rating{' '}
+          <strong>{nextAt}</strong>. Standing work raises it.
         </p>
       )}
       {offers.length === 0 && <p class="empty">Nothing on the board right now.</p>}
@@ -749,14 +752,22 @@ function Contracts({ game, connection, act }: View) {
         {offers.map((contract) => (
           <li key={contract.id} class="row row--contract">
             <span class="row__main">
-              <strong>{contract.title}</strong>
+              <span>
+                <strong>{contract.title}</strong>
+                {isJob(contract) && <span class="row__tag">standing work</span>}
+              </span>
               <span class="contract__summary">{contract.summary}</span>
               <span class="row__dim">
                 {contract.client} · target {findServer(content, contract.targetId)?.name}
-                {isJob(contract) && <> · standing work, off the board {formatGameTime(contract.expiresMs)}</>}
+                {isJob(contract) && <> · off the board {formatGameTime(contract.expiresMs)}</>}
               </span>
             </span>
-            <span class="data contract__pay">{formatMoney(contract.pay)}</span>
+            <span class="contract__reward">
+              <span class="data contract__pay">{formatMoney(contract.pay)}</span>
+              <span class="contract__rating" title="What delivering it adds to your rating">
+                +<span class="data">{contract.rating}</span> rating
+              </span>
+            </span>
             <button
               type="button"
               class="btn btn--go"
@@ -789,7 +800,9 @@ function Market({ game, connection, act }: View) {
         return (
           <li key={program.id} class="row row--contract row--market">
             <span class="row__main">
-              <strong>{program.name}</strong> <span class="data row__dim">v{program.version}</span>
+              <span>
+                <strong>{program.name}</strong> <span class="data row__dim">v{program.version}</span>
+              </span>
               <span class="contract__summary">{program.blurb}</span>
             </span>
             <span class="data row__dim">{program.sizeGq} GB</span>
@@ -820,8 +833,10 @@ function Market({ game, connection, act }: View) {
         return (
           <li key={model.id} class="row row--contract row--market">
             <span class="row__main">
-              <strong>{model.name}</strong>
-              {mine && game.player.model && <span class="row__done"> · yours until {formatGameTime(game.player.model.untilMs)}</span>}
+              <span>
+                <strong>{model.name}</strong>
+                {mine && game.player.model && <span class="row__tag row__tag--good">yours until {formatGameTime(game.player.model.untilMs)}</span>}
+              </span>
               <span class="contract__summary">{model.blurb}</span>
             </span>
             <span class="data row__dim">{content.rules.modelRentHours} h</span>
@@ -935,24 +950,25 @@ export function ServerWindow() {
       title={server.name}
       note={loggedIn ? `${connection.user} @ ${server.hostname}` : 'not logged in'}
       actions={
-        <>
-          {sections.map((name) => (
-            <button
-              key={name}
-              type="button"
-              class={`tabbtn${name === section ? ' is-current' : ''}`}
-              aria-pressed={name === section}
-              onClick={() => deskStore.showSection(connection.id, name)}
-            >
-              {SECTION_LABELS[name]}
-            </button>
-          ))}
-          {loggedIn && (
-            <button type="button" class="tabbtn tabbtn--exit" onClick={() => act({ type: 'logout', connectionId: connection.id })}>
-              Log out
-            </button>
-          )}
-        </>
+        loggedIn && (
+          <button type="button" class="tabbtn tabbtn--exit" onClick={() => act({ type: 'logout', connectionId: connection.id })}>
+            Log out
+          </button>
+        )
+      }
+      tabs={
+        sections.length > 0 &&
+        sections.map((name) => (
+          <button
+            key={name}
+            type="button"
+            class={`tabbtn${name === section ? ' is-current' : ''}`}
+            aria-pressed={name === section}
+            onClick={() => deskStore.showSection(connection.id, name)}
+          >
+            {SECTION_LABELS[name]}
+          </button>
+        ))
       }
     >
       <Security {...view} />

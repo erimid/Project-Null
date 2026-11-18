@@ -4,6 +4,9 @@
  * so the simulation itself never needs to know about either.
  */
 import { findServer, type Content, type GameState } from '../core';
+import { gameInfo } from '../content';
+
+const titleOf = (rating: number) => gameInfo.ratings.findLast((level) => rating >= level.min)?.title;
 
 export type GameEvent =
   | { readonly type: 'connected'; readonly server: string }
@@ -15,7 +18,9 @@ export type GameEvent =
   | { readonly type: 'loggedIn' }
   | { readonly type: 'message' }
   | { readonly type: 'paid' }
-  | { readonly type: 'spent' };
+  | { readonly type: 'spent' }
+  /** The rating crossed into a higher title. */
+  | { readonly type: 'promoted'; readonly title: string };
 
 /** The parts of the game that events are worked out from. */
 export interface Snapshot {
@@ -25,6 +30,7 @@ export interface Snapshot {
   readonly balance: number;
   /** Changes when the player is caught. */
   readonly lieLowUntilMs: number;
+  readonly rating: number;
 }
 
 export function snapshot(state: GameState): Snapshot {
@@ -36,6 +42,7 @@ export function snapshot(state: GameState): Snapshot {
     messages: state.messages.length,
     balance: state.player.balance,
     lieLowUntilMs: state.player.lieLowUntilMs,
+    rating: state.player.rating,
   };
 }
 
@@ -69,5 +76,9 @@ export function diff(before: Snapshot, after: Snapshot, content: Content, byCloc
   if (after.messages > before.messages) events.push({ type: 'message' });
   if (after.balance > before.balance) events.push({ type: 'paid' });
   if (after.balance < before.balance) events.push({ type: 'spent' });
+  if (after.rating > before.rating) {
+    const title = titleOf(after.rating);
+    if (title && title !== titleOf(before.rating)) events.push({ type: 'promoted', title });
+  }
   return events;
 }

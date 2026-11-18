@@ -2805,3 +2805,342 @@ button.tabbar__contract--live:hover {
   justify-content: space-between;
   margin: 10px 0 0;
 }
+
+/* ---- polish pass: one look for every window ---- */
+
+/* Section buttons sit on their own strip under the title, so a narrow window keeps them on one line. */
+.window__tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  background: rgba(95, 212, 255, 0.03);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabbtn {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.tabbtn.is-current {
+  box-shadow: inset 0 -2px 0 var(--cyan);
+}
+
+/* The window in front is lit: a bright top edge and a soft glow. */
+.window__title {
+  background: linear-gradient(180deg, rgba(95, 212, 255, 0.07), transparent);
+}
+
+.window--front {
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(95, 212, 255, 0.12),
+    0 0 34px rgba(95, 212, 255, 0.1);
+}
+
+.window--front .window__title {
+  background: linear-gradient(180deg, rgba(95, 212, 255, 0.16), transparent);
+  box-shadow: inset 0 1px 0 rgba(95, 212, 255, 0.55);
+}
+
+.btn:not(:disabled):hover {
+  background: rgba(95, 212, 255, 0.1);
+  box-shadow: 0 0 12px rgba(95, 212, 255, 0.22);
+}
+
+.btn--go:not(:disabled):hover {
+  box-shadow: 0 0 12px rgba(78, 230, 200, 0.28);
+}
+
+.btn--danger:not(:disabled):hover,
+.btn.is-armed:not(:disabled):hover {
+  background: rgba(255, 59, 78, 0.18);
+  box-shadow: 0 0 12px rgba(255, 59, 78, 0.28);
+}
+
+.btn:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+/* Headings run out into a hairline, so sections read as sections. */
+.map__heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.map__heading::after {
+  content: '';
+  flex: 1;
+  min-width: 12px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line-soft), transparent);
+}
+
+.map__heading .heading__note {
+  margin-left: 0;
+}
+
+/* Every "nothing here yet" looks the same. */
+.empty {
+  margin: 4px 0;
+  padding: 10px 12px;
+  border: 1px dashed rgba(95, 212, 255, 0.18);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+/* Rows light up under the pointer. */
+.rows .row {
+  transition:
+    background 0.12s,
+    box-shadow 0.12s;
+}
+
+.rows .row:hover {
+  background: rgba(95, 212, 255, 0.045);
+  box-shadow:
+    -8px 0 0 rgba(95, 212, 255, 0.045),
+    8px 0 0 rgba(95, 212, 255, 0.045);
+}
+
+/* File names break after a dot, a dash or an underscore, never mid-word. */
+.filename {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.row__main:has(> .filename) {
+  overflow-wrap: break-word;
+}
+
+/* The market: name, size, price, button. The price never pushes the button to a new line. */
+.row--contract.row--market,
+.row--market {
+  grid-template-columns: minmax(0, 1fr) 54px 84px 96px;
+  align-items: center;
+}
+
+.row--market > :nth-child(2),
+.row--market > :nth-child(3),
+.row--part > :nth-child(2) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.row__tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.row__tag--good {
+  border-color: rgba(78, 230, 200, 0.5);
+  color: var(--mint);
+}
+
+.contract__reward {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  white-space: nowrap;
+}
+
+.contract__rating {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--mint);
+}
+
+/* ---- the Gateway window: a dashboard of tiles ---- */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 9px 12px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: rgba(95, 212, 255, 0.04);
+}
+
+.tile dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.tile dd {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-bright);
+}
+
+.tile__sub {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.tile .is-ok {
+  color: var(--mint);
+}
+
+.tile .is-warn {
+  color: #ff8a95;
+}
+
+.meter__fill {
+  box-shadow: 0 0 8px rgba(95, 212, 255, 0.6);
+}
+
+.meter--mint {
+  background: rgba(78, 230, 200, 0.14);
+}
+
+.meter--mint .meter__fill {
+  background: var(--mint);
+  box-shadow: 0 0 8px rgba(78, 230, 200, 0.6);
+}
+
+.meter--over .meter__fill {
+  background: var(--red);
+  box-shadow: 0 0 8px rgba(255, 59, 78, 0.6);
+}
+
+.tiles__heading .readout__build {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  order: 2;
+}
+
+.parts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 6px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.parts__item {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 0 5px 10px;
+  border-left: 2px solid var(--cyan);
+}
+
+.parts__item.is-empty {
+  border-left-color: var(--line-strong);
+}
+
+.parts__slot {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.parts__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.parts__item.is-empty .parts__name {
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+/* ---- the rating in the bottom bar, and the promotion alert ---- */
+
+.dock__title {
+  margin-left: 8px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.alert--good {
+  border-color: var(--mint);
+  background: rgba(6, 38, 34, 0.96);
+  box-shadow: 0 0 36px rgba(78, 230, 200, 0.35);
+}
+
+.alert--good .alert__mark {
+  background: var(--mint);
+  color: #04221d;
+  font-size: 18px;
+}
+
+.alert--good .alert__title {
+  color: var(--mint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rows .row,
+  .btn {
+    transition: none;
+  }
+
+  .btn:not(:disabled):active {
+    transform: none;
+  }
+}
+
+.window__tabs {
+  flex: none;
+}
+
+/* The Gateway window shows everything without scrolling at its usual size. */
+.tiles {
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tile {
+  padding: 7px 11px 8px;
+}
+
+.tile dd {
+  font-size: 17px;
+}
+
+.parts {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}

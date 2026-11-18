@@ -20,6 +20,9 @@ interface Tone {
   readonly to?: number;
 }
 
+/** How loud an ordinary tone is. The trace alarm is louder; ticks and the trace's own beeps are quieter. */
+const LEVEL = 0.09;
+
 function play(tones: readonly Tone[]): void {
   const sink = output();
   if (!sink) return;
@@ -31,7 +34,7 @@ function play(tones: readonly Tone[]): void {
     osc.frequency.setValueAtTime(tone.freq, when);
     if (tone.to) osc.frequency.exponentialRampToValueAtTime(tone.to, when + tone.seconds);
     const gain = ctx.createGain();
-    const level = tone.level ?? 0.12;
+    const level = tone.level ?? LEVEL;
     gain.gain.setValueAtTime(0, when);
     gain.gain.linearRampToValueAtTime(level, when + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, when + tone.seconds);
@@ -65,10 +68,10 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
     ]),
   disconnected: (event) => {
     if (event.type === 'disconnected' && event.traced) {
-      burst(0.7, 0.25);
+      burst(0.7, 0.2);
       play([
-        { freq: 220, seconds: 0.9, wave: 'sawtooth', level: 0.16, to: 55 },
-        { freq: 233, seconds: 0.9, wave: 'sawtooth', level: 0.12, to: 58 },
+        { freq: 220, seconds: 0.9, wave: 'sawtooth', level: 0.14, to: 55 },
+        { freq: 233, seconds: 0.9, wave: 'sawtooth', level: 0.1, to: 58 },
       ]);
     } else {
       burst(0.12, 0.06);
@@ -77,9 +80,9 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
   },
   traceStarted: () =>
     play([
-      { freq: 880, seconds: 0.14, wave: 'square', level: 0.1 },
-      { freq: 880, at: 0.2, seconds: 0.14, wave: 'square', level: 0.1 },
-      { freq: 880, at: 0.4, seconds: 0.3, wave: 'square', level: 0.1 },
+      { freq: 880, seconds: 0.14, wave: 'square', level: 0.08 },
+      { freq: 880, at: 0.2, seconds: 0.14, wave: 'square', level: 0.08 },
+      { freq: 880, at: 0.4, seconds: 0.3, wave: 'square', level: 0.08 },
     ]),
   programStarted: () => play([{ freq: 300, seconds: 0.08, wave: 'square', level: 0.05, to: 600 }]),
   programFinished: () =>
@@ -94,11 +97,20 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
     ]),
   message: () =>
     play([
-      { freq: 1047, seconds: 0.12, level: 0.09 },
-      { freq: 1319, at: 0.13, seconds: 0.2, level: 0.09 },
+      { freq: 1047, seconds: 0.12, level: 0.07 },
+      { freq: 1319, at: 0.13, seconds: 0.2, level: 0.07 },
     ]),
-  paid: () => play([523, 659, 784, 1047].map((freq, i) => ({ freq, at: i * 0.07, seconds: 0.18, wave: 'triangle' as const }))),
+  // Four notes overlap, so each is a little quieter than a single tone.
+  paid: () => play([523, 659, 784, 1047].map((freq, i) => ({ freq, at: i * 0.07, seconds: 0.18, wave: 'triangle' as const, level: 0.07 }))),
   spent: () => play([{ freq: 400, seconds: 0.12, wave: 'triangle', to: 250 }]),
+  // A rising fifth and an octave held: a new title.
+  promoted: () =>
+    play([
+      { freq: 392, seconds: 0.16, wave: 'triangle' },
+      { freq: 587, at: 0.14, seconds: 0.16, wave: 'triangle' },
+      { freq: 784, at: 0.28, seconds: 0.5, wave: 'triangle' },
+      { freq: 1175, at: 0.28, seconds: 0.5, level: 0.04 },
+    ]),
 };
 
 /** Starts the sound effects. Call once, after the game has loaded. */
@@ -129,8 +141,8 @@ export function startSfx(): void {
     lastSecond = second;
     if (second <= 10) {
       play([
-        { freq: 1320, seconds: 0.07, wave: 'square', level: 0.08 },
-        { freq: 1320, at: 0.14, seconds: 0.07, wave: 'square', level: 0.08 },
+        { freq: 1320, seconds: 0.07, wave: 'square', level: 0.07 },
+        { freq: 1320, at: 0.14, seconds: 0.07, wave: 'square', level: 0.07 },
       ]);
     } else play([{ freq: 990, seconds: 0.06, wave: 'square', level: 0.045 }]);
   });

@@ -5,6 +5,7 @@ import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
 import { TaskProgress, describeTarget, findTask } from '../TaskProgress';
 import { viewer } from '../viewerStore';
+import { FileName } from '../FileName';
 import { Window } from '../Window';
 
 /**
@@ -123,7 +124,7 @@ export function ProgramsWindow() {
             return (
             <li key={file.name} class={`row row--stored${file.encrypted ? ' is-sealed' : ''}`}>
               <span class="row__main data">
-                {file.name}
+                <FileName name={file.name} />
                 <span class="program__blurb">
                   from {serverName(file.from)}
                   {file.encrypted ? <span class="sealed"> · encrypted, level {file.encrypted}</span> : null}

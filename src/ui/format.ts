@@ -38,3 +38,12 @@ export function formatRating(rating: number): string {
   const title = [...gameInfo.ratings].reverse().find((level) => rating >= level.min)?.title ?? '';
   return `${rating} · ${title}`;
 }
+
+/** Where a rating sits on the ladder: its title, the next one, and how far along the step it is (0 to 1). */
+export function ratingStep(rating: number): { title: string; next: { title: string; min: number } | null; share: number } {
+  const ladder = gameInfo.ratings;
+  const index = Math.max(0, ladder.findLastIndex((level) => rating >= level.min));
+  const here = ladder[index]!;
+  const next = ladder[index + 1] ?? null;
+  return { title: here.title, next, share: next ? (rating - here.min) / (next.min - here.min) : 1 };
+}

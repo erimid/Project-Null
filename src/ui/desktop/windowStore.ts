@@ -23,18 +23,31 @@ export interface WindowDef {
   readonly open: boolean;
 }
 
+/*
+ * The default desk: the server being worked on fills the left, the route
+ * map sits top right with the gateway's readout under it, and nothing
+ * that is open from the start covers anything else. Windows opened later
+ * step down and to the right from the left edge.
+ */
+const EDGE = 24;
+const GAP = 16;
+const TOP = 20;
+const MAP_WIDTH = 700;
+/** Room the gateway's readout needs under the map. */
+const GATEWAY_HEIGHT = 300;
+
 export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
-  gateway: { title: 'Gateway', pill: 'Gateway', width: 360, x: 24, y: 20, open: true },
-  // x: -24 means 24px in from the right edge of the screen.
-  map: { title: 'Route map', pill: 'Map', width: 700, x: -24, y: 20, open: true },
-  server: { title: 'Server', pill: 'Server', width: 760, x: 24, y: 292, open: true },
-  programs: { title: 'Programs', pill: 'Programs', width: 440, x: 410, y: 60, open: false },
-  messages: { title: 'Messages', pill: 'Messages', width: 520, x: -48, y: 56, open: false },
-  contract: { title: 'Contract', pill: 'Contract', width: 440, x: 24, y: 20, open: false },
-  web: { title: 'Lumen', pill: 'Web', width: 620, height: 500, x: 260, y: 40, open: false },
-  dark: { title: 'Undertow', pill: 'Darknet', width: 620, height: 500, x: 320, y: 70, open: false },
-  viewer: { title: 'File viewer', pill: 'Viewer', width: 640, x: 320, y: 90, open: false },
-  saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 200, y: 120, open: false },
+  // x: -24 means 24px in from the right edge of the screen. The gateway's y is worked out from the map's height.
+  gateway: { title: 'Gateway', pill: 'Gateway', width: MAP_WIDTH, x: -EDGE, y: TOP, open: true },
+  map: { title: 'Route map', pill: 'Map', width: MAP_WIDTH, x: -EDGE, y: TOP, open: true },
+  server: { title: 'Server', pill: 'Server', width: 760, minWidth: 520, x: EDGE, y: TOP, open: true },
+  programs: { title: 'Programs', pill: 'Programs', width: 460, x: 184, y: 92, open: false },
+  messages: { title: 'Messages', pill: 'Messages', width: 560, x: EDGE, y: TOP, open: false },
+  contract: { title: 'Contract', pill: 'Contract', width: 440, x: 144, y: 56, open: false },
+  web: { title: 'Lumen', pill: 'Web', width: 620, height: 500, x: 104, y: 56, open: false },
+  dark: { title: 'Undertow', pill: 'Darknet', width: 620, height: 500, x: 144, y: 92, open: false },
+  viewer: { title: 'File viewer', pill: 'Viewer', width: 640, x: 224, y: 128, open: false },
+  saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 264, y: 92, open: false },
 };
 
 export const MIN_WIDTH = 320;
@@ -59,16 +72,25 @@ export interface WindowLayout {
 
 type Layouts = Readonly<Record<WindowId, WindowLayout>>;
 
-const STORAGE_KEY = 'project-null.windows.v8';
+// Bumped whenever the default layout changes, so everyone gets the new one once.
+const STORAGE_KEY = 'project-null.windows.v9';
 
 function defaults(): Layouts {
+  const desk = window.innerHeight - BARS_HEIGHT;
+  // The map takes what the gateway's readout leaves of the right-hand column, within reason.
+  const mapHeight = Math.round(Math.min(640, Math.max(430, desk - TOP - GAP - GATEWAY_HEIGHT - GAP)));
   const entries = WINDOW_IDS.map((id, index) => {
     const def = WINDOW_DEFS[id];
-    const x = def.x >= 0 ? def.x : Math.max(24, window.innerWidth + def.x - def.width);
-    return [id, { x, y: def.y, open: def.open, z: index + 1, minimized: false, w: null, h: def.height ?? null }] as const;
+    const x = def.x >= 0 ? def.x : Math.max(EDGE, window.innerWidth + def.x - def.width);
+    const y = id === 'gateway' ? TOP + mapHeight + GAP : def.y;
+    const h = id === 'map' ? mapHeight : (def.height ?? null);
+    return [id, { x, y, open: def.open, z: index + 1, minimized: false, w: null, h }] as const;
   });
   return Object.fromEntries(entries) as Layouts;
 }
+
+/** The height a window goes back to when its corner is double-clicked. */
+const usualHeight = (id: WindowId): number | null => defaults()[id].h;
 
 function load(): Layouts {
   const layouts: Record<WindowId, WindowLayout> = { ...defaults() };
@@ -152,7 +174,7 @@ export const windows = {
   },
   /** Back to its usual size. */
   resetSize(id: WindowId): void {
-    set(patch(id, { w: null, h: WINDOW_DEFS[id].height ?? null }), true);
+    set(patch(id, { w: null, h: usualHeight(id) }), true);
   },
   /** While dragging. Call `settle` when the drag ends. */
   move(id: WindowId, x: number, y: number): void {
