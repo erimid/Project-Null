@@ -428,10 +428,6 @@
   left: 50%;
   bottom: 100%;
   z-index: 2000;
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: center;
-  column-gap: 20px;
   min-width: 340px;
   padding: 10px 22px 12px;
   transform: translateX(-50%);
@@ -447,6 +443,56 @@
   animation:
     alarm-rise 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2),
     alarm-glow 1s ease-in-out infinite;
+}
+
+.alarm__main {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 20px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.alarm__others {
+  margin: 8px 0 0;
+  padding: 6px 0 0;
+  list-style: none;
+  border-top: 1px solid rgba(255, 59, 78, 0.35);
+}
+
+.alarm__other {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 3px 0;
+  border: 0;
+  background: none;
+  color: var(--red-text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.alarm__other:hover {
+  color: #fff;
+}
+
+.alarm__other .data {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.alarm__other.is-held .data {
+  color: var(--cyan);
 }
 
 .alarm__label {
@@ -2732,4 +2778,15 @@ button.tabbar__contract--live:hover {
 .storage__key .data {
   white-space: nowrap;
   margin-right: 8px;
+}
+
+/* ---- layers run from another server ---- */
+
+.layer.is-linked .layer__name::after {
+  content: ' ⇄';
+  color: var(--text-dim);
+}
+
+.link-note {
+  margin: 8px 0 0;
 }

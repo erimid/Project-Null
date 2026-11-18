@@ -26,6 +26,10 @@ import ashgrovePoly from './servers/ashgrove-poly.json';
 import aldergateFinch from './servers/aldergate-finch.json';
 import sunderbyKraft from './servers/sunderby-kraft.json';
 import tesseraWater from './servers/tessera-water.json';
+import calderFacilities from './servers/calder-facilities.json';
+import calderRe from './servers/calder-re.json';
+import gatehousePerimeter from './servers/gatehouse-perimeter.json';
+import brennanMarsh from './servers/brennan-marsh.json';
 import hardwareJson from './hardware.json';
 import { parseHardware } from './hardware';
 import modelsJson from './models.json';
@@ -42,6 +46,8 @@ export type {
   FileContent,
   FileDef,
   GameInfo,
+  ServerLinkDef,
+  LinkLayer,
   LogDef,
   MailDef,
   MailKey,
@@ -67,7 +73,7 @@ export const gameInfo = parseGameInfo(gameJson);
 export const sites = parseSites(sitesJson);
 export const tuning = parseTuning(tuningJson);
 export const servers = parseServers(
-  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater],
+  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh],
   'servers/',
 );
 export const programs = parsePrograms(programsJson);

@@ -182,5 +182,35 @@
       "kind": "steal",
       "file": "brackley_results_june_2032.txt"
     }
+  },
+  {
+    "id": "calder-treaty",
+    "title": "Two doors at once",
+    "client": "Someone at Corvane",
+    "targetId": "calder-re",
+    "pay": 5500,
+    "rating": 2,
+    "minRating": 5,
+    "summary": "Copy the treaty book from Calder Re while its security desk is kept busy.",
+    "brief": "Calder Re's underwriting server traces everything the moment you connect, and it is quick. You will not out-run it. You do not need to.\n\nIts monitor does not raise the alarm itself. It reports to the security desk console on Calder Re Facilities, and while someone is logged in at that desk the alerts wait for them. So be that someone.\n\nYou need two connections open at once: log in as the desk on Calder Re Facilities and stay there, then copy treaty_book_2034.dat from Calder Reinsurance. If the desk session drops, their trace starts moving again.",
+    "objective": {
+      "kind": "steal",
+      "file": "treaty_book_2034.dat"
+    }
+  },
+  {
+    "id": "brennan-bundle",
+    "title": "Maintenance window",
+    "client": "M. Adeyemi-Clarke",
+    "targetId": "brennan-marsh",
+    "pay": 4200,
+    "rating": 2,
+    "minRating": 4,
+    "summary": "Delete a disclosure bundle at Brennan & Marsh, through their firewall company.",
+    "brief": "Corvane's lawyers are about to serve me with a bundle of papers built to scare me quiet. I want it gone before Friday.\n\nTheir firewall is far beyond anything you can buy. But they do not run it. Gatehouse Managed Security does, from a console in Cork, and when an engineer opens a session there the firewall passes everything until it closes.\n\nHold an admin session on Gatehouse open, and while it is open, delete disclosure_bundle_7.dat from Brennan & Marsh. You will need a gateway that can hold two connections.",
+    "objective": {
+      "kind": "destroy",
+      "file": "disclosure_bundle_7.dat"
+    }
   }
 ]

@@ -1,0 +1,84 @@
+{
+  "id": "calder-facilities",
+  "name": "Calder Re Facilities",
+  "kind": "company",
+  "owner": "Calder Reinsurance plc",
+  "hostname": "CR-FAC-BMS",
+  "address": "185.17.92.40",
+  "city": "Edinburgh",
+  "country": "United Kingdom",
+  "lat": 55.95,
+  "lon": -3.19,
+  "blurb": "Building management for Calder Re's Edinburgh offices: doors, cameras, the security desk.",
+  "listed": true,
+  "security": {
+    "password": 2,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 1
+  },
+  "traceSecondsPerHop": 30,
+  "relayDelay": 1.0,
+  "banner": [
+    "CALDER REINSURANCE PLC",
+    "Facilities & Building Management · Exchange Plaza",
+    "Security desk console mirrors all intrusion alerts from CR-UW-01.",
+    "Contractor access by appointment only."
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Visitor kiosk"
+    },
+    {
+      "user": "secdesk",
+      "role": "admin",
+      "name": "G. Moffat, Security Desk"
+    }
+  ],
+  "files": [
+    {
+      "name": "visitor_policy.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "VISITORS\n\nAll visitors sign in at the ground floor desk and are escorted at all times. Floors 4 and 5 (Underwriting) are closed to visitors without exception."
+      }
+    },
+    {
+      "name": "secdesk_handover.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "SECURITY DESK · NIGHT HANDOVER\n\nThe underwriting server's intrusion monitor (CR-UW-01) does not page anyone directly. Every alert comes to this console first, and the desk decides whether to wake the on-call engineer.\n\nSo: while someone is logged in at this console, CR-UW-01's alerts wait here for them to look. If the desk is busy, nothing goes out.\n\nYes, this has been raised. No, there is no budget to change it this year.\n\nG. Moffat"
+      }
+    },
+    {
+      "name": "door_events_0313.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    },
+    {
+      "name": "camera_index.dat",
+      "sizeGq": 4,
+      "access": "admin"
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 900,
+      "text": "login secdesk from 185.17.92.11"
+    },
+    {
+      "minutesAgo": 880,
+      "text": "alert CR-UW-01 acknowledged"
+    },
+    {
+      "minutesAgo": 300,
+      "text": "logout secdesk"
+    }
+  ]
+}

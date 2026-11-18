@@ -45,6 +45,23 @@ export interface ServerDef {
   readonly logs: readonly LogDef[];
   /** An optional table of records (students, claims, ...) that jobs can change. */
   readonly records?: RecordsDef;
+  /** A layer of this server that is run from another server. See ServerLinkDef. */
+  readonly link?: ServerLinkDef;
+}
+
+export const LINK_LAYERS = ['firewall', 'monitor'] as const;
+export type LinkLayer = (typeof LINK_LAYERS)[number];
+
+/**
+ * One of a server's layers is run from somewhere else. While the player
+ * holds an administrator login on that other server, the layer is out of
+ * action here: a firewall passes everything, a monitor notices nothing
+ * and its trace stands still. It takes two connections at once.
+ */
+export interface ServerLinkDef {
+  /** Id of the server the layer is run from. */
+  readonly serverId: string;
+  readonly layer: LinkLayer;
 }
 
 export const MAX_LAYER_LEVEL = 5;
@@ -509,6 +526,15 @@ function parseFiles(file: string, where: string, raw: Obj): FileDef[] {
   return files;
 }
 
+function parseLink(file: string, where: string, value: unknown): ServerLinkDef {
+  const raw = entry(file, `${where} link`, value);
+  const layer = text(file, `${where} link`, raw, 'layer');
+  if (!(LINK_LAYERS as readonly string[]).includes(layer)) {
+    throw new ContentError(file, `${where}: link layer "${layer}" is not one of ${LINK_LAYERS.join(', ')}`);
+  }
+  return { serverId: text(file, `${where} link`, raw, 'serverId'), layer: layer as LinkLayer };
+}
+
 export function parseServers(data: unknown, file = 'servers.json'): ServerDef[] {
   if (!Array.isArray(data)) throw new ContentError(file, 'must be a list of servers');
   const seenIds = new Set<string>();
@@ -565,6 +591,7 @@ export function parseServers(data: unknown, file = 'servers.json'): ServerDef[] 
         };
       }),
       ...(raw.records === undefined ? {} : { records: parseRecords(file, where, raw.records) }),
+      ...(raw.link === undefined ? {} : { link: parseLink(file, where, raw.link) }),
     };
   });
 
@@ -612,6 +639,15 @@ export function checkContent(
     }
   }
   for (const server of servers) {
+    const link = server.link;
+    if (link) {
+      const other = servers.find((item) => item.id === link.serverId);
+      if (!other || other.id === server.id) throw new ContentError('servers/', `server "${server.id}": link names "${link.serverId}", which is not another server`);
+      if (!other.accounts.some((account) => account.role === 'admin')) {
+        throw new ContentError('servers/', `server "${server.id}": ${other.id} has no admin account to hold the link with`);
+      }
+      if (server.security[link.layer] === 0) throw new ContentError('servers/', `server "${server.id}" links its ${link.layer} but has none`);
+    }
     const hasAdmin = server.accounts.some((account) => account.role === 'admin');
     if (server.security.password > 0 && !hasAdmin) {
       throw new ContentError('servers/', `server "${server.id}" has a password layer but no admin account to protect`);

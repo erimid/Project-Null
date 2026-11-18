@@ -98,7 +98,7 @@ describe('Monitor Bypass', () => {
 
     h.wait(5);
     expect(h.connection().trace.elapsedMs).toBe(15_000);
-    expect(mostUrgentTrace(h.state)?.monitor.blindMs).toBe(2_500);
+    expect(mostUrgentTrace(h.state, content)?.monitor.blindMs).toBe(2_500);
     // What is left of a tick after the monitor wakes goes to the trace.
     h.wait(3);
     expect(h.connection().trace.elapsedMs).toBe(15_500);

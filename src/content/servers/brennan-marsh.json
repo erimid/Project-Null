@@ -1,0 +1,74 @@
+{
+  "id": "brennan-marsh",
+  "name": "Brennan & Marsh",
+  "kind": "company",
+  "owner": "Brennan & Marsh LLP",
+  "hostname": "BO-DOCS",
+  "address": "89.101.171.30",
+  "city": "Dublin",
+  "country": "Ireland",
+  "lat": 53.35,
+  "lon": -6.26,
+  "blurb": "A small law firm's document server. Its firewall is run for it by an outside company.",
+  "listed": true,
+  "security": {
+    "password": 2,
+    "proxy": 0,
+    "firewall": 5,
+    "monitor": 2
+  },
+  "traceSecondsPerHop": 14,
+  "relayDelay": 1.0,
+  "link": {
+    "serverId": "gatehouse-perimeter",
+    "layer": "firewall"
+  },
+  "banner": [
+    "BRENNAN & OKAFOR LLP · SOLICITORS",
+    "Document server BO-DOCS",
+    "Perimeter protection by Gatehouse Managed Security.",
+    "Privileged and confidential."
+  ],
+  "accounts": [
+    {
+      "user": "admin",
+      "role": "admin",
+      "name": "S. Brennan, Partner"
+    }
+  ],
+  "files": [
+    {
+      "name": "disclosure_bundle_7.dat",
+      "sizeGq": 4,
+      "access": "admin"
+    },
+    {
+      "name": "client_letter_draft.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "DRAFT · NOT SENT\n\nDear Ms. Adeyemi-Clarke,\n\nWe act for Corvane Mutual. Our client has noted your recent remarks to the press. Bundle 7, which we will serve on Friday, contains material our client believes you will not want made public.\n\nWe suggest you reconsider.\n\nS. Brennan"
+      }
+    },
+    {
+      "name": "time_sheets_march.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 700,
+      "text": "login admin from 89.101.171.4"
+    },
+    {
+      "minutesAgo": 690,
+      "text": "file updated: disclosure_bundle_7.dat"
+    },
+    {
+      "minutesAgo": 650,
+      "text": "logout admin"
+    }
+  ]
+}

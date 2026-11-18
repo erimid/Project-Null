@@ -5,6 +5,7 @@
 import type { ProgramDef, ProgramKind, ServerDef } from '../content/schema';
 import type { Connection, EchoPuzzle, GameState, RingPuzzle, Task, TaskTarget } from './state';
 import { cpuSpeed, fileSpeed, maxPrograms, rackStorageGb, storageGb } from './hardware';
+import { heldBy } from './link';
 import { stream } from './streams';
 import { noteIntrusion } from './trace';
 import { findAccount, findConnection, findProgram, findServer, ownedProgram, type Content } from './world';
@@ -122,6 +123,7 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
       const level = server.security[target.kind];
       if (level === 0) return no(`This server has no ${target.kind}.`);
       if (connection.bypassed[target.kind]) return no(`The ${target.kind} is already bypassed.`);
+      if (target.kind === 'firewall' && heldBy(state, content, server.id, 'firewall')) return no('The firewall is already held open from elsewhere.');
       return against(target.kind, level);
     }
     case 'monitor': {
@@ -135,7 +137,9 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
     case 'deleteFile': {
       const file = serverState.files.find((item) => item.name === target.file);
       if (!file || (file.access === 'admin' && !admin)) return no('No such file.');
-      if (server.security.firewall > 0 && !connection.bypassed.firewall) return no('The firewall is blocking file access.');
+      if (server.security.firewall > 0 && !connection.bypassed.firewall && !heldBy(state, content, server.id, 'firewall')) {
+        return no('The firewall is blocking file access.');
+      }
       if (target.kind === 'copyFile') {
         if (state.player.files.some((own) => own.name === file.name)) return no('You already have a copy of that file.');
         if (file.sizeGq > freeStorageGb(state, content)) return no('Not enough room on your gateway.');
@@ -323,7 +327,7 @@ export function startTask(state: GameState, content: Content, connectionId: stri
     ...(target.kind === 'firewall' ? { puzzle: newPuzzle(state, check.level) } : {}),
   });
   // Monitors notice programs working on their server. They don't notice being blinded, or work done at home.
-  if (connection && target.kind !== 'monitor') noteIntrusion(content, connection);
+  if (connection && target.kind !== 'monitor') noteIntrusion(state, content, connection);
   return null;
 }
 

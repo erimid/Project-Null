@@ -5,6 +5,8 @@ export type {
   CueDef,
   FileContent,
   FileDef,
+  ServerLinkDef,
+  LinkLayer,
   LogDef,
   MailDef,
   ObjectiveDef,

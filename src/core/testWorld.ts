@@ -78,6 +78,36 @@ export const testServers: ServerDef[] = [
     // The monitor traces from the moment you connect.
     security: { password: 0, proxy: 0, firewall: 0, monitor: 3 },
   },
+  // Two pairs of servers where one runs a layer of the other.
+  { ...base, id: 'desk', name: 'Security Desk', kind: 'company', hostname: 'DESK', address: '10.0.0.8', listed: true, accounts: [{ user: 'guard', role: 'admin', name: 'Guard' }], files: [] },
+  {
+    ...base,
+    id: 'tower',
+    name: 'Watched Tower',
+    kind: 'company',
+    hostname: 'TOWER',
+    address: '10.0.0.9',
+    listed: true,
+    accounts: [{ user: 'admin', role: 'admin', name: 'T. Admin' }],
+    files: [{ name: 'plans.dat', sizeGq: 2, access: 'admin' }],
+    // Traces from the moment you connect, unless the desk is held.
+    security: { password: 0, proxy: 0, firewall: 0, monitor: 3 },
+    link: { serverId: 'desk', layer: 'monitor' },
+  },
+  { ...base, id: 'gatehouse', name: 'Gatehouse', kind: 'company', hostname: 'GATE', address: '10.0.0.10', listed: true, accounts: [{ user: 'ops', role: 'admin', name: 'Ops' }], files: [] },
+  {
+    ...base,
+    id: 'fort',
+    name: 'Fort',
+    kind: 'company',
+    hostname: 'FORT',
+    address: '10.0.0.11',
+    listed: true,
+    accounts: [{ user: 'admin', role: 'admin', name: 'F. Admin' }],
+    files: [{ name: 'bundle.dat', sizeGq: 2, access: 'admin' }],
+    security: { password: 0, proxy: 0, firewall: 5, monitor: 0 },
+    link: { serverId: 'gatehouse', layer: 'firewall' },
+  },
   { ...base, id: 'hidden', name: 'Unlisted', kind: 'board', hostname: 'H', address: '10.0.0.6', listed: false, accounts: [{ user: 'member', role: 'guest', name: 'Member' }], files: [] },
 ];
 

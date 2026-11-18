@@ -5,7 +5,7 @@
 import { mostUrgentTrace, traceReport } from '../core';
 import { noiseBuffer, output } from './audio';
 import type { GameEvent } from './events';
-import { session } from './session';
+import { content, session } from './session';
 
 interface Tone {
   /** Pitch in hertz. */
@@ -118,7 +118,7 @@ export function startSfx(): void {
   // While a trace runs: one beep a second, higher and doubled in the last ten.
   let lastSecond = -1;
   session.subscribeGame(() => {
-    const connection = mostUrgentTrace(session.getState());
+    const connection = mostUrgentTrace(session.getState(), content);
     // A held trace is silent: the quiet is how you know the monitor is blind.
     if (!connection || connection.monitor.blindMs > 0) {
       lastSecond = -1;

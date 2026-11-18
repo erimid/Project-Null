@@ -1,4 +1,4 @@
-import { findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, traceReport, type GameState } from '../../core';
+import { findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, traceHeld, traceReport, tracesByUrgency, type GameState } from '../../core';
 import { useEffect, useRef } from 'preact/hooks';
 import { formatDay, formatTime } from '../format';
 import { useGame, useWorld } from '../hooks';
@@ -19,75 +19,118 @@ const clockText = (ms: number) => {
 /** Without a Trace Tracker you only know that someone is coming, not how close they are. */
 const hasTracker = (game: GameState) => ownedProgram(game, content, 'traceTracker') !== undefined;
 
-function showTrace(): void {
-  const connection = mostUrgentTrace(session.getState());
-  if (connection) deskStore.activate(connection.id);
+function showTrace(connectionId?: string): void {
+  const connection = connectionId ?? mostUrgentTrace(session.getState(), content)?.id;
+  if (connection) deskStore.activate(connection);
   windows.focus('server');
+}
+
+/** The other running traces, one line each: where, and how long is left (or that it is held). */
+function OtherTraces({ tracker }: { tracker: boolean }) {
+  // One text, so the list redraws only when a line changes.
+  const lines = useGame((game) =>
+    tracesByUrgency(game, content)
+      .slice(1)
+      .map((connection) => {
+        const name = findServer(content, connection.serverId)?.name ?? '';
+        const held = traceHeld(game, content, connection);
+        const left = tracker ? clockText(traceReport(connection.trace).remainingMs) : '?';
+        return [connection.id, name, held ? 'held' : left, held ? 'held' : ''].join('\t');
+      })
+      .join('\n'),
+  );
+  if (lines === '') return null;
+  return (
+    <ul class="alarm__others" aria-label="Other traces">
+      {lines.split('\n').map((line) => {
+        const [id, name, left, held] = line.split('\t');
+        return (
+          <li key={id}>
+            <button type="button" class={`alarm__other${held ? ' is-held' : ''}`} onClick={() => showTrace(id)}>
+              <span>{name}</span>
+              <span class="data">{left}</span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 /**
  * The trace alarm: a red plate that rises out of the middle of the bar
  * while a trace is running, with the time left in large figures. Click
- * it to bring the traced connection to the front.
+ * it to bring the traced connection to the front. Other traces are
+ * listed underneath, most urgent first.
  */
 function TraceAlarm() {
   const server = useGame((game) => {
-    const connection = mostUrgentTrace(game);
+    const connection = mostUrgentTrace(game, content);
     return connection ? (findServer(content, connection.serverId)?.name ?? '') : null;
   });
   const tracker = useGame(hasTracker);
   const remaining = useGame((game) => {
-    const connection = mostUrgentTrace(game);
+    const connection = mostUrgentTrace(game, content);
     return connection ? clockText(traceReport(connection.trace).remainingMs) : '';
   });
   // In steps of half a percent, so the bar moves smoothly without redrawing every frame.
   const percent = useGame((game) => {
-    const connection = mostUrgentTrace(game);
+    const connection = mostUrgentTrace(game, content);
     return connection ? Math.floor(traceReport(connection.trace).progress * 200) / 2 : 0;
   });
   const seconds = useGame((game) => {
-    const connection = mostUrgentTrace(game);
+    const connection = mostUrgentTrace(game, content);
     return connection ? Math.ceil(traceReport(connection.trace).remainingMs / 1000) : 0;
   });
   const held = useGame((game) => {
-    const connection = mostUrgentTrace(game);
-    return connection ? clockText(connection.monitor.blindMs) : '';
+    const connection = mostUrgentTrace(game, content);
+    if (!connection) return '';
+    return connection.monitor.blindMs > 0 ? clockText(connection.monitor.blindMs) : traceHeld(game, content, connection) ? 'busy' : '';
   });
-  const isHeld = useGame((game) => (mostUrgentTrace(game)?.monitor.blindMs ?? 0) > 0);
-  const others = useGame((game) => game.connections.filter((c) => c.trace.status === 'active').length - 1);
+  const isHeld = held !== '';
+  const others = useGame((game) => tracesByUrgency(game, content).length - 1);
   if (server === null) return null;
 
   return (
-    <button
-      type="button"
-      class={`alarm${isHeld ? ' is-held' : tracker && seconds <= 10 ? ' is-critical' : ''}`}
-      title={isHeld ? `The monitor is blind for ${held}. The trace stands still until it wakes.` : undefined}
-      onClick={showTrace}
-    >
-      <span class="alarm__label">
-        {isHeld ? (
-          <>
-            Trace held <span class="data">{held}</span>
-          </>
+    <div class={`alarm${isHeld ? ' is-held' : tracker && seconds <= 10 ? ' is-critical' : ''}`}>
+      <button
+        type="button"
+        class="alarm__main"
+        title={
+          held === 'busy'
+            ? 'Its monitor is kept busy from another server. The trace stands still while you hold it.'
+            : isHeld
+              ? `The monitor is blind for ${held}. The trace stands still until it wakes.`
+              : undefined
+        }
+        onClick={() => showTrace()}
+      >
+        <span class="alarm__label">
+          {isHeld ? (
+            <>
+              Trace held {held !== 'busy' && <span class="data">{held}</span>}
+            </>
+          ) : (
+            'Trace in progress'
+          )}
+          {others > 0 && <span class="alarm__more data">+{others}</span>}
+        </span>
+        {tracker ? (
+          <span class="alarm__time data" aria-label={`${seconds} seconds left`}>
+            {remaining}
+          </span>
         ) : (
-          'Trace in progress'
+          <span class="alarm__time alarm__time--unknown">Time unknown</span>
         )}
-        {others > 0 && <span class="alarm__more data">+{others}</span>}
-      </span>
-      {tracker ? (
-        <span class="alarm__time data" aria-label={`${seconds} seconds left`}>
-          {remaining}
-        </span>
-      ) : (
-        <span class="alarm__time alarm__time--unknown">Time unknown</span>
-      )}
-      <span class="alarm__server">{server}</span>
-      {tracker && (
-        <span class="alarm__bar" aria-hidden="true">
-          <span class="alarm__fill" style={{ width: `${percent}%` }} />
-        </span>
-      )}
-    </button>
+        <span class="alarm__server">{server}</span>
+        {tracker && (
+          <span class="alarm__bar" aria-hidden="true">
+            <span class="alarm__fill" style={{ width: `${percent}%` }} />
+          </span>
+        )}
+      </button>
+      <OtherTraces tracker={tracker} />
+    </div>
   );
 }
 
@@ -108,7 +151,7 @@ export function BottomBar() {
   const time = useGame((game) => formatTime(gameDate(game)));
   const day = useGame((game) => formatDay(gameDate(game)));
   const connected = useGame(isConnected);
-  const tracing = useGame((game) => mostUrgentTrace(game) !== undefined);
+  const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
   const running = useGame((game) => game.tasks.length);
   const unread = useGame((game) => game.messages.filter((message) => !message.read).length);
   const connections = useGame((game) => game.connections.length);
