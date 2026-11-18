@@ -3,8 +3,9 @@ import { useGame } from '../hooks';
 import { session } from '../session';
 
 const LABELS: Record<Speed, string> = { 0: 'Pause', 1: '1×', 2: '2×', 4: '4×' };
+const KEYS: Record<Speed, string> = { 0: 'Space', 1: '1', 2: '2', 4: '3' };
 
-/** Pause and 1×/2×/4×. Locked to real time while any connection is open. */
+/** Pause and 1×/2×/4×. Locked to real time while any connection is open. The keys are handled in Desktop. */
 export function SpeedControl() {
   const locked = useGame(isConnected);
   const current = useGame(effectiveSpeed);
@@ -18,7 +19,7 @@ export function SpeedControl() {
           class={`speed__option${speed === current ? ' is-current' : ''}`}
           aria-pressed={speed === current}
           disabled={locked}
-          title={locked ? 'Time is locked while a connection is open' : undefined}
+          title={locked ? 'Time is locked while a connection is open' : `Key: ${KEYS[speed]}`}
           onClick={() => session.dispatch({ type: 'setSpeed', speed })}
         >
           {LABELS[speed]}

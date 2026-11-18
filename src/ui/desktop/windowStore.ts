@@ -10,7 +10,7 @@ export type WindowId = (typeof WINDOW_IDS)[number];
 
 export interface WindowDef {
   readonly title: string;
-  /** Short name on the bottom-bar pill. */
+  /** Short name on its bottom-bar tab. */
   readonly pill: string;
   readonly width: number;
   /** Starting position. A negative x is measured from the right edge of the screen. */
