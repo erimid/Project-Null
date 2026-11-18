@@ -26,7 +26,10 @@ export interface PersonDef {
 /** Something worth mentioning in a message. */
 export interface FactDef {
   readonly id: string;
+  /** The detail as the player's notes put it. */
   readonly text: string;
+  /** The detail as a message says it, in the voice of the person it is signed as, to the person it goes to. */
+  readonly mention: string;
   readonly source: FileRef;
 }
 
@@ -109,7 +112,12 @@ export function parsePeople(data: unknown): PeopleDef {
   });
   const facts = items(root, 'facts').map((item): FactDef => {
     const id = text(item, 'id', 'fact');
-    return { id, text: text(item, 'text', `fact "${id}"`), source: fileRef(item['source'], `fact "${id}"`) };
+    return {
+      id,
+      text: text(item, 'text', `fact "${id}"`),
+      mention: text(item, 'mention', `fact "${id}"`),
+      source: fileRef(item['source'], `fact "${id}"`),
+    };
   });
   const asks = items(root, 'asks').map((item): AskDef => {
     const id = text(item, 'id', 'ask');
