@@ -85,6 +85,36 @@
         "serverId": "ashgrove-poly",
         "file": "academic_misconduct_cases.dat"
       }
+    },
+    {
+      "id": "kristin-aasen",
+      "name": "K. Aasen",
+      "title": "Records Office, Halvorsen Biogenetics",
+      "address": "k.aasen@halvorsen.example",
+      "source": {
+        "serverId": "tallis-library",
+        "file": "member_cards.dat"
+      }
+    },
+    {
+      "id": "e-halvorsen",
+      "name": "Dr. E. Halvorsen",
+      "title": "Lead investigator, Halvorsen Biogenetics",
+      "address": "e.halvorsen@halvorsen.example",
+      "source": {
+        "serverId": "tallis-library",
+        "file": "new_acquisitions_march.txt"
+      }
+    },
+    {
+      "id": "l-tan",
+      "name": "L. Tan",
+      "title": "Duty Controller, Meridian Freight",
+      "address": "duty@meridianfreight.example",
+      "source": {
+        "serverId": "meridian-freight",
+        "file": "berth_schedule_wk11.txt"
+      }
     }
   ],
   "facts": [
@@ -191,6 +221,38 @@
         "serverId": "ashgrove-poly",
         "file": "academic_misconduct_cases.dat"
       }
+    },
+    {
+      "id": "aasen-card",
+      "text": "K. Aasen joined the Biblioteca Tallis on 27 February, paid in cash, and borrowed The Lamp-Makers.",
+      "source": {
+        "serverId": "tallis-library",
+        "file": "member_cards.dat"
+      }
+    },
+    {
+      "id": "halvorsen-book",
+      "text": "Dr. E. Halvorsen donated a copy of The Lamp-Makers: A History to the Biblioteca Tallis.",
+      "source": {
+        "serverId": "tallis-library",
+        "file": "new_acquisitions_march.txt"
+      }
+    },
+    {
+      "id": "corellia-container",
+      "text": "Container MRDU 441872-0 on MV Corellia is held at customs and belongs to Halvorsen Biogenetics.",
+      "source": {
+        "serverId": "meridian-freight",
+        "file": "customs_holds_march.dat"
+      }
+    },
+    {
+      "id": "gate-b-service",
+      "text": "The Gate B cameras at Pasir Panjang are being serviced over the weekend.",
+      "source": {
+        "serverId": "meridian-freight",
+        "file": "berth_schedule_wk11.txt"
+      }
     }
   ],
   "asks": [
@@ -243,6 +305,40 @@
         "serverId": "tessera-water"
       },
       "reply": "Rosalind,\n\nNineteen certificates, then. Have your office upload them to the records archive directly. It is not listed, so here is the address: 86.12.140.33.\n\nPlease do not pass it on.\n\nMarcus\n\n(Tessera Water is now in your address book.)"
+    },
+    {
+      "id": "halvorsen-admin-password",
+      "markId": "kristin-aasen",
+      "label": "Records server at Halvorsen",
+      "text": "I am away from the office and cannot get into the records server from here. Please read me the admin password so I can pull one file.",
+      "senderId": "e-halvorsen",
+      "needs": [
+        "aasen-card",
+        "halvorsen-book"
+      ],
+      "reward": {
+        "kind": "password",
+        "serverId": "halvorsen",
+        "user": "admin"
+      },
+      "reply": "Dr. Halvorsen,\n\nOf course. I did not know you were reading in the library as well. The password has not been changed since the autumn, and I have put it in a message to you through the usual route.\n\nPlease let me know when you have what you need. The board have been asking about the logs.\n\nK. Aasen\nRecords Office\n\n(The admin account at Halvorsen Biogenetics will now let you in without breaking the password.)"
+    },
+    {
+      "id": "meridian-admin-password",
+      "markId": "l-tan",
+      "label": "Duty console at Meridian",
+      "text": "I need the duty console reopened for my container and my login has expired. Can you reset the controller password and send it over?",
+      "senderId": "e-halvorsen",
+      "needs": [
+        "corellia-container",
+        "gate-b-service"
+      ],
+      "reward": {
+        "kind": "password",
+        "serverId": "meridian-freight",
+        "user": "admin"
+      },
+      "reply": "Dr. Halvorsen,\n\nThe password is set as you asked and it is in the usual message. With Gate B being serviced this weekend nobody will be watching the yard, so please do not leave it until Monday. I have not told Customs.\n\nL. Tan\nDuty Controller\n\n(The admin account at Meridian Freight will now let you in without breaking the password.)"
     }
   ]
 }

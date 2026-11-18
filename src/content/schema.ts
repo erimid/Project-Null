@@ -150,7 +150,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -289,6 +289,14 @@ export interface Tuning {
   readonly jobHours: number;
   /** A repeatable job pays this much per tier of the company's security, plus a little. */
   readonly jobPayPerTier: number;
+  /** The lowest rating that is offered work against companies of each tier, tier 1 first. */
+  readonly tierRatings: readonly number[];
+  /** Rating a delivered job earns, by the tier of the company, tier 1 first. */
+  readonly jobRatings: readonly number[];
+  /** Delivered contracts before the fixer writes about the standing jobs. */
+  readonly jobsAfter: number;
+  /** Rating at which the fixer writes about jobs that need a second server. */
+  readonly linksAfterRating: number;
 }
 
 export interface GameInfo {
@@ -706,7 +714,24 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     boardJobs: num(file, 'tuning', data, 'boardJobs', 0, 20),
     jobHours: num(file, 'tuning', data, 'jobHours', 1, 24 * 365),
     jobPayPerTier: num(file, 'tuning', data, 'jobPayPerTier', 0, 1_000_000),
+    tierRatings: tierList(file, data, 'tierRatings', true),
+    jobRatings: tierList(file, data, 'jobRatings', false),
+    jobsAfter: num(file, 'tuning', data, 'jobsAfter', 0, 1000),
+    linksAfterRating: num(file, 'tuning', data, 'linksAfterRating', 0, 100_000),
   };
+}
+
+/** A list of five numbers, one per company tier. Rising when `rising` is set. */
+function tierList(file: string, data: Record<string, unknown>, key: string, rising: boolean): number[] {
+  const values = list(file, 'tuning', data, key);
+  if (values.length !== 5 || values.some((value) => typeof value !== 'number' || !(value >= 0))) {
+    throw new ContentError(file, `${key} must be five numbers, one for each tier`);
+  }
+  const numbers = values as number[];
+  if (rising && (numbers[0] !== 0 || numbers.some((value, index) => index > 0 && value <= numbers[index - 1]!))) {
+    throw new ContentError(file, `${key} must start at 0 and go up`);
+  }
+  return numbers;
 }
 
 export function parseGameInfo(data: unknown, file = 'game.json'): GameInfo {

@@ -68,6 +68,14 @@ export interface Rules {
   readonly jobHours: number;
   /** A repeatable job pays this much per tier of the company's security, plus a little. */
   readonly jobPayPerTier: number;
+  /** The lowest rating that is offered work against companies of each tier, tier 1 first. */
+  readonly tierRatings: readonly number[];
+  /** Rating a delivered job earns, by the tier of the company, tier 1 first. */
+  readonly jobRatings: readonly number[];
+  /** Delivered contracts before the fixer writes about the standing jobs. */
+  readonly jobsAfter: number;
+  /** Rating at which the fixer writes about jobs that need a second server. */
+  readonly linksAfterRating: number;
 }
 
 export interface Content {
@@ -119,6 +127,12 @@ export function noteProgress(state: GameState, content: Content): void {
   }
   if (state.contracts.completed.length >= content.rules.hardwareAfter && content.hardware.some((part) => part.price > 0)) {
     once(state, 'hardware', () => sendMail(state, content, 'hardware'));
+  }
+  if (state.contracts.completed.length >= content.rules.jobsAfter) {
+    once(state, 'jobs', () => sendMail(state, content, 'jobs'));
+  }
+  if (state.player.rating >= content.rules.linksAfterRating) {
+    once(state, 'links', () => sendMail(state, content, 'links'));
   }
   if (state.contracts.completed.length >= content.rules.modelsAfter && content.models.length > 0) {
     once(state, 'models', () => sendMail(state, content, 'models'));
