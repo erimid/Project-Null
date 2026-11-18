@@ -6,6 +6,7 @@
  * so trace timers stay tense.
  */
 import { caught } from './actions';
+import { runReviews } from './forensics';
 import { isConnected, type GameState, type Speed } from './state';
 import { advanceTasks } from './tasks';
 import { advanceTrace } from './trace';
@@ -30,6 +31,7 @@ export function tick(state: GameState, realMs: number, content: Content): number
   for (const connection of [...state.connections]) {
     if (advanceTrace(connection.trace, simMs)) caught(state, content, connection);
   }
+  if (state.reviews.length > 0) runReviews(state, content);
   return simMs;
 }
 

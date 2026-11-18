@@ -18,6 +18,8 @@ export type {
   Message,
   NewGameOptions,
   PlayerState,
+  Review,
+  RingPuzzle,
   ServerState,
   Speed,
   StoredFile,
@@ -39,8 +41,9 @@ export {
 export type { Content, Rules } from './world';
 export { effectiveSpeed, gameDate, tick } from './clock';
 export type { GameDate } from './clock';
-export { MAX_LEVEL_GAP, canLogIn, checkTask, layerSeconds, usedStorageGq } from './tasks';
-export { mostUrgentTrace, totalTraceMs, traceHopMs, traceReport } from './trace';
+export { MAX_LEVEL_GAP, canLogIn, checkTask, layerSeconds, ringAngle, usedStorageGq } from './tasks';
+export { evidenceCount, isEvidence } from './forensics';
+export { hopUnderTrace, mostUrgentTrace, totalTraceMs, traceHopMs, traceReport } from './trace';
 export type { TraceReport } from './trace';
 export {
   activeContract,

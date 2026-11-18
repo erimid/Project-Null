@@ -13,5 +13,10 @@
   "directTraceFactor": 0.5,
   "lieLowHours": 6,
   "finePerSecurityLevel": 250,
-  "caughtRatingLoss": 1
+  "caughtRatingLoss": 1,
+  "maxReroutes": 2,
+  "reviewHours": 3,
+  "reviewFineFactor": 0.5,
+  "ringToleranceDegrees": 24,
+  "ringMissSeconds": 1.5
 }

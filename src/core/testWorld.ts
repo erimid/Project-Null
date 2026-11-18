@@ -97,6 +97,11 @@ export const testRules: Rules = {
   lieLowHours: 6,
   finePerSecurityLevel: 20,
   caughtRatingLoss: 1,
+  maxReroutes: 2,
+  reviewHours: 3,
+  reviewFineFactor: 0.5,
+  ringToleranceDegrees: 20,
+  ringMissSeconds: 2,
 };
 
 /** Two extra programs that are only for sale, never owned at the start. */
@@ -120,6 +125,7 @@ export const testMail: Record<MailKey, MailDef> = {
   paid: { from: '{client}', subject: 'Paid: {title}', body: '{pay}' },
   contractFailed: { from: '{client}', subject: 'Withdrawn: {title}', body: '{target}' },
   caught: { from: 'Fixer', subject: 'Traced by {target}', body: 'fine {fine}, {hours} hours' },
+  review: { from: 'Fixer', subject: 'Logs read at {target}', body: '{lines}, fine {fine}' },
 };
 
 export const content: Content = {

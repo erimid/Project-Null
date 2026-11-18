@@ -233,20 +233,20 @@ describe('the proxy and the access log', () => {
   it('blocks changes to the log until it is bypassed', () => {
     const { state, ok, refused, run, wait } = inside(['relay-a'], quiet);
     const login = state.servers.corp!.logs.find((entry) => entry.text.startsWith('login admin'))!;
-    refused(run({ kind: 'deleteLog', logId: login.id }), /proxy is blocking/);
+    refused(run({ kind: 'deleteLog', logIds: [login.id] }), /proxy is blocking/);
     ok(run({ kind: 'proxy' }));
     wait(6);
-    ok(run({ kind: 'deleteLog', logId: login.id }));
+    ok(run({ kind: 'deleteLog', logIds: [login.id] }));
     wait(3);
     expect(state.servers.corp!.logs.map((entry) => entry.text)).toEqual(['connection opened from 10.0.0.3']);
-    refused(run({ kind: 'deleteLog', logId: login.id }), /log line is gone/);
+    refused(run({ kind: 'deleteLog', logIds: [login.id] }), /log line is gone/);
   });
 
   it('only lets an administrator change the log', () => {
     const { state, ok, refused, run } = harness();
     ok({ type: 'connect', serverId: 'directory' });
     ok({ type: 'login', connectionId: first(state), user: 'guest' });
-    refused(run({ kind: 'deleteLog', logId: state.servers.directory!.logs[0]!.id }), /Only an administrator/);
+    refused(run({ kind: 'deleteLog', logIds: [state.servers.directory!.logs[0]!.id] }), /Only an administrator/);
   });
 });
 
@@ -406,7 +406,7 @@ describe('saves from before security existed (version 2)', () => {
     for (const server of Object.values(old.state.servers as Record<string, { logs: { id?: number }[] }>)) for (const log of server.logs) delete log.id;
 
     const loaded = syncWithContent(deserializeGame(JSON.stringify(old)).state, content);
-    expect(loaded.version).toBe(4);
+    expect(loaded.version).toBe(5);
     expect(loaded.player.programs).toEqual(content.startingPrograms);
     expect(loaded.tasks).toEqual([]);
     // Old saves get the welcome message too, since it explains where the work is.

@@ -7,12 +7,12 @@
   "firstAccept": {
     "from": "Wren",
     "subject": "How a job goes",
-    "body": "Good. Here is the shape of every job.\n\nOne. Disconnect from the Backroom. Your gateway holds one connection at a time.\n\nTwo. On the Route map, add a relay or two before you connect to the target. Every relay is one more step a trace has to follow, which is time for you. The Open Relay Registry lists more addresses.\n\nThree. Connect. Break the password on the administrator account, then log in.\n\nFour. Do what the contract says. Your Contract window shows when it is done.\n\nFive. Open Logs and delete the lines that mention you. Then disconnect.\n\nBreaking in gets noticed. When the trace warning turns red, the number on it is how long you have. If it reaches you, it costs you. Leave early if you have to and go back in.\n\nWhen the job is done, press Deliver in the Contract window. You get paid on the spot.\n\nWren"
+    "body": "Good. Here is the shape of every job.\n\nOne. Disconnect from the Backroom. Your gateway holds one connection at a time.\n\nTwo. On the Route map, add a relay or two before you connect to the target. Every relay is one more step a trace has to follow, which is time for you. The Open Relay Registry lists more addresses.\n\nThree. Connect. Break the password on the administrator account, then log in.\n\nFour. Do what the contract says. Your Contract window shows when it is done.\n\nFive. Open Logs, pick the lines that show your login and what you did, and scrub them. Then disconnect. If they read those lines later, they fine you.\n\nBreaking in gets noticed. When the trace warning turns red, the number on it is how long you have. If it reaches you, it costs you. Leave early if you have to and go back in.\n\nWhen the job is done, press Deliver in the Contract window. You get paid on the spot.\n\nWren"
   },
   "firstDelivery": {
     "from": "Wren",
     "subject": "First one done",
-    "body": "That is a first job delivered. More work shows on the board as your rating goes up.\n\nSome systems put a proxy or a firewall in your way. A proxy stops you changing records and logs. A firewall stops you copying and deleting files. The Backroom's Market sells a bypass for each. Buy them when a job needs them, not before.\n\nWren"
+    "body": "That is a first job delivered. More work shows on the board as your rating goes up.\n\nSome systems put a proxy or a firewall in your way. A proxy stops you changing records and logs. A firewall stops you copying and deleting files. The Backroom's Market sells a bypass for each. Buy them when a job needs them, not before.\n\nTwo more things worth knowing. While a firewall bypass runs you can line up its ports by hand, which is much faster than waiting. And if a trace is closing in, pick a spare server on the Route map and reroute through it. That makes the trace start that step again.\n\nWren"
   },
   "paid": {
     "from": "{client}",
@@ -28,5 +28,10 @@
     "from": "Wren",
     "subject": "Heard you got traced",
     "body": "{target} followed you home. Word gets around.\n\nThey have fined you {fine} credits and changed their passwords, so whatever you had broken there is gone. The Backroom will not give you work for {hours} hours. Lie low, let the clock run, and come back.\n\nNext time use more relays, and leave before the timer says you have to.\n\nWren"
+  },
+  "review": {
+    "from": "Wren",
+    "subject": "They read their logs",
+    "body": "{target} went through its access log after you left and found {lines} that should not have been there. It was enough to put a name to.\n\nThey have fined you {fine} credits. No trace this time, so the Backroom still has work for you.\n\nBefore you disconnect, open Logs and scrub your login and anything that says a file was copied, deleted or a record changed. The lines that only say a connection opened or closed prove nothing.\n\nWren"
   }
 }

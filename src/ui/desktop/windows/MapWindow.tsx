@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { ownedProgram, traceReport } from '../../../core';
+import { hopUnderTrace, ownedProgram, traceReport } from '../../../core';
 import { findServer, gatewayOf, type ServerDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
@@ -89,6 +89,13 @@ export function MapWindow() {
     deskStore.select(id);
   };
 
+  // During a trace, a spare server can take the place of the relay the trace is working on.
+  const tracingHop = live ? hopUnderTrace(live) : -1;
+  const tracingId = live && tracingHop >= 0 ? live.route[tracingHop] : undefined;
+  const reroutesLeft = live ? content.rules.maxReroutes - live.reroutes : 0;
+  const canReroute =
+    !!live && !!selected && tracingHop >= 0 && selected.id !== gateway.id && selected.id !== live.serverId && !live.route.includes(selected.id);
+
   const inRoute = selected ? game.route.includes(selected.id) : false;
   const connectedTo = selected ? game.connections.some((c) => c.serverId === selected.id) : false;
   const note = live
@@ -108,7 +115,7 @@ export function MapWindow() {
           <h3 class="map__heading">Address book</h3>
           <ul class="addresses">
             {known.map((server) => {
-              const hop = game.route.indexOf(server.id);
+              const hop = routeIds.indexOf(server.id);
               const isLive = game.connections.some((c) => c.serverId === server.id);
               return (
                 <li key={server.id}>
@@ -138,7 +145,16 @@ export function MapWindow() {
               <p class="map__detail-blurb">{selected.blurb}</p>
               {selected.id !== gateway.id && (
                 <div class="map__actions">
-                  {inRoute ? (
+                  {canReroute && live ? (
+                    <button
+                      type="button"
+                      class="btn btn--go"
+                      disabled={reroutesLeft <= 0}
+                      onClick={() => run({ type: 'reroute', connectionId: live.id, serverId: selected.id })}
+                    >
+                      Reroute through here
+                    </button>
+                  ) : inRoute ? (
                     <button type="button" class="btn" disabled={!!live} onClick={() => run({ type: 'removeHop', serverId: selected.id })}>
                       Remove from route
                     </button>
@@ -167,6 +183,14 @@ export function MapWindow() {
           ) : (
             <p class="map__hint">Pick a server on the globe or in the list.</p>
           )}
+          {live && tracingId && (
+            <p class="map__reroute" role="status">
+              The trace is working on <strong>{byId(tracingId)?.name}</strong>.{' '}
+              {reroutesLeft > 0
+                ? `Pick a spare server and reroute to make it start that step again. ${reroutesLeft} left on this connection.`
+                : 'This connection cannot be rerouted again.'}
+            </p>
+          )}
           {notice && (
             <p class="map__notice" role="status">
               {notice}
@@ -182,7 +206,7 @@ export function MapWindow() {
                 key={server.id}
                 class={`route__hop${index === chain.length - 1 && targetId ? ' route__hop--target' : ''}${
                   isTraced(server.id) ? ' route__hop--traced' : ''
-                }`}
+                }${server.id === tracingId ? ' route__hop--tracing' : ''}`}
               >
                 {server.id === gateway.id ? 'You' : server.name}
               </li>

@@ -4,6 +4,7 @@
  * rating. Also the market, where programs are bought.
  */
 import type { ContractDef } from '../content/schema';
+import { baseFine, closeCase } from './forensics';
 import type { Connection, GameState } from './state';
 import { noteIntrusion } from './trace';
 import { findConnection, findProgram, findServer, once, sendMail, type Content } from './world';
@@ -152,13 +153,13 @@ export function buyProgram(state: GameState, content: Content, connectionId: str
  */
 export function punish(state: GameState, content: Content, serverId: string): { fine: number; hours: number } {
   const server = findServer(content, serverId);
-  const levels = server ? Object.values(server.security).reduce((sum, level) => sum + level, 0) : 0;
-  const fine = Math.min(state.player.balance, content.rules.finePerSecurityLevel * Math.max(1, levels));
+  const fine = Math.min(state.player.balance, baseFine(content, serverId));
   const hours = content.rules.lieLowHours;
   state.player.balance -= fine;
   state.player.rating = Math.max(0, state.player.rating - content.rules.caughtRatingLoss);
   state.player.lieLowUntilMs = state.clock.gameTimeMs + hours * 3_600_000;
   delete state.player.passwords[serverId];
+  closeCase(state, serverId);
 
   // A job that was already finished stands; one still in progress is withdrawn.
   const contract = activeContract(state, content);

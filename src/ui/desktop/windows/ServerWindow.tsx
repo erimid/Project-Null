@@ -4,6 +4,7 @@ import {
   availableContracts,
   canLogIn,
   isLyingLow,
+  ringAngle,
   type Action,
   type Connection,
   type GameState,
@@ -187,7 +188,10 @@ function Security({ game, server, connection, run }: View) {
     );
   };
 
+  const lineup = findTask(game, connection, { kind: 'firewall' });
+
   return (
+    <>
     <ul class="layers" aria-label="Security">
       {password > 0 && (
         <li class={`layer${passwordKnown ? ' is-open' : ''}`} title="Protects the administrator account.">
@@ -206,6 +210,86 @@ function Security({ game, server, connection, run }: View) {
         </li>
       )}
     </ul>
+    {lineup?.puzzle && <PortLineup taskId={lineup.id} rings={lineup.puzzle.locked.length} />}
+    </>
+  );
+}
+
+const LINEUP_SIZE = 180;
+const LINEUP_CENTRE = LINEUP_SIZE / 2;
+
+/**
+ * The hands-on shortcut for a firewall bypass: rings turn, each carrying
+ * one port. Click a ring as its port crosses the marker at the top.
+ */
+function PortLineup({ taskId, rings }: { taskId: string; rings: number }) {
+  // One short text per frame, so the rings redraw as they turn.
+  const frame = useGame((game) => {
+    const task = game.tasks.find((item) => item.id === taskId);
+    if (!task?.puzzle) return '';
+    const angles = task.puzzle.locked.map((locked, ring) => (locked ? 'L' : ringAngle(task, ring).toFixed(1)));
+    return `${angles.join(',')}|${Math.max(0, Math.ceil((task.durationMs - task.progressMs) / 1000))}`;
+  });
+  if (!frame) return null;
+  const [anglesText = '', secondsLeft = '0'] = frame.split('|');
+  const angles = anglesText.split(',');
+  const tolerance = content.rules.ringToleranceDegrees;
+  const lockedCount = angles.filter((angle) => angle === 'L').length;
+  const lock = (ring: number) => session.dispatch({ type: 'lockRing', taskId, ring });
+  const point = (radius: number, degrees: number) => {
+    const radians = ((degrees - 90) * Math.PI) / 180;
+    return { x: LINEUP_CENTRE + radius * Math.cos(radians), y: LINEUP_CENTRE + radius * Math.sin(radians) };
+  };
+  const outer = 26 + (rings - 1) * 14 + 12;
+  const left = point(outer, -tolerance);
+  const right = point(outer, tolerance);
+
+  return (
+    <div class="lineup">
+      <svg class="lineup__dial" viewBox={`0 0 ${LINEUP_SIZE} ${LINEUP_SIZE}`} role="group" aria-label="Port line-up">
+        {/* The window the port has to be in. */}
+        <path
+          d={`M${LINEUP_CENTRE} ${LINEUP_CENTRE}L${left.x} ${left.y}A${outer} ${outer} 0 0 1 ${right.x} ${right.y}Z`}
+          class="lineup__window"
+        />
+        <path d={`M${LINEUP_CENTRE - 6} ${LINEUP_CENTRE - outer - 12}h12l-6 9z`} class="lineup__marker" />
+        {angles.map((angle, ring) => {
+          const radius = 26 + ring * 14;
+          const locked = angle === 'L';
+          const port = point(radius, locked ? 0 : Number(angle));
+          return (
+            <g
+              key={ring}
+              class={`lineup__ring${locked ? ' is-locked' : ''}`}
+              role="button"
+              tabIndex={locked ? -1 : 0}
+              aria-label={`Ring ${ring + 1}${locked ? ', locked' : ''}`}
+              aria-disabled={locked}
+              onPointerDown={() => !locked && lock(ring)}
+              onKeyDown={(event: KeyboardEvent) => {
+                if (!locked && (event.key === 'Enter' || event.key === ' ')) {
+                  event.preventDefault();
+                  lock(ring);
+                }
+              }}
+            >
+              <circle cx={LINEUP_CENTRE} cy={LINEUP_CENTRE} r={radius} class="lineup__track" />
+              <circle cx={port.x} cy={port.y} r={5} class="lineup__port" />
+            </g>
+          );
+        })}
+      </svg>
+      <div class="lineup__text">
+        <h3 class="map__heading">Line up the ports</h3>
+        <p>
+          Click a ring as its port crosses the marker at the top. Each ring you lock shortens the bypass, and locking all {rings}{' '}
+          finishes it. A miss costs {content.rules.ringMissSeconds} seconds. Or leave it and the program gets there by itself.
+        </p>
+        <p class="lineup__status data">
+          {lockedCount} / {rings} locked · {secondsLeft}s left
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -254,28 +338,66 @@ function Files({ game, state, connection, run }: View) {
 }
 
 function Logs({ game, state, connection, run }: View) {
+  // Lines picked for removal. Picking is the hands-on part: knowing which lines are yours.
+  const [picked, setPicked] = useState<readonly number[]>([]);
   if (state.logs.length === 0) return <p class="empty">The access log is empty.</p>;
+
+  const running = game.tasks.find((task) => task.connectionId === connection.id && task.target.kind === 'deleteLog');
+  const removing = running?.target.kind === 'deleteLog' ? running.target.logIds : [];
+  const chosen = picked.filter((id) => state.logs.some((entry) => entry.id === id));
+  const toggle = (id: number) => setPicked(chosen.includes(id) ? chosen.filter((other) => other !== id) : [...chosen, id]);
+
   return (
-    <ul class="rows rows--scroll data">
-      {[...state.logs].reverse().map((entry) => {
-        const task = findTask(game, connection, { kind: 'deleteLog', logId: entry.id });
-        return (
-          <li key={entry.id} class="row row--log">
-            <span class="row__dim">{formatGameTime(entry.timeMs)}</span>
-            <span class="row__main">{entry.text}</span>
-            <span class="row__actions">
-              {task ? (
-                <TaskProgress taskId={task.id} label="Removing" />
-              ) : (
-                <button type="button" class="btn btn--danger" onClick={() => run({ kind: 'deleteLog', logId: entry.id })}>
-                  Delete
-                </button>
-              )}
-            </span>
-          </li>
-        );
-      })}
-    </ul>
+    <>
+      <div class="scrub">
+        <span class="scrub__hint">
+          {chosen.length === 0 ? 'Pick the lines to scrub.' : `${chosen.length} ${chosen.length === 1 ? 'line' : 'lines'} picked.`}
+        </span>
+        {running ? (
+          <TaskProgress taskId={running.id} label="Scrubbing" />
+        ) : (
+          <>
+            {chosen.length > 0 && (
+              <button type="button" class="btn" onClick={() => setPicked([])}>
+                Clear
+              </button>
+            )}
+            <button
+              type="button"
+              class="btn btn--danger"
+              disabled={chosen.length === 0}
+              onClick={() => {
+                run({ kind: 'deleteLog', logIds: [...chosen] });
+                setPicked([]);
+              }}
+            >
+              Scrub{chosen.length > 0 ? ` ${chosen.length}` : ''}
+            </button>
+          </>
+        )}
+      </div>
+      <ul class="rows rows--scroll data">
+        {[...state.logs].reverse().map((entry) => {
+          const isPicked = chosen.includes(entry.id);
+          const going = removing.includes(entry.id);
+          return (
+            <li key={entry.id}>
+              <button
+                type="button"
+                class={`logline${isPicked ? ' is-picked' : ''}${going ? ' is-going' : ''}`}
+                aria-pressed={isPicked}
+                disabled={going}
+                onClick={() => toggle(entry.id)}
+              >
+                <span class="logline__mark" aria-hidden="true" />
+                <span class="row__dim">{formatGameTime(entry.timeMs)}</span>
+                <span class="row__main">{entry.text}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </>
   );
 }
 

@@ -5,8 +5,9 @@
  */
 import { MAX_HOPS, SPEEDS, isConnected, type Connection, type GameState, type Speed, type TaskTarget } from './state';
 import { abandonContract, acceptContract, alterRecord, buyProgram, deliverContract, punish } from './contracts';
-import { canLogIn, startTask } from './tasks';
-import { newTrace, noteIntrusion } from './trace';
+import { scheduleReview } from './forensics';
+import { canLogIn, lockRing, startTask } from './tasks';
+import { hopUnderTrace, newTrace, noteIntrusion, reroute } from './trace';
 import { findAccount, findConnection, findServer, gatewayOf, sendMail, sourceAddress, type Content } from './world';
 
 export type Action =
@@ -25,6 +26,10 @@ export type Action =
   /** Run a program against something on a connection. */
   | { readonly type: 'runProgram'; readonly connectionId: string; readonly target: TaskTarget }
   | { readonly type: 'cancelProgram'; readonly taskId: string }
+  /** Try to lock one ring of a running program's port line-up. */
+  | { readonly type: 'lockRing'; readonly taskId: string; readonly ring: number }
+  /** Swap the relay a trace is working on for another server. */
+  | { readonly type: 'reroute'; readonly connectionId: string; readonly serverId: string }
   | { readonly type: 'readMessage'; readonly messageId: string }
   /** Take a contract from the board you are logged in to. */
   | { readonly type: 'acceptContract'; readonly connectionId: string; readonly contractId: string }
@@ -61,6 +66,8 @@ function logConnection(state: GameState, content: Content, connection: Connectio
 function closeConnection(state: GameState, content: Content, connection: Connection): void {
   if (connection.user !== null) writeLog(state, connection.serverId, `logout ${connection.user}`);
   logConnection(state, content, connection, false);
+  // If the monitor noticed anything, someone will read the log later.
+  if (connection.trace.status !== 'none') scheduleReview(state, content, connection.serverId);
   state.connections = state.connections.filter((other) => other !== connection);
   // Programs stop when the connection they were working on goes away.
   state.tasks = state.tasks.filter((task) => task.connectionId !== connection.id);
@@ -131,6 +138,7 @@ export function applyAction(state: GameState, action: Action, content: Content):
         openedAtMs: state.clock.gameTimeMs,
         bypassed: { proxy: false, firewall: false },
         trace: newTrace(content, server, state.route),
+        reroutes: 0,
       };
       state.connections.push(connection);
       logConnection(state, content, connection, true);
@@ -179,6 +187,25 @@ export function applyAction(state: GameState, action: Action, content: Content):
     case 'runProgram': {
       const reason = startTask(state, content, action.connectionId, action.target);
       return reason === null ? OK : refuse(reason);
+    }
+
+    case 'lockRing':
+      return answer(lockRing(state, content, action.taskId, action.ring));
+
+    case 'reroute': {
+      const connection = findConnection(state, action.connectionId);
+      if (!connection) return refuse('That connection is closed.');
+      const index = hopUnderTrace(connection);
+      const dropped = connection.route[index];
+      const reason = reroute(state, content, connection, action.serverId);
+      if (reason !== null) return refuse(reason);
+      // The relay that was dropped and the one that replaced it both note the change.
+      const chain = [gatewayOf(content).id, ...connection.route, connection.serverId];
+      const before = findServer(content, chain[index]!)?.address;
+      const after = findServer(content, chain[index + 2]!)?.address;
+      if (dropped) writeLog(state, dropped, `relay closed ${before}`);
+      writeLog(state, action.serverId, `relay opened ${before} > ${after}`);
+      return OK;
     }
 
     case 'cancelProgram': {

@@ -84,3 +84,34 @@ export function mostUrgentTrace(state: GameState): Connection | undefined {
     .filter((connection) => connection.trace.status === 'active')
     .sort((a, b) => traceReport(a.trace).remainingMs - traceReport(b.trace).remainingMs)[0];
 }
+
+/** Index in the route of the relay the trace is working on right now. -1 if there is none. */
+export function hopUnderTrace(connection: Connection): number {
+  if (connection.trace.status !== 'active' || connection.route.length === 0) return -1;
+  return connection.route.length - 1 - traceReport(connection.trace).relaysTraced;
+}
+
+/**
+ * Swaps the relay the trace is working on for another server. The trace
+ * has to start that step again, against the new relay. Returns a reason
+ * if it can't be done.
+ */
+export function reroute(state: GameState, content: Content, connection: Connection, serverId: string): string | null {
+  const index = hopUnderTrace(connection);
+  if (connection.trace.status !== 'active') return 'There is no trace to get away from.';
+  if (index < 0) return 'This connection has no relays to swap.';
+  if (connection.reroutes >= content.rules.maxReroutes) return 'This connection cannot be rerouted again.';
+  const target = findServer(content, connection.serverId);
+  const relay = findServer(content, serverId);
+  if (!target || !relay || !state.knownServers.includes(relay.id)) return 'You do not have that address.';
+  if (relay.kind === 'gateway' || relay.id === connection.serverId) return 'That server cannot be a relay here.';
+  if (connection.route.includes(relay.id)) return `${relay.name} is already in the route.`;
+
+  const step = connection.route.length - 1 - index;
+  connection.route[index] = relay.id;
+  connection.trace.hopMs[step] = target.traceSecondsPerHop * 1000 * relay.relayDelay;
+  // Back to the start of this step.
+  connection.trace.elapsedMs = connection.trace.hopMs.slice(0, step).reduce((sum, ms) => sum + ms, 0);
+  connection.reroutes++;
+  return null;
+}

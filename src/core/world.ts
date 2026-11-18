@@ -22,6 +22,16 @@ export interface Rules {
   readonly lieLowHours: number;
   readonly finePerSecurityLevel: number;
   readonly caughtRatingLoss: number;
+  /** How many times one connection can be rerouted around a trace. */
+  readonly maxReroutes: number;
+  /** In-game hours after an intrusion before the target reads its logs. */
+  readonly reviewHours: number;
+  /** A fine from a log review is this fraction of the fine for being traced. */
+  readonly reviewFineFactor: number;
+  /** How close (in degrees) a ring's port must be to the marker to lock. */
+  readonly ringToleranceDegrees: number;
+  /** Seconds a missed lock adds to the task. */
+  readonly ringMissSeconds: number;
 }
 
 export interface Content {
