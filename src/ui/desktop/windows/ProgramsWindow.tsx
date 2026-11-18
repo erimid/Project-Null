@@ -50,7 +50,12 @@ export function ProgramsWindow() {
                   <span class="row__dim"> · {connection ? serverName(connection.serverId) : 'Gateway'}</span>
                 </span>
                 <TaskProgress taskId={task.id} label={describeTarget(task.target)} />
-                <button type="button" class="btn" onClick={() => session.dispatch({ type: 'cancelProgram', taskId: task.id })}>
+                <button
+                  type="button"
+                  class="btn"
+                  data-tip="Stop this program. Its progress is lost."
+                  onClick={() => session.dispatch({ type: 'cancelProgram', taskId: task.id })}
+                >
                   Stop
                 </button>
               </li>
@@ -108,7 +113,12 @@ export function ProgramsWindow() {
                   (inUse ? (
                     <span class="row__done">In use</span>
                   ) : (
-                    <button type="button" class="btn" onClick={() => session.dispatch({ type: 'preferProgram', programId: id })}>
+                    <button
+                      type="button"
+                      class="btn"
+                      data-tip="Use this version instead of the others of the same kind"
+                      onClick={() => session.dispatch({ type: 'preferProgram', programId: id })}
+                    >
                       Use
                     </button>
                   ))}
@@ -118,6 +128,7 @@ export function ProgramsWindow() {
                   <ConfirmButton
                     class="btn btn--danger"
                     confirmLabel={built ? 'Scrap?' : 'Remove?'}
+                    tip={built ? 'Take this build apart and get its modules back.' : 'Uninstall to free storage. The market gives it back if you need it.'}
                     onConfirm={() => session.dispatch({ type: 'uninstallProgram', programId: id })}
                   >
                     {built ? 'Scrap' : 'Remove'}
@@ -155,7 +166,7 @@ export function ProgramsWindow() {
                   {decrypting ? (
                     <TaskProgress taskId={decrypting.id} label="Decrypting" />
                   ) : (
-                    <button type="button" class="btn btn--go" onClick={() => decrypt(file.name)}>
+                    <button type="button" class="btn btn--go" data-tip="Run your decrypter on this file so it can be read" onClick={() => decrypt(file.name)}>
                       Decrypt
                     </button>
                   )}
@@ -165,7 +176,12 @@ export function ProgramsWindow() {
                   {decompiling ? (
                     <TaskProgress taskId={decompiling.id} label="Decompiling" />
                   ) : (
-                    <button type="button" class="btn btn--go" onClick={() => decompile(file.name)}>
+                    <button
+                      type="button"
+                      class="btn btn--go"
+                      data-tip="Take this program apart for a module you can fit at the Workbench"
+                      onClick={() => decompile(file.name)}
+                    >
                       Decompile
                     </button>
                   )}
@@ -181,6 +197,7 @@ export function ProgramsWindow() {
               <ConfirmButton
                 class="btn btn--danger"
                 confirmLabel="Delete?"
+                tip="Delete this file to free storage."
                 onConfirm={() => session.dispatch({ type: 'deleteStoredFile', name: file.name })}
               >
                 Delete

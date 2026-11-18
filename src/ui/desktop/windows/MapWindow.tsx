@@ -137,7 +137,8 @@ export function MapWindow() {
                         class="address__relay is-on"
                         disabled={!!live}
                         aria-label={`Remove ${server.name} from the route`}
-                        title="Remove from route"
+                        title={live ? 'Disconnect first to change the route' : undefined}
+                        data-tip="Take this server out of your route"
                         onClick={() => run({ type: 'removeHop', serverId: server.id })}
                       >
                         −
@@ -148,7 +149,8 @@ export function MapWindow() {
                         class="address__relay"
                         disabled={!!live || isLive}
                         aria-label={`Add ${server.name} as a relay`}
-                        title="Add as relay"
+                        title={live ? 'Disconnect first to change the route' : undefined}
+                        data-tip="Add as a relay: your connection bounces through it, and a trace has one more step to follow"
                         onClick={() => run({ type: 'addHop', serverId: server.id })}
                       >
                         +
@@ -174,12 +176,19 @@ export function MapWindow() {
                       type="button"
                       class="btn btn--go"
                       disabled={reroutesLeft <= 0}
+                      data-tip="Swap this server into the live route. The trace has to start its current step again."
                       onClick={() => run({ type: 'reroute', connectionId: live.id, serverId: selected.id })}
                     >
                       Reroute through here
                     </button>
                   ) : inRoute ? (
-                    <button type="button" class="btn" disabled={!!live} onClick={() => run({ type: 'removeHop', serverId: selected.id })}>
+                    <button
+                      type="button"
+                      class="btn"
+                      disabled={!!live}
+                      data-tip="Take this server out of your route"
+                      onClick={() => run({ type: 'removeHop', serverId: selected.id })}
+                    >
                       Remove from route
                     </button>
                   ) : (
@@ -187,6 +196,7 @@ export function MapWindow() {
                       type="button"
                       class="btn"
                       disabled={!!live || connectedTo}
+                      data-tip="Bounce your connection through this server. Each relay gives a trace one more step to follow."
                       onClick={() => run({ type: 'addHop', serverId: selected.id })}
                     >
                       Add as relay
@@ -197,7 +207,13 @@ export function MapWindow() {
                       Show server
                     </button>
                   ) : (
-                    <button type="button" class="btn btn--go" disabled={inRoute} onClick={() => connect(selected)}>
+                    <button
+                      type="button"
+                      class="btn btn--go"
+                      disabled={inRoute}
+                      data-tip="Connect to this server through the relays in your route"
+                      onClick={() => connect(selected)}
+                    >
                       Connect
                     </button>
                   )}
@@ -223,7 +239,9 @@ export function MapWindow() {
         </div>
 
         <div class="route">
-          <span class="route__label">{live ? 'Live route' : 'Planned route'}</span>
+          <span class="route__label" data-tip="The path your connection takes, from you to the target. A trace follows it back one step at a time.">
+            {live ? 'Live route' : 'Planned route'}
+          </span>
           <ol class="route__chain">
             {chain.map((server, index) => (
               <li
@@ -238,7 +256,7 @@ export function MapWindow() {
             {!targetId && <li class="route__hop route__hop--empty">pick a target</li>}
           </ol>
           {!live && game.route.length > 0 && (
-            <button type="button" class="btn" onClick={() => run({ type: 'clearRoute' })}>
+            <button type="button" class="btn" data-tip="Remove every relay from the route" onClick={() => run({ type: 'clearRoute' })}>
               Clear
             </button>
           )}

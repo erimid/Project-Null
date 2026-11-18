@@ -11,7 +11,7 @@ export function SpeedControl() {
   const current = useGame(effectiveSpeed);
 
   return (
-    <div class="speed" role="group" aria-label="Game speed">
+    <div class="speed" role="group" aria-label="Game speed" data-tour="speed">
       {SPEEDS.map((speed) => (
         <button
           key={speed}
@@ -20,7 +20,8 @@ export function SpeedControl() {
           aria-pressed={speed === current}
           disabled={locked}
           aria-label={speed === 0 ? 'Pause' : undefined}
-          title={locked ? 'Time is locked while a connection is open' : `${speed === 0 ? 'Pause. ' : ''}Key: ${KEYS[speed]}`}
+          title={locked ? 'Time is locked while a connection is open' : undefined}
+          data-tip={locked ? undefined : `${speed === 0 ? 'Pause the clock' : `Run the clock at ${LABELS[speed]}`}. Key: ${KEYS[speed]}`}
           onClick={() => session.dispatch({ type: 'setSpeed', speed })}
         >
           {speed === 0 ? <span class="speed__pause" aria-hidden="true" /> : LABELS[speed]}

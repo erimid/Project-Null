@@ -51,6 +51,17 @@ const SECTION_LABELS: Record<Section, string> = {
   directory: 'Directory',
 };
 
+/** Hover labels for the section tabs. */
+const SECTION_TIPS: Record<Section, string> = {
+  contracts: 'Jobs on offer. Take one, do it, deliver it for credits and rating.',
+  market: 'Buy programs, modules, and rent a model to help you.',
+  hardware: 'Faster parts for your gateway.',
+  files: 'Files on this server. Copy them home, read them, or delete them.',
+  logs: 'What this server noted down, including you. Scrub your lines before you leave.',
+  records: 'The records this server keeps. Some jobs ask you to change one.',
+  directory: 'People and addresses this server lists.',
+};
+
 const KIND_LABELS: Record<ServerDef['kind'], string> = {
   gateway: 'Gateway',
   directory: 'Directory',
@@ -164,6 +175,7 @@ function LoginScreen({ game, server, state, connection, run }: View) {
                 <button
                   type="button"
                   class="btn btn--go"
+                  data-tip="Log in with this account. An admin login can do everything on the server."
                   onClick={() => session.dispatch({ type: 'login', connectionId: connection.id, user: account.user })}
                 >
                   Log in
@@ -171,7 +183,12 @@ function LoginScreen({ game, server, state, connection, run }: View) {
               ) : task ? (
                 <Cracking taskId={task.id} secret={secret} />
               ) : (
-                <button type="button" class="btn" onClick={() => run({ kind: 'password', user: account.user })}>
+                <button
+                  type="button"
+                  class="btn"
+                  data-tip="Run your password breaker on this account. Breaking in gets noticed by the monitor."
+                  onClick={() => run({ kind: 'password', user: account.user })}
+                >
                   Break password
                 </button>
               )}
@@ -224,7 +241,12 @@ function Security({ game, server, connection, run }: View) {
         ) : task ? (
           <TaskProgress taskId={task.id} label="Bypassing" />
         ) : (
-          <button type="button" class="btn" onClick={() => run({ kind })}>
+          <button
+            type="button"
+            class="btn"
+            data-tip={`Run your ${kind} bypass program. ${blocks} until it is done.`}
+            onClick={() => run({ kind })}
+          >
             Bypass
           </button>
         )}
@@ -268,7 +290,12 @@ function Security({ game, server, connection, run }: View) {
           ) : blinding ? (
             <TaskProgress taskId={blinding.id} label="Blinding" />
           ) : ownedProgram(game, content, 'bypassMonitor') && !connection.monitor.used ? (
-            <button type="button" class="btn" onClick={() => run({ kind: 'monitor' })}>
+            <button
+              type="button"
+              class="btn"
+              data-tip="Blind the monitor for a while. Its trace stands still until it wakes."
+              onClick={() => run({ kind: 'monitor' })}
+            >
               Blind
             </button>
           ) : (
@@ -503,6 +530,7 @@ function Files({ game, state, connection, run, act }: View) {
                     class="btn"
                     disabled={walled}
                     title={walled ? 'The firewall is blocking file access' : undefined}
+                    data-tip="Read the file here, without copying it"
                     onClick={() => viewer.open({ serverId: connection.serverId, name: file.name, sizeGq: file.sizeGq })}
                   >
                     Open
@@ -510,12 +538,22 @@ function Files({ game, state, connection, run, act }: View) {
                   {owned ? (
                     <span class="row__done">{taken ? 'Taken' : 'Copied'}</span>
                   ) : (
-                    <button type="button" class="btn" onClick={() => run({ kind: 'copyFile', file: file.name })}>
+                    <button
+                      type="button"
+                      class="btn"
+                      data-tip="Copy this file to your gateway's storage"
+                      onClick={() => run({ kind: 'copyFile', file: file.name })}
+                    >
                       Copy
                     </button>
                   )}
                   {admin && (
-                    <button type="button" class="btn btn--danger" onClick={() => run({ kind: 'deleteFile', file: file.name })}>
+                    <button
+                      type="button"
+                      class="btn btn--danger"
+                      data-tip="Delete this file from the server"
+                      onClick={() => run({ kind: 'deleteFile', file: file.name })}
+                    >
                       Delete
                     </button>
                   )}
@@ -562,7 +600,12 @@ function Logs({ game, state, connection, run }: View) {
                 </button>
               )}
             {chosen.length < state.logs.length ? (
-              <button type="button" class="btn" onClick={() => setPicked(state.logs.map((entry) => entry.id))}>
+              <button
+                type="button"
+                class="btn"
+                data-tip="Pick every line in the log"
+                onClick={() => setPicked(state.logs.map((entry) => entry.id))}
+              >
                 Select all
               </button>
             ) : null}
@@ -575,6 +618,8 @@ function Logs({ game, state, connection, run }: View) {
               type="button"
               class="btn btn--danger"
               disabled={chosen.length === 0}
+              title={chosen.length === 0 ? 'Pick the log lines to scrub first' : undefined}
+              data-tip="Delete the picked lines. A proxy has to be bypassed first."
               onClick={() => {
                 run({ kind: 'deleteLog', logIds: [...chosen] });
                 setPicked([]);
@@ -638,6 +683,7 @@ function Records({ game, server, state, connection, act }: View) {
                   <button
                     type="button"
                     class="btn btn--go records__change"
+                    data-tip="Change this record to what the contract asks for"
                     onClick={() => act({ type: 'alterRecord', connectionId: connection.id })}
                   >
                     Change to {goal.value}
@@ -778,6 +824,8 @@ function Contracts({ game, connection, act }: View) {
               type="button"
               class="btn btn--go"
               disabled={!!active || lyingLow}
+              title={active ? 'Finish or give up the contract you have first' : lyingLow ? 'The Backroom will not give you work while you lie low' : undefined}
+              data-tip="Take this job. It shows in your Contract window."
               onClick={() => {
                 if (act({ type: 'acceptContract', connectionId: connection.id, contractId: contract.id })) windows.focus('contract');
               }}
@@ -993,7 +1041,12 @@ export function ServerWindow() {
       note={loggedIn ? `${connection.user} @ ${server.hostname}` : 'not logged in'}
       actions={
         loggedIn && (
-          <button type="button" class="tabbtn tabbtn--exit" onClick={() => act({ type: 'logout', connectionId: connection.id })}>
+          <button
+            type="button"
+            class="tabbtn tabbtn--exit"
+            data-tip="Log out but stay connected"
+            onClick={() => act({ type: 'logout', connectionId: connection.id })}
+          >
             Log out
           </button>
         )
@@ -1006,6 +1059,7 @@ export function ServerWindow() {
             type="button"
             class={`tabbtn${name === section ? ' is-current' : ''}`}
             aria-pressed={name === section}
+            data-tip={SECTION_TIPS[name]}
             onClick={() => deskStore.showSection(connection.id, name)}
           >
             {SECTION_LABELS[name]}

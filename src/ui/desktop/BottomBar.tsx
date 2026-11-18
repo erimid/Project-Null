@@ -5,6 +5,7 @@ import { useGame, useWorld } from '../hooks';
 import { content, session } from '../session';
 import { activeConnection, deskStore, useDesk } from './deskStore';
 import { GameMenu } from './GameMenu';
+import { WINDOW_HELP } from './help';
 import { SpeedControl } from './SpeedControl';
 import { WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId } from './windowStore';
 
@@ -179,13 +180,13 @@ export function BottomBar() {
     <footer class={`dock${tracing ? ' is-tracing' : ''}`}>
       <TraceAlarm />
       <GameMenu />
-      <nav class="dock__tabs" aria-label="Windows">
+      <nav class="dock__tabs" aria-label="Windows" data-tour="tabs">
         {tabs.map((id) => (
           <button
             key={id}
             type="button"
             class={`dock__tab${layouts[id].open ? ' is-open' : ''}${layouts[id].minimized ? ' is-minimized' : ''}`}
-            title={layouts[id].minimized ? 'Minimized' : undefined}
+            data-tip={`${WINDOW_HELP[id].summary}${layouts[id].minimized ? ' (Minimized)' : ''}`}
             aria-pressed={layouts[id].open}
             onClick={() => windows.toggle(id)}
           >
@@ -197,27 +198,31 @@ export function BottomBar() {
         ))}
       </nav>
       <span class="dock__spacer" />
-      <div class={`dock__stat dock__stat--trace${tracing ? ' is-tracing' : ''}`}>
+      <div
+        class={`dock__stat dock__stat--trace${tracing ? ' is-tracing' : ''}`}
+        data-tour="trace"
+        data-tip="Lights red while someone is tracing your connection. Disconnect before the trace reaches you."
+      >
         <span class="dock__label">Trace</span>
         <span class="dock__value">
           <span class="dock__light" aria-hidden="true" />
           {tracing ? 'Active' : 'None'}
         </span>
       </div>
-      <div class="dock__stat">
+      <div class="dock__stat" data-tip="Your money. Jobs pay into it; the Backroom market and hardware cost it.">
         <span class="dock__label">Credits</span>
         <span key={balance} class={`dock__value data${balanceMoved}`}>
           {balance}
         </span>
       </div>
-      <div class="dock__stat" title={ratingTitle(rating)}>
+      <div class="dock__stat" data-tip={`Your standing with the Backroom. Delivered jobs raise it, getting caught lowers it. ${ratingTitle(rating)}.`}>
         <span class="dock__label">Rating</span>
         <span key={rating} class={`dock__value${ratingMoved}`}>
           <span class="data">{rating}</span>
           <span class="dock__title">{ratingStep(rating).title}</span>
         </span>
       </div>
-      <div class="dock__stat">
+      <div class="dock__stat" data-tip="Game time. Programs, traces and lying low all run on it.">
         <span class="dock__label">{day}</span>
         <span class="dock__value data">{time}</span>
       </div>
@@ -226,13 +231,13 @@ export function BottomBar() {
         class="dock__cut"
         type="button"
         disabled={!active}
-        title="Shift+Esc drops every connection"
+        data-tip={active ? 'Hang up the connection in front. Shift+Esc drops every connection.' : 'Not connected to anything.'}
         onClick={() => active && session.dispatch({ type: 'disconnect', connectionId: active.id })}
       >
         Disconnect
       </button>
       {connections > 1 && (
-        <button class="dock__cut" type="button" title="Shift+Esc" onClick={() => session.dispatch({ type: 'disconnectAll' })}>
+        <button class="dock__cut" type="button" data-tip="Drop every connection at once (Shift+Esc)" onClick={() => session.dispatch({ type: 'disconnectAll' })}>
           All
         </button>
       )}

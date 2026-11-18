@@ -6,6 +6,7 @@ import { content, session } from '../session';
 import { ON_DEMAND, TraceAlarm } from './BottomBar';
 import { activeConnection, useDesk } from './deskStore';
 import { GameMenu } from './GameMenu';
+import { WINDOW_HELP } from './help';
 import { useLayout } from './layout';
 import { usePanes } from './panes';
 import { SpeedControl } from './SpeedControl';
@@ -115,8 +116,8 @@ export function PhoneDock() {
       )}
       <div class="pdock__status">
         <GameMenu />
-        <span class="pdock__stat data">{balance} c</span>
-        <span class="pdock__stat data">{time}</span>
+        <span class="pdock__stat data" data-tip="Your credits">{balance} c</span>
+        <span class="pdock__stat data" data-tip="Game time">{time}</span>
         <span class="dock__spacer" />
         {connected ? (
           <button
@@ -131,7 +132,7 @@ export function PhoneDock() {
           <SpeedControl />
         )}
       </div>
-      <nav class="pdock__tabs" aria-label="Windows">
+      <nav class="pdock__tabs" aria-label="Windows" data-tour="tabs">
         {MAIN.map((id) => {
           const count = counts[id];
           return (
@@ -141,6 +142,7 @@ export function PhoneDock() {
               class={`pdock__tab${onShow(id) ? ' is-front' : ''}`}
               aria-pressed={onShow(id)}
               disabled={id === 'server' && !connected}
+              data-tip={id === 'server' && !connected ? 'Connect to a server from the Route map first.' : WINDOW_HELP[id].summary}
               onClick={() => open(id)}
             >
               {WINDOW_DEFS[id].pill}

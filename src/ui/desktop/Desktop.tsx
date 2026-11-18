@@ -9,6 +9,8 @@ import type { Speed } from '../../core';
 import { content, session } from '../session';
 import { Alerts } from './Alerts';
 import { TouchTips } from './TouchTips';
+import { HoverTips } from './HoverTips';
+import { Tour } from './Tour';
 import { BrowserWindow } from './windows/BrowserWindow';
 import { ContractWindow } from './windows/ContractWindow';
 import { GatewayWindow } from './windows/GatewayWindow';
@@ -21,6 +23,7 @@ import { ViewerWindow } from './windows/ViewerWindow';
 import { SavesWindow } from './windows/SavesWindow';
 import { ServerWindow } from './windows/ServerWindow';
 import './desktop.css';
+import './tutorial.css';
 
 const SPEED_KEYS: Readonly<Record<string, Speed>> = { '1': 1, '2': 2, '3': 4 };
 
@@ -90,8 +93,10 @@ export function Desktop() {
         <SavesWindow />
         <Alerts />
         <TouchTips />
+        <HoverTips />
       </main>
       {phone ? <PhoneDock /> : <BottomBar />}
+      <Tour />
     </div>
   );
 }

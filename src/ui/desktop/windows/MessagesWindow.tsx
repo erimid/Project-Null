@@ -42,6 +42,7 @@ export function MessagesWindow() {
           type="button"
           class={`tabbtn${composing ? ' is-current' : ''}`}
           aria-pressed={composing}
+          data-tip={composing ? undefined : 'Write a letter that talks someone into giving up a password'}
           onClick={() => {
             setComposing(!composing);
             setSentNotice('');
