@@ -9,11 +9,31 @@
   ],
   "startingPrograms": [
     "password-breaker",
-    "proxy-bypass",
-    "firewall-bypass",
     "file-copier",
     "file-deleter",
     "log-deleter",
     "trace-tracker"
+  ],
+  "ratings": [
+    {
+      "min": 0,
+      "title": "Unknown"
+    },
+    {
+      "min": 1,
+      "title": "Newcomer"
+    },
+    {
+      "min": 3,
+      "title": "Runner"
+    },
+    {
+      "min": 5,
+      "title": "Operator"
+    },
+    {
+      "min": 8,
+      "title": "Ghost"
+    }
   ]
 }

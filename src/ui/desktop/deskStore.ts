@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { Connection, GameState } from '../../core';
 
-export const SECTIONS = ['files', 'logs', 'records', 'directory'] as const;
+export const SECTIONS = ['contracts', 'market', 'files', 'logs', 'records', 'directory'] as const;
 export type Section = (typeof SECTIONS)[number];
 
 export interface Desk {

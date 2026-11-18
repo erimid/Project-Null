@@ -1,0 +1,32 @@
+{
+  "welcome": {
+    "from": "Wren",
+    "subject": "You're in",
+    "body": "{handle}, your invite to the Backroom went through. That is where the work is posted and where it is paid.\n\nOpen the Route map, pick The Backroom in your address book and connect. Log in with your invite and look at Contracts. Take the library job first. It is small and nobody is watching that machine.\n\nI vouched for you. Don't make me regret it.\n\nWren"
+  },
+  "firstAccept": {
+    "from": "Wren",
+    "subject": "How a job goes",
+    "body": "Good. Here is the shape of every job.\n\nOne. Disconnect from the Backroom. Your gateway holds one connection at a time.\n\nTwo. On the Route map, add a relay or two before you connect to the target. Every relay is one more step a trace has to follow, which is time for you. The Open Relay Registry lists more addresses.\n\nThree. Connect. Break the password on the administrator account, then log in.\n\nFour. Do what the contract says. Your Contract window shows when it is done.\n\nFive. Open Logs and delete the lines that mention you. Then disconnect.\n\nBreaking in gets noticed. When the trace warning turns red, the number on it is how long you have. If it reaches you, it costs you. Leave early if you have to and go back in.\n\nWhen the job is done, press Deliver in the Contract window. You get paid on the spot.\n\nWren"
+  },
+  "firstDelivery": {
+    "from": "Wren",
+    "subject": "First one done",
+    "body": "That is a first job delivered. More work shows on the board as your rating goes up.\n\nSome systems put a proxy or a firewall in your way. A proxy stops you changing records and logs. A firewall stops you copying and deleting files. The Backroom's Market sells a bypass for each. Buy them when a job needs them, not before.\n\nWren"
+  },
+  "paid": {
+    "from": "{client}",
+    "subject": "Paid: {title}",
+    "body": "Received. {pay} credits have been sent to your account through the Backroom.\n\nWe will not speak again."
+  },
+  "contractFailed": {
+    "from": "{client}",
+    "subject": "Contract withdrawn: {title}",
+    "body": "I hear {target} traced someone last night. I cannot be connected to that.\n\nThe contract is withdrawn. If it appears on the board again, it will be because I had no better option."
+  },
+  "caught": {
+    "from": "Wren",
+    "subject": "Heard you got traced",
+    "body": "{target} followed you home. Word gets around.\n\nThey have fined you {fine} credits and changed their passwords, so whatever you had broken there is gone. The Backroom will not give you work for {hours} hours. Lie low, let the clock run, and come back.\n\nNext time use more relays, and leave before the timer says you have to.\n\nWren"
+  }
+}

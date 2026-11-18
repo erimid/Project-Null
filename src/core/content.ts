@@ -1,8 +1,11 @@
 /** Re-exports the data-file types and lookups, so the UI has one place to import them from. */
 export type {
   AccountDef,
+  ContractDef,
   FileDef,
   LogDef,
+  MailDef,
+  ObjectiveDef,
   ProgramDef,
   ProgramKind,
   RecordsDef,

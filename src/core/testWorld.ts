@@ -1,6 +1,6 @@
 /** A tiny made-up world for unit tests, so tests don't depend on the real data files. */
 import type { ServerDef } from '../content/schema';
-import type { ProgramDef } from '../content/schema';
+import type { ContractDef, MailDef, MailKey, ProgramDef } from '../content/schema';
 import type { Content, Rules } from './world';
 
 const base = {
@@ -74,6 +74,7 @@ const program = (id: string, kind: ProgramDef['kind'], baseSeconds: number, seco
   version: 1,
   baseSeconds,
   secondsPerGq,
+  price: 0,
   blurb: 'A test program.',
 });
 
@@ -93,12 +94,40 @@ export const testRules: Rules = {
   maxRunningPrograms: 3,
   storageGq: 20,
   directTraceFactor: 0.5,
+  lieLowHours: 6,
+  finePerSecurityLevel: 20,
+  caughtRatingLoss: 1,
+};
+
+/** Two extra programs that are only for sale, never owned at the start. */
+export const shopPrograms: ProgramDef[] = [
+  { ...program('breaker-2', 'breakPassword', 10), version: 2, price: 60 },
+  { ...program('gold-plated', 'copyFile', 1), price: 5000 },
+];
+
+export const testContracts: ContractDef[] = [
+  { id: 'steal', title: 'Steal it', client: 'Client S', targetId: 'corp', pay: 300, rating: 1, minRating: 0, summary: 's', brief: 'b', objective: { kind: 'steal', file: 'secret.dat' } },
+  { id: 'destroy', title: 'Destroy it', client: 'Client D', targetId: 'corp', pay: 400, rating: 2, minRating: 0, summary: 's', brief: 'b', objective: { kind: 'destroy', file: 'secret.dat' } },
+  { id: 'record', title: 'Change it', client: 'Client R', targetId: 'corp', pay: 500, rating: 1, minRating: 1, summary: 's', brief: 'b', objective: { kind: 'record', key: '2', column: 'Name', value: 'Bob' } },
+  { id: 'elite', title: 'Hard one', client: 'Client E', targetId: 'directory', pay: 900, rating: 1, minRating: 50, summary: 's', brief: 'b', objective: { kind: 'steal', file: 'readme.txt' } },
+];
+
+const letter = (key: string, extra = ''): MailDef => ({ from: 'Fixer', subject: key, body: `${key} for {handle}${extra}` });
+export const testMail: Record<MailKey, MailDef> = {
+  welcome: letter('welcome'),
+  firstAccept: letter('firstAccept'),
+  firstDelivery: letter('firstDelivery'),
+  paid: { from: '{client}', subject: 'Paid: {title}', body: '{pay}' },
+  contractFailed: { from: '{client}', subject: 'Withdrawn: {title}', body: '{target}' },
+  caught: { from: 'Fixer', subject: 'Traced by {target}', body: 'fine {fine}, {hours} hours' },
 };
 
 export const content: Content = {
   servers: testServers,
   startingServers: ['directory'],
-  programs: testPrograms,
+  programs: [...testPrograms, ...shopPrograms],
   startingPrograms: testPrograms.map((item) => item.id),
+  contracts: testContracts,
+  mail: testMail,
   rules: testRules,
 };

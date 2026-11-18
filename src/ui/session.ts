@@ -21,7 +21,7 @@ import {
   type GameState,
   type SaveSummary,
 } from '../core';
-import { gameInfo, programs, servers, tuning } from '../content';
+import { contracts, gameInfo, mail, programs, servers, tuning } from '../content';
 import { createMemoryStore, openSaveStore, type SaveStore } from './storage/saveStore';
 
 /** The data files, in the form the simulation takes them. */
@@ -30,6 +30,8 @@ export const content: Content = {
   startingServers: gameInfo.startingServers,
   programs,
   startingPrograms: gameInfo.startingPrograms,
+  contracts,
+  mail,
   rules: tuning,
 };
 

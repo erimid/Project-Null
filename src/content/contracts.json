@@ -1,0 +1,139 @@
+[
+  {
+    "id": "tallis-cards",
+    "title": "A quiet favour at the library",
+    "client": "A private collector",
+    "targetId": "tallis-library",
+    "pay": 500,
+    "rating": 1,
+    "minRating": 0,
+    "summary": "Copy the member card file from Tallis Library.",
+    "brief": "A small library in Edinburgh keeps a list of who borrows what. I would like to read it.\n\nCopy member_cards.dat from their system. Nobody is watching that machine closely, so this is a good one to learn on. Payment on delivery.",
+    "objective": {
+      "kind": "steal",
+      "file": "member_cards.dat"
+    }
+  },
+  {
+    "id": "kestrel-ledger",
+    "title": "Lose the ledger",
+    "client": "A volunteer with a grudge",
+    "targetId": "kestrel-net",
+    "pay": 600,
+    "rating": 1,
+    "minRating": 0,
+    "summary": "Delete the bandwidth ledger at Kestrel Community Net.",
+    "brief": "Kestrel is about to cut off half the estate over a bandwidth ledger that is wrong and that nobody will correct.\n\nDelete bandwidth_ledger.dat. With no ledger there is nothing to enforce. You will need their address first; the Open Relay Registry lists it.",
+    "objective": {
+      "kind": "destroy",
+      "file": "bandwidth_ledger.dat"
+    }
+  },
+  {
+    "id": "registry-export",
+    "title": "Who is listed, and by whom",
+    "client": "A network researcher",
+    "targetId": "relay-registry",
+    "pay": 700,
+    "rating": 1,
+    "minRating": 1,
+    "summary": "Copy the latest registry export from the Open Relay Registry.",
+    "brief": "The Registry publishes its listings but not who asked for them. The full export has both.\n\nCopy registry_export_0313.dat. Their registrar account has a password, but nothing behind it.",
+    "objective": {
+      "kind": "steal",
+      "file": "registry_export_0313.dat"
+    }
+  },
+  {
+    "id": "ashgrove-standing",
+    "title": "Back in good standing",
+    "client": "A worried parent",
+    "targetId": "ashgrove-poly",
+    "pay": 1400,
+    "rating": 1,
+    "minRating": 2,
+    "summary": "Change one student's standing at Ashgrove Polytechnic.",
+    "brief": "My son was suspended over something that was not his doing and the appeal will take until next year.\n\nStudent 20322410, Tomas Ferrand. Set his standing to Good. Their records sit behind a proxy, so you will need a way past that before the system lets you change anything.",
+    "objective": {
+      "kind": "record",
+      "key": "20322410",
+      "column": "Standing",
+      "value": "Good"
+    }
+  },
+  {
+    "id": "meridian-holds",
+    "title": "What customs is sitting on",
+    "client": "A freight broker",
+    "targetId": "meridian-freight",
+    "pay": 1500,
+    "rating": 1,
+    "minRating": 2,
+    "summary": "Copy the March customs holds list from Meridian Freight.",
+    "brief": "Some of my clients' containers have not moved in two weeks and Meridian will not say why.\n\nCopy customs_holds_march.dat. Be aware that Meridian watches its systems. Use relays, and do not linger.",
+    "objective": {
+      "kind": "steal",
+      "file": "customs_holds_march.dat"
+    }
+  },
+  {
+    "id": "paulista-billing",
+    "title": "A billing run that never ran",
+    "client": "A reseller",
+    "targetId": "paulista-teleport",
+    "pay": 1600,
+    "rating": 1,
+    "minRating": 3,
+    "summary": "Delete this month's billing archive at Paulista Teleport.",
+    "brief": "Paulista is about to bill us for capacity we never received. If the run file is gone they have to rebuild it by hand, and by then our dispute will be on record.\n\nDelete billing_run_0312.arc. It is a large file, so the deletion takes a while. Plan your route for that.",
+    "objective": {
+      "kind": "destroy",
+      "file": "billing_run_0312.arc"
+    }
+  },
+  {
+    "id": "polar-ionosonde",
+    "title": "Weather above the weather",
+    "client": "An amateur radio society",
+    "targetId": "polar-mesh",
+    "pay": 2400,
+    "rating": 2,
+    "minRating": 4,
+    "summary": "Copy the ionosonde feed from Polar Mesh Exchange.",
+    "brief": "Polar Mesh records the upper atmosphere every night and sells the data at a price no club can pay.\n\nCopy ionosonde_feed_0313.dat. It is big, and it sits behind a firewall. Make room on your gateway first.",
+    "objective": {
+      "kind": "steal",
+      "file": "ionosonde_feed_0313.dat"
+    }
+  },
+  {
+    "id": "halvorsen-lantern",
+    "title": "Project Lantern",
+    "client": "Undisclosed",
+    "targetId": "halvorsen",
+    "pay": 4000,
+    "rating": 2,
+    "minRating": 5,
+    "summary": "Copy the Project Lantern file from Halvorsen Biogenetics.",
+    "brief": "Halvorsen Biogenetics is running a trial it has not registered anywhere. The internal name is Lantern.\n\nCopy HB-2207_PROJECT_LANTERN.dat from their records server. Ask no questions about what is in it. The client asks that you do not open it.",
+    "objective": {
+      "kind": "steal",
+      "file": "HB-2207_PROJECT_LANTERN.dat"
+    }
+  },
+  {
+    "id": "corvane-watchlist",
+    "title": "Off the list",
+    "client": "A claimant",
+    "targetId": "corvane-mutual",
+    "pay": 5000,
+    "rating": 2,
+    "minRating": 7,
+    "summary": "Delete the fraud watchlist at Corvane Mutual.",
+    "brief": "Corvane keeps a list of people it has decided are frauds. Being on it means no insurer in the country will touch you. Nobody on it was ever told.\n\nDelete fraud_watchlist.dat. Corvane's monitor is the fastest you will have met and its password is strong. Do not go in with old tools.",
+    "objective": {
+      "kind": "destroy",
+      "file": "fraud_watchlist.dat"
+    }
+  }
+]

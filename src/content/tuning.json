@@ -10,5 +10,8 @@
   ],
   "maxRunningPrograms": 3,
   "storageGq": 40,
-  "directTraceFactor": 0.5
+  "directTraceFactor": 0.5,
+  "lieLowHours": 6,
+  "finePerSecurityLevel": 250,
+  "caughtRatingLoss": 1
 }

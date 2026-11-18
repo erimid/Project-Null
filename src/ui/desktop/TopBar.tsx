@@ -1,3 +1,4 @@
+import { activeContract, objectiveMet } from '../../core';
 import { findServer } from '../../core/content';
 import { useWorld } from '../hooks';
 import { content, session } from '../session';
@@ -12,6 +13,8 @@ export function TopBar() {
   const desk = useDesk();
   const game = useWorld((state) => state);
   const active = activeConnection(game, desk);
+  const contract = activeContract(game, content);
+  const done = contract !== undefined && objectiveMet(game, content, contract);
 
   return (
     <header class="tabbar">
@@ -49,7 +52,14 @@ export function TopBar() {
       <button class="tabbar__add" type="button" aria-label="New connection" onClick={() => windows.focus('map')}>
         +
       </button>
-      <span class="tabbar__contract">No active contract</span>
+      {contract ? (
+        <button type="button" class="tabbar__contract tabbar__contract--live" onClick={() => windows.focus('contract')}>
+          <span class="tabbar__contract-label">{done ? 'Ready to deliver' : 'Contract'}</span>
+          {contract.title}
+        </button>
+      ) : (
+        <span class="tabbar__contract">No active contract</span>
+      )}
     </header>
   );
 }
