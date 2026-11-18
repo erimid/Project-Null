@@ -1,16 +1,15 @@
 /**
- * The game clock.
+ * The game clock, and the one function that moves the whole game forward.
  *
  * Offline, the player can pause or run at 1×, 2× or 4×. While any
  * connection is open the clock is locked to 1× (no pause, no speed-up),
  * so trace timers stay tense.
  */
+import { caught } from './actions';
 import { isConnected, type GameState, type Speed } from './state';
-
-export interface ClockRules {
-  /** Game minutes that pass per real second at 1× speed. */
-  readonly gameMinutesPerRealSecond: number;
-}
+import { advanceTasks } from './tasks';
+import { advanceTrace } from './trace';
+import type { Content } from './world';
 
 /** The speed the clock is actually running at right now. */
 export function effectiveSpeed(state: GameState): Speed {
@@ -20,12 +19,17 @@ export function effectiveSpeed(state: GameState): Speed {
 /**
  * Moves the game forward. `realMs` is how much real time passed since the
  * last tick. Returns the simulated milliseconds that passed (real time ×
- * speed), which later systems such as traces run on.
+ * speed).
  */
-export function tick(state: GameState, realMs: number, rules: ClockRules): number {
+export function tick(state: GameState, realMs: number, content: Content): number {
   if (!(realMs > 0)) return 0;
   const simMs = realMs * effectiveSpeed(state);
-  state.clock.gameTimeMs += simMs * 60 * rules.gameMinutesPerRealSecond;
+  state.clock.gameTimeMs += simMs * 60 * content.rules.gameMinutesPerRealSecond;
+
+  advanceTasks(state, content, simMs);
+  for (const connection of [...state.connections]) {
+    if (advanceTrace(connection.trace, simMs)) caught(state, content, connection);
+  }
   return simMs;
 }
 

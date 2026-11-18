@@ -1,0 +1,72 @@
+[
+  {
+    "id": "password-breaker",
+    "name": "Password Breaker",
+    "short": "Breaker",
+    "kind": "breakPassword",
+    "version": 1,
+    "baseSeconds": 12,
+    "secondsPerGq": 0,
+    "blurb": "Works out an account's password one character at a time."
+  },
+  {
+    "id": "proxy-bypass",
+    "name": "Proxy Bypass",
+    "short": "Proxy",
+    "kind": "bypassProxy",
+    "version": 1,
+    "baseSeconds": 9,
+    "secondsPerGq": 0,
+    "blurb": "Slips past a proxy so you can change records and logs."
+  },
+  {
+    "id": "firewall-bypass",
+    "name": "Firewall Bypass",
+    "short": "Firewall",
+    "kind": "bypassFirewall",
+    "version": 1,
+    "baseSeconds": 9,
+    "secondsPerGq": 0,
+    "blurb": "Opens a path through a firewall so you can copy and delete files."
+  },
+  {
+    "id": "file-copier",
+    "name": "File Copier",
+    "short": "Copier",
+    "kind": "copyFile",
+    "version": 1,
+    "baseSeconds": 2,
+    "secondsPerGq": 1,
+    "blurb": "Copies a file to your gateway."
+  },
+  {
+    "id": "file-deleter",
+    "name": "File Deleter",
+    "short": "Deleter",
+    "kind": "deleteFile",
+    "version": 1,
+    "baseSeconds": 2,
+    "secondsPerGq": 0.5,
+    "blurb": "Deletes a file from a server."
+  },
+  {
+    "id": "log-deleter",
+    "name": "Log Deleter",
+    "short": "Log Deleter",
+    "kind": "deleteLog",
+    "version": 1,
+    "baseSeconds": 3,
+    "secondsPerGq": 0,
+    "blurb": "Removes one line from an access log."
+  },
+  {
+    "id": "trace-tracker",
+    "name": "Trace Tracker",
+    "short": "Tracker",
+    "kind": "traceTracker",
+    "version": 1,
+    "baseSeconds": 0,
+    "secondsPerGq": 0,
+    "blurb": "Shows how far a trace has got and how long you have left."
+  }
+]

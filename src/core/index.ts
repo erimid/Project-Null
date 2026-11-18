@@ -14,15 +14,32 @@ export type {
   FileState,
   GameState,
   LogEntry,
+  Message,
   NewGameOptions,
   PlayerState,
   ServerState,
   Speed,
+  StoredFile,
+  Task,
+  TaskTarget,
+  TraceState,
 } from './state';
-export { findAccount, findConnection, findServer, gatewayOf, sourceAddress, syncWithContent } from './world';
-export type { Content } from './world';
+export {
+  findAccount,
+  findConnection,
+  findProgram,
+  findServer,
+  gatewayOf,
+  ownedProgram,
+  sourceAddress,
+  syncWithContent,
+} from './world';
+export type { Content, Rules } from './world';
 export { effectiveSpeed, gameDate, tick } from './clock';
-export type { ClockRules, GameDate } from './clock';
+export type { GameDate } from './clock';
+export { MAX_LEVEL_GAP, canLogIn, checkTask, layerSeconds, usedStorageGq } from './tasks';
+export { mostUrgentTrace, totalTraceMs, traceHopMs, traceReport } from './trace';
+export type { TraceReport } from './trace';
 export { applyAction } from './actions';
 export type { Action, ActionResult } from './actions';
 export { SAVE_FORMAT, SaveError, deserializeGame, readSummary, serializeGame, summarize } from './save';

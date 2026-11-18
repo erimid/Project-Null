@@ -11,37 +11,119 @@
   "lon": 144.96,
   "blurb": "Student records and the registrar's office.",
   "listed": true,
+  "security": {
+    "password": 1,
+    "proxy": 1,
+    "firewall": 0,
+    "monitor": 0
+  },
+  "traceSecondsPerHop": 20,
+  "relayDelay": 1.0,
   "banner": [
     "ASHGROVE POLYTECHNIC",
     "Office of the Registrar · Student Records",
     "Staff access only. Students: use the portal in the library.",
     "Semester 1 census date: 31 March."
   ],
-  "accounts": [{ "user": "admin", "role": "admin", "name": "J. Whitlock, Deputy Registrar" }],
+  "accounts": [
+    {
+      "user": "admin",
+      "role": "admin",
+      "name": "J. Whitlock, Deputy Registrar"
+    }
+  ],
   "files": [
-    { "name": "enrolments_2034_s1.dat", "sizeGq": 10, "access": "admin" },
-    { "name": "transcripts_archive_2033.arc", "sizeGq": 16, "access": "admin" },
-    { "name": "academic_misconduct_cases.dat", "sizeGq": 2, "access": "admin" },
-    { "name": "graduation_list_april.txt", "sizeGq": 1, "access": "admin" },
-    { "name": "fee_waivers.dat", "sizeGq": 2, "access": "admin" }
+    {
+      "name": "enrolments_2034_s1.dat",
+      "sizeGq": 10,
+      "access": "admin"
+    },
+    {
+      "name": "transcripts_archive_2033.arc",
+      "sizeGq": 16,
+      "access": "admin"
+    },
+    {
+      "name": "academic_misconduct_cases.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    },
+    {
+      "name": "graduation_list_april.txt",
+      "sizeGq": 1,
+      "access": "admin"
+    },
+    {
+      "name": "fee_waivers.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    }
   ],
   "logs": [
-    { "minutesAgo": 1385, "text": "login admin from 131.170.64.40" },
-    { "minutesAgo": 1370, "text": "record updated: 20319947 (grade change, approved)" },
-    { "minutesAgo": 1368, "text": "logout admin" },
-    { "minutesAgo": 655, "text": "graduation_list_april.txt written" },
-    { "minutesAgo": 180, "text": "login admin from 131.170.64.40" },
-    { "minutesAgo": 171, "text": "logout admin" }
+    {
+      "minutesAgo": 1385,
+      "text": "login admin from 131.170.64.40"
+    },
+    {
+      "minutesAgo": 1370,
+      "text": "record updated: 20319947 (grade change, approved)"
+    },
+    {
+      "minutesAgo": 1368,
+      "text": "logout admin"
+    },
+    {
+      "minutesAgo": 655,
+      "text": "graduation_list_april.txt written"
+    },
+    {
+      "minutesAgo": 180,
+      "text": "login admin from 131.170.64.40"
+    },
+    {
+      "minutesAgo": 171,
+      "text": "logout admin"
+    }
   ],
   "records": {
     "title": "Student records",
-    "columns": ["Student ID", "Name", "Programme", "Standing"],
+    "columns": [
+      "Student ID",
+      "Name",
+      "Programme",
+      "Standing"
+    ],
     "rows": [
-      ["20318802", "Amara Nwosu", "B. Engineering (Civil)", "Good"],
-      ["20319947", "Declan Shaw", "B. Business", "Probation"],
-      ["20321156", "Mei-Lin Zhou", "Dip. Nursing", "Good"],
-      ["20322410", "Tomas Ferrand", "B. Design", "Suspended"],
-      ["20323098", "Priya Raman", "B. Science (Data)", "Good"]
+      [
+        "20318802",
+        "Amara Nwosu",
+        "B. Engineering (Civil)",
+        "Good"
+      ],
+      [
+        "20319947",
+        "Declan Shaw",
+        "B. Business",
+        "Probation"
+      ],
+      [
+        "20321156",
+        "Mei-Lin Zhou",
+        "Dip. Nursing",
+        "Good"
+      ],
+      [
+        "20322410",
+        "Tomas Ferrand",
+        "B. Design",
+        "Suspended"
+      ],
+      [
+        "20323098",
+        "Priya Raman",
+        "B. Science (Data)",
+        "Good"
+      ]
     ]
   }
 }

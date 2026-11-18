@@ -30,6 +30,12 @@ export interface ServerDef {
   readonly hostname: string;
   /** True if the Open Relay Registry lists this server's address. */
   readonly listed: boolean;
+  /** Strength of each security layer; 0 means the server doesn't have it. */
+  readonly security: SecurityDef;
+  /** How long this server's trace needs to get past one average relay, in seconds. */
+  readonly traceSecondsPerHop: number;
+  /** As a relay: how much it slows a trace passing through it (1 = average, 2 = twice as slow). */
+  readonly relayDelay: number;
   /** Lines of text shown on the login screen. */
   readonly banner: readonly string[];
   readonly accounts: readonly AccountDef[];
@@ -39,6 +45,46 @@ export interface ServerDef {
   readonly logs: readonly LogDef[];
   /** An optional table of records (students, claims, ...) that jobs can change. */
   readonly records?: RecordsDef;
+}
+
+export const MAX_LAYER_LEVEL = 5;
+
+export interface SecurityDef {
+  /** Protects accounts with the admin role. */
+  readonly password: number;
+  /** Blocks changes to records and logs. */
+  readonly proxy: number;
+  /** Blocks copying and deleting files. */
+  readonly firewall: number;
+  /** How quickly an intrusion is noticed. See monitorGraceSeconds in tuning.json. */
+  readonly monitor: number;
+}
+
+export const PROGRAM_KINDS = [
+  'breakPassword',
+  'bypassProxy',
+  'bypassFirewall',
+  'copyFile',
+  'deleteFile',
+  'deleteLog',
+  'traceTracker',
+] as const;
+export type ProgramKind = (typeof PROGRAM_KINDS)[number];
+
+export interface ProgramDef {
+  readonly id: string;
+  readonly name: string;
+  /** Short name for the bottom-bar pill. */
+  readonly short: string;
+  /** What the program does. */
+  readonly kind: ProgramKind;
+  /** Strength. A higher version is faster and can take on stronger layers. */
+  readonly version: number;
+  /** Seconds one run takes against a level 1 layer (or, for file programs, before the per-size time). */
+  readonly baseSeconds: number;
+  /** Extra seconds per gigaquad of file size. 0 for programs that don't handle files. */
+  readonly secondsPerGq: number;
+  readonly blurb: string;
 }
 
 export const ROLES = ['guest', 'admin'] as const;
@@ -82,6 +128,18 @@ export interface Tuning {
   readonly startingBalance: number;
   /** How often the game saves itself, in real seconds. */
   readonly autosaveSeconds: number;
+  /**
+   * Seconds between an intrusion and the trace starting, by monitor level
+   * (first number = level 0). A monitor level past the end of the list
+   * starts the trace the moment you connect.
+   */
+  readonly monitorGraceSeconds: readonly number[];
+  /** How many programs can run at once. */
+  readonly maxRunningPrograms: number;
+  /** How much the gateway can store, in gigaquads. */
+  readonly storageGq: number;
+  /** With no relays, the trace takes this fraction of the server's per-hop time. */
+  readonly directTraceFactor: number;
 }
 
 export interface GameInfo {
@@ -93,6 +151,8 @@ export interface GameInfo {
   readonly currencySuffix: string;
   /** Ids of the servers a new player already has the address of. */
   readonly startingServers: readonly string[];
+  /** Ids of the programs a new player owns. */
+  readonly startingPrograms: readonly string[];
 }
 
 export class ContentError extends Error {
@@ -172,6 +232,41 @@ function flag(file: string, where: string, obj: Obj, key: string): boolean {
   return value;
 }
 
+function parseSecurity(file: string, where: string, value: unknown): SecurityDef {
+  const raw = entry(file, `${where} security`, value);
+  const level = (key: string) => {
+    const n = num(file, `${where} security`, raw, key, 0, MAX_LAYER_LEVEL);
+    if (!Number.isInteger(n)) throw new ContentError(file, `${where} security: ${key} must be a whole number`);
+    return n;
+  };
+  return { password: level('password'), proxy: level('proxy'), firewall: level('firewall'), monitor: level('monitor') };
+}
+
+export function parsePrograms(data: unknown, file = 'programs.json'): ProgramDef[] {
+  if (!Array.isArray(data)) throw new ContentError(file, 'must be a list of programs');
+  const programs = data.map((value, index): ProgramDef => {
+    const raw = entry(file, `entry ${index}`, value);
+    const id = text(file, `entry ${index}`, raw, 'id');
+    const where = `program "${id}"`;
+    const kind = text(file, where, raw, 'kind');
+    if (!(PROGRAM_KINDS as readonly string[]).includes(kind)) {
+      throw new ContentError(file, `${where}: kind "${kind}" is not one of ${PROGRAM_KINDS.join(', ')}`);
+    }
+    return {
+      id,
+      name: text(file, where, raw, 'name'),
+      short: text(file, where, raw, 'short'),
+      kind: kind as ProgramKind,
+      version: num(file, where, raw, 'version', 1, 20),
+      baseSeconds: num(file, where, raw, 'baseSeconds', 0, 3600),
+      secondsPerGq: num(file, where, raw, 'secondsPerGq', 0, 600),
+      blurb: text(file, where, raw, 'blurb'),
+    };
+  });
+  unique(file, 'programs', 'id', programs.map((program) => program.id));
+  return programs;
+}
+
 function parseAccounts(file: string, where: string, raw: Obj, kind: ServerKind): AccountDef[] {
   const accounts = list(file, where, raw, 'accounts').map((value, i) => {
     const account = entry(file, `${where} account ${i}`, value);
@@ -240,6 +335,9 @@ export function parseServers(data: unknown, file = 'servers.json'): ServerDef[] 
       blurb: text(file, where, raw, 'blurb'),
       hostname: text(file, where, raw, 'hostname'),
       listed: flag(file, where, raw, 'listed'),
+      security: parseSecurity(file, where, raw.security),
+      traceSecondsPerHop: num(file, where, raw, 'traceSecondsPerHop', 1, 600),
+      relayDelay: num(file, where, raw, 'relayDelay', 0.1, 10),
       banner: list(file, where, raw, 'banner').map((line) => {
         if (typeof line !== 'string') throw new ContentError(file, `${where}: banner lines must be text`);
         return line;
@@ -265,10 +363,25 @@ export function parseServers(data: unknown, file = 'servers.json'): ServerDef[] 
 }
 
 /** Checks that the data files agree with each other. */
-export function checkContent(info: GameInfo, servers: readonly ServerDef[]): void {
+export function checkContent(
+  info: GameInfo,
+  servers: readonly ServerDef[],
+  programs: readonly ProgramDef[],
+): void {
   for (const id of info.startingServers) {
     if (!servers.some((server) => server.id === id)) {
       throw new ContentError('game.json', `startingServers names "${id}", which is not a server`);
+    }
+  }
+  for (const id of info.startingPrograms) {
+    if (!programs.some((program) => program.id === id)) {
+      throw new ContentError('game.json', `startingPrograms names "${id}", which is not a program`);
+    }
+  }
+  for (const server of servers) {
+    const hasAdmin = server.accounts.some((account) => account.role === 'admin');
+    if (server.security.password > 0 && !hasAdmin) {
+      throw new ContentError('servers/', `server "${server.id}" has a password layer but no admin account to protect`);
     }
   }
 }
@@ -284,6 +397,15 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     gameMinutesPerRealSecond: num(file, 'tuning', data, 'gameMinutesPerRealSecond', 0.01, 1440),
     startingBalance: num(file, 'tuning', data, 'startingBalance', 0, 1_000_000_000),
     autosaveSeconds: num(file, 'tuning', data, 'autosaveSeconds', 5, 3600),
+    monitorGraceSeconds: list(file, 'tuning', data, 'monitorGraceSeconds').map((value) => {
+      if (typeof value !== 'number' || !(value >= 0)) {
+        throw new ContentError(file, 'monitorGraceSeconds must be a list of numbers of seconds');
+      }
+      return value;
+    }),
+    maxRunningPrograms: num(file, 'tuning', data, 'maxRunningPrograms', 1, 20),
+    storageGq: num(file, 'tuning', data, 'storageGq', 1, 100_000),
+    directTraceFactor: num(file, 'tuning', data, 'directTraceFactor', 0.05, 5),
   };
 }
 
@@ -293,8 +415,13 @@ export function parseGameInfo(data: unknown, file = 'game.json'): GameInfo {
   if (!startingServers.every((id) => typeof id === 'string')) {
     throw new ContentError(file, 'startingServers must be a list of server ids');
   }
+  const startingPrograms = list(file, 'game', data, 'startingPrograms');
+  if (!startingPrograms.every((id) => typeof id === 'string')) {
+    throw new ContentError(file, 'startingPrograms must be a list of program ids');
+  }
   return {
     startingServers: startingServers as string[],
+    startingPrograms: startingPrograms as string[],
     title: text(file, 'game', data, 'title'),
     defaultHandle: text(file, 'game', data, 'defaultHandle'),
     currencySuffix: text(file, 'game', data, 'currencySuffix'),

@@ -27,8 +27,13 @@ const refused = (state: GameState, action: Action, pattern: RegExp) => {
 const knowAll = (): GameState => {
   const state = newGame();
   state.knownServers = testServers.map((server) => server.id);
+  // These tests are about connecting, not security: the corp password is already known.
+  state.player.passwords.corp = ['admin'];
   return state;
 };
+/** Id of the first open connection. Ids come from one shared counter, so tests never spell them out. */
+const first = (state: GameState) => state.connections[0]?.id ?? 'closed';
+const noTrace = (hopMs: number[]) => ({ status: 'none', graceMs: 0, elapsedMs: 0, hopMs });
 const logTexts = (state: GameState, id: string) => state.servers[id]!.logs.filter((l) => l.byPlayer).map((l) => l.text);
 
 describe('world setup', () => {
@@ -41,8 +46,8 @@ describe('world setup', () => {
     });
     const start = state.clock.gameTimeMs;
     expect(state.servers.directory!.logs).toEqual([
-      { timeMs: start - 60 * 60_000, text: 'earlier entry', byPlayer: false },
-      { timeMs: start - 5 * 60_000, text: 'later entry', byPlayer: false },
+      { id: 1, timeMs: start - 60 * 60_000, text: 'earlier entry', byPlayer: false },
+      { id: 2, timeMs: start - 5 * 60_000, text: 'later entry', byPlayer: false },
     ]);
   });
 
@@ -68,7 +73,9 @@ describe('world setup', () => {
     const state = knowAll();
     state.knownServers.push('gone');
     state.route = ['relay-a', 'gone'];
-    state.connections = [{ id: 'c9', serverId: 'gone', route: [], user: null, role: null, openedAtMs: 0 }];
+    state.connections = [
+      { id: 'c9', serverId: 'gone', route: [], user: null, role: null, openedAtMs: 0, bypassed: { proxy: false, firewall: false }, trace: { status: 'none', graceMs: 0, elapsedMs: 0, hopMs: [1] } },
+    ];
     syncWithContent(state, content);
     expect(state.knownServers).not.toContain('gone');
     expect(state.route).toEqual(['relay-a']);
@@ -111,7 +118,17 @@ describe('connecting', () => {
     ok(state, { type: 'addHop', serverId: 'relay-a' });
     ok(state, { type: 'connect', serverId: 'corp' });
     expect(state.connections).toEqual([
-      { id: 'c1', serverId: 'corp', route: ['relay-a'], user: null, role: null, openedAtMs: state.clock.gameTimeMs },
+      {
+        id: expect.stringMatching(/^c\d+$/),
+        serverId: 'corp',
+        route: ['relay-a'],
+        user: null,
+        role: null,
+        openedAtMs: state.clock.gameTimeMs,
+        bypassed: { proxy: false, firewall: false },
+        // One relay with a delay of 2, at 10 seconds per hop.
+        trace: noTrace([20_000]),
+      },
     ]);
     ok(state, { type: 'clearRoute' });
     expect(state.connections[0]!.route).toEqual(['relay-a']);
@@ -134,7 +151,7 @@ describe('connecting', () => {
     refused(state, { type: 'connect', serverId: 'directory' }, /one connection at a time/);
     state.player.maxConnections = 2;
     ok(state, { type: 'connect', serverId: 'directory' });
-    expect(state.connections.map((c) => c.id)).toEqual(['c1', 'c2']);
+    expect(state.connections.map((c) => c.serverId)).toEqual(['corp', 'directory']);
     refused(state, { type: 'connect', serverId: 'relay-b' }, /2 connections/);
   });
 
@@ -155,9 +172,10 @@ describe('connecting', () => {
     ok(state, { type: 'connect', serverId: 'corp' });
     ok(state, { type: 'connect', serverId: 'directory' });
     ok(state, { type: 'connect', serverId: 'relay-a' });
-    ok(state, { type: 'disconnect', connectionId: 'c2' });
-    expect(state.connections.map((c) => c.id)).toEqual(['c1', 'c3']);
-    refused(state, { type: 'disconnect', connectionId: 'c2' }, /already closed/);
+    const second = state.connections[1]!.id;
+    ok(state, { type: 'disconnect', connectionId: second });
+    expect(state.connections.map((c) => c.serverId)).toEqual(['corp', 'relay-a']);
+    refused(state, { type: 'disconnect', connectionId: second }, /already closed/);
     ok(state, { type: 'disconnectAll' });
     expect(state.connections).toEqual([]);
     ok(state, { type: 'disconnectAll' });
@@ -166,9 +184,10 @@ describe('connecting', () => {
   it('never reuses a connection id', () => {
     const state = knowAll();
     ok(state, { type: 'connect', serverId: 'corp' });
+    const before = first(state);
     ok(state, { type: 'disconnectAll' });
     ok(state, { type: 'connect', serverId: 'corp' });
-    expect(state.connections[0]!.id).toBe('c2');
+    expect(first(state)).not.toBe(before);
   });
 });
 
@@ -178,8 +197,8 @@ describe('access logs', () => {
     ok(state, { type: 'addHop', serverId: 'relay-a' });
     ok(state, { type: 'addHop', serverId: 'relay-b' });
     ok(state, { type: 'connect', serverId: 'corp' });
-    ok(state, { type: 'login', connectionId: 'c1', user: 'admin' });
-    ok(state, { type: 'disconnect', connectionId: 'c1' });
+    ok(state, { type: 'login', connectionId: first(state), user: 'admin' });
+    ok(state, { type: 'disconnect', connectionId: first(state) });
 
     expect(logTexts(state, 'relay-a')).toEqual(['relay opened 10.0.0.1 > 10.0.0.4', 'relay closed 10.0.0.1']);
     expect(logTexts(state, 'relay-b')).toEqual(['relay opened 10.0.0.3 > 10.0.0.5', 'relay closed 10.0.0.3']);
@@ -202,7 +221,7 @@ describe('access logs', () => {
     const state = knowAll();
     ok(state, { type: 'connect', serverId: 'corp' });
     expect(state.servers.corp!.logs).toEqual([
-      { timeMs: state.clock.gameTimeMs, text: 'connection opened from 10.0.0.1', byPlayer: true },
+      { id: expect.any(Number), timeMs: state.clock.gameTimeMs, text: 'connection opened from 10.0.0.1', byPlayer: true },
     ]);
   });
 });
@@ -211,17 +230,17 @@ describe('logging in', () => {
   it('logs in to an account that exists and takes its role', () => {
     const state = knowAll();
     ok(state, { type: 'connect', serverId: 'relay-a' });
-    ok(state, { type: 'login', connectionId: 'c1', user: 'root' });
+    ok(state, { type: 'login', connectionId: first(state), user: 'root' });
     expect(state.connections[0]).toMatchObject({ user: 'root', role: 'admin' });
   });
 
   it('refuses accounts that do not exist, closed connections and a second login', () => {
     const state = knowAll();
-    refused(state, { type: 'login', connectionId: 'c1', user: 'guest' }, /closed/);
+    refused(state, { type: 'login', connectionId: first(state), user: 'guest' }, /closed/);
     ok(state, { type: 'connect', serverId: 'relay-a' });
-    refused(state, { type: 'login', connectionId: 'c1', user: 'nobody' }, /No such account/);
-    ok(state, { type: 'login', connectionId: 'c1', user: 'guest' });
-    refused(state, { type: 'login', connectionId: 'c1', user: 'root' }, /Already logged in/);
+    refused(state, { type: 'login', connectionId: first(state), user: 'nobody' }, /No such account/);
+    ok(state, { type: 'login', connectionId: first(state), user: 'guest' });
+    refused(state, { type: 'login', connectionId: first(state), user: 'root' }, /Already logged in/);
   });
 });
 
@@ -229,27 +248,29 @@ describe('the directory', () => {
   const atDirectory = (login = true): GameState => {
     const state = newGame();
     ok(state, { type: 'connect', serverId: 'directory' });
-    if (login) ok(state, { type: 'login', connectionId: 'c1', user: 'guest' });
+    if (login) ok(state, { type: 'login', connectionId: first(state), user: 'guest' });
     return state;
   };
 
   it('adds a listed address to the address book', () => {
     const state = atDirectory();
-    ok(state, { type: 'learnServer', connectionId: 'c1', serverId: 'corp' });
+    ok(state, { type: 'learnServer', connectionId: first(state), serverId: 'corp' });
     expect(state.knownServers).toContain('corp');
-    refused(state, { type: 'learnServer', connectionId: 'c1', serverId: 'corp' }, /already have/);
+    refused(state, { type: 'learnServer', connectionId: first(state), serverId: 'corp' }, /already have/);
   });
 
   it('needs a login, a directory server, and a listed address', () => {
-    refused(atDirectory(false), { type: 'learnServer', connectionId: 'c1', serverId: 'corp' }, /Log in first/);
-    refused(atDirectory(), { type: 'learnServer', connectionId: 'c1', serverId: 'hidden' }, /not listed/);
-    refused(atDirectory(), { type: 'learnServer', connectionId: 'c1', serverId: 'nowhere' }, /not listed/);
+    const loggedOut = atDirectory(false);
+    refused(loggedOut, { type: 'learnServer', connectionId: first(loggedOut), serverId: 'corp' }, /Log in first/);
+    const loggedIn = atDirectory();
+    refused(loggedIn, { type: 'learnServer', connectionId: first(loggedIn), serverId: 'hidden' }, /not listed/);
+    refused(loggedIn, { type: 'learnServer', connectionId: first(loggedIn), serverId: 'nowhere' }, /not listed/);
 
     const state = knowAll();
     ok(state, { type: 'connect', serverId: 'relay-a' });
-    ok(state, { type: 'login', connectionId: 'c1', user: 'guest' });
+    ok(state, { type: 'login', connectionId: first(state), user: 'guest' });
     state.knownServers = ['gateway', 'relay-a'];
-    refused(state, { type: 'learnServer', connectionId: 'c1', serverId: 'corp' }, /no directory/);
+    refused(state, { type: 'learnServer', connectionId: first(state), serverId: 'corp' }, /no directory/);
   });
 });
 
@@ -258,7 +279,7 @@ describe('saving with the world in it', () => {
     const state = knowAll();
     ok(state, { type: 'addHop', serverId: 'relay-a' });
     ok(state, { type: 'connect', serverId: 'corp' });
-    ok(state, { type: 'login', connectionId: 'c1', user: 'admin' });
+    ok(state, { type: 'login', connectionId: first(state), user: 'admin' });
     const loaded = syncWithContent(deserializeGame(serializeGame(state, '')).state, content);
     expect(loaded).toEqual(state);
   });

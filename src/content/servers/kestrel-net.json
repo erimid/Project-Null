@@ -11,28 +11,82 @@
   "lon": 36.82,
   "blurb": "Volunteer-run mesh network with an open guest gateway.",
   "listed": true,
+  "security": {
+    "password": 1,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 0
+  },
+  "traceSecondsPerHop": 25,
+  "relayDelay": 1.0,
   "banner": [
     "KESTREL COMMUNITY NET · gateway 2",
     "Run by volunteers. Be kind to the bandwidth.",
     "Node meetings: first Saturday of the month, Ngong Road hub."
   ],
   "accounts": [
-    { "user": "guest", "role": "guest", "name": "Open access" },
-    { "user": "noc", "role": "admin", "name": "W. Otieno" }
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Open access"
+    },
+    {
+      "user": "noc",
+      "role": "admin",
+      "name": "W. Otieno"
+    }
   ],
   "files": [
-    { "name": "how_to_join.txt", "sizeGq": 1, "access": "guest" },
-    { "name": "node_map_feb.dat", "sizeGq": 3, "access": "guest" },
-    { "name": "volunteer_rota.txt", "sizeGq": 1, "access": "admin" },
-    { "name": "bandwidth_ledger.dat", "sizeGq": 5, "access": "admin" },
-    { "name": "router_configs.arc", "sizeGq": 7, "access": "admin" }
+    {
+      "name": "how_to_join.txt",
+      "sizeGq": 1,
+      "access": "guest"
+    },
+    {
+      "name": "node_map_feb.dat",
+      "sizeGq": 3,
+      "access": "guest"
+    },
+    {
+      "name": "volunteer_rota.txt",
+      "sizeGq": 1,
+      "access": "admin"
+    },
+    {
+      "name": "bandwidth_ledger.dat",
+      "sizeGq": 5,
+      "access": "admin"
+    },
+    {
+      "name": "router_configs.arc",
+      "sizeGq": 7,
+      "access": "admin"
+    }
   ],
   "logs": [
-    { "minutesAgo": 1480, "text": "login noc from 41.90.212.1" },
-    { "minutesAgo": 1466, "text": "node 31 marked offline (power)" },
-    { "minutesAgo": 1465, "text": "logout noc" },
-    { "minutesAgo": 520, "text": "relay opened 196.201.5.88 > 41.90.220.13" },
-    { "minutesAgo": 498, "text": "relay closed 196.201.5.88" },
-    { "minutesAgo": 133, "text": "node 31 back online" }
+    {
+      "minutesAgo": 1480,
+      "text": "login noc from 41.90.212.1"
+    },
+    {
+      "minutesAgo": 1466,
+      "text": "node 31 marked offline (power)"
+    },
+    {
+      "minutesAgo": 1465,
+      "text": "logout noc"
+    },
+    {
+      "minutesAgo": 520,
+      "text": "relay opened 196.201.5.88 > 41.90.220.13"
+    },
+    {
+      "minutesAgo": 498,
+      "text": "relay closed 196.201.5.88"
+    },
+    {
+      "minutesAgo": 133,
+      "text": "node 31 back online"
+    }
   ]
 }

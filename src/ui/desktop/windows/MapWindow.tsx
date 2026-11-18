@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks';
+import { ownedProgram, traceReport } from '../../../core';
 import { findServer, gatewayOf, type ServerDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
@@ -38,9 +39,22 @@ export function MapWindow() {
     (server): server is ServerDef => server !== undefined,
   );
 
+  // A running trace turns the target red. With a Trace Tracker, the legs it has already followed turn red too.
+  const traced = live?.trace.status === 'active';
+  const tracker = ownedProgram(game, content, 'traceTracker') !== undefined;
+  const legsTraced = live && traced && tracker ? traceReport(live.trace).relaysTraced : 0;
+  const legCount = chain.length - 1;
+  /** True for the target of a running trace and for each relay the trace has already got past. */
+  const isTraced = (id: string) => {
+    if (!live || !traced) return false;
+    const hop = live.route.indexOf(id);
+    return id === live.serverId || (hop >= 0 && hop >= live.route.length - legsTraced);
+  };
+
   const arcs: GlobeArc[] = chain.slice(1).map((server, index) => {
-    const isLastLeg = index === chain.length - 2 && targetId !== null;
-    return { from: chain[index]!, to: server, tone: !live && isLastLeg ? 'cyan' : 'mint', dashed: !live };
+    const isLastLeg = index === legCount - 1 && targetId !== null;
+    const found = index >= legCount - legsTraced;
+    return { from: chain[index]!, to: server, tone: found ? 'red' : !live && isLastLeg ? 'cyan' : 'mint', dashed: !live };
   });
 
   const dots: GlobeDot[] = known.map((server) => {
@@ -51,7 +65,7 @@ export function MapWindow() {
       name: server.name,
       lat: server.lat,
       lon: server.lon,
-      tone: onRoute ? 'mint' : 'cyan',
+      tone: isTraced(server.id) ? 'red' : onRoute ? 'mint' : 'cyan',
       label: server.id === gateway.id ? 'YOU' : hop >= 0 ? String(hop + 1) : live?.serverId === server.id ? server.hostname : undefined,
       selected: server.id === selected?.id,
     };
@@ -78,7 +92,7 @@ export function MapWindow() {
   const inRoute = selected ? game.route.includes(selected.id) : false;
   const connectedTo = selected ? game.connections.some((c) => c.serverId === selected.id) : false;
   const note = live
-    ? `connected · ${live.route.length === 0 ? 'direct' : `${live.route.length} ${live.route.length === 1 ? 'relay' : 'relays'}`}`
+    ? `${traced ? 'being traced' : 'connected'} · ${live.route.length === 0 ? 'direct' : `${live.route.length} ${live.route.length === 1 ? 'relay' : 'relays'}`}`
     : game.route.length === 0
       ? 'no relays planned'
       : `${game.route.length} ${game.route.length === 1 ? 'relay' : 'relays'} planned`;
@@ -164,7 +178,12 @@ export function MapWindow() {
           <span class="route__label">{live ? 'Live route' : 'Planned route'}</span>
           <ol class="route__chain">
             {chain.map((server, index) => (
-              <li key={server.id} class={`route__hop${index === chain.length - 1 && targetId ? ' route__hop--target' : ''}`}>
+              <li
+                key={server.id}
+                class={`route__hop${index === chain.length - 1 && targetId ? ' route__hop--target' : ''}${
+                  isTraced(server.id) ? ' route__hop--traced' : ''
+                }`}
+              >
                 {server.id === gateway.id ? 'You' : server.name}
               </li>
             ))}

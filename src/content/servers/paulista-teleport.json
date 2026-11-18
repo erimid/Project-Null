@@ -11,28 +11,82 @@
   "lon": -46.63,
   "blurb": "Commercial satellite uplink that resells spare capacity.",
   "listed": true,
+  "security": {
+    "password": 1,
+    "proxy": 1,
+    "firewall": 0,
+    "monitor": 1
+  },
+  "traceSecondsPerHop": 18,
+  "relayDelay": 1.2,
   "banner": [
     "PAULISTA TELEPORT · HUB 03",
     "Satellite capacity by the hour. Prepaid sessions welcome.",
     "Support: suporte@paulistateleport.example"
   ],
   "accounts": [
-    { "user": "prepaid", "role": "guest", "name": "Prepaid session" },
-    { "user": "noc", "role": "admin", "name": "D. Carvalho" }
+    {
+      "user": "prepaid",
+      "role": "guest",
+      "name": "Prepaid session"
+    },
+    {
+      "user": "noc",
+      "role": "admin",
+      "name": "D. Carvalho"
+    }
   ],
   "files": [
-    { "name": "tariffs_2034.txt", "sizeGq": 1, "access": "guest" },
-    { "name": "coverage_footprint.dat", "sizeGq": 6, "access": "guest" },
-    { "name": "customer_accounts.dat", "sizeGq": 8, "access": "admin" },
-    { "name": "transponder_schedule.dat", "sizeGq": 3, "access": "admin" },
-    { "name": "billing_run_0312.arc", "sizeGq": 11, "access": "admin" }
+    {
+      "name": "tariffs_2034.txt",
+      "sizeGq": 1,
+      "access": "guest"
+    },
+    {
+      "name": "coverage_footprint.dat",
+      "sizeGq": 6,
+      "access": "guest"
+    },
+    {
+      "name": "customer_accounts.dat",
+      "sizeGq": 8,
+      "access": "admin"
+    },
+    {
+      "name": "transponder_schedule.dat",
+      "sizeGq": 3,
+      "access": "admin"
+    },
+    {
+      "name": "billing_run_0312.arc",
+      "sizeGq": 11,
+      "access": "admin"
+    }
   ],
   "logs": [
-    { "minutesAgo": 1900, "text": "login noc from 177.8.160.4" },
-    { "minutesAgo": 1872, "text": "billing_run_0312.arc written" },
-    { "minutesAgo": 1871, "text": "logout noc" },
-    { "minutesAgo": 430, "text": "prepaid session opened 200.160.2.3 > 45.71.9.120" },
-    { "minutesAgo": 395, "text": "prepaid session closed 200.160.2.3" },
-    { "minutesAgo": 61, "text": "transponder 7B handover complete" }
+    {
+      "minutesAgo": 1900,
+      "text": "login noc from 177.8.160.4"
+    },
+    {
+      "minutesAgo": 1872,
+      "text": "billing_run_0312.arc written"
+    },
+    {
+      "minutesAgo": 1871,
+      "text": "logout noc"
+    },
+    {
+      "minutesAgo": 430,
+      "text": "prepaid session opened 200.160.2.3 > 45.71.9.120"
+    },
+    {
+      "minutesAgo": 395,
+      "text": "prepaid session closed 200.160.2.3"
+    },
+    {
+      "minutesAgo": 61,
+      "text": "transponder 7B handover complete"
+    }
   ]
 }

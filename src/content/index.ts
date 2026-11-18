@@ -7,6 +7,7 @@
  */
 import gameJson from './game.json';
 import landJson from './land.json';
+import programsJson from './programs.json';
 import tuningJson from './tuning.json';
 import gateway from './servers/gateway.json';
 import relayRegistry from './servers/relay-registry.json';
@@ -19,15 +20,18 @@ import halvorsen from './servers/halvorsen.json';
 import meridianFreight from './servers/meridian-freight.json';
 import corvaneMutual from './servers/corvane-mutual.json';
 import ashgrovePoly from './servers/ashgrove-poly.json';
-import { checkContent, parseGameInfo, parseServers, parseTuning } from './schema';
+import { checkContent, parseGameInfo, parsePrograms, parseServers, parseTuning } from './schema';
 
 export type {
   AccountDef,
   FileDef,
   GameInfo,
   LogDef,
+  ProgramDef,
+  ProgramKind,
   RecordsDef,
   Role,
+  SecurityDef,
   ServerDef,
   ServerKind,
   Tuning,
@@ -39,7 +43,8 @@ export const servers = parseServers(
   [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly],
   'servers/',
 );
-checkContent(gameInfo, servers);
+export const programs = parsePrograms(programsJson);
+checkContent(gameInfo, servers, programs);
 
 /**
  * Dots that draw the continents on the globe: [lat, lon, lat, lon, ...]

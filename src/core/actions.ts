@@ -3,7 +3,9 @@
  * "action": a small plain object. The UI never changes GameState itself.
  * That keeps the rules in one place and makes them testable.
  */
-import { MAX_HOPS, SPEEDS, isConnected, type Connection, type GameState, type Speed } from './state';
+import { MAX_HOPS, SPEEDS, isConnected, type Connection, type GameState, type Speed, type TaskTarget } from './state';
+import { canLogIn, startTask } from './tasks';
+import { newTrace, noteIntrusion } from './trace';
 import { findAccount, findConnection, findServer, gatewayOf, sourceAddress, type Content } from './world';
 
 export type Action =
@@ -18,7 +20,11 @@ export type Action =
   | { readonly type: 'disconnectAll' }
   | { readonly type: 'login'; readonly connectionId: string; readonly user: string }
   /** Copy an address from a directory server into the player's address book. */
-  | { readonly type: 'learnServer'; readonly connectionId: string; readonly serverId: string };
+  | { readonly type: 'learnServer'; readonly connectionId: string; readonly serverId: string }
+  /** Run a program against something on a connection. */
+  | { readonly type: 'runProgram'; readonly connectionId: string; readonly target: TaskTarget }
+  | { readonly type: 'cancelProgram'; readonly taskId: string }
+  | { readonly type: 'readMessage'; readonly messageId: string };
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
@@ -26,7 +32,7 @@ const OK: ActionResult = { ok: true };
 const refuse = (reason: string): ActionResult => ({ ok: false, reason });
 
 function writeLog(state: GameState, serverId: string, text: string): void {
-  state.servers[serverId]?.logs.push({ timeMs: state.clock.gameTimeMs, text, byPlayer: true });
+  state.servers[serverId]?.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text, byPlayer: true });
 }
 
 /** Every server on the way notes the connection passing through, and the target notes it ending. */
@@ -45,6 +51,24 @@ function closeConnection(state: GameState, content: Content, connection: Connect
   if (connection.user !== null) writeLog(state, connection.serverId, `logout ${connection.user}`);
   logConnection(state, content, connection, false);
   state.connections = state.connections.filter((other) => other !== connection);
+  // Programs stop when the connection they were working on goes away.
+  state.tasks = state.tasks.filter((task) => task.connectionId !== connection.id);
+}
+
+/** A trace reached the gateway: the connection is cut and the player is told. */
+export function caught(state: GameState, content: Content, connection: Connection): void {
+  const server = findServer(content, connection.serverId);
+  closeConnection(state, content, connection);
+  state.messages.push({
+    id: `m${state.nextId++}`,
+    from: 'Gateway',
+    subject: `Traced by ${server?.name ?? 'the target'}`,
+    body:
+      `${server?.name ?? 'The target'} followed your connection all the way back to this gateway and cut it. ` +
+      'They know where you are. Expect to hear more about this.',
+    timeMs: state.clock.gameTimeMs,
+    read: false,
+  });
 }
 
 export function applyAction(state: GameState, action: Action, content: Content): ActionResult {
@@ -101,6 +125,8 @@ export function applyAction(state: GameState, action: Action, content: Content):
         user: null,
         role: null,
         openedAtMs: state.clock.gameTimeMs,
+        bypassed: { proxy: false, firewall: false },
+        trace: newTrace(content, server, state.route),
       };
       state.connections.push(connection);
       logConnection(state, content, connection, true);
@@ -125,11 +151,13 @@ export function applyAction(state: GameState, action: Action, content: Content):
       if (connection.user !== null) return refuse(`Already logged in as ${connection.user}.`);
       const server = findServer(content, connection.serverId);
       const account = server && findAccount(server, action.user);
-      if (!account) return refuse('No such account.');
-      // Security layers (passwords and the rest) arrive in the next step; until then every login succeeds.
+      if (!server || !account) return refuse('No such account.');
+      if (!canLogIn(state, server, account.user)) return refuse('That account needs a password.');
       connection.user = account.user;
       connection.role = account.role;
       writeLog(state, connection.serverId, `login ${account.user} from ${sourceAddress(content, connection)}`);
+      // Walking in on a password-protected account is noticed, however you got the password.
+      if (account.role === 'admin' && server.security.password > 0) noteIntrusion(content, connection);
       return OK;
     }
 
@@ -141,6 +169,24 @@ export function applyAction(state: GameState, action: Action, content: Content):
       if (!server || !server.listed) return refuse('That server is not listed here.');
       if (state.knownServers.includes(server.id)) return refuse('You already have that address.');
       state.knownServers.push(server.id);
+      return OK;
+    }
+
+    case 'runProgram': {
+      const reason = startTask(state, content, action.connectionId, action.target);
+      return reason === null ? OK : refuse(reason);
+    }
+
+    case 'cancelProgram': {
+      if (!state.tasks.some((task) => task.id === action.taskId)) return refuse('That program has already stopped.');
+      state.tasks = state.tasks.filter((task) => task.id !== action.taskId);
+      return OK;
+    }
+
+    case 'readMessage': {
+      const message = state.messages.find((item) => item.id === action.messageId);
+      if (!message) return refuse('No such message.');
+      message.read = true;
       return OK;
     }
   }
