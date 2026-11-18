@@ -527,7 +527,7 @@ button.pill:not(:disabled):hover {
   margin: 0 0 12px;
   padding: 0;
   list-style: none;
-  max-height: 160px;
+  max-height: 200px;
   overflow-y: auto;
 }
 
@@ -1317,5 +1317,45 @@ button.tabbar__contract--live:hover {
   margin-left: 6px;
   border-left: 1px solid var(--line-soft);
   border-radius: 0 8px 8px 0;
+  color: var(--text-dim);
+}
+
+/* ---- one-click relays ---- */
+
+.addresses__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.addresses__row .address {
+  flex: 1;
+  min-width: 0;
+}
+
+.address__relay {
+  flex: none;
+  width: 28px;
+  height: 26px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.address__relay:not(:disabled):hover {
+  border-color: var(--cyan);
+  color: var(--text-bright);
+}
+
+.address__relay.is-on {
+  border-color: rgba(78, 230, 200, 0.6);
+  background: rgba(78, 230, 200, 0.14);
+  color: var(--mint-text);
+}
+
+.address__relay:disabled {
+  border-color: rgba(95, 212, 255, 0.14);
   color: var(--text-dim);
 }
