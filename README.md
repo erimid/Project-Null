@@ -12,11 +12,14 @@ trace lands. All point-and-click.
 |---|---|
 | `src/core/` | The game simulation. Plain TypeScript with no browser code, driven by a seeded random number generator so the same seed always plays out the same way. Unit tested. |
 | `src/content/` | Game data as JSON (servers, programs, contracts), loaded and typed through `src/content/index.ts`. |
+| `src/ui/` | Glue between the simulation and the browser: `session.ts` runs the game loop and saving, `hooks.ts` lets screens read game values, `storage/` keeps saves in the browser. |
 | `src/ui/desktop/` | The desktop layout: server tabs on top, floating windows, bottom bar. A mobile layout can be added later over the same `core`. |
 
 Rules that keep it tidy:
 
 - `core/` never imports from `ui/` and never touches the DOM. `tsconfig.core.json` checks this.
+- Screens never change the game state themselves. They send an action through `session.dispatch`, and the rules live in `src/core/actions.ts`.
+- When the shape of the saved game changes, raise `STATE_VERSION` and add a migration in `src/core/save.ts` so old saves still load.
 - Anything random in `core/` uses `createRng` from `src/core/rng.ts`, never `Math.random()`.
 - The sans font (Rajdhani) is for titles, tabs, menus and buttons. The mono font (Share Tech Mono) is only for data.
 - Fonts are bundled. The game makes no requests to other sites and has no analytics.

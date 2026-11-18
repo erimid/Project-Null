@@ -8,5 +8,9 @@ import '@fontsource/share-tech-mono/latin-400.css';
 
 import './ui/desktop/theme.css';
 import { Desktop } from './ui/desktop/Desktop';
+import { session } from './ui/session';
 
-render(<Desktop />, document.getElementById('app')!);
+// Load the last game (or start a new one) before drawing anything.
+void session.start().then(() => {
+  render(<Desktop />, document.getElementById('app')!);
+});
