@@ -6,6 +6,8 @@ import { content, session } from '../session';
 import { ON_DEMAND, TraceAlarm } from './BottomBar';
 import { activeConnection, useDesk } from './deskStore';
 import { GameMenu } from './GameMenu';
+import { useLayout } from './layout';
+import { usePanes } from './panes';
 import { SpeedControl } from './SpeedControl';
 import { WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId } from './windowStore';
 
@@ -43,7 +45,11 @@ export function PhoneDock() {
   const desk = useDesk();
   const active = useWorld((game) => activeConnection(game, desk));
 
-  const front = WINDOW_IDS.find((id) => windows.isOnTop(id));
+  // On a tablet two windows are on show, and the dock lights both.
+  const panes = usePanes();
+  const tablet = useLayout() === 'tablet';
+  const frontId = WINDOW_IDS.find((id) => windows.isOnTop(id));
+  const onShow = (id: WindowId) => (tablet ? panes.includes(id) : frontId === id);
   const others = WINDOW_IDS.filter((id) => !MAIN.includes(id) && (!ON_DEMAND.includes(id) || layouts[id].open));
   const moreCount = others.reduce((sum, id) => sum + (counts[id]?.n ?? 0), 0);
 
@@ -74,7 +80,7 @@ export function PhoneDock() {
                   <button
                     key={id}
                     type="button"
-                    class={`pdock__item${front === id ? ' is-front' : ''}${layouts[id].open ? ' is-open' : ''}`}
+                    class={`pdock__item${onShow(id) ? ' is-front' : ''}${layouts[id].open ? ' is-open' : ''}`}
                     onClick={() => open(id)}
                   >
                     {WINDOW_DEFS[id].title}
@@ -132,8 +138,8 @@ export function PhoneDock() {
             <button
               key={id}
               type="button"
-              class={`pdock__tab${front === id ? ' is-front' : ''}`}
-              aria-pressed={front === id}
+              class={`pdock__tab${onShow(id) ? ' is-front' : ''}`}
+              aria-pressed={onShow(id)}
               disabled={id === 'server' && !connected}
               onClick={() => open(id)}
             >
@@ -148,7 +154,7 @@ export function PhoneDock() {
         })}
         <button
           type="button"
-          class={`pdock__tab${sheet || (front !== undefined && !MAIN.includes(front)) ? ' is-front' : ''}`}
+          class={`pdock__tab${sheet || others.some(onShow) ? ' is-front' : ''}`}
           aria-expanded={sheet}
           onClick={() => setSheet(!sheet)}
         >

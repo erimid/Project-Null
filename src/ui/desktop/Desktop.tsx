@@ -52,7 +52,8 @@ export function Desktop() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const phone = useLayout() === 'phone';
+  const layoutKind = useLayout();
+  const phone = layoutKind !== 'desk';
   const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
   // The whole desk jolts when a trace cuts the line.
   const desk = useRef<HTMLDivElement>(null);
@@ -71,10 +72,10 @@ export function Desktop() {
   );
 
   return (
-    <div ref={desk} class={`desktop${phone ? ' desktop--phone' : ''}${tracing ? ' is-tracing' : ''}`}>
+    <div ref={desk} class={`desktop${phone ? ' desktop--phone' : ''}${layoutKind === 'tablet' ? ' desktop--tablet' : ''}${tracing ? ' is-tracing' : ''}`}>
       <TopBar />
       <main class="workspace">
-        {phone && <p class="workspace__empty">Pick a window below.</p>}
+        {layoutKind === 'phone' && <p class="workspace__empty">Pick a window below.</p>}
         <GatewayWindow />
         <MapWindow />
         <ServerWindow />

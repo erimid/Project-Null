@@ -105,6 +105,8 @@ function SkillCard({ game, skill, onRefused }: { game: GameState; skill: SkillDe
 export function SkillsWindow() {
   const game = useWorld((state) => state);
   const [notice, setNotice] = useState('');
+  // On a phone only one branch shows at a time; the tabs are hidden on the desk.
+  const [shown, setShown] = useState<SkillBranch>('intrusion');
   const free = pointsFree(game, content);
   const earned = pointsEarned(game, content);
   const board = boardConnection(game);
@@ -145,9 +147,24 @@ export function SkillsWindow() {
           </span>
         </div>
       </div>
+      <div class="skills__tabs" role="tablist">
+        {BRANCHES.map(([branch, name]) => (
+          <button
+            key={branch}
+            type="button"
+            role="tab"
+            aria-selected={shown === branch}
+            class={`skills__tab skills__tab--${branch}${shown === branch ? ' is-open' : ''}`}
+            onClick={() => setShown(branch)}
+          >
+            <BranchMark branch={branch} />
+            {name}
+          </button>
+        ))}
+      </div>
       <div class="skills">
         {BRANCHES.map(([branch, name, motto]) => (
-          <section key={branch} class={`skills__branch skills__branch--${branch}`}>
+          <section key={branch} class={`skills__branch skills__branch--${branch}${shown === branch ? ' is-open' : ''}`}>
             <h3 class="skills__title">
               <BranchMark branch={branch} />
               <span class="skills__name">{name}</span>

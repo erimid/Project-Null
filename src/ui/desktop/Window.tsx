@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useRef } from 'preact/hooks';
 import { useLayout } from './layout';
+import { usePanes } from './panes';
 import { KEEP_VISIBLE, MIN_HEIGHT, MIN_WIDTH, WINDOW_DEFS, windows, useWindows, type WindowId } from './windowStore';
 
 const TITLE_HEIGHT = 40;
@@ -32,17 +33,27 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
   const frame = useRef<HTMLElement>(null);
   const drag = useRef<Drag | null>(null);
   const sizing = useRef<Drag | null>(null);
-  const phone = useLayout() === 'phone';
+  const layoutKind = useLayout();
+  const panes = usePanes();
 
   if (!layout.open || layout.minimized) return null;
   const name = title ?? def.title;
 
   // A phone shows only the front window, full screen. The others stay
   // mounted underneath (hidden), so whatever was going on in them is kept.
-  if (phone) {
-    const front = windows.isOnTop(id);
+  // A tablet shows two, side by side, each about as wide as a phone.
+  if (layoutKind !== 'desk') {
+    const tablet = layoutKind === 'tablet';
+    const half = panes.indexOf(id);
+    const front = tablet ? half >= 0 : windows.isOnTop(id);
+    const pane = tablet && half >= 0 ? ` window--pane window--pane-${panes[1 - half] === null ? 'solo' : half === 0 ? 'left' : 'right'}` : '';
     return (
-      <section class={`window window--phone${front ? ' window--front' : ''}`} hidden={!front} aria-label={name}>
+      <section
+        class={`window window--phone${pane}${windows.isOnTop(id) ? ' window--front' : ''}`}
+        hidden={!front}
+        aria-label={name}
+        onPointerDownCapture={tablet ? () => windows.focus(id) : undefined}
+      >
         <div class="window__title">
           <span class="window__title-text">{name}</span>
           {note && <span class="window__title-note">{note}</span>}
