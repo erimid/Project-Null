@@ -260,6 +260,12 @@ export interface Tuning {
   readonly monitorGraceSeconds: readonly number[];
   /** With no relays, the trace takes this fraction of the server's per-hop time. */
   readonly directTraceFactor: number;
+  /** A trace step that stays inside one country takes this times as long. */
+  readonly sameCountryLegFactor: number;
+  /** A trace step that crosses a border inside one part of the world takes this times as long. */
+  readonly borderLegFactor: number;
+  /** A trace step that crosses to another part of the world takes this times as long. */
+  readonly overseasLegFactor: number;
   /** In-game hours you can't take contracts after being traced. */
   readonly lieLowHours: number;
   /** Fine for being traced, per level of security on the server that caught you. */
@@ -739,6 +745,9 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
       return value;
     }),
     directTraceFactor: num(file, 'tuning', data, 'directTraceFactor', 0.05, 5),
+    sameCountryLegFactor: num(file, 'tuning', data, 'sameCountryLegFactor', 0.1, 5),
+    borderLegFactor: num(file, 'tuning', data, 'borderLegFactor', 0.1, 5),
+    overseasLegFactor: num(file, 'tuning', data, 'overseasLegFactor', 0.1, 5),
     lieLowHours: num(file, 'tuning', data, 'lieLowHours', 0, 24 * 365),
     finePerSecurityLevel: num(file, 'tuning', data, 'finePerSecurityLevel', 0, 1_000_000),
     caughtRatingLoss: num(file, 'tuning', data, 'caughtRatingLoss', 0, 100),

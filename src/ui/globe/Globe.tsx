@@ -17,6 +17,10 @@ export interface GlobeArc {
   readonly to: LatLon;
   readonly tone: 'mint' | 'cyan' | 'red';
   readonly dashed?: boolean;
+  /** Drawn heavier: a leg that hops to another part of the world. */
+  readonly heavy?: boolean;
+  /** Short text drawn at the top of the arc, e.g. "BORDER +14s". */
+  readonly label?: string;
 }
 
 interface Props {
@@ -91,6 +95,16 @@ function arcPath(arc: GlobeArc, view: View, R: number): string {
     }
   }
   return d;
+}
+
+/** Where to write an arc's label: just above its highest point, if that is on the near side. */
+function arcLabelAt(arc: GlobeArc, view: View, R: number): { x: number; y: number } | null {
+  const points = greatCircle(arc.from, arc.to, 2);
+  const mid = points[1];
+  if (!mid) return null;
+  const p = project(mid.lat, mid.lon, view, 1.16);
+  if (!isVisible(p)) return null;
+  return { x: C + R * p.x, y: C - R * p.y - 6 };
 }
 
 /**
@@ -232,11 +246,21 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
             d={arcPath(arc, view, R)}
             fill="none"
             stroke={COLORS[arc.tone]}
-            stroke-width={arc.dashed ? 2 : 2.6}
+            stroke-width={(arc.dashed ? 2 : 2.6) + (arc.heavy ? 1.2 : 0)}
             stroke-dasharray={arc.dashed ? '5 4' : undefined}
             stroke-linecap="round"
           />
         ))}
+        {arcs.map((arc, index) => {
+          const at = arc.label ? arcLabelAt(arc, view, R) : null;
+          return (
+            at && (
+              <text key={`label-${index}`} x={at.x} y={at.y} text-anchor="middle" fill={COLORS[arc.tone]} font-size="13" class="globe__label globe__label--leg">
+                {arc.label}
+              </text>
+            )
+          );
+        })}
 
         {placed.map(({ dot, p }) => {
           const x = C + R * p.x;
