@@ -127,7 +127,7 @@
   "raid": {
     "from": "Gateway",
     "subject": "INTRUSION ON YOUR GATEWAY",
-    "body": "Someone is on your gateway. The handle on the session reads {who}. They {style}.\n\nOpen Defence on your bar. Close their ports to slow them, trace them back for their address, lock what you cannot lose, or pull the plug."
+    "body": "Someone is on your gateway. The handle on the session reads {who}. If they get in, they will {style}.\n\nOpen Defence on your bar. Close their ports to slow them, trace them back for their address, lock what you cannot lose, or pull the plug."
   },
   "raidWon": {
     "from": "Gateway",

@@ -50,7 +50,7 @@ export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
   dark: { title: 'Undertow', pill: 'Darknet', width: 620, height: 500, x: 144, y: 92, open: false },
   viewer: { title: 'File viewer', pill: 'Viewer', width: 640, x: 224, y: 128, open: false },
   saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 264, y: 92, open: false },
-  defence: { title: 'Defence', pill: 'Defence', width: 560, height: 560, x: 120, y: 48, open: false },
+  defence: { title: 'Defence', pill: 'Defence', width: 560, height: 640, x: 120, y: 28, open: false },
 };
 
 export const MIN_WIDTH = 320;

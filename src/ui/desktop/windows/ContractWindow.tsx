@@ -126,16 +126,19 @@ export function ContractWindow() {
         </dd>
       </dl>
       {steps.length > 1 && (
-        <ol class="contract__steps">
+        <ol class="contract__steps" aria-label={`Step ${current + 1} of ${steps.length}`}>
           {steps.map((step, index) => {
-            const stepTarget = findServer(content, step.targetId);
-            const state = index < current ? 'done' : index === current ? 'now' : 'next';
+            const state = index < current || (index === current && done) ? 'done' : index === current ? 'now' : 'next';
             return (
-              <li key={index} class={`contract__step is-${state}`}>
-                <span class="objective__mark" aria-hidden="true">{index < current ? '✓' : index === current ? '▸' : '○'}</span>
-                <span>
-                  <WithPlaces text={objectiveText({ ...contract, targetId: step.targetId, objective: step.objective })} known={places} />
-                  {stepTarget && index > current && <span class="row__dim"> · {stepTarget.name}</span>}
+              <li key={index} class={`contract__step is-${state}`} aria-current={state === 'now' ? 'step' : undefined}>
+                <span class="contract__step-node" aria-hidden="true">{state === 'done' ? '✓' : index + 1}</span>
+                <span class="contract__step-text">
+                  <span class="contract__step-label">
+                    {state === 'done' ? 'Done' : state === 'now' ? 'Now' : 'Next'}
+                  </span>
+                  <span>
+                    <WithPlaces text={objectiveText({ ...contract, targetId: step.targetId, objective: step.objective })} known={places} />
+                  </span>
                 </span>
               </li>
             );

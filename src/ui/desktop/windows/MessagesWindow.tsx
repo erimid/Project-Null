@@ -3,11 +3,18 @@ import { formatGameTime } from '../../format';
 import { useWorld } from '../../hooks';
 import { findAsk, findPerson } from '../../../core';
 import { content, session } from '../../session';
+import { story } from '../../../content';
 import { Compose } from '../Compose';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
 
-/** The player's inbox. A new message brings the window to the front. */
+/** People who write to the player as themselves, not as a client or a system: their letters look like letters. */
+const VOICES = new Set(story.beats.map((beat) => beat.mail?.from).filter((from): from is string => !!from && /^[A-Z][a-z]+$/.test(from)));
+
+/** How a message is dressed: a gateway alarm, a personal letter, or ordinary mail. */
+const toneOf = (from: string): string => (from === 'Gateway' ? ' is-alert' : VOICES.has(from) ? ' is-voice' : '');
+
+/** The player's inbox. A new message brings the window to the front, unless the gateway is under attack. */
 export function MessagesWindow() {
   const game = useWorld((state) => state);
   const messages = game.messages;
@@ -22,7 +29,8 @@ export function MessagesWindow() {
   const newest = messages.at(-1);
   const seen = useRef<string | null>(null);
   useEffect(() => {
-    if (newest && newest.id !== seen.current && !newest.read) {
+    // Not during an attack: the Defence window keeps the front until it is over.
+    if (newest && newest.id !== seen.current && !newest.read && !game.raid) {
       windows.focus('messages');
       setOpenId(newest.id);
       session.dispatch({ type: 'readMessage', messageId: newest.id });
@@ -73,7 +81,7 @@ export function MessagesWindow() {
             <li key={message.id}>
               <button
                 type="button"
-                class={`message${message.id === openId ? ' is-selected' : ''}${message.read ? '' : ' is-unread'}`}
+                class={`message${toneOf(message.from)}${message.id === openId ? ' is-selected' : ''}${message.read ? '' : ' is-unread'}`}
                 aria-pressed={message.id === openId}
                 onClick={() => {
                   setOpenId(message.id);
@@ -89,13 +97,15 @@ export function MessagesWindow() {
         </ul>
       )}
       {!composing && open && (
-        <article class="message-body">
+        <article class={`message-body${toneOf(open.from)}`} key={open.id}>
           <h3 class="message-body__subject">{open.subject}</h3>
           <p class="message-body__meta">
             From {open.from} · <span class="data">{formatGameTime(open.timeMs)}</span>
           </p>
           {open.body.split('\n\n').map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
+            <p key={index} class={/^(—|-- )/.test(paragraph) || paragraph === open.from ? 'message-body__sign' : undefined} style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}>
+              {paragraph}
+            </p>
           ))}
         </article>
       )}

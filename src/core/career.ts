@@ -157,6 +157,8 @@ export interface CareerOptions {
   readonly startingBalance: number;
   /** Called with a line for everything the player does, for looking closely at one job. */
   readonly note?: (line: string) => void;
+  /** Called with the game after every delivery, for taking a copy of it at some point in a career. */
+  readonly snapshot?: (state: GameState, content: Content) => void;
 }
 
 /** Leaving a connection before the trace gets there. */
@@ -1025,6 +1027,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
           traceSeconds: longestMs > 0 ? Math.round(longestMs / 1000) : null,
         });
         noteTitle();
+        options.snapshot?.(state, content);
       }
     } catch (error) {
       if (error instanceof Caught) {

@@ -3,7 +3,7 @@
  * game before and after each change. Alerts and sounds listen to these,
  * so the simulation itself never needs to know about either.
  */
-import { findServer, pointsSpent, type Content, type GameState } from '../core';
+import { activeContract, findRival, findServer, pointsSpent, raidReport, stageIndex, stagesOf, type Content, type GameState } from '../core';
 import { gameInfo } from '../content';
 
 const titleOf = (rating: number) => gameInfo.ratings.findLast((level) => rating >= level.min)?.title;
@@ -30,7 +30,19 @@ export type GameEvent =
   | { readonly type: 'scrapped' }
   | { readonly type: 'refined' }
   /** A module arrived: found, paid, gifted or (with `bought`) from the market. */
-  | { readonly type: 'moduleGained'; readonly name: string; readonly bought: boolean };
+  | { readonly type: 'moduleGained'; readonly name: string; readonly bought: boolean }
+  /** Someone has started breaking into the player's gateway. */
+  | { readonly type: 'raidStarted'; readonly who: string }
+  /** The intruder got through one of the gateway's barriers. */
+  | { readonly type: 'barrierFell'; readonly left: number }
+  /** One ring of the intruder's port locked in place. */
+  | { readonly type: 'ringLocked' }
+  /** Every ring locked: the port is shut and the intruder set back. */
+  | { readonly type: 'portShut' }
+  /** The attack is over: the intruder was traced home, got in, or the plug was pulled. */
+  | { readonly type: 'raidEnded'; readonly who: string; readonly result: 'won' | 'lost' | 'fled' }
+  /** A staged contract moved on to its next step. */
+  | { readonly type: 'stepDone'; readonly step: number; readonly of: number };
 
 /** The parts of the game that events are worked out from. */
 export interface Snapshot {
@@ -52,10 +64,29 @@ export interface Snapshot {
   readonly building: boolean;
   /** Loose modules, by "id:grade". */
   readonly parts: Readonly<Record<string, number>>;
+  /** The attack on the gateway, if one is running. */
+  readonly raid: { readonly who: string; readonly barrier: number; readonly barriers: number; readonly shut: number; readonly rings: number } | null;
+  /** The subject of the newest message: says how an attack ended. */
+  readonly lastSubject: string;
+  /** The contract being worked on and the step it is at, as "id:step:steps". */
+  readonly stage: string;
 }
 
 export function snapshot(state: GameState, content?: Content): Snapshot {
+  const raid = state.raid;
+  const job = content ? activeContract(state, content) : undefined;
   return {
+    raid: raid
+      ? {
+          who: (content && findRival(content, raid.attackerId)?.handle) || 'Someone',
+          barrier: raidReport(raid).barrier,
+          barriers: raid.barriers,
+          shut: raid.shut ?? 0,
+          rings: raid.port ? raid.port.locked.filter(Boolean).length : 0,
+        }
+      : null,
+    lastSubject: state.messages.at(-1)?.subject ?? '',
+    stage: job ? `${job.id}:${stageIndex(state, job)}:${stagesOf(job).length}` : '',
     connections: new Map(
       state.connections.map((c) => [c.id, { serverId: c.serverId, tracing: c.trace.status === 'active', user: c.user }]),
     ),
@@ -123,7 +154,27 @@ export function diff(before: Snapshot, after: Snapshot, content: Content, byCloc
     });
     events.push({ type: 'moduleGained', name: names.join(' and '), bought: after.balance < before.balance });
   }
-  if (after.messages > before.messages) events.push({ type: 'message' });
+  // The attack on the gateway: its start, each barrier lost, each ring and port won, and how it ended.
+  const subjectStem = (key: 'raidWon' | 'raidLost') => content.mail[key].subject.split('{')[0]!;
+  if (after.raid && !before.raid) events.push({ type: 'raidStarted', who: after.raid.who });
+  else if (after.raid && before.raid) {
+    if (after.raid.barrier > before.raid.barrier) events.push({ type: 'barrierFell', left: after.raid.barriers - after.raid.barrier });
+    if (after.raid.shut > before.raid.shut) events.push({ type: 'portShut' });
+    else if (after.raid.rings > before.raid.rings) events.push({ type: 'ringLocked' });
+  } else if (before.raid && !after.raid) {
+    const result = after.lastSubject.startsWith(subjectStem('raidWon')) ? 'won' : after.lastSubject.startsWith(subjectStem('raidLost')) ? 'lost' : 'fled';
+    events.push({ type: 'raidEnded', who: before.raid.who, result });
+  }
+  // A staged job moving on: same contract, a later step.
+  const [jobBefore, stepBefore] = before.stage.split(':');
+  const [jobAfter, stepAfter, steps] = after.stage.split(':');
+  if (jobAfter && jobAfter === jobBefore && Number(stepAfter) > Number(stepBefore)) {
+    events.push({ type: 'stepDone', step: Number(stepAfter), of: Number(steps) });
+  }
+
+  // The attack has its own alarm and its own ending; its mail does not chime over them.
+  const raidNews = (after.raid && !before.raid) || (before.raid && !after.raid);
+  if (after.messages > before.messages && !raidNews) events.push({ type: 'message' });
   if (after.balance > before.balance) events.push({ type: 'paid' });
   if (after.balance < before.balance) events.push({ type: 'spent' });
   if (after.rating > before.rating) {
