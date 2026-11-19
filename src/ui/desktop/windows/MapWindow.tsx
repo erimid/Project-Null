@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { hopUnderTrace, maxReroutes, ownedProgram, traceReport } from '../../../core';
+import { hopUnderTrace, legKind, maxReroutes, ownedProgram, traceLegs, traceReport, traceSlow, type LegKind } from '../../../core';
 import { findServer, gatewayOf, type ServerDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
@@ -17,6 +17,18 @@ const KIND_LABELS: Record<ServerDef['kind'], string> = {
 };
 
 const byId = (id: string) => findServer(content, id);
+
+const LEG_WORDS: Record<LegKind, string> = { country: 'local', border: 'border', overseas: 'overseas' };
+const LEG_TIPS: Record<LegKind, string> = {
+  country: 'Both ends are in one country: a trace follows this hop quickly.',
+  border: 'This hop crosses a border: a trace takes longer to follow it.',
+  overseas: 'This hop crosses to another part of the world: a trace takes longest to follow it.',
+};
+
+const seconds = (ms: number) => {
+  const total = Math.round(ms / 1000);
+  return total < 60 ? `${total}s` : `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+};
 
 /**
  * The route map: the globe with every server you have the address of.
@@ -51,10 +63,30 @@ export function MapWindow() {
     return id === live.serverId || (hop >= 0 && hop >= live.route.length - legsTraced);
   };
 
+  // Where each hop goes decides how long a trace needs to follow it. With a target picked, a Trace Tracker can say how long.
+  const target = targetId ? byId(targetId) : undefined;
+  const legs = target ? traceLegs(content, gateway.id, target, routeIds, traceSlow(game, content)) : undefined;
+  const legKinds = chain.slice(1).map((server, index) => legKind(chain[index]!, server));
+  const traceTotal = legs?.reduce((sum, leg) => sum + leg.ms, 0) ?? 0;
+  const legLabel = (index: number) => {
+    const isTargetLeg = targetId !== null && index === legCount - 1 && routeIds.length > 0;
+    if (isTargetLeg) return undefined;
+    const word = LEG_WORDS[legKinds[index]!].toUpperCase();
+    const ms = legs?.[index]?.ms;
+    return tracker && ms ? `${word} +${seconds(ms)}` : legKinds[index] === 'country' ? undefined : word;
+  };
+
   const arcs: GlobeArc[] = chain.slice(1).map((server, index) => {
     const isLastLeg = index === legCount - 1 && targetId !== null;
     const found = index >= legCount - legsTraced;
-    return { from: chain[index]!, to: server, tone: found ? 'red' : !live && isLastLeg ? 'cyan' : 'mint', dashed: !live };
+    return {
+      from: chain[index]!,
+      to: server,
+      tone: found ? 'red' : !live && isLastLeg ? 'cyan' : 'mint',
+      dashed: !live,
+      heavy: legKinds[index] === 'overseas',
+      label: legLabel(index),
+    };
   });
 
   const dots: GlobeDot[] = known.map((server) => {
@@ -250,11 +282,28 @@ export function MapWindow() {
                   isTraced(server.id) ? ' route__hop--traced' : ''
                 }${server.id === tracingId ? ' route__hop--tracing' : ''}`}
               >
+                {index > 0 && (
+                  <span class={`route__leg route__leg--${legKinds[index - 1]}`} data-tip={LEG_TIPS[legKinds[index - 1]!]}>
+                    {legKinds[index - 1] === 'overseas' ? '»' : '›'}
+                  </span>
+                )}
                 {server.id === gateway.id ? 'You' : server.name}
               </li>
             ))}
             {!targetId && <li class="route__hop route__hop--empty">pick a target</li>}
           </ol>
+          {target && (
+            <span
+              class="route__time"
+              data-tip={
+                tracker
+                  ? 'How long a trace would need to follow this route back to you. Hops across borders and oceans add the most.'
+                  : 'A Trace Tracker would show how long a trace needs to follow this route. Hops across borders and oceans add the most.'
+              }
+            >
+              Trace <span class="data">{tracker ? seconds(traceTotal) : '?'}</span>
+            </span>
+          )}
           {!live && game.route.length > 0 && (
             <button type="button" class="btn" data-tip="Remove every relay from the route" onClick={() => run({ type: 'clearRoute' })}>
               Clear

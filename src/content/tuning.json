@@ -9,6 +9,9 @@
     3
   ],
   "directTraceFactor": 0.5,
+  "sameCountryLegFactor": 0.8,
+  "borderLegFactor": 1,
+  "overseasLegFactor": 1.35,
   "lieLowHours": 6,
   "finePerSecurityLevel": 350,
   "caughtRatingLoss": 2,

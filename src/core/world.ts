@@ -23,6 +23,10 @@ export interface Rules {
   readonly monitorGraceSeconds: readonly number[];
   /** With no relays, the trace takes this fraction of the server's per-hop time. */
   readonly directTraceFactor: number;
+  /** How much a trace step is stretched by the leg it has to cross: inside one country, across a border, to another part of the world. */
+  readonly sameCountryLegFactor: number;
+  readonly borderLegFactor: number;
+  readonly overseasLegFactor: number;
   /** In-game hours without contracts after being traced. */
   readonly lieLowHours: number;
   readonly finePerSecurityLevel: number;

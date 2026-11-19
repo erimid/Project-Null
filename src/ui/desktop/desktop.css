@@ -1050,6 +1050,15 @@
   pointer-events: none;
 }
 
+/* A hop's label sits over the globe's lines, so it gets a dark edge to stay readable. */
+.globe__label--leg {
+  letter-spacing: 0.06em;
+  paint-order: stroke;
+  stroke: #040c16;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
 .map__side {
   display: flex;
   flex-direction: column;
@@ -1179,7 +1188,7 @@
   color: var(--mint-text);
 }
 
-.route__hop + .route__hop::before {
+.route__hop + .route__hop--empty::before {
   content: '›';
   margin: 0 8px;
   color: var(--text-dim);
@@ -5659,4 +5668,57 @@ body {
 /* The volume slider gets a taller strip to grab on a phone. */
 .desktop--phone .menu__sound input {
   min-height: 40px;
+}
+
+/* ---- route geography: what each hop crosses ---- */
+
+.route__leg {
+  display: inline-block;
+  margin: 0 8px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.route__leg--border {
+  color: var(--cyan);
+}
+
+.route__leg--overseas {
+  color: var(--mint);
+  font-weight: 700;
+}
+
+.route__time {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.route__time .data {
+  margin-left: 4px;
+  color: var(--text-bright);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* On a phone the route gets a line of its own, with the trace time and Clear on the line under it. */
+.is-phone .route__chain {
+  flex-basis: 100%;
+  order: 1;
+}
+
+.is-phone .route__time {
+  order: 2;
+  margin-right: auto;
+}
+
+.is-phone .route > .btn {
+  order: 3;
+}
+
+.is-phone .route__leg {
+  margin: 0 6px;
 }

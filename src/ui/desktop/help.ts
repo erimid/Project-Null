@@ -28,6 +28,7 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
     points: [
       'Pick a server on the globe or in the address book to see what it is.',
       'Press + next to a server to add it as a relay. Each relay is one more step a trace has to follow.',
+      'Where relays sit matters. A hop across a border slows a trace, and a hop to another part of the world slows it most. Hops inside one country are quick to follow.',
       'Pick your target last and press Connect. The route is drawn across the globe.',
       'While a trace closes in, pick a spare server and press Reroute to make it start that step again.',
     ],
@@ -141,7 +142,7 @@ export const TOUR: readonly TourStep[] = [
     title: 'Route map',
     target: 'map',
     open: 'map',
-    body: 'Every server you know is in the address book. Add a few as relays, then connect to your target through them. More relays give you more time if you are traced.',
+    body: 'Every server you know is in the address book. Add a few as relays, then connect to your target through them. More relays give you more time if you are traced, and relays spread across the world give you the most.',
   },
   {
     title: 'Gateway',

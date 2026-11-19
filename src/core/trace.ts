@@ -6,13 +6,67 @@ import type { ServerDef } from '../content/schema';
 import type { Connection, GameState, TraceState } from './state';
 import { monitorHeld } from './link';
 import { effect } from './skills';
-import { findServer, type Content } from './world';
+import { regionOf } from './generate';
+import { findServer, gatewayOf, type Content } from './world';
 
-/** How long the trace needs for each step back along a route, last relay first. `slow` comes from the player's skills. */
-export function traceHopMs(content: Content, target: ServerDef, route: readonly string[], slow = 1): number[] {
+/** What a leg of the route crosses: nothing much, a border, or a stretch of the world. */
+export type LegKind = 'country' | 'border' | 'overseas';
+
+/** What a trace has to cross to follow the leg between two servers. */
+export function legKind(from: { readonly country: string; readonly lat: number; readonly lon: number }, to: typeof from): LegKind {
+  if (from.country === to.country) return 'country';
+  return regionOf(from) === regionOf(to) ? 'border' : 'overseas';
+}
+
+/** How much a leg of that kind stretches the trace step that follows it. */
+export function legFactor(content: Content, kind: LegKind): number {
+  const rules = content.rules;
+  return kind === 'country' ? rules.sameCountryLegFactor : kind === 'border' ? rules.borderLegFactor : rules.overseasLegFactor;
+}
+
+export interface TraceLeg {
+  /** Server ids at each end of the leg, the end nearer you first. */
+  readonly fromId: string;
+  readonly toId: string;
+  readonly kind: LegKind;
+  /** How long the trace needs to follow this leg back towards you. 0 for the one leg it never has to search. */
+  readonly ms: number;
+}
+
+/**
+ * The legs of a route from your gateway to the target, in that order,
+ * with how long a trace needs for each. Each relay's step covers the leg
+ * back towards you, so where that relay sits against the one before it
+ * matters. The last leg, into the target, costs the trace nothing.
+ */
+export function traceLegs(content: Content, gatewayId: string, target: ServerDef, route: readonly string[], slow = 1): TraceLeg[] {
+  const ids = [gatewayId, ...route, target.id];
+  const hopMs = traceHopMs(content, target, route, slow, gatewayId);
+  const servers = ids.map((id) => findServer(content, id));
+  return ids.slice(1).map((toId, index) => {
+    const from = servers[index];
+    const to = servers[index + 1];
+    const kind = from && to ? legKind(from, to) : 'border';
+    // With no relays the one step is the direct leg. Otherwise relay i's step is leg i, and the leg into the target is free.
+    const ms = route.length === 0 ? hopMs[0]! : index < route.length ? hopMs[route.length - 1 - index]! : 0;
+    return { fromId: ids[index]!, toId, kind, ms };
+  });
+}
+
+/**
+ * How long the trace needs for each step back along a route, last relay
+ * first. `slow` comes from the player's skills. Each relay's step is
+ * stretched by its own delay and by the leg back to the server before it.
+ */
+export function traceHopMs(content: Content, target: ServerDef, route: readonly string[], slow = 1, gatewayId?: string): number[] {
   const perHopMs = target.traceSecondsPerHop * 1000 * slow;
-  if (route.length === 0) return [perHopMs * content.rules.directTraceFactor];
-  return [...route].reverse().map((id) => perHopMs * (findServer(content, id)?.relayDelay ?? 1));
+  const home = findServer(content, gatewayId ?? gatewayOf(content).id);
+  const leg = (from: ServerDef | undefined, to: ServerDef | undefined) => (from && to ? legFactor(content, legKind(from, to)) : 1);
+  if (route.length === 0) return [perHopMs * content.rules.directTraceFactor * leg(home, target)];
+  const relays = route.map((id) => findServer(content, id));
+  return relays
+    .map((relay, index) => perHopMs * (relay?.relayDelay ?? 1) * leg(index === 0 ? home : relays[index - 1], relay))
+    .reverse();
 }
 
 /** How much longer each step of a trace takes, from the Long way round skill. */
@@ -154,7 +208,10 @@ export function reroute(state: GameState, content: Content, connection: Connecti
 
   const step = connection.route.length - 1 - index;
   connection.route[index] = relay.id;
-  connection.trace.hopMs[step] = target.traceSecondsPerHop * 1000 * relay.relayDelay * traceSlow(state, content);
+  // The new relay changes its own step and the step of the relay after it, whose leg now starts at the new one.
+  const fresh = traceHopMs(content, target, connection.route, traceSlow(state, content));
+  connection.trace.hopMs[step] = fresh[step]!;
+  if (step > 0) connection.trace.hopMs[step - 1] = fresh[step - 1]!;
   // Back to the start of this step, or further with Slip away.
   const back = Math.max(0, step - effect(state, content, 'slipAway'));
   connection.trace.elapsedMs = connection.trace.hopMs.slice(0, back).reduce((sum, ms) => sum + ms, 0);
