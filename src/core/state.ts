@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 16;
+export const STATE_VERSION = 17;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -81,6 +81,8 @@ export interface HardwareState {
   ports: number;
   /** 0 = no model hosted at home. */
   rack: number;
+  /** 0 = no trace sensor fitted. */
+  sensor: number;
 }
 
 /** A message sent to someone under a borrowed name, waiting for its answer. */
@@ -152,6 +154,8 @@ export interface TraceState {
   elapsedMs: number;
   /** How long the trace needs for each step back along the route. Fixed when the connection opens. */
   hopMs: number[];
+  /** Time a Trace Jammer still has the trace frozen for. While above 0 the trace stands still. */
+  frozenMs?: number;
 }
 
 /**
@@ -176,6 +180,8 @@ export interface Connection {
   /** How many times this connection has been rerouted around a trace. */
   reroutes: number;
   monitor: MonitorState;
+  /** True once a Trace Jammer has been used on this connection. It works once. */
+  jammed?: boolean;
 }
 
 /**
@@ -283,6 +289,8 @@ export type TaskTarget =
   | { kind: 'deleteLog'; logIds: number[] }
   /** Take a program file stored on the gateway apart into modules. Runs at home. */
   | { kind: 'decompile'; file: string }
+  /** Read a known server's security before connecting. Runs at home, against the server id. */
+  | { kind: 'scan'; serverId: string }
   /** Build a crafted program at the Workbench. Runs at home. Its modules are taken when it starts. */
   | { kind: 'build'; base: string; modules: Fitted[] };
 
@@ -397,6 +405,8 @@ export interface GameState {
   player: PlayerState;
   /** Ids of servers the player has the address of. */
   knownServers: string[];
+  /** Ids of servers the player has scanned, so their security is known before connecting. */
+  scanned: string[];
   /** Servers the player has starred in the address book, in the order they were starred. */
   bookmarks: string[];
   /** The bounce chain being planned for the next connection: relay server ids in order. */
@@ -450,7 +460,7 @@ export function createGame(options: NewGameOptions): GameState {
     player: {
       handle: options.handle,
       balance: options.startingBalance,
-      hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0 },
+      hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0 },
       programs: [],
       files: [],
       passwords: {},
@@ -467,6 +477,7 @@ export function createGame(options: NewGameOptions): GameState {
       model: null,
     },
     knownServers: [],
+    scanned: [],
     bookmarks: [],
     savedRoutes: Array.from({ length: ROUTE_SLOTS }, () => []),
     relayHeat: {},

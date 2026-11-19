@@ -112,6 +112,27 @@ export const testServers: ServerDef[] = [
     link: { serverId: 'gatehouse', layer: 'firewall' },
   },
   { ...base, id: 'hidden', name: 'Unlisted', kind: 'board', hostname: 'H', address: '10.0.0.6', listed: false, accounts: [{ user: 'member', role: 'guest', name: 'Member' }], files: [] },
+  {
+    ...base,
+    id: 'bazaar',
+    name: 'Bazaar',
+    kind: 'board',
+    hostname: 'BZ',
+    address: '10.0.0.13',
+    listed: true,
+    accounts: [{ user: 'guest', role: 'guest', name: 'Public' }],
+    files: [],
+    // A specialist shop: only Scanners as staple programs, every module, no hardware or models, half price, with the jammer as a rare line that is always out.
+    shop: {
+      programs: true,
+      hardware: false,
+      modules: true,
+      models: false,
+      programKinds: ['scan'],
+      priceFactor: 0.5,
+      rare: [{ kind: 'program', id: 'jammer', chance: 1 }],
+    },
+  },
 ];
 
 /** A rival hacker's home server, for the raid tests. Not in the default world. */
@@ -184,6 +205,7 @@ export const testRules: Rules = {
   ringToleranceDegrees: 20,
   ringMissSeconds: 2,
   monitorBlindSeconds: 30,
+  traceJamSeconds: 10,
   echoBonusFactor: 1.5,
   echoPenaltyFactor: 0.5,
   harderSecurityAfter: 3,
@@ -243,6 +265,7 @@ export const testHardware: HardwareDef[] = [
   part('ports', 2, 70, { connections: 2 }),
   part('ports', 3, 150, { connections: 3 }),
   part('rack', 1, 200, { model: 'small', sizeGb: 8 }),
+  part('sensor', 1, 90, { warn: 1 }),
 ];
 
 /** Two extra programs that are only for sale, never owned at the start. */
@@ -253,6 +276,8 @@ export const shopPrograms: ProgramDef[] = [
   { ...program('planner-1', 'planRoute', 0), price: 20 },
   { ...program('planner-2', 'planRoute', 0), version: 2, price: 40 },
   { ...program('planner-3', 'planRoute', 0), version: 3, price: 60 },
+  { ...program('scanner', 'scan', 6), price: 120 },
+  { ...program('jammer', 'jamTrace', 1), price: 200 },
 ];
 
 export const testContracts: ContractDef[] = [
@@ -353,6 +378,7 @@ export const testModules: readonly ModuleDef[] = [
   { id: 'compact', name: 'Compact', blurb: 'b', fits: ['breakPassword', 'bypassProxy', 'copyFile'], grades: grades([1, 1, 1], [0.5, 0.25, 0.25]) },
   { id: 'quiet', name: 'Quiet', blurb: 'b', trait: 'quiet', fits: ['breakPassword', 'bypassProxy', 'bypassFirewall', 'copyFile'], grades: grades([0.5, 0.5, 1], [1, 1, 1]) },
   { id: 'tidy', name: 'Tidy', blurb: 'b', trait: 'tidy', fits: ['copyFile', 'deleteFile'], grades: grades([0.5, 0.5, 1], [1, 1, 1]) },
+  { id: 'offload', name: 'Offload', blurb: 'b', trait: 'parallel', fits: ['copyFile', 'deleteFile', 'breakPassword'], grades: grades([0.8, 0.9, 1], [1.4, 1.3, 1.2]) },
 ];
 
 export const content: Content = {

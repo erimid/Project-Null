@@ -24,7 +24,7 @@ import { readFile, sendPhish } from './phish';
 import { buyModule, preferProgram, refineModule, returnModules, scrapBuild } from './crafting';
 import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
-import { bestRoute, coolRelays, hopUnderTrace, intruding, newTrace, noteIntrusion, reroute, warmRelay } from './trace';
+import { bestRoute, coolRelays, hopUnderTrace, intruding, jamTrace, newTrace, noteIntrusion, reroute, warmRelay } from './trace';
 import { lockRaidFile, lockRaidRing, openRaidPort, pullPlug, startRaidTrace } from './raid';
 import { findAccount, findConnection, findServer, gatewayOf, once, ownedProgram, sendMail, sourceAddress, type Content } from './world';
 
@@ -57,6 +57,10 @@ export type Action =
   | { readonly type: 'lockRing'; readonly taskId: string; readonly ring: number }
   /** Swap the relay a trace is working on for another server. */
   | { readonly type: 'reroute'; readonly connectionId: string; readonly serverId: string }
+  /** Freeze a running trace with a Trace Jammer. Once per connection. */
+  | { readonly type: 'jamTrace'; readonly connectionId: string }
+  /** Scan a known server to learn its security before connecting. Runs on the gateway. */
+  | { readonly type: 'scanServer'; readonly serverId: string }
   | { readonly type: 'readMessage'; readonly messageId: string }
   /** Take a contract from the board you are logged in to. */
   | { readonly type: 'acceptContract'; readonly connectionId: string; readonly contractId: string }
@@ -341,6 +345,10 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
 
     case 'lockRing':
       return answer(lockRing(state, content, action.taskId, action.ring));
+    case 'jamTrace':
+      return answer(jamTrace(state, content, action.connectionId));
+    case 'scanServer':
+      return answer(startTask(state, content, null, { kind: 'scan', serverId: action.serverId }));
 
     case 'reroute': {
       const connection = findConnection(state, action.connectionId);

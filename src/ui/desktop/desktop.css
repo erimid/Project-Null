@@ -6257,3 +6257,64 @@ body {
   padding: 3px 10px;
   font-size: 12px;
 }
+
+/* ---- step 4: new gear & shops ---- */
+
+/* Jam button on the trace alarm. */
+.alarm__jam {
+  display: block;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 5px 0;
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  background: rgba(255, 59, 78, 0.12);
+  color: var(--red-text);
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.alarm__jam:hover {
+  background: rgba(255, 59, 78, 0.22);
+}
+
+/* A shop line that is only on the shelf today. */
+.row__tag--rare {
+  border-color: rgba(255, 196, 92, 0.6);
+  color: var(--amber, #ffc45c);
+}
+
+/* Scanner readout in the route map's detail panel. */
+.map__scan {
+  margin: 10px 0 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+}
+
+.map__scan-head {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.map__scan-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 14px;
+  font-size: 13px;
+}
+
+.map__scan-wait {
+  margin: 10px 0 4px;
+  color: var(--cyan);
+}
+
+.map__scan-btn {
+  margin: 10px 0 4px;
+}

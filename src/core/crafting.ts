@@ -10,12 +10,13 @@
  * Modules come from the market, from module installers on servers, as
  * pay for some contracts, and from decompiling program files.
  */
-import type { ModuleDef } from '../content/modules';
+import type { ModuleDef, ModuleTrait } from '../content/modules';
 import type { PartDef, ProgramDef, ProgramFileDef } from '../content/schema';
 import { describeBuild, type BuiltProgram } from './builds';
 import { effect } from './skills';
 import type { Fitted, GameState, Task } from './state';
 import { fileDef, findConnection, findProgram, findServer, type Content } from './world';
+import { sellsModule, shopOf, shopPrice } from './market';
 
 export const findModule = (content: Content, id: string): ModuleDef | undefined => content.modules.find((module) => module.id === id);
 
@@ -42,7 +43,7 @@ export function findBuilt(state: GameState, content: Content, id: string): Built
 }
 
 /** True if the program is a crafted one with this trait. */
-export const hasTrait = (state: GameState, content: Content, programId: string, trait: 'quiet' | 'tidy'): boolean =>
+export const hasTrait = (state: GameState, content: Content, programId: string, trait: ModuleTrait): boolean =>
   findBuilt(state, content, programId)?.traits.includes(trait) ?? false;
 
 /** Market programs the player has installed, which can be built on. */
@@ -139,11 +140,14 @@ export function marketGrade(state: GameState, content: Content): number {
 /** Buys one module from the board the player is logged in to. */
 export function buyModule(state: GameState, content: Content, connectionId: string, id: string, grade: number): string | null {
   const connection = findConnection(state, connectionId);
-  if (!connection || connection.user === null || findServer(content, connection.serverId)?.kind !== 'board') return 'Log in to the board first.';
+  const shop = connection && findServer(content, connection.serverId);
+  if (!connection || connection.user === null || shop?.kind !== 'board') return 'Log in to the board first.';
   const module = findModule(content, id);
-  const price = module?.grades[grade - 1]?.price;
-  if (!module || price === undefined) return 'That is not for sale.';
+  const base = module?.grades[grade - 1]?.price;
+  if (!module || base === undefined) return 'That is not for sale.';
+  if (!sellsModule(state, shop, module, grade)) return 'This shop does not stock that.';
   if (grade > marketGrade(state, content)) return `The market sells ${module.name} ${grade} to people with a better rating.`;
+  const price = shopPrice(shopOf(shop), base);
   if (state.player.balance < price) return 'You cannot afford that.';
   state.player.balance -= price;
   addParts(state, id, grade);

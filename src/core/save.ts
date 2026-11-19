@@ -137,6 +137,12 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   },
   // 15 -> 16: enemy hackers. Nobody was under attack before they existed.
   15: (old) => ({ ...old, raid: null, raidPending: null, raidQuietUntilMs: 0 }),
+  // 16 -> 17: new gear and shops. No server scanned yet, and no trace sensor fitted.
+  16: (old) => ({
+    ...old,
+    scanned: [],
+    player: { ...(old.player as object), hardware: { ...((old.player as { hardware: object }).hardware), sensor: 0 } },
+  }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -247,7 +253,7 @@ const isConnection = (c: unknown): c is Obj =>
       ['open', 'won', 'lost'].includes(c.monitor.echo.result as string)));
 
 const isHardware = (h: unknown) =>
-  isObj(h) && ['cpu', 'storage', 'modem', 'ports', 'rack'].every((slot) => isNum(h[slot]) && Number.isInteger(h[slot]) && (h[slot] as number) >= 0);
+  isObj(h) && ['cpu', 'storage', 'modem', 'ports', 'rack', 'sensor'].every((slot) => isNum(h[slot]) && Number.isInteger(h[slot]) && (h[slot] as number) >= 0);
 
 const isJob = (j: unknown): j is Obj =>
   isObj(j) &&
@@ -381,6 +387,7 @@ function checkState(raw: Obj): GameState {
   if (!isList(raw.tasks, isTask) || !isList(raw.messages, isMessage)) throw damaged;
   if (!isObj(rngStreams) || !Object.values(rngStreams).every(isNum)) throw damaged;
   if (!isList(raw.knownServers, isText) || !isList(raw.route, isText) || !isList(raw.bookmarks, isText)) throw damaged;
+  if (!isList(raw.scanned, isText)) throw damaged;
   if (!isList(raw.savedRoutes, (route): route is string[] => isList(route, isText))) throw damaged;
   if (!isObj(raw.relayHeat) || !Object.values(raw.relayHeat).every((mark) => isObj(mark) && isNum(mark.heat) && isNum(mark.atMs))) throw damaged;
   if (!isList(raw.connections, isConnection)) throw damaged;

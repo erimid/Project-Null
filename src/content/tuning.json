@@ -36,6 +36,7 @@
   "ringToleranceDegrees": 24,
   "ringMissSeconds": 1.5,
   "monitorBlindSeconds": 20,
+  "traceJamSeconds": 12,
   "echoBonusFactor": 1.5,
   "echoPenaltyFactor": 0.75,
   "harderSecurityAfter": 5,

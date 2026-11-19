@@ -202,5 +202,29 @@
     "price": 6500,
     "sizeGq": 3,
     "blurb": "Places eight relays, reads the map, and knows which relays your target sees through and which are still warm from use."
+  },
+  {
+    "id": "scanner",
+    "name": "Scanner",
+    "short": "Scanner",
+    "kind": "scan",
+    "version": 1,
+    "baseSeconds": 8,
+    "secondsPerGq": 0,
+    "price": 1200,
+    "sizeGq": 2,
+    "blurb": "Reads a server's security from the outside, so you know what you are walking into before you connect."
+  },
+  {
+    "id": "trace-jammer",
+    "name": "Trace Jammer",
+    "short": "Jammer",
+    "kind": "jamTrace",
+    "version": 1,
+    "baseSeconds": 0,
+    "secondsPerGq": 0,
+    "price": 3400,
+    "sizeGq": 3,
+    "blurb": "Floods a trace with noise and freezes it where it stands for a few seconds. One shot per connection."
   }
 ]

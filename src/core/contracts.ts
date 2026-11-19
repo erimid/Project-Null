@@ -12,6 +12,7 @@ import { freeStorageGb } from './tasks';
 import { refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
+import { sellsProgram, shopOf, shopPrice } from './market';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
 import { findConnection, findProgram, findServer, noteProgress, once, securityOf, sendMail, type Content } from './world';
 
@@ -225,13 +226,16 @@ export function alterRecord(state: GameState, content: Content, connectionId: st
 export function buyProgram(state: GameState, content: Content, connectionId: string, programId: string): string | null {
   const board = atBoard(state, content, connectionId);
   if (typeof board === 'string') return board;
+  const shop = findServer(content, board.serverId)!;
   const program = findProgram(content, programId);
   // Starting programs cost nothing: the market gives them back if you removed one.
   if (!program || (program.price <= 0 && !content.startingPrograms.includes(programId))) return 'That is not for sale.';
+  if (!sellsProgram(state, shop, program)) return 'This shop does not stock that.';
   if (state.player.programs.includes(program.id)) return 'You already own that.';
-  if (state.player.balance < program.price) return 'You cannot afford that.';
+  const price = shopPrice(shopOf(shop), program.price);
+  if (state.player.balance < price) return 'You cannot afford that.';
   if (program.sizeGq > freeStorageGb(state, content)) return 'Not enough room on your gateway.';
-  state.player.balance -= program.price;
+  state.player.balance -= price;
   state.player.programs.push(program.id);
   return null;
 }

@@ -419,6 +419,39 @@ export function MapWindow() {
               </div>
               <div class="data map__detail-address">{selected.address}</div>
               <p class="map__detail-blurb">{selected.blurb}</p>
+              {selected.id !== gateway.id && (() => {
+                const scanned = game.scanned.includes(selected.id);
+                const connected = game.connections.some((c) => c.serverId === selected.id);
+                const scanning = game.tasks.some((task) => task.target.kind === 'scan' && task.target.serverId === selected.id);
+                if (scanned || connected) {
+                  const security = selected.security;
+                  return (
+                    <div class="map__scan">
+                      <span class="map__scan-head">Security</span>
+                      <span class="map__scan-grid data">
+                        <span>Password {security.password || '—'}</span>
+                        <span>Proxy {security.proxy || '—'}</span>
+                        <span>Firewall {security.firewall || '—'}</span>
+                        <span>Monitor {security.monitor || '—'}</span>
+                      </span>
+                    </div>
+                  );
+                }
+                if (scanning) return <p class="map__scan-wait data">Scanning…</p>;
+                if (ownedProgram(game, content, 'scan')) {
+                  return (
+                    <button
+                      type="button"
+                      class="btn btn--small map__scan-btn"
+                      data-tip="Read this server's security from the outside, before you connect."
+                      onClick={() => run({ type: 'scanServer', serverId: selected.id })}
+                    >
+                      Scan
+                    </button>
+                  );
+                }
+                return null;
+              })()}
               {selected.id !== gateway.id && <RelayNote server={selected} cover={relayCover(game, selected)} {...relayMarks(selected)} target={target} />}
               {selected.id !== gateway.id && (
                 <div class="map__actions">

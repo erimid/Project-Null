@@ -10,6 +10,7 @@ import type { GameState, HardwareState } from './state';
 import { effect } from './skills';
 import { stream } from './streams';
 import { findConnection, findServer, sendMail, type Content } from './world';
+import { sellsHardware, shopOf, shopPrice } from './market';
 
 /** Slots in the order screens list them, with their names. */
 export const HARDWARE_SLOT_LABELS: readonly (readonly [HardwareSlot, string])[] = [
@@ -18,10 +19,11 @@ export const HARDWARE_SLOT_LABELS: readonly (readonly [HardwareSlot, string])[] 
   ['modem', 'Modem'],
   ['ports', 'Connection ports'],
   ['rack', 'Model rack'],
+  ['sensor', 'Trace sensor'],
 ];
 
 /** What a new gateway has: tier 1 of everything, and an empty model rack. */
-export const STOCK_HARDWARE: HardwareState = { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0 };
+export const STOCK_HARDWARE: HardwareState = { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0 };
 
 export function findPart(content: Content, slot: HardwareSlot, tier: number): HardwareDef | undefined {
   return content.hardware.find((part) => part.slot === slot && part.tier === tier);
@@ -66,15 +68,18 @@ export function buyHardware(state: GameState, content: Content, connectionId: st
   if (!connection || connection.user === null || findServer(content, connection.serverId)?.kind !== 'board') {
     return 'Log in to the board first.';
   }
+  const shop = findServer(content, connection.serverId)!;
   const part = content.hardware.find((item) => item.id === partId);
   if (!part || part.price <= 0) return 'That is not for sale.';
+  if (!sellsHardware(state, shop, part)) return 'This shop does not stock that.';
   if (state.player.hardware[part.slot] >= part.tier) return 'Your gateway already has that or better.';
-  if (state.player.balance < part.price) return 'You cannot afford that.';
+  const price = shopPrice(shopOf(shop), part.price);
+  if (state.player.balance < price) return 'You cannot afford that.';
   if (part.slot === 'rack') {
     const extra = (part.sizeGb ?? 0) - rackStorageGb(state, content);
     if (usedGb + extra > storageGb(state, content)) return 'Not enough room on your gateway for the model.';
   }
-  state.player.balance -= part.price;
+  state.player.balance -= price;
   state.player.hardware[part.slot] = part.tier;
   return null;
 }

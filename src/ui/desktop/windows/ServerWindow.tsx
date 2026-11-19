@@ -22,6 +22,12 @@ import {
   ringTolerance,
   partTaken,
   marketGrade,
+  shopOf,
+  shopPrice,
+  sellsProgram,
+  sellsModule,
+  sellsHardware,
+  rareToday,
   type Action,
   type Connection,
   type EchoPuzzle,
@@ -933,10 +939,14 @@ function Contracts({ game, connection, act }: View) {
   );
 }
 
-function Market({ game, connection, act }: View) {
+function Market({ game, server, connection, act }: View) {
+  const shop = shopOf(server);
+  const rareIds = new Set(rareToday(game, server).map((line) => `${line.kind}:${line.id}`));
   // Starting programs only show up here if the player has removed one: the market gives those back.
   const forSale = content.programs.filter(
-    (program) => program.price > 0 || (content.startingPrograms.includes(program.id) && !game.player.programs.includes(program.id)),
+    (program) =>
+      (program.price > 0 || (content.startingPrograms.includes(program.id) && !game.player.programs.includes(program.id))) &&
+      sellsProgram(game, server, program),
   );
   const free = freeStorageGb(game, content);
   const rented = rentedModel(game, content);
@@ -945,27 +955,30 @@ function Market({ game, connection, act }: View) {
     <ul class="rows">
       {forSale.map((program) => {
         const owned = game.player.programs.includes(program.id);
+        const price = shopPrice(shop, program.price);
+        const rare = rareIds.has(`program:${program.id}`);
         return (
           <li key={program.id} class="row row--contract row--market">
             <span class="row__main">
               <span>
                 <strong>{program.name}</strong> <span class="data row__dim">v{program.version}</span>
+                {rare && <span class="row__tag row__tag--rare">today only</span>}
               </span>
               <span class="contract__summary">{program.blurb}</span>
             </span>
             <span class="data row__dim">{program.sizeGq} GB</span>
-            <span class="data contract__pay">{program.price > 0 ? formatMoney(program.price) : 'free'}</span>
+            <span class="data contract__pay">{price > 0 ? formatMoney(price) : 'free'}</span>
             {owned ? (
               <span class="row__done">Owned</span>
             ) : (
               <button
                 type="button"
                 class="btn btn--go"
-                disabled={game.player.balance < program.price || program.sizeGq > free}
+                disabled={game.player.balance < price || program.sizeGq > free}
                 title={program.sizeGq > free ? 'Not enough room on your gateway' : undefined}
                 onClick={() => act({ type: 'buyProgram', connectionId: connection.id, programId: program.id })}
               >
-                {program.price > 0 ? 'Buy' : 'Install'}
+                {price > 0 ? 'Buy' : 'Install'}
               </button>
             )}
           </li>
@@ -976,7 +989,7 @@ function Market({ game, connection, act }: View) {
       Modules <span class="heading__note">for your Workbench</span>
     </h3>
     <ul class="rows">
-      {content.modules.map((module) => {
+      {content.modules.filter((module) => shop.modules || rareIds.has(`module:${module.id}`)).map((module) => {
         const best = marketGrade(game, content);
         const next = content.rules.moduleGradeRatings[best];
         return (
@@ -991,29 +1004,35 @@ function Market({ game, connection, act }: View) {
               </span>
             </span>
             <span class="market__grades">
-              {module.grades.slice(0, best).map((grade, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  class="btn btn--go"
-                  disabled={game.player.balance < grade.price}
-                  title={`${module.name} ${index + 1}: ${formatMoney(grade.price)}`}
-                  onClick={() => act({ type: 'buyModule', connectionId: connection.id, moduleId: module.id, grade: index + 1 })}
-                >
-                  {index + 1} · {formatMoney(grade.price)}
-                </button>
-              ))}
+              {module.grades.slice(0, best).map((grade, index) => {
+                const price = shopPrice(shop, grade.price);
+                return sellsModule(game, server, module, index + 1) ? (
+                  <button
+                    key={index}
+                    type="button"
+                    class="btn btn--go"
+                    disabled={game.player.balance < price}
+                    title={`${module.name} ${index + 1}: ${formatMoney(price)}`}
+                    onClick={() => act({ type: 'buyModule', connectionId: connection.id, moduleId: module.id, grade: index + 1 })}
+                  >
+                    {index + 1} · {formatMoney(price)}
+                  </button>
+                ) : null;
+              })}
             </span>
           </li>
         );
       })}
     </ul>
+    {shop.models && (
+    <>
     <h3 class="map__heading section-gap">
       Models for rent <span class="heading__note">by the day, from Lowlight Compute</span>
     </h3>
     <ul class="rows">
       {content.models.map((model) => {
         const mine = rented?.id === model.id;
+        const price = shopPrice(shop, model.price);
         return (
           <li key={model.id} class="row row--contract row--market">
             <span class="row__main">
@@ -1024,11 +1043,11 @@ function Market({ game, connection, act }: View) {
               <span class="contract__summary">{model.blurb}</span>
             </span>
             <span class="data row__dim">{content.rules.modelRentHours} h</span>
-            <span class="data contract__pay">{formatMoney(model.price)}</span>
+            <span class="data contract__pay">{formatMoney(price)}</span>
             <button
               type="button"
               class="btn btn--go"
-              disabled={game.player.balance < model.price}
+              disabled={game.player.balance < price}
               onClick={() => act({ type: 'rentModel', connectionId: connection.id, modelId: model.id })}
             >
               {mine ? 'Add a day' : 'Rent'}
@@ -1038,21 +1057,25 @@ function Market({ game, connection, act }: View) {
       })}
     </ul>
     </>
+    )}
+    </>
   );
 }
 
 /** The Hardware shelf: for each slot, what is installed and the parts above it. Parts install as soon as they are paid for. */
-function Hardware({ game, connection, act }: View) {
+function Hardware({ game, server, connection, act }: View) {
   const [fresh, setFresh] = useState<string | null>(null);
   const free = freeStorageGb(game, content);
+  const shop = shopOf(server);
   return (
     <>
       <p class="board__note">Parts install the moment you pay. Nothing is bought back.</p>
       {HARDWARE_SLOT_LABELS.map(([slot, label]) => {
         const tiers = content.hardware.filter((part) => part.slot === slot).sort((a, b) => a.tier - b.tier);
+        if (tiers.length === 0) return null;
         const now = installed(game, content, slot);
         const tier = game.player.hardware[slot];
-        const upgrades = tiers.filter((part) => part.tier > tier);
+        const upgrades = tiers.filter((part) => part.tier > tier && sellsHardware(game, server, part));
         return (
           <section key={slot} class="section-gap">
             <h3 class="map__heading">
@@ -1071,17 +1094,18 @@ function Hardware({ game, connection, act }: View) {
                 {upgrades.map((part) => {
                   const extraGb = slot === 'rack' ? (part.sizeGb ?? 0) - rackStorageGb(game, content) : 0;
                   const tooBig = extraGb > free;
+                  const price = shopPrice(shop, part.price);
                   return (
                     <li key={part.id} class={`row row--contract row--part${fresh === part.id ? ' is-new' : ''}`}>
                       <span class="row__main">
                         <strong>{part.name}</strong>
                         <span class="contract__summary">{part.blurb}</span>
                       </span>
-                      <span class="data contract__pay">{formatMoney(part.price)}</span>
+                      <span class="data contract__pay">{formatMoney(price)}</span>
                       <button
                         type="button"
                         class="btn btn--go"
-                        disabled={game.player.balance < part.price || tooBig}
+                        disabled={game.player.balance < price || tooBig}
                         title={tooBig ? 'Not enough room on your gateway for the model' : undefined}
                         onClick={() => {
                           if (act({ type: 'buyHardware', connectionId: connection.id, partId: part.id })) setFresh(part.id);

@@ -104,7 +104,8 @@ export {
   rackStorageGb,
   storageGb,
 } from './hardware';
-export { PLANNER_HOPS, bestRoute, coverShortfall, holdsLogin, relayCover, relayHeat, relayWorth, stepFade, hopUnderTrace, legFactor, legKind, maxReroutes, mostUrgentTrace, totalTraceMs, traceHeld, traceHopMs, traceLegs, traceReport, traceSlow, tracesByUrgency } from './trace';
+export { PLANNER_HOPS, bestRoute, canReadTrace, coverShortfall, holdsLogin, jamTrace, relayCover, relayHeat, relayWorth, stepFade, hopUnderTrace, legFactor, legKind, maxReroutes, mostUrgentTrace, totalTraceMs, traceHeld, traceHopMs, traceLegs, traceReport, traceSense, traceSlow, tracesByUrgency } from './trace';
+export { GENERAL_STORE, marketDay, rareShown, rareToday, sellsHardware, sellsModule, sellsProgram, shopOf, shopPrice } from './market';
 export { heldBy, holding, monitorHeld } from './link';
 export type { LegKind, TraceLeg, TraceReport } from './trace';
 export {

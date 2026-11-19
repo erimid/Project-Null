@@ -5,15 +5,19 @@
  */
 import { ContentError } from './schema';
 
-export const HARDWARE_SLOTS = ['cpu', 'storage', 'modem', 'ports', 'rack'] as const;
+export const HARDWARE_SLOTS = ['cpu', 'storage', 'modem', 'ports', 'rack', 'sensor'] as const;
 /**
  * - cpu: how fast programs run, and how many run at once.
  * - storage: room on the gateway, in GB.
  * - modem: how fast files copy and delete.
  * - ports: how many connections can be open at once.
  * - rack: hosts a language model on the gateway, so there is no rent to pay.
+ * - sensor: a trace sensor. Reads a trace earlier and, at the top tier, exactly, even without a Trace Tracker.
  */
 export type HardwareSlot = (typeof HARDWARE_SLOTS)[number];
+
+/** Slots a new gateway does not have: bought from tier 1, and empty (tier 0) until then. */
+export const OPTIONAL_SLOTS: readonly HardwareSlot[] = ['rack', 'sensor'];
 
 export interface HardwareDef {
   readonly id: string;
@@ -38,6 +42,8 @@ export interface HardwareDef {
   readonly model?: string;
   /** rack: room the model's weights take on the gateway, in GB. */
   readonly sizeGb?: number;
+  /** sensor: how good the read is. 1 = earlier warning; the top tier also shows the exact time with no Trace Tracker. */
+  readonly warn?: number;
 }
 
 /** The value each slot must give, and its allowed range. */
@@ -50,6 +56,7 @@ const NEEDS: Record<HardwareSlot, readonly (readonly [keyof HardwareDef, number,
   modem: [['fileSpeed', 1, 20]],
   ports: [['connections', 1, 10]],
   rack: [['sizeGb', 0, 1000]],
+  sensor: [['warn', 1, 10]],
 };
 
 export function parseHardware(data: unknown, modelIds: readonly string[], file = 'hardware.json'): HardwareDef[] {
@@ -98,10 +105,11 @@ export function parseHardware(data: unknown, modelIds: readonly string[], file =
   const repeated = ids.find((id, index) => ids.indexOf(id) !== index);
   if (repeated) throw new ContentError(file, `part id "${repeated}" is used twice`);
   for (const slot of HARDWARE_SLOTS) {
+    const optional = OPTIONAL_SLOTS.includes(slot);
     const tiers = parts.filter((part) => part.slot === slot).map((part) => part.tier).sort((a, b) => a - b);
-    if (slot !== 'rack' && tiers[0] !== 1) throw new ContentError(file, `slot "${slot}" needs a tier 1 part`);
+    if (!optional && tiers[0] !== 1) throw new ContentError(file, `slot "${slot}" needs a tier 1 part`);
     if (tiers.some((tier, index) => tier !== index + 1)) throw new ContentError(file, `slot "${slot}": tiers must run 1, 2, 3 with no gaps or repeats`);
-    if (slot !== 'rack' && parts.some((part) => part.slot === slot && part.tier === 1 && part.price !== 0)) {
+    if (!optional && parts.some((part) => part.slot === slot && part.tier === 1 && part.price !== 0)) {
       throw new ContentError(file, `slot "${slot}": the tier 1 part is what every gateway has, so its price must be 0`);
     }
   }
