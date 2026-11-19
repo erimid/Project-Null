@@ -481,6 +481,8 @@ export interface Tuning {
   readonly raidBarriers: readonly number[];
   /** Seconds closing a port sets the break-in back. */
   readonly raidPortSetbackSeconds: number;
+  /** Each port shut in one attack sets the intruder back this share of what the one before did: they learn. 1 = no fading. */
+  readonly raidPortFade: number;
   /** How many files or programs the player can lock during one attack. */
   readonly raidMaxLocks: number;
   /** A thief or framer loss takes this fraction of the balance. */
@@ -1144,6 +1146,7 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     raidTraceSeconds: tierList(file, data, 'raidTraceSeconds', false),
     raidBarriers: tierList(file, data, 'raidBarriers', false),
     raidPortSetbackSeconds: num(file, 'tuning', data, 'raidPortSetbackSeconds', 0, 3600),
+    raidPortFade: num(file, 'tuning', data, 'raidPortFade', 0, 1),
     raidMaxLocks: num(file, 'tuning', data, 'raidMaxLocks', 0, 20),
     raidLossCredits: num(file, 'tuning', data, 'raidLossCredits', 0, 1),
   };

@@ -125,6 +125,7 @@ export interface Rules {
   readonly raidBarriers: readonly number[];
   /** Seconds closing a port sets the break-in back. */
   readonly raidPortSetbackSeconds: number;
+  readonly raidPortFade: number;
   /** How many files or programs the player can lock during one attack. */
   readonly raidMaxLocks: number;
   /** A thief or framer loss takes this fraction of the balance. */

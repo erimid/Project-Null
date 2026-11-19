@@ -14,7 +14,7 @@
   "security": {
     "password": 2,
     "proxy": 0,
-    "firewall": 1,
+    "firewall": 2,
     "monitor": 2
   },
   "traceSecondsPerHop": 14,

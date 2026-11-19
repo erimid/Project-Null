@@ -261,6 +261,8 @@ export interface RaidState {
   readonly barriers: number;
   /** The port line-up the player has open to shut the intruder out, or null. */
   port: RaidPort | null;
+  /** Ports shut so far in this attack. Each one sets the intruder back less than the last. Missing = none. */
+  shut?: number;
   /** The counter-trace back along the attacker's route, or null until it is started. */
   traceBack: TraceState | null;
   /** Names of files or programs the player has locked, safe from a loss. */

@@ -12,9 +12,9 @@
   "blurb": "A careful operator's forwarding node. Only a won trace leads here.",
   "listed": false,
   "security": {
-    "password": 3,
-    "proxy": 2,
-    "firewall": 3,
+    "password": 4,
+    "proxy": 3,
+    "firewall": 4,
     "monitor": 4
   },
   "traceSecondsPerHop": 20,

@@ -86,23 +86,23 @@
     8,
     20
   ],
-  "raidMinRating": 6,
-  "raidProfilePay": 1500,
-  "raidChance": 0.3,
-  "raidCooldownHours": 48,
+  "raidMinRating": 10,
+  "raidProfilePay": 3000,
+  "raidChance": 0.25,
+  "raidCooldownHours": 72,
   "raidBreachSeconds": [
     35,
-    45,
-    55,
-    70,
-    90
+    50,
+    60,
+    75,
+    95
   ],
   "raidTraceSeconds": [
     40,
-    52,
-    66,
-    86,
-    112
+    54,
+    72,
+    92,
+    118
   ],
   "raidBarriers": [
     2,
@@ -112,6 +112,7 @@
     5
   ],
   "raidPortSetbackSeconds": 12,
+  "raidPortFade": 0.7,
   "raidMaxLocks": 2,
   "raidLossCredits": 0.15
 }

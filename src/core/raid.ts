@@ -166,6 +166,15 @@ export function raidReport(raid: RaidState): RaidReport {
   };
 }
 
+/**
+ * How far shutting the next port sets the intruder back. The first costs
+ * them the most; they learn, and each one after costs them less, so ports
+ * buy time for the trace and never hold an attack off for good.
+ */
+export function raidSetbackMs(raid: RaidState, content: Content): number {
+  return content.rules.raidPortSetbackSeconds * 1000 * content.rules.raidPortFade ** (raid.shut ?? 0);
+}
+
 /** Opens a port line-up on the barrier the intruder is probing, for the player to shut by hand. */
 export function openRaidPort(state: GameState, content: Content): string | null {
   const raid = state.raid;
@@ -191,7 +200,8 @@ export function lockRaidRing(state: GameState, content: Content, ring: number): 
   if (Math.min(angle, 360 - angle) > ringTolerance(state, content)) return null;
   port.locked[ring] = true;
   if (port.locked.every((locked) => locked)) {
-    raid.breachMs = Math.max(0, raid.breachMs - content.rules.raidPortSetbackSeconds * 1000);
+    raid.breachMs = Math.max(0, raid.breachMs - raidSetbackMs(raid, content));
+    raid.shut = (raid.shut ?? 0) + 1;
     raid.port = null;
   }
   return null;

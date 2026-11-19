@@ -11,7 +11,7 @@
     },
     {
       "id": "vesper-hello",
-      "afterHours": 3,
+      "afterHours": 2,
       "mail": {
         "from": "Vesper",
         "subject": "they are wrong, for what it is worth",
@@ -20,8 +20,8 @@
     },
     {
       "id": "look",
-      "afterHours": 5,
-      "minRating": 22,
+      "afterHours": 3,
+      "minRating": 18,
       "contractId": "story-stillpoint",
       "mail": {
         "from": "Vesper",
@@ -40,7 +40,7 @@
     },
     {
       "id": "wren-doubts",
-      "afterHours": 3,
+      "afterHours": 2,
       "mail": {
         "from": "Wren",
         "subject": "who you have been writing to",
@@ -49,8 +49,8 @@
     },
     {
       "id": "courier",
-      "afterHours": 8,
-      "minRating": 26,
+      "afterHours": 5,
+      "minRating": 28,
       "contractId": "story-courier",
       "mail": {
         "from": "Vesper",
@@ -70,7 +70,7 @@
     },
     {
       "id": "warning",
-      "afterHours": 6,
+      "afterHours": 4,
       "mail": {
         "from": "Vesper",
         "subject": "before the last one",
@@ -79,8 +79,8 @@
     },
     {
       "id": "the-name",
-      "afterHours": 10,
-      "minRating": 32,
+      "afterHours": 6,
+      "minRating": 42,
       "reveal": true,
       "contractId": "story-thename",
       "mail": {

@@ -44,15 +44,15 @@
       "title": "Wraith"
     },
     {
-      "min": 33,
+      "min": 37,
       "title": "Phantom"
     },
     {
-      "min": 41,
+      "min": 52,
       "title": "Spectre"
     },
     {
-      "min": 50,
+      "min": 68,
       "title": "Legend"
     }
   ]

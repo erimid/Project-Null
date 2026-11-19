@@ -9,13 +9,18 @@ import type { FileDef, LogDef, PartDef, ServerDef } from '../content/schema';
 import { createRng, type Rng } from './rng';
 import type { Content } from './world';
 
-/** Security of a generated company by tier (1 to 5). Never above 3, so bought programs can always beat it. */
+/**
+ * Security of a generated company by tier (1 to 5). The top tiers go past
+ * what the Backroom's version 2 programs do well: a version 2 still gets
+ * through a level 4 layer, slowly, and the version 3 and 4 programs the
+ * other shops sell are what make that work comfortable.
+ */
 const SECURITY_BY_TIER = [
   { password: 1, proxy: 0, firewall: 0, monitor: 0 },
   { password: 1, proxy: 1, firewall: 1, monitor: 1 },
-  { password: 2, proxy: 1, firewall: 2, monitor: 1 },
-  { password: 2, proxy: 2, firewall: 2, monitor: 2 },
+  { password: 2, proxy: 2, firewall: 2, monitor: 1 },
   { password: 3, proxy: 2, firewall: 3, monitor: 2 },
+  { password: 4, proxy: 3, firewall: 4, monitor: 3 },
 ] as const;
 
 /** Fills {placeholders} in a template; unknown ones are left as they are. */

@@ -12,12 +12,12 @@
   "blurb": "Underwriting: the treaties Calder Re signs with the insurers it covers.",
   "listed": true,
   "security": {
-    "password": 3,
+    "password": 4,
     "proxy": 0,
-    "firewall": 2,
+    "firewall": 3,
     "monitor": 4
   },
-  "traceSecondsPerHop": 7,
+  "traceSecondsPerHop": 9,
   "relayDelay": 1.0,
   "link": {
     "serverId": "calder-facilities",

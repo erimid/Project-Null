@@ -12,8 +12,8 @@
   "blurb": "Customer accounts for a northern power company.",
   "listed": true,
   "security": {
-    "password": 1,
-    "proxy": 1,
+    "password": 2,
+    "proxy": 2,
     "firewall": 0,
     "monitor": 3
   },
