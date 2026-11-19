@@ -13,6 +13,7 @@ import type { PeopleDef } from '../content/people';
 import type { SkillDef } from '../content/skills';
 import type { ModuleDef } from '../content/modules';
 import type { RivalDef } from '../content/rivals';
+import type { StoryDef } from '../content/story';
 import { builtProgram } from './builds';
 import type { Connection, GameState, ServerState } from './state';
 
@@ -152,6 +153,8 @@ export interface Content {
   readonly modules: readonly ModuleDef[];
   /** Enemy hackers who break into the gateway (see core/raid.ts). */
   readonly rivals: readonly RivalDef[];
+  /** Act 1 story beats (see core/story.ts). */
+  readonly story: StoryDef;
   readonly rules: Rules;
 }
 

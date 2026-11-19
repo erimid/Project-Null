@@ -122,6 +122,7 @@ export { ALERT_HOURS, currentStage, goalMet, goalPossible, stageDeadline, stageI
 export { applyAction } from './actions';
 export { beginRaid, findRival, raidBarrier, raidPortAngle, raidReport, raidRival, scheduleRaid } from './raid';
 export type { RaidReport } from './raid';
+export { advanceStory, currentBeat, storyComplete, storyOffered } from './story';
 export { REGIONS, fill, generateCompanies, regionOf, worldFor } from './generate';
 export type { Region } from './generate';
 export { isJob, tierForRating } from './jobs';

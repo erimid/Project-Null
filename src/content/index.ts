@@ -33,6 +33,7 @@ import brennanMarsh from './servers/brennan-marsh.json';
 import mirrorjackRig from './servers/mirrorjack-rig.json';
 import halftoneDen from './servers/halftone-den.json';
 import sableRelay from './servers/sable-relay.json';
+import stillPoint from './servers/still-point.json';
 import companiesJson from './companies.json';
 import { parseCompanies } from './companies';
 import hardwareJson from './hardware.json';
@@ -47,6 +48,8 @@ import modulesJson from './modules.json';
 import { checkParts, parseModules } from './modules';
 import rivalsJson from './rivals.json';
 import { checkRivals, parseRivals } from './rivals';
+import storyJson from './story.json';
+import { checkStory, parseStory } from './story';
 import { parseSkills } from './skills';
 import { checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
 
@@ -80,6 +83,7 @@ export type { HardwareDef, HardwareSlot } from './hardware';
 export type { SkillBranch, SkillDef, SkillEffect } from './skills';
 export type { ModuleDef, ModuleGrade, ModuleTrait } from './modules';
 export type { RivalDef, RivalStyle } from './rivals';
+export type { StoryBeat, StoryDef, StoryMail } from './story';
 export type { CompanyPools } from './companies';
 export type { AskDef, FactDef, FileRef, PeopleDef, PersonDef, RewardDef } from './people';
 export type { BlockDef, LinkDef, Net, PageDef, SiteDef } from './sites';
@@ -88,7 +92,7 @@ export const gameInfo = parseGameInfo(gameJson);
 export const sites = parseSites(sitesJson);
 export const tuning = parseTuning(tuningJson);
 export const servers = parseServers(
-  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay],
+  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint],
   'servers/',
 );
 export const programs = parsePrograms(programsJson);
@@ -102,9 +106,11 @@ export const people = parsePeople(peopleJson);
 export const skills = parseSkills(skillsJson);
 export const modules = parseModules(modulesJson);
 export const rivals = parseRivals(rivalsJson);
+export const story = parseStory(storyJson);
 checkParts(modules, servers, contracts, programs, companies.sectors);
 checkPeople(people, servers, tuning.phishMaxDetails);
 checkRivals(rivals, servers);
+checkStory(story, servers, contracts, rivals);
 
 /**
  * Dots that draw the continents on the globe: [lat, lon, lat, lon, ...]

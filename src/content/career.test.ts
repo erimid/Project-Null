@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROFILES, formatCareer, playCareer, type CareerOptions, type CareerReport, type Profile } from '../core/career';
 import type { Content } from '../core';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, tuning } from './index';
+import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning } from './index';
 
 const content: Content = {
   servers,
@@ -25,10 +25,13 @@ const content: Content = {
   skills,
   modules,
   rivals,
+  story,
   rules: tuning,
 };
 
 const top = gameInfo.ratings[gameInfo.ratings.length - 1]!;
+// Story missions run on the director's clock, not the board's rating ladder, so the balance career leaves them alone.
+const written = contracts.filter((contract) => !contract.story).length;
 const options: CareerOptions = {
   maxContracts: 150,
   maxMinutes: 400,
@@ -72,7 +75,7 @@ describe('a whole career', () => {
   it.each(SEEDS)('a careful player reaches the top title with every written contract done, never traced (seed %i)', (seed) => {
     const report = career(PROFILES.careful, seed);
     expect(report.stuck).toEqual([]);
-    expect(report.written).toBe(contracts.length);
+    expect(report.written).toBe(written);
     expect(report.finalRating).toBeGreaterThanOrEqual(top.min);
     expect(report.caught).toBe(0);
     expect(report.fines).toBe(0);
@@ -81,7 +84,7 @@ describe('a whole career', () => {
   it.each(SEEDS)('an ordinary player gets there too (seed %i)', (seed) => {
     const report = career(PROFILES.typical, seed);
     expect(report.stuck).toEqual([]);
-    expect(report.written).toBe(contracts.length);
+    expect(report.written).toBe(written);
     expect(report.finalRating).toBeGreaterThanOrEqual(top.min);
   });
 
@@ -89,7 +92,7 @@ describe('a whole career', () => {
     for (const profile of [SLOW, FRUGAL]) {
       const report = career(profile, 1);
       expect(report.stuck, profile.name).toEqual([]);
-      expect(report.written, profile.name).toBe(contracts.length);
+      expect(report.written, profile.name).toBe(written);
     }
   });
 
@@ -119,7 +122,7 @@ describe('a whole career', () => {
     // Someone who never opens either window still gets every contract done.
     const plain = career(PLAIN, seed);
     expect(plain.stuck).toEqual([]);
-    expect(plain.written).toBe(contracts.length);
+    expect(plain.written).toBe(written);
     expect(plain.finalRating).toBeGreaterThanOrEqual(top.min);
     // Someone who does spends nearly every point and fits what the work turns up...
     const report = career(PROFILES.typical, seed);

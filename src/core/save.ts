@@ -143,6 +143,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     scanned: [],
     player: { ...(old.player as object), hardware: { ...((old.player as { hardware: object }).hardware), sensor: 0 } },
   }),
+  // 17 -> 18: the story director. The story picks up from the save's rating, so it starts at the first beat.
+  17: (old) => ({ ...old, story: { beat: 0, arrived: false, lastMs: 0, offered: [] } }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -380,6 +382,10 @@ function checkState(raw: Obj): GameState {
     !isNum(contracts.stage) ||
     !isNum(contracts.stageStartMs)
   ) {
+    throw damaged;
+  }
+  const story = raw.story;
+  if (!isObj(story) || !isNum(story.beat) || typeof story.arrived !== 'boolean' || !isNum(story.lastMs) || !isList(story.offered, isText)) {
     throw damaged;
   }
   if (!isList(raw.flags, isText)) throw damaged;

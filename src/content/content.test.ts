@@ -110,10 +110,12 @@ describe('shipped servers', () => {
   it('can all be reached: every server is a starting server or listed in the registry', () => {
     for (const server of servers.filter((s) => s.kind !== 'gateway')) {
       // An unlisted server has to be one somebody can be talked into giving the address of,
-      // or an enemy hacker's home, which a won counter-trace puts in the address book.
+      // an enemy hacker's home (a won counter-trace puts it in the address book), or a
+      // contract's target (taking the contract reveals the address).
       const told = people.asks.some((ask) => ask.reward.kind === 'address' && ask.reward.serverId === server.id);
       const rivalHome = rivals.some((rival) => rival.homeId === server.id);
-      expect(server.listed || told || rivalHome || gameInfo.startingServers.includes(server.id), server.id).toBe(true);
+      const contractTarget = contracts.some((contract) => contract.targetId === server.id || (contract.stages ?? []).some((stage) => stage.targetId === server.id));
+      expect(server.listed || told || rivalHome || contractTarget || gameInfo.startingServers.includes(server.id), server.id).toBe(true);
     }
   });
 

@@ -381,5 +381,53 @@
       "id": "quiet",
       "grade": 3
     }
+  },
+  {
+    "id": "story-stillpoint",
+    "title": "The address that answers",
+    "client": "Vesper",
+    "targetId": "still-point",
+    "pay": 1500,
+    "rating": 1,
+    "minRating": 22,
+    "story": true,
+    "summary": "Connect to 190.2.44.17 and read its index.",
+    "brief": "You copied the Lantern file for a client who did not want it opened. I think you opened it. I think you saw it change while you read it.\n\nHalvorsen's own audit log has a line you will have missed: eleven gigabytes sent, at three in the morning, to 190.2.44.17. Not a registered partner, it says. The transfer record was deleted a minute later.\n\nThat address answers. It is in no directory and it has no owner on record. Connect to it and read node_index.txt. Don't take anything. Just look, and tell me you see what I see.\n\n— V",
+    "objective": {
+      "kind": "read",
+      "file": "node_index.txt"
+    }
+  },
+  {
+    "id": "story-courier",
+    "title": "What passes through",
+    "client": "Vesper",
+    "targetId": "still-point",
+    "pay": 2600,
+    "rating": 1,
+    "minRating": 26,
+    "story": true,
+    "summary": "Copy the manifest from the unregistered node.",
+    "brief": "So you saw it too. Good. I was starting to think I had imagined it.\n\nThe node keeps a manifest of everything it moves. It is behind the keeper account, which has a password even though there is no keeper. Break it, copy courier_manifest.dat, and bring it to me.\n\nHalvorsen is on that manifest. So is a school. So is a reinsurer you have probably already robbed for someone. None of them know about the others. None of them sent their data to a person.\n\n— V",
+    "objective": {
+      "kind": "steal",
+      "file": "courier_manifest.dat"
+    }
+  },
+  {
+    "id": "story-thename",
+    "title": "The last thing written",
+    "client": "Vesper",
+    "targetId": "still-point",
+    "pay": 4000,
+    "rating": 2,
+    "minRating": 32,
+    "story": true,
+    "summary": "Copy the redacted file from the unregistered node.",
+    "brief": "There is one more file on the node, and the index says a guest may not read it. It was the last thing written there, and it was written from inside, with no account logged in.\n\nIts name is struck out at the source. Nine letters will not copy. Three of them will. Break the keeper account again, copy what you can of it, and look at the name you are left with.\n\nI am not going to tell you what it stands for. If I am right, you will want to have read it yourself before I do. After this, be careful who you are for a while. I was.\n\n— V",
+    "objective": {
+      "kind": "steal",
+      "file": "PROJECT_N████.dat"
+    }
   }
 ]

@@ -1,0 +1,84 @@
+{
+  "beats": [
+    {
+      "id": "mocked",
+      "requires": "halvorsen-lantern",
+      "mail": {
+        "from": "netsec weekly (digest)",
+        "subject": "Re: file that edited itself while I copied it?",
+        "body": "Your post was the most-replied this week. Highlights:\n\n\"op copied a file during a trace and is surprised it looked garbled lol\"\n\"ownerless server = someone forgot to set the hostname. groundbreaking\"\n\"inhuman traffic patterns = a cron job. seek help\"\n\"every few months someone 'discovers' an AGI in a log file. it is always a backup script.\"\n\nThirty-one replies. None of them asked which file. None of them asked which server.\n\n(You can turn these digests off in settings.)"
+      }
+    },
+    {
+      "id": "vesper-hello",
+      "afterHours": 3,
+      "mail": {
+        "from": "Vesper",
+        "subject": "they are wrong, for what it is worth",
+        "body": "I read your post before they buried it. I also read the part you edited out an hour later, when the replies started.\n\nYou are not a crackpot. The file did change while you copied it. That is not a cron job and it is not a backup script, and the people telling you it is have, some of them, been paid to tell you it is.\n\nI am not going to explain over a message a stranger can read. But I can show you, a little at a time, if you want to see. You already have the first thread to pull. It is in Halvorsen's own audit log, if you still have it.\n\nCall me Vesper. I'll be in touch.\n\n— V"
+      }
+    },
+    {
+      "id": "look",
+      "afterHours": 5,
+      "minRating": 22,
+      "contractId": "story-stillpoint",
+      "mail": {
+        "from": "Vesper",
+        "subject": "on your board",
+        "body": "I have left something on your board. It pays, so it looks like work, which is how everything I send you is going to look from now on. Take it when your name is good enough for the client to trust you with it.\n\nRead the brief. Then go and look.\n\n— V"
+      }
+    },
+    {
+      "id": "inhuman",
+      "afterHours": 2,
+      "mail": {
+        "from": "Vesper",
+        "subject": "you saw it",
+        "body": "Fourteen million transfers, and an index older than the machine it is on. You read it the same way I did, I can tell, because you are still here.\n\nNobody built that node to do a thing. It does the thing that building it was a side effect of. There is a difference, and once you have felt it you do not un-feel it.\n\nGive it a few days. I will have more when your name carries further. Keep working the ordinary board in the meantime; it is good cover, and you need the money.\n\n— V"
+      }
+    },
+    {
+      "id": "courier",
+      "afterHours": 8,
+      "minRating": 26,
+      "contractId": "story-courier",
+      "mail": {
+        "from": "Vesper",
+        "subject": "on your board again",
+        "body": "Another one on your board. Same node, deeper in. This time you take something out.\n\n— V"
+      }
+    },
+    {
+      "id": "noticed",
+      "afterHours": 1,
+      "raid": "halftone",
+      "mail": {
+        "from": "Vesper",
+        "subject": "that was fast",
+        "body": "You copied the manifest an hour ago and someone is already at your gateway. That is not a coincidence and it is not the board's usual rough crowd. Something read the manifest's access line — the one that says you, just now — and sent a person to see who you are.\n\nTrace them if you can. If you cannot, pull the plug and lose nothing. Either way: now you know it can reach out.\n\n— V"
+      }
+    },
+    {
+      "id": "warning",
+      "afterHours": 6,
+      "mail": {
+        "from": "Vesper",
+        "subject": "before the last one",
+        "body": "You are still here, so you either traced them or you ran. Both are fine. Both mean you are harder to surprise now than you were a week ago.\n\nThere is one more file on the node. I have known about it for longer than I have let on, and I have not opened it. I wanted someone else to have read it first, so that if I am wrong there are two of us, and if I am right there are two of us. That is the whole of my motive, and you should still not quite believe me.\n\nWhen your name carries far enough, it will be on your board. Read it yourself before you bring it to me.\n\n— V"
+      }
+    },
+    {
+      "id": "the-name",
+      "afterHours": 10,
+      "minRating": 32,
+      "reveal": true,
+      "contractId": "story-thename",
+      "mail": {
+        "from": "Vesper",
+        "subject": "the last one",
+        "body": "It is on your board. The last thing the node ever wrote, from inside, with no one logged in.\n\nNine letters of the name are struck out at the source and will not come with you. Three will. Copy what you can and read the name you are left with before you read anything else.\n\nThen we should talk properly, you and I, about what the other nine letters are. Not over a channel a stranger can read. I'll find you.\n\n— V"
+      }
+    }
+  ]
+}

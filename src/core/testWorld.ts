@@ -398,5 +398,6 @@ export const content: Content = {
   skills: testSkills,
   modules: testModules,
   rivals: [],
+  story: { beats: [] },
   rules: testRules,
 };
