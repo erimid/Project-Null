@@ -1,4 +1,4 @@
-import { findRival, findServer, raidPortAngle, raidReport, ringTolerance, type GameState, type RaidState } from '../../../core';
+import { findRival, findServer, raidPortAngle, raidReport, raidSetbackMs, ringTolerance, type GameState, type RaidState } from '../../../core';
 import { useGame, useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
@@ -149,14 +149,14 @@ export function DefenceWindow() {
       {port ? (
         <div class="lineup lineup--raid">
           <PortDial frameAngles={port} />
-          <p class="lineup__status data">Lock every ring to shut this port and set them back {content.rules.raidPortSetbackSeconds}s.</p>
+          <p class="lineup__status data">Lock every ring to shut this port and set them back {Math.round(raidSetbackMs(raidObj, content) / 1000)}s.</p>
         </div>
       ) : (
         <TraceRoute raid={raidObj} />
       )}
 
       <div class="contract__actions raid__actions">
-        <button type="button" class="btn" disabled={!!port} data-tip="A line-up like a firewall bypass. Lock every ring to set the intruder back." onClick={() => act({ type: 'defendPort' })}>
+        <button type="button" class="btn" disabled={!!port} data-tip="A line-up like a firewall bypass. Lock every ring to set the intruder back. Each port you shut buys less time than the last." onClick={() => act({ type: 'defendPort' })}>
           Close a port
         </button>
         <button type="button" class="btn btn--go" disabled={tracing} data-tip="Follow their route home. Finish before they break in and their server is yours." onClick={() => act({ type: 'traceBack' })}>

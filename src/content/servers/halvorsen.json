@@ -12,9 +12,9 @@
   "blurb": "Clinical research records server.",
   "listed": true,
   "security": {
-    "password": 2,
+    "password": 3,
     "proxy": 2,
-    "firewall": 2,
+    "firewall": 3,
     "monitor": 2
   },
   "traceSecondsPerHop": 12,

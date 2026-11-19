@@ -12,10 +12,10 @@
   "blurb": "Policy and claims records.",
   "listed": true,
   "security": {
-    "password": 3,
-    "proxy": 2,
-    "firewall": 2,
-    "monitor": 2
+    "password": 4,
+    "proxy": 3,
+    "firewall": 3,
+    "monitor": 3
   },
   "traceSecondsPerHop": 10,
   "relayDelay": 1.0,

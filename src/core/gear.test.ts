@@ -166,6 +166,8 @@ describe('Shops', () => {
     // A password breaker is not on this shelf, and it sells no hardware.
     h.refused({ type: 'buyProgram', connectionId: id, programId: 'breaker-2' }, /does not stock/);
     h.refused({ type: 'buyHardware', connectionId: id, partId: 'cpu-2' }, /does not stock/);
+    // It sells, and that is all: there is no work to take here.
+    h.refused({ type: 'acceptContract', connectionId: id, contractId: 'first' }, /not a contracts board/);
   });
 
   it('the general store sells everything at list price', () => {

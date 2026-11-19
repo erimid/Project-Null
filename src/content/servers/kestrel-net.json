@@ -17,7 +17,7 @@
     "firewall": 0,
     "monitor": 0
   },
-  "traceSecondsPerHop": 25,
+  "traceSecondsPerHop": 20,
   "relayDelay": 1.0,
   "banner": [
     "KESTREL COMMUNITY NET · gateway 2",

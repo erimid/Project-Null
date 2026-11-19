@@ -30,8 +30,8 @@ const content: Content = {
 };
 
 const top = gameInfo.ratings[gameInfo.ratings.length - 1]!;
-// Story missions run on the director's clock, not the board's rating ladder, so the balance career leaves them alone.
-const written = contracts.filter((contract) => !contract.story).length;
+// Every written contract, the story's missions among them: the scripted player takes those as they come up.
+const written = contracts.length;
 const options: CareerOptions = {
   maxContracts: 150,
   maxMinutes: 400,
@@ -66,22 +66,9 @@ const FRUGAL: Profile = { ...PROFILES.typical, name: 'frugal', thinkSeconds: 5, 
 const PLAIN: Profile = { ...PROFILES.typical, name: 'plain', skills: [], craft: false };
 
 const SEEDS = [1, 7, 2034];
-// The Backroom's shelf: every program, every part of hardware and every grade of every module it stocks. The other shops sell far more.
-const backroom = servers.find((server) => server.id === 'backroom')!.shop!;
-const everything =
-  programs
-    .filter(
-      (item) =>
-        item.price > 0 &&
-        (backroom.programKinds?.includes(item.kind) ?? true) &&
-        item.version <= (backroom.maxVersion ?? Infinity) &&
-        !backroom.excludePrograms?.includes(item.id),
-    )
-    .reduce((sum, item) => sum + item.price, 0) +
-  hardware
-    .filter((item) => item.price > 0 && item.tier <= (backroom.maxTier ?? Infinity) && (backroom.hardwareSlots?.includes(item.slot) ?? true))
-    .reduce((sum, item) => sum + item.price, 0) +
-  modules.reduce((sum, module) => sum + module.grades.slice(0, backroom.maxGrade ?? 3).reduce((inner, grade) => inner + grade.price, 0), 0);
+const median = (values: readonly number[]): number => [...values].sort((x, y) => x - y)[Math.floor(values.length / 2)]!;
+/** The jobs of a career once the opening is behind it: from the Ghost title up. */
+const settled = (report: CareerReport) => report.jobs.filter((job) => job.ratingAfter > gameInfo.ratings[4]!.min);
 
 describe('a whole career', () => {
   it.each(SEEDS)('a careful player reaches the top title with every written contract done, never traced (seed %i)', (seed) => {
@@ -108,10 +95,11 @@ describe('a whole career', () => {
     }
   });
 
-  it.each(SEEDS)('the climb needs the standing jobs, about one for every two or three written contracts (seed %i)', (seed) => {
+  it.each(SEEDS)('the climb needs a few standing jobs between the written contracts (seed %i)', (seed) => {
     const report = career(PROFILES.typical, seed);
     const standing = report.jobs.filter((job) => job.job).length;
-    expect(standing).toBeGreaterThanOrEqual(5);
+    // The written contracts carry most of the climb now; the standing jobs fill the gaps between them.
+    expect(standing).toBeGreaterThanOrEqual(2);
     expect(standing).toBeLessThanOrEqual(16);
     // No stretch of more than three standing jobs between two written contracts.
     let run = 0;
@@ -157,14 +145,72 @@ describe('a whole career', () => {
     expect(rate(report.jobs.slice(-third))).toBeGreaterThan(2 * rate(report.jobs.slice(0, third)));
   });
 
-  it('there is always something left to save up for', () => {
-    const report = career(PROFILES.typical, 1);
-    // By the top title the career has paid for most of the shelf, not all of it.
-    expect(report.earned).toBeGreaterThan(everything * 0.4);
-    expect(report.earned).toBeLessThan(everything);
-    // The Backroom's shelf is the one this career shops from. The other shops hold far more; step 8 retunes the money.
-    expect(report.kitCompleteMinutes === null || report.kitCompleteMinutes > report.titles.at(-1)!.atMinutes * 0.8).toBe(true);
-    expect(report.bought.length).toBeGreaterThanOrEqual(12);
+  it.each(SEEDS)('money stays short of the shelves, and the other shops get most of it (seed %i)', (seed) => {
+    const report = career(PROFILES.typical, seed);
+    // The wish list runs past what a whole career earns: there is always something left to save up for.
+    expect(report.kitCompleteMinutes).toBeNull();
+    // It never sits on a pile: the most it ever holds is a sixth of what it earns.
+    expect(report.richest.balance).toBeLessThan(report.earned / 6);
+    expect(report.bought.length).toBeGreaterThanOrEqual(25);
+    // Once Wren has pointed them out, the cheaper and better-stocked shops take over from the Backroom.
+    expect(report.bought.filter((item) => item.name.includes('(')).length).toBeGreaterThanOrEqual(15);
+    // The top versions and the new kinds of gear are within a career's reach, late.
+    for (const name of ['Password Breaker v3', 'Firewall Bypass v3', 'Monitor Bypass v3', 'Trace Jammer v1']) {
+      expect(report.bought.some((item) => item.name.startsWith(name)), name).toBe(true);
+    }
+  });
+
+  it.each(SEEDS)('a trace that runs is neither a formality nor a wall (seed %i)', (seed) => {
+    for (const profile of [PROFILES.careful, PROFILES.typical]) {
+      const report = career(profile, seed);
+      const lengths = report.jobs.flatMap((job) => (job.traceSeconds === null ? [] : [job.traceSeconds]));
+      // The plan's band: a good route buys one to two and a half minutes, and never the four to six it used to.
+      expect(Math.max(...lengths), profile.name).toBeLessThanOrEqual(160);
+      const later = settled(report).flatMap((job) => (job.traceSeconds === null ? [] : [job.traceSeconds]));
+      expect(median(later), profile.name).toBeGreaterThanOrEqual(45);
+      expect(median(later), profile.name).toBeLessThanOrEqual(100);
+    }
+    // An ordinary player past the opening leaves with well under a minute in hand, most times a trace runs.
+    const spare = settled(career(PROFILES.typical, seed)).flatMap((job) => (job.closest === null ? [] : [job.closest]));
+    expect(spare.length).toBeGreaterThanOrEqual(15);
+    expect(median(spare)).toBeLessThanOrEqual(50);
+  });
+
+  it.each(SEEDS)('jobs with steps pay for their length (seed %i)', (seed) => {
+    const report = career(PROFILES.typical, seed);
+    const rate = (jobs: typeof report.jobs) => jobs.reduce((sum, job) => sum + job.pay, 0) / jobs.reduce((sum, job) => sum + job.seconds, 0);
+    const late = settled(report).filter((job) => !job.story);
+    const stepped = late.filter((job) => job.steps > 1);
+    expect(stepped.length).toBeGreaterThanOrEqual(10);
+    expect(rate(stepped)).toBeGreaterThan(0.85 * rate(late.filter((job) => job.steps === 1)));
+    // And every one of them moves the rating.
+    for (const contract of contracts) if (!contract.story) expect(contract.rating, contract.id).toBeGreaterThanOrEqual(1);
+  });
+
+  it.each(SEEDS)('the story takes most of the climb to unfold (seed %i)', (seed) => {
+    for (const profile of [PROFILES.careful, PROFILES.typical]) {
+      const report = career(profile, seed);
+      expect(report.story.map((beat) => beat.id), profile.name).toEqual(story.beats.map((beat) => beat.id));
+      // It starts before the Wraith title and ends past the Phantom one, long before the top.
+      expect(report.story[0]!.rating, profile.name).toBeLessThan(gameInfo.ratings[6]!.min);
+      expect(report.story.at(-1)!.rating, profile.name).toBeGreaterThanOrEqual(gameInfo.ratings[7]!.min);
+      expect(report.story.at(-1)!.rating, profile.name).toBeLessThan(top.min);
+    }
+  });
+
+  it.each(SEEDS)('enemy hackers are rare, never early, and can be beaten (seed %i)', (seed) => {
+    for (const profile of [PROFILES.careful, PROFILES.typical, PLAIN]) {
+      const report = career(profile, seed);
+      // The story sends one. The rest are a handful over a whole career.
+      expect(report.raids.filter((raid) => raid.story).length, profile.name).toBe(1);
+      expect(report.raids.length, profile.name).toBeGreaterThanOrEqual(2);
+      expect(report.raids.length, profile.name).toBeLessThanOrEqual(5);
+      for (const raid of report.raids) expect(raid.rating, profile.name).toBeGreaterThanOrEqual(tuning.raidMinRating);
+      // Someone who traces back and shuts ports wins nearly every time.
+      expect(report.raids.filter((raid) => raid.result === 'lost').length, profile.name).toBeLessThanOrEqual(1);
+    }
+    // Someone who only ever pulls the plug loses nothing, and learns nothing.
+    expect(career(PROFILES.careless, 1).raids.every((raid) => raid.result === 'fled')).toBe(true);
   });
 
   it('two relays and no cleaning up is paid for in fines and traces', () => {

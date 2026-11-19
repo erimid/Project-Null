@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { MAX_LEVEL_GAP } from '../core/tasks';
 import { companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, story, tuning } from './index';
 import companiesJson from './companies.json';
 import { parseCompanies } from './companies';
@@ -158,7 +159,7 @@ describe('security and program checks', () => {
     expect(() => parsePrograms([good, good])).toThrow(ContentError);
   });
 
-  it('ship one program for every job, and no layer the starting programs cannot beat', () => {
+  it('ship one program for every job, and no layer the Backroom’s programs cannot beat', () => {
     for (const kind of ['breakPassword', 'bypassProxy', 'bypassFirewall', 'bypassMonitor', 'decrypt', 'copyFile', 'deleteFile', 'deleteLog', 'traceTracker']) {
       expect(programs.some((program) => program.kind === kind), kind).toBe(true);
     }
@@ -166,7 +167,11 @@ describe('security and program checks', () => {
       // A layer run from another server is beaten by holding that server, not by a program.
       const beatable = (['password', 'proxy', 'firewall'] as const).filter((layer) => server.link?.layer !== layer);
       for (const layer of beatable) {
-        expect(server.security[layer], server.id).toBeLessThanOrEqual(3);
+        // The Backroom sells up to version 2 of each, and a program reaches two levels above itself, slowly.
+        expect(server.security[layer], server.id).toBeLessThanOrEqual(2 + MAX_LEVEL_GAP);
+        // The other shops sell a version that matches every layer in the game.
+        const kind = layer === 'password' ? 'breakPassword' : layer === 'proxy' ? 'bypassProxy' : 'bypassFirewall';
+        expect(Math.max(...programs.filter((program) => program.kind === kind).map((program) => program.version)), server.id).toBeGreaterThanOrEqual(server.security[layer]);
       }
     }
   });

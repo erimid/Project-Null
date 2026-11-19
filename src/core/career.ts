@@ -17,13 +17,15 @@ import { evidenceCount, isEvidence } from './forensics';
 import { worldFor } from './generate';
 import { maxConnections } from './hardware';
 import { isJob } from './jobs';
-import { sellsProgram } from './market';
+import { sellsHardware, sellsModule, sellsOnly, sellsProgram, shopOf, shopPrice } from './market';
 import { heldBy, monitorHeld } from './link';
 import { canRead, judge, knownFacts, knownPeople, standing } from './phish';
 import { skillRank } from './skills';
-import { createGame, MAX_HOPS, type Connection, type Fitted, type GameState, type TaskTarget } from './state';
-import { checkTask, freeStorageGb, layerSeconds, MAX_LEVEL_GAP, ringAngle } from './tasks';
+import { createGame, isConnected, MAX_HOPS, type Connection, type Fitted, type GameState, type TaskTarget } from './state';
+import { checkTask, freeStorageGb, layerSeconds, MAX_LEVEL_GAP, ringAngle, ringTolerance } from './tasks';
 import { intruding, relayHeat, relayWorth, totalTraceMs } from './trace';
+import { raidPortAngle } from './raid';
+import { storyComplete } from './story';
 import { goalMet, readFlag, stagesOf, stageView } from './stages';
 import { fileDef, findProgram, findServer, linkOf, ownedProgram, securityOf, syncWithContent, type Content } from './world';
 
@@ -54,6 +56,8 @@ export interface Profile {
   readonly skills?: readonly string[];
   /** Fits modules to its programs at the Workbench as they come, takes installers it passes, and buys more with spare money. */
   readonly craft?: boolean;
+  /** Fights an enemy hacker off: traces them back and shuts the ports they probe. Left out, it pulls the plug. */
+  readonly defend?: boolean;
 }
 
 /** A career's worth of points for someone who lets the programs do the work. */
@@ -69,9 +73,9 @@ const SKILLS_CAREFUL: readonly string[] = [
 
 export const PROFILES = {
   /** Uses everything the game teaches. */
-  careful: { name: 'careful', hops: MAX_HOPS, bestRelays: true, thinkSeconds: 1.5, rings: true, echo: true, scrub: true, phish: true, marginSeconds: 4, reserve: 1000, upgrades: true, skills: SKILLS_CAREFUL, craft: true },
+  careful: { name: 'careful', hops: MAX_HOPS, bestRelays: true, thinkSeconds: 1.5, rings: true, echo: true, scrub: true, phish: true, marginSeconds: 4, reserve: 1000, upgrades: true, skills: SKILLS_CAREFUL, craft: true, defend: true },
   /** Uses a few relays, scrubs, ignores the hands-on shortcuts. */
-  typical: { name: 'typical', hops: 5, bestRelays: false, thinkSeconds: 3, rings: false, echo: false, scrub: true, phish: true, marginSeconds: 5, reserve: 500, upgrades: true, skills: SKILLS_TYPICAL, craft: true },
+  typical: { name: 'typical', hops: 5, bestRelays: false, thinkSeconds: 3, rings: false, echo: false, scrub: true, phish: true, marginSeconds: 5, reserve: 500, upgrades: true, skills: SKILLS_TYPICAL, craft: true, defend: true },
   /** Two relays, slow hands, never cleans up. */
   careless: { name: 'careless', hops: 2, bestRelays: false, thinkSeconds: 4, rings: false, echo: false, scrub: false, phish: false, marginSeconds: 2, reserve: 0, upgrades: true },
 } as const satisfies Record<string, Profile>;
@@ -80,6 +84,10 @@ export interface JobLine {
   readonly id: string;
   readonly title: string;
   readonly job: boolean;
+  /** How many steps it has: 1 for a plain job, more for one that moves from server to server. */
+  readonly steps: number;
+  /** True for a story mission. */
+  readonly story: boolean;
   readonly pay: number;
   /** Real seconds from taking it to being paid. */
   readonly seconds: number;
@@ -91,6 +99,8 @@ export interface JobLine {
   readonly closest: number | null;
   /** Fines that landed while it was being worked, for this job or an earlier one. */
   readonly fined: number;
+  /** The whole length, in seconds, of the longest trace that ran on the job: what the route bought. Null if none ran. */
+  readonly traceSeconds: number | null;
 }
 
 export interface TitleLine {
@@ -127,6 +137,12 @@ export interface CareerReport {
   readonly found: number;
   /** Real minute at which nothing was left to buy, if that happened. */
   readonly kitCompleteMinutes: number | null;
+  /** Enemy hackers who came for the gateway, and how each attack ended. */
+  readonly raids: readonly { readonly who: string; readonly atMinutes: number; readonly rating: number; readonly story: boolean; readonly result: 'won' | 'lost' | 'fled' }[];
+  /** Story beats in the order they arrived, with the real minute and the rating at the time. */
+  readonly story: readonly { readonly id: string; readonly atMinutes: number; readonly rating: number }[];
+  /** The most money held at any moment, and the real minute it was held at. */
+  readonly richest: { readonly balance: number; readonly atMinutes: number };
 }
 
 export interface CareerOptions {
@@ -152,6 +168,28 @@ class Stuck extends Error {}
 
 const TICK_MS = 100;
 
+/** What the other shops sell beyond the Backroom's shelf: more than one career's pay will buy. */
+const LATE_WISHES: readonly string[] = [
+  'monitor-bypass-3',
+  'sensor-1',
+  'cooling-1',
+  'trace-jammer',
+  'password-breaker-4',
+  'firewall-bypass-4',
+  'cpu-5',
+  'proxy-bypass-4',
+  'modem-5',
+  'cooling-2',
+  'storage-5',
+  'trace-jammer-2',
+  'cpu-6',
+  'modem-6',
+  'cooling-3',
+  'cpu-7',
+  'cooling-4',
+  'cpu-8',
+];
+
 /** Things bought when there is money to spare, most useful first. */
 const WISHES: readonly string[] = [
   'proxy-bypass',
@@ -171,13 +209,17 @@ const WISHES: readonly string[] = [
   'modem-3',
   'storage-3',
   'ports-3',
+  'password-breaker-3',
+  'firewall-bypass-3',
   'rack-1',
+  'proxy-bypass-3',
   'cpu-4',
   'modem-4',
   'storage-4',
   'route-planner-2',
   'rack-2',
   'route-planner-3',
+  ...LATE_WISHES,
 ];
 
 /** The same list for someone who uses the Workbench: modules ("mod:id:grade") and the Decompiler among the rest. */
@@ -203,14 +245,18 @@ const CRAFT_WISHES: readonly string[] = [
   'decompiler',
   'mod:tidy:2',
   'ports-3',
+  'password-breaker-3',
+  'firewall-bypass-3',
   'rack-1',
   'mod:swift:3',
+  'proxy-bypass-3',
   'cpu-4',
   'mod:quiet:3',
   'modem-4',
   'storage-4',
   'mod:tidy:3',
   'rack-2',
+  ...LATE_WISHES,
 ];
 
 /** Which programs each module goes on, most wanted first. */
@@ -241,10 +287,15 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
   let kitCompleteMinutes: number | null = null;
   /** The least a running trace has had left since this was last reset, in ms. */
   let closestMs = Infinity;
+  /** The whole length of the longest trace that has run since this was last reset, in ms. */
+  let longestMs = 0;
   const stuck: string[] = [];
   const jobs: JobLine[] = [];
   const titles: TitleLine[] = [];
   const bought: { name: string; price: number; atMinutes: number }[] = [];
+  const raids: { who: string; atMinutes: number; rating: number; story: boolean; result: 'won' | 'lost' | 'fled' }[] = [];
+  const storyLines: { id: string; atMinutes: number; rating: number }[] = [];
+  let richest = { balance: state.player.balance, atMinutes: 0 };
   const learned: { name: string; atMinutes: number }[] = [];
   const built: { name: string; atMinutes: number }[] = [];
   let found = 0;
@@ -252,7 +303,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
   const skipped = new Set<string>();
   const minutes = () => Math.round((realMs / 60_000) * 10) / 10;
 
-  const board = content.servers.find((server) => server.kind === 'board');
+  const board = content.servers.find((server) => server.kind === 'board' && !sellsOnly(server));
   const directory = content.servers.find((server) => server.kind === 'directory');
   if (!board) throw new Error('The world has no contracts board.');
 
@@ -269,6 +320,63 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     if (!result.ok) throw new Stuck(`${action.type} refused: ${result.reason}`);
   };
 
+  /** The attack on the gateway being dealt with, to tell when it ends and how. */
+  let fighting: { who: string; story: boolean; nextMs: number } | null = null;
+
+  /**
+   * An enemy hacker on the gateway. A player who defends takes a moment to
+   * open Defence, starts the trace back, then shuts ports one after another
+   * until the trace gets home. One who does not pulls the plug, or if that
+   * would drop a job in progress, lets them have what they came for.
+   */
+  const fight = (): void => {
+    const raid = state.raid;
+    if (!raid) {
+      if (fighting) {
+        const last = state.messages[state.messages.length - 1]?.subject ?? '';
+        const won = last.startsWith(content.mail.raidWon.subject.split('{')[0]!);
+        raids.push({ who: fighting.who, atMinutes: minutes(), rating: state.player.rating, story: fighting.story, result: won ? 'won' : 'lost' });
+        fighting = null;
+      }
+      return;
+    }
+    if (raid.result !== 'open') return;
+    if (!fighting) fighting = { who: raid.attackerId, story: raid.story, nextMs: realMs + (profile.thinkSeconds + 2) * 1000 };
+    if (realMs < fighting.nextMs) return;
+    if (!profile.defend) {
+      if (isConnected(state)) return;
+      act({ type: 'pullPlug' });
+      raids.push({ who: fighting.who, atMinutes: minutes(), rating: state.player.rating, story: fighting.story, result: 'fled' });
+      fighting = null;
+      return;
+    }
+    const pause = () => (fighting!.nextMs = realMs + profile.thinkSeconds * 1000);
+    if (!raid.traceBack) {
+      act({ type: 'traceBack' });
+      return void pause();
+    }
+    if (!raid.port) {
+      act({ type: 'defendPort' });
+      return void pause();
+    }
+    const port = raid.port;
+    port.locked.forEach((locked, ring) => {
+      const angle = raidPortAngle(port, ring);
+      if (!locked && Math.min(angle, 360 - angle) <= ringTolerance(state, content) * 0.6) act({ type: 'defendRing', ring });
+    });
+    if (!state.raid?.port) pause();
+  };
+
+  /** Notes each story beat as it arrives. */
+  const follow = (): void => {
+    const seen = state.story.beat + (state.story.arrived ? 1 : 0);
+    while (storyLines.length < seen) {
+      const beat = content.story.beats[storyLines.length];
+      storyLines.push({ id: beat?.id ?? '?', atMinutes: minutes(), rating: state.player.rating });
+    }
+    if (state.player.balance > richest.balance) richest = { balance: state.player.balance, atMinutes: minutes() };
+  };
+
   /** Lets real time pass. Throws Caught if a trace reaches the gateway meanwhile. */
   const wait = (seconds: number, done?: () => boolean): void => {
     const held = state.connections.map((connection) => connection.id);
@@ -276,14 +384,17 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     for (let left = seconds * 1000; left > 0 && !done?.(); left -= TICK_MS) {
       const balance = state.player.balance;
       tick(state, TICK_MS, content);
-      // An enemy hacker turned up: this player just pulls the plug, which costs nothing.
-      if (state.raid && state.raid.result === 'open') act({ type: 'pullPlug' });
       realMs += TICK_MS;
+      fight();
+      follow();
       // Money only goes down inside a tick through a fine.
       if (state.player.balance < balance) fines += balance - state.player.balance;
       for (const connection of state.connections) {
         const trace = connection.trace;
-        if (trace.status === 'active') closestMs = Math.min(closestMs, totalTraceMs(trace) - trace.elapsedMs);
+        if (trace.status === 'active') {
+          closestMs = Math.min(closestMs, totalTraceMs(trace) - trace.elapsedMs);
+          longestMs = Math.max(longestMs, totalTraceMs(trace));
+        }
       }
       if (state.player.lieLowUntilMs !== lowBefore || held.some((id) => !state.connections.some((connection) => connection.id === id))) {
         throw new Caught();
@@ -312,7 +423,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     if (monitorHeld(state, content, connection)) return Infinity;
     const trace = connection.trace;
     const total = totalTraceMs(trace);
-    if (trace.status === 'active') return total - trace.elapsedMs + connection.monitor.blindMs;
+    if (trace.status === 'active') return total - trace.elapsedMs + connection.monitor.blindMs + (trace.frozenMs ?? 0);
     if (trace.status === 'pending') return trace.graceMs + total;
     // A blind monitor sees nothing until it comes back. Then it sees an administrator, or a program still running.
     if (!intrude && !intruding(content, connection)) return Infinity;
@@ -323,7 +434,11 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
   const checkTime = (connection: Connection, seconds: number, intrude: boolean): void => {
     const stepMs = (seconds + profile.thinkSeconds) * 1000;
     for (const other of state.connections) {
-      if (timeLeftMs(other, intrude && other === connection) < stepMs + profile.marginSeconds * 1000) throw new Bail();
+      const short = () => timeLeftMs(other, intrude && other === connection) < stepMs + profile.marginSeconds * 1000;
+      if (!short()) continue;
+      // A Trace Jammer buys a little more time, once on each connection.
+      if (other.trace.status === 'active' && !other.jammed && act({ type: 'jamTrace', connectionId: other.id }).ok && !short()) continue;
+      throw new Bail();
     }
   };
 
@@ -556,27 +671,71 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     return best !== undefined && best.version >= program.version;
   };
 
-  /** Buys one thing on the board connection. Returns false if it can't. */
-  const buy = (connectionId: string, id: string): boolean => {
+  /** The shops this player buys from: the board, and once Wren has pointed the others out, every shop in the address book. */
+  const shops = (): ServerDef[] =>
+    content.servers.filter(
+      (server) =>
+        server.kind === 'board' &&
+        state.knownServers.includes(server.id) &&
+        (server.id === board.id || state.player.rating >= content.rules.shopsAfterRating),
+    );
+
+  /** Where something is cheapest today, among the shops that have it on the shelf. */
+  const offer = (id: string): { shop: ServerDef; price: number } | undefined => {
     const wish = moduleWish(id);
-    if (wish) {
-      const module = findModule(content, wish.id);
-      const ok = act({ type: 'buyModule', connectionId, moduleId: wish.id, grade: wish.grade }).ok;
-      if (ok && module) bought.push({ name: `${module.name} ${wish.grade} module`, price: module.grades[wish.grade - 1]!.price, atMinutes: minutes() });
-      return ok;
+    const module = wish && findModule(content, wish.id);
+    const part = content.hardware.find((item) => item.id === id);
+    const program = findProgram(content, id);
+    let best: { shop: ServerDef; price: number } | undefined;
+    for (const shop of shops()) {
+      let base: number | undefined;
+      if (wish) base = module && sellsModule(state, shop, module, wish.grade) ? module.grades[wish.grade - 1]?.price : undefined;
+      else if (part) base = sellsHardware(state, shop, part) ? part.price : undefined;
+      else if (program) base = sellsProgram(state, shop, program) ? program.price : undefined;
+      if (base === undefined) continue;
+      const price = shopPrice(shopOf(shop), base);
+      if (!best || price < best.price) best = { shop, price };
     }
+    return best;
+  };
+
+  const price = (id: string): number => offer(id)?.price ?? Infinity;
+
+  /** A logged-in connection to a shop, opening one if need be. Shopping is done at home, between jobs. */
+  const atShop = (shop: ServerDef): Connection => {
+    const there = state.connections.find((connection) => connection.serverId === shop.id && connection.user !== null);
+    if (there) return there;
+    act({ type: 'disconnectAll' });
+    const connection = open(shop.id, [], false);
+    think();
+    must({ type: 'login', connectionId: connection.id, user: shop.accounts[0]!.user });
+    return connection;
+  };
+
+  /** Buys one thing wherever it is cheapest. Returns false if it can't. */
+  const buy = (id: string): boolean => {
+    const deal = offer(id);
+    if (!deal || state.player.balance < deal.price) return false;
+    const wish = moduleWish(id);
     const part: HardwareDef | undefined = content.hardware.find((item) => item.id === id);
     const program: ProgramDef | undefined = findProgram(content, id);
-    if (!part && !program) return false;
-    if (program) {
+    if (program && !wish && !part) {
       // An older version only takes up room.
       const older = content.programs.find((own) => state.player.programs.includes(own.id) && own.kind === program.kind && own.version < program.version);
-      if (state.player.balance < program.price) return false;
       if (older && program.sizeGq - older.sizeGq <= freeStorageGb(state, content)) act({ type: 'uninstallProgram', programId: older.id });
     }
-    const result = part ? act({ type: 'buyHardware', connectionId, partId: id }) : act({ type: 'buyProgram', connectionId, programId: id });
-    if (result.ok) bought.push({ name: part?.name ?? `${program!.name} v${program!.version}`, price: (part ?? program!).price, atMinutes: minutes() });
-    return result.ok;
+    const connectionId = atShop(deal.shop).id;
+    const result = wish
+      ? act({ type: 'buyModule', connectionId, moduleId: wish.id, grade: wish.grade })
+      : part
+        ? act({ type: 'buyHardware', connectionId, partId: id })
+        : act({ type: 'buyProgram', connectionId, programId: id });
+    if (!result.ok) return false;
+    // A newer version takes over from whatever was built on the old one, until the Workbench catches up.
+    if (program && !wish && !part) act({ type: 'preferProgram', programId: program.id });
+    const name = wish ? `${findModule(content, wish.id)?.name ?? wish.id} ${wish.grade} module` : (part?.name ?? `${program!.name} v${program!.version}`);
+    bought.push({ name: `${name}${deal.shop.id === board.id ? '' : ` (${deal.shop.name})`}`, price: deal.price, atMinutes: minutes() });
+    return true;
   };
 
   /** What a contract cannot be done without, as ids of things to own. Null if nothing sold would do. */
@@ -584,8 +743,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     const list: string[] = [];
     const cheapest = (kind: ProgramDef['kind'], level: number): string | null => {
       const fit = content.programs
-        .filter((program) => program.kind === kind && layerSeconds(program, level) !== null && sellsProgram(state, board, program))
-        .sort((a, b) => a.price - b.price)[0];
+        .filter((program) => program.kind === kind && layerSeconds(program, level) !== null && offer(program.id) !== undefined)
+        .sort((a, b) => price(a.id) - price(b.id))[0];
       return fit?.id ?? null;
     };
     const want = (kind: ProgramDef['kind'], level: number): boolean => {
@@ -619,6 +778,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
           if (!want('bypassFirewall', sec.firewall)) return null;
         }
       }
+      // A monitor that traces the moment you connect, and is run from another server: the brief says to hold that desk, which takes a second connection.
+      if (linkOf(state, server)?.layer === 'monitor' && sec.monitor >= content.rules.monitorGraceSeconds.length && maxConnections(state, content) < 2) list.push('ports-2');
       if (goal.kind === 'steal') {
         const file = state.servers[server.id]?.files.find((item) => item.name === goal.file);
         if (file?.encrypted && !want('decrypt', file.encrypted)) return null;
@@ -630,12 +791,6 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       }
     }
     return [...new Set(list)];
-  };
-
-  const price = (id: string): number => {
-    const wish = moduleWish(id);
-    if (wish) return findModule(content, wish.id)?.grades[wish.grade - 1]?.price ?? 0;
-    return content.hardware.find((part) => part.id === id)?.price ?? findProgram(content, id)?.price ?? 0;
   };
 
   /** At home between jobs: spends skill points, and fits whatever modules it has to its programs. */
@@ -696,22 +851,28 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     think();
     must({ type: 'login', connectionId: connection.id, user: board.accounts[0]!.user });
     if (!profile.bestRelays || state.contracts.completed.length > 0) read(connection);
-    // The balance career is the ordinary board; the story runs on its own clock, so the scripted player leaves story missions alone.
-    const offered = availableContracts(state, content).filter((contract) => !skipped.has(contract.id) && !contract.story);
+    const offered = availableContracts(state, content).filter((contract) => !skipped.has(contract.id));
     const doable = offered
       .map((contract) => ({ contract, needs: needs(contract) }))
       .filter((item): item is { contract: ContractDef; needs: string[] } => {
-        if (item.needs === null || !state.knownServers.includes(item.contract.targetId)) return false;
+        // A story mission comes with its address; any other target has to be in the address book already.
+        if (item.needs === null || (!item.contract.story && !state.knownServers.includes(item.contract.targetId))) return false;
         return item.needs.reduce((sum, id) => sum + price(id), 0) <= state.player.balance;
       });
-    const written = doable.filter((item) => !isJob(item.contract)).sort((a, b) => a.contract.minRating - b.contract.minRating || a.contract.pay - b.contract.pay);
+    // Whatever the story has left on the board comes first: nobody leaves that sitting.
+    const story = doable.filter((item) => item.contract.story);
+    const written = doable.filter((item) => !isJob(item.contract) && !item.contract.story).sort((a, b) => a.contract.minRating - b.contract.minRating || a.contract.pay - b.contract.pay);
     const standing_ = doable.filter((item) => isJob(item.contract)).sort((a, b) => b.contract.rating - a.contract.rating || b.contract.pay - a.contract.pay);
-    const pick = written[0] ?? standing_[0];
+    const pick = story[0] ?? written[0] ?? standing_[0];
     if (pick) {
-      for (const id of pick.needs) if (!buy(connection.id, id)) throw new Stuck(`could not buy ${id} for "${pick.contract.title}"`);
       think();
-      must({ type: 'acceptContract', connectionId: connection.id, contractId: pick.contract.id });
+      // A standing job can come down off the board in the moment it takes to decide. Then there is nothing to take this visit.
+      if (!act({ type: 'acceptContract', connectionId: connection.id, contractId: pick.contract.id }).ok) {
+        act({ type: 'disconnectAll' });
+        return undefined;
+      }
       note(`TAKE "${pick.contract.title}" (${pick.contract.targetId})`);
+      for (const id of pick.needs) if (!buy(id)) throw new Stuck(`could not buy ${id} for "${pick.contract.title}"`);
     }
     // Spare money goes on the next thing worth having.
     for (let again = profile.upgrades; again; ) {
@@ -721,7 +882,9 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
         // A grade the market does not sell at this rating yet: on to the next thing.
         const wish = moduleWish(id);
         if (wish && wish.grade > marketGrade(state, content)) continue;
-        if (state.player.balance >= price(id) + profile.reserve && buy(connection.id, id)) again = true;
+        // Not on any shelf it can reach today: on to the next thing.
+        if (!offer(id)) continue;
+        if (state.player.balance >= price(id) + profile.reserve && buy(id)) again = true;
         break;
       }
     }
@@ -818,10 +981,15 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
   while (
     state.contracts.completed.length < options.maxContracts &&
     realMs < options.maxMinutes * 60_000 &&
-    !(state.player.rating >= options.untilRating && content.contracts.every((contract) => contract.story || state.contracts.completed.includes(contract.id) || skipped.has(contract.id)))
+    !(
+      state.player.rating >= options.untilRating &&
+      storyComplete(state, content) &&
+      content.contracts.every((contract) => state.contracts.completed.includes(contract.id) || skipped.has(contract.id))
+    )
   ) {
     const startMs = realMs;
     closestMs = Infinity;
+    longestMs = 0;
     const finesBefore = fines;
     let contract: ContractDef | undefined;
     try {
@@ -844,6 +1012,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
           id: contract.id,
           title: contract.title,
           job: isJob(contract),
+          steps: stagesOf(contract).length,
+          story: contract.story === true,
           pay: contract.pay,
           seconds: Math.round((realMs - startMs) / 1000),
           ratingAfter: state.player.rating,
@@ -852,6 +1022,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
           visits: result.visits,
           closest: Number.isFinite(closestMs) ? Math.round(closestMs / 100) / 10 : null,
           fined: fines - finesBefore,
+          traceSeconds: longestMs > 0 ? Math.round(longestMs / 1000) : null,
         });
         noteTitle();
       }
@@ -889,6 +1060,9 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     built,
     found,
     kitCompleteMinutes,
+    raids,
+    story: storyLines,
+    richest,
   };
 }
 
@@ -917,7 +1091,7 @@ export function formatCareer(report: CareerReport): string {
   lines.push('Work:');
   for (const job of report.jobs) {
     lines.push(
-      `  ${pad(job.job ? 'job' : 'written', 8)}${pad(job.title.slice(0, 30), 31)}${pad(`${job.pay}c`, 7)}${pad(`${job.seconds}s`, 6)}rating ${pad(job.ratingAfter, 3)} bal ${pad(job.balanceAfter, 7)}${job.caught ? ` traced ${job.caught}x` : ''}${job.visits > 1 ? ` ${job.visits} visits` : ''}${job.closest === null ? '' : `  trace ${job.closest}s off`}${job.fined > 0 ? `  fined ${job.fined}c` : ''}`,
+      `  ${pad(job.job ? 'job' : 'written', 8)}${pad(job.title.slice(0, 30), 31)}${pad(`${job.pay}c`, 7)}${pad(`${job.seconds}s`, 6)}rating ${pad(job.ratingAfter, 3)} bal ${pad(job.balanceAfter, 7)}${job.caught ? ` traced ${job.caught}x` : ''}${job.visits > 1 ? ` ${job.visits} visits` : ''}${job.closest === null ? '' : `  trace ${job.traceSeconds}s long, ${job.closest}s off`}${job.fined > 0 ? `  fined ${job.fined}c` : ''}`,
     );
   }
   lines.push('Bought:');
@@ -928,6 +1102,16 @@ export function formatCareer(report: CareerReport): string {
     for (const item of report.built) lines.push(`  ${pad(`${item.atMinutes} min`, 10)}${item.name}`);
   }
   lines.push(report.kitCompleteMinutes === null ? 'Kit: not everything bought' : `Kit: everything bought by ${report.kitCompleteMinutes} min`);
+  const rate = (jobs: readonly JobLine[]) => Math.round((jobs.reduce((sum, job) => sum + job.pay, 0) / Math.max(1, jobs.reduce((sum, job) => sum + job.seconds, 0))) * 60);
+  const late = report.jobs.filter((job) => !job.story && job.ratingAfter > 12);
+  lines.push(`Pay from Ghost up: one-step jobs ${rate(late.filter((job) => job.steps === 1))}c a minute, jobs with steps ${rate(late.filter((job) => job.steps > 1))}c a minute`);
+  lines.push(`Money: ${report.finalBalance}c in hand at the end, never more than ${report.richest.balance}c (at ${report.richest.atMinutes} min)`);
+  if (report.story.length > 0) lines.push(`Story: ${report.story.map((beat) => `${beat.id} (${beat.atMinutes} min, rating ${beat.rating})`).join(', ')}`);
+  lines.push(
+    report.raids.length === 0
+      ? 'Enemy hackers: none came'
+      : `Enemy hackers: ${report.raids.map((raid) => `${raid.who} ${raid.result} (${raid.atMinutes} min, rating ${raid.rating}${raid.story ? ', story' : ''})`).join(', ')}`,
+  );
   if (report.stuck.length > 0) {
     lines.push('Stuck:');
     for (const reason of report.stuck) lines.push(`  ${reason}`);

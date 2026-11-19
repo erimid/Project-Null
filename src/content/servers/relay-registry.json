@@ -17,7 +17,7 @@
     "firewall": 0,
     "monitor": 0
   },
-  "traceSecondsPerHop": 20,
+  "traceSecondsPerHop": 18,
   "relayDelay": 0.7,
   "banner": [
     "OPEN RELAY REGISTRY",

@@ -12,9 +12,9 @@
   "blurb": "Records and compliance archive. Not listed.",
   "listed": false,
   "security": {
-    "password": 2,
+    "password": 3,
     "proxy": 0,
-    "firewall": 2,
+    "firewall": 3,
     "monitor": 2
   },
   "traceSecondsPerHop": 10,

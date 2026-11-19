@@ -99,6 +99,14 @@ export function availableContracts(state: GameState, content: Content): Contract
   return [...(easiest ? [easiest] : []), ...jobs, ...story];
 }
 
+/** The connection, if it is logged in to a board server of any sort: one that posts contracts, or a shop. Otherwise a reason. */
+function atShop(state: GameState, content: Content, connectionId: string): Connection | string {
+  const connection = findConnection(state, connectionId);
+  if (!connection || connection.user === null) return 'Log in to the board first.';
+  if (findServer(content, connection.serverId)?.kind !== 'board') return 'This server sells nothing.';
+  return connection;
+}
+
 /** The connection, if it is logged in to a contracts board. Otherwise a reason. */
 function atBoard(state: GameState, content: Content, connectionId: string): Connection | string {
   const connection = findConnection(state, connectionId);
@@ -235,7 +243,8 @@ export function alterRecord(state: GameState, content: Content, connectionId: st
 }
 
 export function buyProgram(state: GameState, content: Content, connectionId: string, programId: string): string | null {
-  const board = atBoard(state, content, connectionId);
+  // Any shop will do: one that posts no contracts still sells.
+  const board = atShop(state, content, connectionId);
   if (typeof board === 'string') return board;
   const shop = findServer(content, board.serverId)!;
   const program = findProgram(content, programId);

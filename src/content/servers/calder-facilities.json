@@ -12,7 +12,7 @@
   "blurb": "Building management for Calder Re's Edinburgh offices: doors, cameras, the security desk.",
   "listed": true,
   "security": {
-    "password": 2,
+    "password": 3,
     "proxy": 0,
     "firewall": 0,
     "monitor": 2

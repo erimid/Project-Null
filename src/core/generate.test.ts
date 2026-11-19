@@ -60,7 +60,9 @@ describe('generated companies', () => {
     for (let seed = 0; seed < 20; seed++) {
       for (const server of generateCompanies(companies, seed)) {
         const { password, proxy, firewall, monitor } = server.security;
-        expect(Math.max(password, proxy, firewall, monitor)).toBeLessThanOrEqual(3);
+        // A version 2 program from the Backroom reaches level 4, slowly; a monitor at 3 is the most a generated company runs.
+        expect(Math.max(password, proxy, firewall)).toBeLessThanOrEqual(4);
+        expect(monitor).toBeLessThanOrEqual(3);
         expect(server.accounts.some((account) => account.role === 'admin')).toBe(true);
         expect(server.generated!.tier).toBeGreaterThanOrEqual(1);
         expect(server.generated!.tier).toBeLessThanOrEqual(5);

@@ -122,8 +122,9 @@ export const testServers: ServerDef[] = [
     listed: true,
     accounts: [{ user: 'guest', role: 'guest', name: 'Public' }],
     files: [],
-    // A specialist shop: only Scanners as staple programs, every module, no hardware or models, half price, with the jammer as a rare line that is always out.
+    // A specialist shop: only Scanners as staple programs, every module, no hardware or models, half price, with the jammer as a rare line that is always out. It posts no contracts.
     shop: {
+      contracts: false,
       programs: true,
       hardware: false,
       modules: true,
@@ -241,6 +242,7 @@ export const testRules: Rules = {
   raidTraceSeconds: [24, 36, 48, 60, 72],
   raidBarriers: [2, 2, 3, 3, 4],
   raidPortSetbackSeconds: 8,
+  raidPortFade: 0.5,
   raidMaxLocks: 2,
   raidLossCredits: 0.2,
 };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, beginRaid, createGame, raidPortAngle, scheduleRaid, syncWithContent, tick, type Content, type GameState } from './index';
+import { applyAction, beginRaid, createGame, raidPortAngle, raidSetbackMs, scheduleRaid, syncWithContent, tick, type Content, type GameState } from './index';
 import { maybeScheduleRaid } from './raid';
 import { content as base, rivalHome, testRivals, testServers, testRules } from './testWorld';
 
@@ -79,6 +79,21 @@ describe('enemy hackers', () => {
     expect(state.raid).toBeNull();
     expect(state.knownServers).toContain('rival-home');
     expect(state.messages.some((m) => m.subject === 'Traced Thief')).toBe(true);
+  });
+
+  it('each port shut sets them back less than the one before', () => {
+    const content = world();
+    const state = game(content);
+    beginRaid(state, content, 'thief');
+    const first = raidSetbackMs(state.raid!, content);
+    expect(first).toBe(testRules.raidPortSetbackSeconds * 1000);
+    run(state, content, 6_000);
+    const before = state.raid!.breachMs;
+    closePort(state, content);
+    expect(before - state.raid!.breachMs).toBeGreaterThan(first * 0.5);
+    expect(raidSetbackMs(state.raid!, content)).toBe(first * testRules.raidPortFade);
+    closePort(state, content);
+    expect(raidSetbackMs(state.raid!, content)).toBe(first * testRules.raidPortFade ** 2);
   });
 
   it('a vandal wipes an unlocked file but not a locked one', () => {
