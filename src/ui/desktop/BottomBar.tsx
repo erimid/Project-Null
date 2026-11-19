@@ -10,7 +10,7 @@ import { SpeedControl } from './SpeedControl';
 import { WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId } from './windowStore';
 
 /** Windows that only have a tab on the bar while they are open: Saved games opens from the game menu, the file viewer from a file. */
-export const ON_DEMAND: readonly WindowId[] = ['viewer', 'saves'];
+export const ON_DEMAND: readonly WindowId[] = ['viewer', 'saves', 'defence'];
 
 const clockText = (ms: number) => {
   const seconds = Math.ceil(ms / 1000);

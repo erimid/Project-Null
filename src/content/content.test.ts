@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { companies, contracts, findPage, gameInfo, hardware, mail, models, people, programs, servers, sites, tuning } from './index';
+import { companies, contracts, findPage, gameInfo, hardware, mail, models, people, programs, rivals, servers, sites, tuning } from './index';
 import companiesJson from './companies.json';
 import { parseCompanies } from './companies';
 import { parseHardware } from './hardware';
@@ -109,9 +109,11 @@ describe('shipped servers', () => {
 
   it('can all be reached: every server is a starting server or listed in the registry', () => {
     for (const server of servers.filter((s) => s.kind !== 'gateway')) {
-      // An unlisted server has to be one somebody can be talked into giving the address of.
+      // An unlisted server has to be one somebody can be talked into giving the address of,
+      // or an enemy hacker's home, which a won counter-trace puts in the address book.
       const told = people.asks.some((ask) => ask.reward.kind === 'address' && ask.reward.serverId === server.id);
-      expect(server.listed || told || gameInfo.startingServers.includes(server.id), server.id).toBe(true);
+      const rivalHome = rivals.some((rival) => rival.homeId === server.id);
+      expect(server.listed || told || rivalHome || gameInfo.startingServers.includes(server.id), server.id).toBe(true);
     }
   });
 
@@ -241,7 +243,7 @@ describe('shipped contracts', () => {
   });
 
   it('only use placeholders the rules fill in', () => {
-    const known = ['handle', 'client', 'title', 'pay', 'target', 'fine', 'hours', 'lines', 'name', 'label', 'model', 'part', 'now', 'step', 'of', 'brief'];
+    const known = ['handle', 'client', 'title', 'pay', 'target', 'fine', 'hours', 'lines', 'name', 'label', 'model', 'part', 'now', 'step', 'of', 'brief', 'who', 'style', 'home', 'address', 'loss', 'taunt'];
     for (const letter of Object.values(mail)) {
       for (const [, name] of `${letter.from} ${letter.subject} ${letter.body}`.matchAll(/\{(\w+)\}/g)) {
         expect(known).toContain(name);

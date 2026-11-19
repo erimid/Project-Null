@@ -11,6 +11,7 @@ import { Alerts } from './Alerts';
 import { TouchTips } from './TouchTips';
 import { HoverTips } from './HoverTips';
 import { Tour } from './Tour';
+import { windows } from './windowStore';
 import { BrowserWindow } from './windows/BrowserWindow';
 import { ContractWindow } from './windows/ContractWindow';
 import { GatewayWindow } from './windows/GatewayWindow';
@@ -22,6 +23,7 @@ import { WorkbenchWindow } from './windows/WorkbenchWindow';
 import { ViewerWindow } from './windows/ViewerWindow';
 import { SavesWindow } from './windows/SavesWindow';
 import { ServerWindow } from './windows/ServerWindow';
+import { DefenceWindow } from './windows/DefenceWindow';
 import './desktop.css';
 import './tutorial.css';
 
@@ -58,6 +60,12 @@ export function Desktop() {
   const layoutKind = useLayout();
   const phone = layoutKind !== 'desk';
   const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
+  // An attack opens the Defence window by itself, and closes it again once it is over.
+  const underAttack = useGame((game) => game.raid !== null);
+  useEffect(() => {
+    if (underAttack) windows.focus('defence');
+    else windows.close('defence');
+  }, [underAttack]);
   // The whole desk jolts when a trace cuts the line.
   const desk = useRef<HTMLDivElement>(null);
   useEffect(
@@ -75,7 +83,7 @@ export function Desktop() {
   );
 
   return (
-    <div ref={desk} class={`desktop${phone ? ' desktop--phone' : ''}${layoutKind === 'tablet' ? ' desktop--tablet' : ''}${tracing ? ' is-tracing' : ''}`}>
+    <div ref={desk} class={`desktop${phone ? ' desktop--phone' : ''}${layoutKind === 'tablet' ? ' desktop--tablet' : ''}${tracing ? ' is-tracing' : ''}${underAttack ? ' is-attacked' : ''}`}>
       <TopBar />
       <main class="workspace">
         {layoutKind === 'phone' && <p class="workspace__empty">Pick a window below.</p>}
@@ -91,6 +99,7 @@ export function Desktop() {
         <BrowserWindow net="dark" />
         <ViewerWindow />
         <SavesWindow />
+        <DefenceWindow />
         <Alerts />
         <TouchTips />
         <HoverTips />

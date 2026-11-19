@@ -118,5 +118,30 @@
     "from": "{client}",
     "subject": "Too slow: {title}",
     "body": "You missed the window on this one, {handle}. The moment has passed and the job is off. No payment. These things keep, so be ready next time."
+  },
+  "defence": {
+    "from": "Wren",
+    "subject": "You have a name now",
+    "body": "{handle}, a word of warning. You are known well enough that other people in this line may come looking, and not to hire you. Now and then, after a job that makes noise, someone will try your gateway while you are off the wire.\n\nWhen it happens, the Defence window opens on its own. The intruder works through your own layers one barrier at a time, and you have four answers. Close the port they are probing, which is a line-up like a firewall and sets them back. Trace them back along their route for their address, and if you finish first their server is yours to raid. Lock a file or two you would hate to lose. Or pull the plug, which always works, drops your connections and tells you nothing.\n\nLose and they take credits, wipe a file, or leave a trail that brings a log review. They cannot touch your hardware or end your career. Keep your wits and trace them: there is loot on the other end.\n\nWren"
+  },
+  "raid": {
+    "from": "Gateway",
+    "subject": "INTRUSION ON YOUR GATEWAY",
+    "body": "Someone is on your gateway. The handle on the session reads {who}. They {style}.\n\nOpen Defence on your bar. Close their ports to slow them, trace them back for their address, lock what you cannot lose, or pull the plug."
+  },
+  "raidWon": {
+    "from": "Gateway",
+    "subject": "Traced: {who}",
+    "body": "You ran the trace home before they got in. {who} was coming from {home}, at {address}. It is in your address book now, and whatever they left lying there is yours for the taking.\n\nThey will not try you again in a hurry."
+  },
+  "raidLost": {
+    "from": "Gateway",
+    "subject": "They got in: {who}",
+    "body": "{who} broke through before you could stop them and {loss}.\n\n\"{taunt}\"\n\nNo hardware lost, and you are still in business. Next time, trace them."
+  },
+  "raidFled": {
+    "from": "Gateway",
+    "subject": "Plug pulled",
+    "body": "You pulled the plug on {who}. Every connection dropped and your gateway went dark. They got nothing, and nor did you: no address, no loot. Sometimes that is the right call."
   }
 }

@@ -221,7 +221,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes', 'stages', 'stageNote', 'contractLate'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes', 'stages', 'stageNote', 'contractLate', 'defence', 'raid', 'raidWon', 'raidLost', 'raidFled'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -417,6 +417,26 @@ export interface Tuning {
   readonly workbenchAfter: number;
   /** Rating needed before the market sells each grade of module, grade 1 first. */
   readonly moduleGradeRatings: readonly number[];
+  /** Lowest rating at which a random enemy attack can land. */
+  readonly raidMinRating: number;
+  /** Least a job must pay before a random attack is considered after it. */
+  readonly raidProfilePay: number;
+  /** Chance of an attack after a high-profile job (0 to 1). */
+  readonly raidChance: number;
+  /** In-game hours between random attacks. */
+  readonly raidCooldownHours: number;
+  /** Seconds the intruder needs to break in, by rival level (level 1 first). */
+  readonly raidBreachSeconds: readonly number[];
+  /** Seconds a counter-trace needs, by rival level. */
+  readonly raidTraceSeconds: readonly number[];
+  /** Barriers (ports) before the breach, by rival level. */
+  readonly raidBarriers: readonly number[];
+  /** Seconds closing a port sets the break-in back. */
+  readonly raidPortSetbackSeconds: number;
+  /** How many files or programs the player can lock during one attack. */
+  readonly raidMaxLocks: number;
+  /** A thief or framer loss takes this fraction of the balance. */
+  readonly raidLossCredits: number;
 }
 
 export interface GameInfo {
@@ -999,6 +1019,16 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
       }
       return values as number[];
     })(),
+    raidMinRating: num(file, 'tuning', data, 'raidMinRating', 0, 100_000),
+    raidProfilePay: num(file, 'tuning', data, 'raidProfilePay', 0, 10_000_000),
+    raidChance: num(file, 'tuning', data, 'raidChance', 0, 1),
+    raidCooldownHours: num(file, 'tuning', data, 'raidCooldownHours', 0, 24 * 365),
+    raidBreachSeconds: tierList(file, data, 'raidBreachSeconds', false),
+    raidTraceSeconds: tierList(file, data, 'raidTraceSeconds', false),
+    raidBarriers: tierList(file, data, 'raidBarriers', false),
+    raidPortSetbackSeconds: num(file, 'tuning', data, 'raidPortSetbackSeconds', 0, 3600),
+    raidMaxLocks: num(file, 'tuning', data, 'raidMaxLocks', 0, 20),
+    raidLossCredits: num(file, 'tuning', data, 'raidLossCredits', 0, 1),
   };
 }
 

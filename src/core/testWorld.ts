@@ -114,6 +114,29 @@ export const testServers: ServerDef[] = [
   { ...base, id: 'hidden', name: 'Unlisted', kind: 'board', hostname: 'H', address: '10.0.0.6', listed: false, accounts: [{ user: 'member', role: 'guest', name: 'Member' }], files: [] },
 ];
 
+/** A rival hacker's home server, for the raid tests. Not in the default world. */
+export const rivalHome: ServerDef = {
+  ...base,
+  id: 'rival-home',
+  name: 'Rival Rig',
+  kind: 'company',
+  hostname: 'RIVAL',
+  address: '10.0.0.12',
+  listed: false,
+  accounts: [{ user: 'rival', role: 'admin', name: 'Rival' }],
+  files: [
+    { name: 'loot.dat', sizeGq: 2, access: 'admin' },
+    { name: 'spare.mod', sizeGq: 1, access: 'admin' },
+  ],
+  security: { password: 2, proxy: 0, firewall: 2, monitor: 2 },
+};
+
+/** Two rivals for the raid tests: a thief and a vandal. */
+export const testRivals = [
+  { id: 'thief', handle: 'Thief', blurb: 'b', homeId: 'rival-home', relays: ['relay-a', 'relay-b'], level: 1, minRating: 4, style: 'thief' as const, taunt: 'ta' },
+  { id: 'wrecker', handle: 'Wrecker', blurb: 'b', homeId: 'rival-home', relays: ['relay-a'], level: 2, minRating: 4, style: 'vandal' as const, taunt: 'tb' },
+];
+
 const program = (id: string, kind: ProgramDef['kind'], baseSeconds: number, secondsPerGq = 0): ProgramDef => ({
   id,
   name: id,
@@ -186,6 +209,16 @@ export const testRules: Rules = {
   buildSeconds: 10,
   workbenchAfter: 50,
   moduleGradeRatings: [0, 5, 10],
+  raidMinRating: 4,
+  raidProfilePay: 300,
+  raidChance: 0,
+  raidCooldownHours: 24,
+  raidBreachSeconds: [20, 30, 40, 50, 60],
+  raidTraceSeconds: [24, 36, 48, 60, 72],
+  raidBarriers: [2, 2, 3, 3, 4],
+  raidPortSetbackSeconds: 8,
+  raidMaxLocks: 2,
+  raidLossCredits: 0.2,
 };
 
 const part = (slot: HardwareDef['slot'], tier: number, price: number, values: Partial<HardwareDef>): HardwareDef => ({
@@ -255,6 +288,11 @@ export const testMail: Record<MailKey, MailDef> = {
   stageNote: { from: '{client}', subject: 'Step {step} of {of}: {title}', body: '{brief}' },
   contractLate: { from: '{client}', subject: 'Too slow: {title}', body: 'late' },
   hardwareLost: { from: 'Fixer', subject: 'Lost {part}', body: 'now {now}' },
+  defence: letter('defence'),
+  raid: { from: 'Gateway', subject: 'Intrusion', body: '{who} {style}' },
+  raidWon: { from: 'Gateway', subject: 'Traced {who}', body: '{home} {address}' },
+  raidLost: { from: 'Gateway', subject: 'In: {who}', body: '{loss} {taunt}' },
+  raidFled: { from: 'Gateway', subject: 'Plug pulled', body: '{who}' },
 };
 
 /** The directory's readme names a clerk and holds one detail; corp's secret names the boss and holds two more. */
@@ -333,5 +371,6 @@ export const content: Content = {
   companies: NO_COMPANIES,
   skills: testSkills,
   modules: testModules,
+  rivals: [],
   rules: testRules,
 };

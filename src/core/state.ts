@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 15;
+export const STATE_VERSION = 16;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -205,6 +205,57 @@ export interface EchoPuzzle {
   result: 'open' | 'won' | 'lost';
 }
 
+/**
+ * An attacker's port line-up as the player sees it: rings that turn, each
+ * with one port. Locking every ring while its port is under the marker
+ * shuts the attacker out of that barrier for a while. Drawn only from how
+ * long the port has been open, so like a bypass it needs little state.
+ */
+export interface RaidPort {
+  /** Where each ring's port was when the port opened, in degrees. */
+  startAngles: number[];
+  /** Degrees per second; negative turns the other way. */
+  speeds: number[];
+  locked: boolean[];
+  /** How long the port has been open, which turns the rings. */
+  ageMs: number;
+}
+
+/**
+ * An enemy hacker breaking into your gateway. One at a time. The intruder
+ * works through your defences over `breachTotalMs`; closing ports sets
+ * them back, and a counter-trace along their route wins their address.
+ */
+export interface RaidState {
+  /** Id of the rival hacker (content RivalDef). */
+  readonly attackerId: string;
+  /** Relay ids from the attacker toward your gateway, for the globe and the counter-trace. */
+  readonly route: string[];
+  /** Game time the attack began. */
+  readonly startedAtMs: number;
+  /** How far the intruder has got, in ms, toward breaking in. */
+  breachMs: number;
+  /** Time the intruder needs to break all the way in. */
+  readonly breachTotalMs: number;
+  /** How many barriers (ports) stand before the breach. */
+  readonly barriers: number;
+  /** The port line-up the player has open to shut the intruder out, or null. */
+  port: RaidPort | null;
+  /** The counter-trace back along the attacker's route, or null until it is started. */
+  traceBack: TraceState | null;
+  /** Names of files or programs the player has locked, safe from a loss. */
+  locked: string[];
+  result: 'open' | 'won' | 'lost' | 'fled';
+  /** True for a story attack: it may land while the player is connected. */
+  readonly story: boolean;
+}
+
+/** An attack waiting to land: it begins when the player is next offline (or at once, for a story beat). */
+export interface PendingRaid {
+  readonly attackerId: string;
+  readonly story: boolean;
+}
+
 /** How many slots there are for saved routes. */
 export const ROUTE_SLOTS = 3;
 
@@ -367,6 +418,12 @@ export interface GameState {
   flags: string[];
   /** Changeable state of each server, by server id. */
   servers: Record<string, ServerState>;
+  /** An enemy hacker breaking into your gateway right now, or null. */
+  raid: RaidState | null;
+  /** An attack scheduled to land, waiting for the right moment, or null. */
+  raidPending: PendingRaid | null;
+  /** Game time before which no random attack is checked for (the cool-down). */
+  raidQuietUntilMs: number;
 }
 
 /** Settings a new game needs. The UI fills these from the content files. */
@@ -422,6 +479,9 @@ export function createGame(options: NewGameOptions): GameState {
     reviews: [],
     flags: [],
     servers: {},
+    raid: null,
+    raidPending: null,
+    raidQuietUntilMs: 0,
   };
 }
 

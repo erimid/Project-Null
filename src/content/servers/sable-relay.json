@@ -1,0 +1,70 @@
+{
+  "id": "sable-relay",
+  "name": "Sable's Relay",
+  "kind": "company",
+  "owner": "Sable",
+  "hostname": "SB-NODE",
+  "address": "45.33.150.3",
+  "city": "Reykjavík",
+  "country": "Iceland",
+  "lat": 64.15,
+  "lon": -21.94,
+  "blurb": "A careful operator's forwarding node. Only a won trace leads here.",
+  "listed": false,
+  "security": {
+    "password": 3,
+    "proxy": 2,
+    "firewall": 3,
+    "monitor": 4
+  },
+  "traceSecondsPerHop": 20,
+  "relayDelay": 1.2,
+  "banner": [
+    "SABLE",
+    "nothing here is in my name, and nor is anything I leave on you",
+    "goodbye"
+  ],
+  "accounts": [
+    {
+      "user": "sable",
+      "role": "admin",
+      "name": "Sable"
+    }
+  ],
+  "files": [
+    {
+      "name": "frames.dat",
+      "sizeGq": 5,
+      "access": "admin",
+      "encrypted": 2
+    },
+    {
+      "name": "hush.mod",
+      "sizeGq": 1,
+      "access": "admin",
+      "part": {
+        "id": "quiet",
+        "grade": 3
+      }
+    },
+    {
+      "name": "method.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "The trick is never to take anything. Leave something instead. A login in their own logs, from an address that isn't theirs, timed just before they arrived.\n\nBy the time anyone reads it, they are the one with questions to answer.\n\nYou traced me, so you already know. Consider it a professional courtesy."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 500,
+      "text": "login sable from 45.33.150.1"
+    },
+    {
+      "minutesAgo": 60,
+      "text": "relay opened"
+    }
+  ]
+}

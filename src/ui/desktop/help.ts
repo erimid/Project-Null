@@ -113,6 +113,14 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
       'You can download a save as a file, and bring it back on another computer.',
     ],
   },
+  defence: {
+    summary: 'Opens by itself when someone breaks into your gateway. Fight them off here.',
+    points: [
+      'Close the port they are probing: a line-up like a firewall bypass that sets them back.',
+      'Trace them back along their route. Finish before they break in and their server is yours to raid.',
+      'Lock a file or two you cannot afford to lose, or pull the plug to end it with nothing lost or learned.',
+    ],
+  },
 };
 
 /** A place on the screen the tour points at. Elements carry it as data-tour. */

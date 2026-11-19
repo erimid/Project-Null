@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'preact/hooks';
 
-export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'contract', 'skills', 'workbench', 'web', 'dark', 'viewer', 'saves'] as const;
+export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'contract', 'skills', 'workbench', 'web', 'dark', 'viewer', 'saves', 'defence'] as const;
 export type WindowId = (typeof WINDOW_IDS)[number];
 
 export interface WindowDef {
@@ -50,6 +50,7 @@ export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
   dark: { title: 'Undertow', pill: 'Darknet', width: 620, height: 500, x: 144, y: 92, open: false },
   viewer: { title: 'File viewer', pill: 'Viewer', width: 640, x: 224, y: 128, open: false },
   saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 264, y: 92, open: false },
+  defence: { title: 'Defence', pill: 'Defence', width: 560, height: 560, x: 120, y: 48, open: false },
 };
 
 export const MIN_WIDTH = 320;
@@ -75,7 +76,7 @@ export interface WindowLayout {
 type Layouts = Readonly<Record<WindowId, WindowLayout>>;
 
 // Bumped whenever the default layout changes, so everyone gets the new one once.
-const STORAGE_KEY = 'project-null.windows.v9';
+const STORAGE_KEY = 'project-null.windows.v10';
 
 /**
  * On a screen narrower than the usual desk (a tablet held wide, a small

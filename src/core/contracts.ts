@@ -11,6 +11,7 @@ import { noteRating } from './skills';
 import { freeStorageGb } from './tasks';
 import { refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
+import { maybeScheduleRaid } from './raid';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
 import { findConnection, findProgram, findServer, noteProgress, once, securityOf, sendMail, type Content } from './world';
 
@@ -158,6 +159,8 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   }
   once(state, 'firstDelivery', () => sendMail(state, content, 'firstDelivery'));
   noteProgress(state, content);
+  // A big, loud job may draw an enemy hacker's eye.
+  maybeScheduleRaid(state, content, pay);
   return null;
 }
 
