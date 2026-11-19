@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   HARDWARE_SLOT_LABELS,
   freeStorageGb,
@@ -203,6 +203,13 @@ function LoginScreen({ game, server, state, connection, run }: View) {
 /** The server's defences, and the buttons that get past them. */
 function Security({ game, server, connection, run }: View) {
   const { password, proxy, firewall, monitor } = server.security;
+  const lineup = findTask(game, connection, { kind: 'firewall' });
+  // Hands-on games stay in the order they turned up, so a new one never pushes aside the one being played.
+  const order = useRef<{ connectionId: string; games: ('echo' | 'rings')[] }>({ connectionId: connection.id, games: [] });
+  if (order.current.connectionId !== connection.id) order.current = { connectionId: connection.id, games: [] };
+  const showing = [connection.monitor.echo ? ('echo' as const) : null, lineup?.puzzle ? ('rings' as const) : null].filter((game) => game !== null);
+  order.current.games = [...order.current.games.filter((game) => showing.includes(game)), ...showing.filter((game) => !order.current.games.includes(game))];
+  const games = order.current.games;
   const holds = holding(content, connection);
   const holdNote = holds.length > 0 && (
     <p class="board__note link-note">
@@ -254,7 +261,6 @@ function Security({ game, server, connection, run }: View) {
     );
   };
 
-  const lineup = findTask(game, connection, { kind: 'firewall' });
   const blinding = findTask(game, connection, { kind: 'monitor' });
   const blind = connection.monitor.blindMs > 0;
 
@@ -312,8 +318,13 @@ function Security({ game, server, connection, run }: View) {
       </p>
     )}
     {holdNote}
-    {connection.monitor.echo && <Handshake key={connection.id} connectionId={connection.id} echo={connection.monitor.echo} />}
-    {lineup?.puzzle && <PortLineup taskId={lineup.id} rings={lineup.puzzle.locked.length} />}
+    {games.map((game) =>
+      game === 'echo'
+        ? connection.monitor.echo && (
+            <Handshake key={`echo-${connection.id}`} connectionId={connection.id} echo={connection.monitor.echo} waits={games[0] !== 'echo'} />
+          )
+        : lineup?.puzzle && <PortLineup key={lineup.id} taskId={lineup.id} rings={lineup.puzzle.locked.length} />,
+    )}
     </>
   );
 }
@@ -339,11 +350,13 @@ const ECHO_STEP_MS = 520;
  * The hands-on way to stay hidden longer: the monitor's check-in pattern
  * lights up cell by cell, then the player clicks the same cells in order.
  */
-function Handshake({ connectionId, echo }: { connectionId: string; echo: EchoPuzzle }) {
-  // Which step of the pattern is lit while it plays; past the end = the player's turn.
-  const [step, setStep] = useState(0);
+function Handshake({ connectionId, echo, waits }: { connectionId: string; echo: EchoPuzzle; waits: boolean }) {
+  // Which step of the pattern is lit while it plays; past the end = the player's turn. Below zero = not shown yet:
+  // it turned up while another hands-on game was being played, so it waits to be asked for.
+  const [step, setStep] = useState(() => (waits && echo.entered === 0 && echo.result === 'open' ? -1 : 0));
   const [wrong, setWrong] = useState<number | null>(null);
-  const playing = step < echo.cells.length;
+  const waiting = step < 0;
+  const playing = !waiting && step < echo.cells.length;
   const left = useGame((game) => blindClock(game, connectionId));
 
   useEffect(() => {
@@ -353,7 +366,7 @@ function Handshake({ connectionId, echo }: { connectionId: string; echo: EchoPuz
   }, [step, playing]);
 
   const press = (cell: number) => {
-    if (playing || echo.result !== 'open') return;
+    if (playing || waiting || echo.result !== 'open') return;
     if (echo.cells[echo.entered] !== cell) setWrong(cell);
     session.dispatch({ type: 'echoCell', connectionId, cell });
   };
@@ -371,7 +384,7 @@ function Handshake({ connectionId, echo }: { connectionId: string; echo: EchoPuz
             type="button"
             class={`echo__cell${cell === lit ? ' is-lit' : ''}${cell === last ? ' is-right' : ''}${cell === wrong ? ' is-wrong' : ''}`}
             aria-label={`Cell ${cell + 1}`}
-            disabled={playing || echo.result !== 'open'}
+            disabled={playing || waiting || echo.result !== 'open'}
             onClick={() => press(cell)}
           />
         ))}
@@ -380,7 +393,7 @@ function Handshake({ connectionId, echo }: { connectionId: string; echo: EchoPuz
         <h3 class="map__heading">Echo the handshake</h3>
         {echo.result === 'open' && (
           <p>
-            The monitor checks in with a pattern of {echo.cells.length} cells. {playing ? 'Watch it.' : 'Now click the same cells in the same order.'}{' '}
+            The monitor checks in with a pattern of {echo.cells.length} cells. {waiting ? 'It waits until you ask for it.' : playing ? 'Watch it.' : 'Now click the same cells in the same order.'}{' '}
             Get it right and the monitor stays blind {bonus}% longer. One wrong cell costs {penalty}% of the time left. Or leave it
             alone.
           </p>
@@ -391,7 +404,12 @@ function Handshake({ connectionId, echo }: { connectionId: string; echo: EchoPuz
           {echo.result === 'open' ? `${echo.entered} / ${echo.cells.length} repeated` : echo.result === 'won' ? 'matched' : 'missed'} · blind for{' '}
           {left}
         </p>
-        {echo.result === 'open' && !playing && echo.entered === 0 && (
+        {echo.result === 'open' && waiting && (
+          <button type="button" class="btn btn--go" onClick={() => setStep(0)}>
+            Show the pattern
+          </button>
+        )}
+        {echo.result === 'open' && !playing && !waiting && echo.entered === 0 && (
           <button type="button" class="btn" onClick={() => setStep(0)}>
             Show it again
           </button>
@@ -401,7 +419,10 @@ function Handshake({ connectionId, echo }: { connectionId: string; echo: EchoPuz
   );
 }
 
-const LINEUP_SIZE = 180;
+const LINEUP_SIZE = 240;
+/** The innermost ring's radius, and how far apart the rings sit. Each ring's whole band takes a click. */
+const RING_INNER = 24;
+const RING_GAP = 18;
 const LINEUP_CENTRE = LINEUP_SIZE / 2;
 
 /**
@@ -426,7 +447,7 @@ function PortLineup({ taskId, rings }: { taskId: string; rings: number }) {
     const radians = ((degrees - 90) * Math.PI) / 180;
     return { x: LINEUP_CENTRE + radius * Math.cos(radians), y: LINEUP_CENTRE + radius * Math.sin(radians) };
   };
-  const outer = 26 + (rings - 1) * 14 + 12;
+  const outer = RING_INNER + (rings - 1) * RING_GAP + RING_GAP / 2 + 3;
   const left = point(outer, -tolerance);
   const right = point(outer, tolerance);
 
@@ -440,7 +461,7 @@ function PortLineup({ taskId, rings }: { taskId: string; rings: number }) {
         />
         <path d={`M${LINEUP_CENTRE - 6} ${LINEUP_CENTRE - outer - 12}h12l-6 9z`} class="lineup__marker" />
         {angles.map((angle, ring) => {
-          const radius = 26 + ring * 14;
+          const radius = RING_INNER + ring * RING_GAP;
           const locked = angle === 'L';
           const port = point(radius, locked ? 0 : Number(angle));
           return (
@@ -459,8 +480,9 @@ function PortLineup({ taskId, rings }: { taskId: string; rings: number }) {
                 }
               }}
             >
+              <circle cx={LINEUP_CENTRE} cy={LINEUP_CENTRE} r={radius} class="lineup__hit" />
               <circle cx={LINEUP_CENTRE} cy={LINEUP_CENTRE} r={radius} class="lineup__track" />
-              <circle cx={port.x} cy={port.y} r={5} class="lineup__port" />
+              <circle cx={port.x} cy={port.y} r={6.5} class="lineup__port" />
             </g>
           );
         })}
@@ -469,7 +491,8 @@ function PortLineup({ taskId, rings }: { taskId: string; rings: number }) {
         <h3 class="map__heading">Line up the ports</h3>
         <p>
           Click a ring as its port crosses the marker at the top. Each ring you lock shortens the bypass, and locking all {rings}{' '}
-          finishes it. A miss costs {content.rules.ringMissSeconds} seconds. Or leave it and the program gets there by itself.
+          finishes it. A miss costs {content.rules.ringMissSeconds} seconds. Left alone, the program locks them itself, one at a time, as the ports come
+          round.
         </p>
         <p class="lineup__status data">
           {lockedCount} / {rings} locked · {secondsLeft}s left

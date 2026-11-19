@@ -125,13 +125,15 @@ describe('the port line-up', () => {
   });
 
   it('finishes the bypass at once when every ring is locked', () => {
-    const { state, ok, refused, wait, task, waitForRing, connection } = start();
-    for (const ring of [0, 1, 2]) {
-      waitForRing(ring);
-      ok({ type: 'lockRing', taskId: task().id, ring });
-    }
+    const { state, ok, refused, wait, task, connection } = start();
+    // Lock whichever port comes round first, each time, before the program gets to any of them itself.
     const id = task().id;
-    expect(task().progressMs).toBeLessThan(6_000);
+    while (task().puzzle!.locked.includes(false)) {
+      const ring = [0, 1, 2].find((r) => !task().puzzle!.locked[r] && Math.min(ringAngle(task(), r), 360 - ringAngle(task(), r)) <= 15);
+      if (ring === undefined) wait(0.05);
+      else ok({ type: 'lockRing', taskId: id, ring });
+    }
+    expect(task().progressMs).toBeLessThan(3_000);
     wait(0.01);
     expect(state.tasks).toEqual([]);
     expect(connection().bypassed.firewall).toBe(true);
@@ -151,8 +153,35 @@ describe('the port line-up', () => {
     wait(2);
     const loaded = syncWithContent(deserializeGame(serializeGame(state, '')).state, quiet);
     expect(loaded).toEqual(state);
-    wait(4.1);
+    wait(10);
     expect(connection().bypassed.firewall).toBe(true);
+  });
+
+  it('left alone, locks the rings itself one at a time, each as its port crosses the marker', () => {
+    const { state, wait, task, connection } = start();
+    const seen: number[] = [];
+    let ended = 0;
+    for (let t = 0; t < 15 && state.tasks.length > 0; t += 0.05) {
+      const before = task().puzzle!.locked.map((locked, ring) => (locked ? 0 : ringAngle(task(), ring)));
+      const lockedBefore = [...task().puzzle!.locked];
+      const speeds = task().puzzle!.speeds;
+      wait(0.05);
+      const now = state.tasks[0]?.puzzle?.locked ?? [true, true, true];
+      now.forEach((locked, ring) => {
+        if (!locked || lockedBefore[ring]) return;
+        seen.push(ring);
+        // The port was at most one step short of the marker when the step began.
+        const step = Math.abs(speeds[ring]!) * 0.05;
+        const short = speeds[ring]! > 0 ? 360 - before[ring]! : before[ring]!;
+        expect(short).toBeLessThanOrEqual(step + 1e-6);
+      });
+      ended = t + 0.05;
+    }
+    expect(seen).toHaveLength(3);
+    expect(connection().bypassed.firewall).toBe(true);
+    // No sooner than the 6 seconds the program needs, and no more than one turn of the slowest ring later.
+    expect(ended).toBeGreaterThanOrEqual(6);
+    expect(ended).toBeLessThan(6 + 360 / 70 + 0.1);
   });
 });
 

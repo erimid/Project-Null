@@ -2,7 +2,9 @@ import { activeContract, objectiveMet, objectivePossible } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatMoney } from '../../format';
 import { useWorld } from '../../hooks';
+import type { ComponentChildren } from 'preact';
 import { content, session } from '../../session';
+import { deskStore } from '../deskStore';
 import { ConfirmButton } from '../ConfirmButton';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
@@ -21,6 +23,48 @@ function objectiveText(contract: ContractDef): string {
     case 'record':
       return `In ${target}'s records, set ${goal.column} to "${goal.value}" for ${goal.key}.`;
   }
+}
+
+/** Shows a server on the route map, picked and in view. */
+function showOnMap(serverId: string) {
+  deskStore.select(serverId);
+  windows.focus('map');
+}
+
+/** A server's name as a link that opens it on the route map. */
+function Place({ id, children }: { id: string; children: ComponentChildren }) {
+  return (
+    <button type="button" class="place" data-tip="Show this server on the route map" onClick={() => showOnMap(id)}>
+      {children}
+    </button>
+  );
+}
+
+/** Text with every server the player knows by name turned into a link to the map. */
+function WithPlaces({ text, known }: { text: string; known: readonly string[] }) {
+  const places = known
+    .map((id) => findServer(content, id))
+    .filter((server): server is NonNullable<typeof server> => !!server && server.kind !== 'gateway' && server.name.length >= 4)
+    .sort((a, b) => b.name.length - a.name.length);
+  const parts: ComponentChildren[] = [];
+  let rest = text;
+  while (rest.length > 0) {
+    let first: { at: number; id: string; name: string } | undefined;
+    for (const server of places) {
+      const at = rest.indexOf(server.name);
+      if (at >= 0 && (!first || at < first.at)) first = { at, id: server.id, name: server.name };
+    }
+    if (!first) break;
+    if (first.at > 0) parts.push(rest.slice(0, first.at));
+    parts.push(
+      <Place key={parts.length} id={first.id}>
+        {first.name}
+      </Place>,
+    );
+    rest = rest.slice(first.at + first.name.length);
+  }
+  if (rest) parts.push(rest);
+  return <>{parts}</>;
 }
 
 /** The contract being worked on: the brief, whether it is done, and the Deliver button. */
@@ -44,6 +88,8 @@ export function ContractWindow() {
   const possible = objectivePossible(game, content, contract);
   const target = findServer(content, contract.targetId);
   const goal = contract.objective;
+  // The target can always be opened, even before it is in the address book list.
+  const places = [...new Set([contract.targetId, ...game.knownServers])];
   const sealed = goal.kind === 'steal' && game.player.files.some((file) => file.name === goal.file && file.encrypted);
 
   return (
@@ -54,7 +100,7 @@ export function ContractWindow() {
         <dd>{contract.client}</dd>
         <dt>target</dt>
         <dd>
-          {target?.name} <span class="data row__dim">{target?.address}</span>
+          {target ? <Place id={target.id}>{target.name}</Place> : contract.targetId} <span class="data row__dim">{target?.address}</span>
         </dd>
         <dt>pays</dt>
         <dd>
@@ -68,7 +114,9 @@ export function ContractWindow() {
       </dl>
       <div class="contract__brief">
         {contract.brief.split('\n\n').map((paragraph, index) => (
-          <p key={index}>{paragraph}</p>
+          <p key={index}>
+            <WithPlaces text={paragraph} known={places} />
+          </p>
         ))}
       </div>
       <p class={`objective${done ? ' is-done' : ''}`}>
@@ -76,7 +124,7 @@ export function ContractWindow() {
           {done ? '✓' : '○'}
         </span>
         <span>
-          {objectiveText(contract)}
+          <WithPlaces text={objectiveText(contract)} known={places} />
           <span class="visually-hidden">{done ? ' Done.' : ' Not done yet.'}</span>
         </span>
       </p>

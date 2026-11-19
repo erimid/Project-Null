@@ -339,6 +339,67 @@ export function ringAngle(task: Task, ring: number): number {
   return ((angle % 360) + 360) % 360;
 }
 
+/** When, at or after `fromMs` of the task's running time, a ring's port next crosses the marker. */
+function nextCrossingMs(puzzle: RingPuzzle, ring: number, fromMs: number): number {
+  const start = puzzle.startAngles[ring] ?? 0;
+  const speed = puzzle.speeds[ring] ?? 0;
+  if (speed === 0) return fromMs;
+  const at = start + (speed * fromMs) / 1000;
+  const turn = speed > 0 ? Math.ceil(at / 360) : Math.floor(at / 360);
+  return Math.max(fromMs, ((turn * 360 - start) / speed) * 1000);
+}
+
+/** The ring the program would lock next by itself, and when: the first open port to cross the marker from `fromMs` on. */
+function nextAuto(puzzle: RingPuzzle, fromMs: number): { ring: number; atMs: number } | undefined {
+  let best: { ring: number; atMs: number } | undefined;
+  puzzle.locked.forEach((locked, ring) => {
+    if (locked) return;
+    const atMs = nextCrossingMs(puzzle, ring, fromMs);
+    if (!best || atMs < best.atMs) best = { ring, atMs };
+  });
+  return best;
+}
+
+/**
+ * Works out when the program will lock its next ring without help. The
+ * time left is shared equally between the open rings; each is locked the
+ * first time a port crosses the marker after its share is done. The last
+ * ring's crossing is the moment the task ends, so a bypass never stops
+ * with a port short of the marker or past it.
+ */
+function schedulePuzzle(task: Task): void {
+  const puzzle = task.puzzle;
+  if (!puzzle) return;
+  const open = puzzle.locked.filter((locked) => !locked).length;
+  if (open === 0) {
+    delete puzzle.autoAtMs;
+    return;
+  }
+  const shareEndsMs = task.progressMs + Math.max(0, task.durationMs - task.progressMs) / open;
+  const next = nextAuto(puzzle, shareEndsMs);
+  puzzle.autoAtMs = next?.atMs ?? shareEndsMs;
+  if (open === 1) task.durationMs = puzzle.autoAtMs;
+}
+
+/** Lets the program lock the rings it has earned. True once none are left open. */
+function advancePuzzle(task: Task): boolean {
+  const puzzle = task.puzzle;
+  if (!puzzle) return true;
+  if (puzzle.locked.every((locked) => locked)) return true;
+  if (puzzle.autoAtMs === undefined) schedulePuzzle(task);
+  while (puzzle.autoAtMs !== undefined && task.progressMs >= puzzle.autoAtMs) {
+    const next = nextAuto(puzzle, puzzle.autoAtMs);
+    if (!next) break;
+    // Schedule the next ring from the moment this one locked, not from the end of the tick.
+    const now = task.progressMs;
+    task.progressMs = puzzle.autoAtMs;
+    puzzle.locked[next.ring] = true;
+    schedulePuzzle(task);
+    task.progressMs = now;
+  }
+  return puzzle.locked.every((locked) => locked);
+}
+
 /**
  * Tries to lock one ring of a task's port line-up. A hit takes that
  * ring's share off the time left (the last ring finishes the task); a
@@ -354,12 +415,14 @@ export function lockRing(state: GameState, content: Content, taskId: string, rin
   const offBy = Math.min(angle, 360 - angle);
   if (offBy > ringTolerance(state, content)) {
     task.durationMs += content.rules.ringMissSeconds * 1000;
+    schedulePuzzle(task);
     return null;
   }
   const openBefore = puzzle.locked.filter((locked) => !locked).length;
   puzzle.locked[ring] = true;
   const remaining = Math.max(0, task.durationMs - task.progressMs);
   task.durationMs = task.progressMs + (remaining * (openBefore - 1)) / openBefore;
+  schedulePuzzle(task);
   return null;
 }
 
@@ -375,7 +438,7 @@ export function startTask(state: GameState, content: Content, connectionId: stri
   const puzzle = target.kind === 'firewall' ? newPuzzle(state, content, check.level) : undefined;
   // Rings that start locked have already taken their share off the time.
   const open = puzzle ? puzzle.locked.filter((locked) => !locked).length / puzzle.locked.length : 1;
-  state.tasks.push({
+  const task: Task = {
     id: `t${state.nextId++}`,
     programId: check.program.id,
     connectionId: connection?.id ?? null,
@@ -383,7 +446,9 @@ export function startTask(state: GameState, content: Content, connectionId: stri
     progressMs: 0,
     durationMs: check.seconds * 1000 * open,
     ...(puzzle ? { puzzle } : {}),
-  });
+  };
+  schedulePuzzle(task);
+  state.tasks.push(task);
   if (target.kind === 'build') takeModules(state, target.modules);
   // Monitors notice programs working on their server. They don't notice being blinded, work done at home, or a Quiet build.
   if (connection && target.kind !== 'monitor' && !hasTrait(state, content, check.program.id, 'quiet')) {
@@ -396,7 +461,8 @@ export function startTask(state: GameState, content: Content, connectionId: stri
 export function advanceTasks(state: GameState, content: Content, simMs: number): void {
   for (const task of [...state.tasks]) {
     task.progressMs += simMs;
-    if (task.progressMs < task.durationMs) continue;
+    // A port line-up ends when its last ring locks, which is also when its time runs out.
+    if (task.puzzle ? !advancePuzzle(task) : task.progressMs < task.durationMs) continue;
     state.tasks = state.tasks.filter((other) => other !== task);
     if (task.connectionId === null) {
       finishLocal(state, content, task);

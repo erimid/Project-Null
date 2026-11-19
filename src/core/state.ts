@@ -229,7 +229,8 @@ export interface Task {
 /**
  * The port line-up: rings that turn, each with one port on it. Locking a
  * ring while its port is under the marker (0 degrees) shortens the task;
- * locking them all finishes it. Where a ring is depends only on how long
+ * locking them all finishes it. Left alone, the program locks them one
+ * at a time as their ports come round, so it too ends on the marker. Where a ring is depends only on how long
  * the task has run, so it needs no state of its own.
  */
 export interface RingPuzzle {
@@ -238,6 +239,11 @@ export interface RingPuzzle {
   /** Degrees per second; negative turns the other way. */
   speeds: number[];
   locked: boolean[];
+  /**
+   * When (in the task's own running time) the program will lock the next
+   * ring by itself. Always a moment that ring's port is under the marker.
+   */
+  autoAtMs?: number;
 }
 
 /** A look through a server's logs that will happen some time after the player left. */

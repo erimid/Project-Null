@@ -153,7 +153,7 @@ describe('logging out', () => {
   it('stops programs running in the account but keeps bypassed layers and the trace', () => {
     const { state, ok, run, wait } = inside();
     ok(run({ kind: 'firewall' }));
-    wait(6);
+    wait(12);
     ok(run({ kind: 'proxy' }));
     ok({ type: 'logout', connectionId: first(state) });
     expect(state.tasks).toEqual([]);
@@ -168,7 +168,7 @@ describe('the firewall', () => {
     refused(run({ kind: 'copyFile', file: 'secret.dat' }), /firewall is blocking/);
     refused(run({ kind: 'deleteFile', file: 'secret.dat' }), /firewall is blocking/);
     ok(run({ kind: 'firewall' }));
-    wait(6);
+    wait(12);
     expect(state.connections[0]!.bypassed).toEqual({ proxy: false, firewall: true });
     ok(run({ kind: 'copyFile', file: 'secret.dat' }));
   });
@@ -180,7 +180,7 @@ describe('the firewall', () => {
     const h = inside();
     h.ok(h.run({ kind: 'firewall' }));
     h.refused(h.run({ kind: 'firewall' }), /already running/);
-    h.wait(6);
+    h.wait(12);
     h.refused(h.run({ kind: 'firewall' }), /already bypassed/);
   });
 
