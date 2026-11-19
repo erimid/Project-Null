@@ -136,15 +136,47 @@ describe('connecting', () => {
     expect(state.connections[0]!.route).toEqual(['relay-a']);
   });
 
-  it('refuses unknown servers, the gateway, a server in the route, and a second connection to the same server', () => {
+  it('refuses unknown servers, the gateway, and a second connection to the same server', () => {
     const state = knowAll();
     state.player.hardware.ports = 3;
     refused(newGame(), { type: 'connect', serverId: 'corp' }, /do not have that address/);
     refused(state, { type: 'connect', serverId: 'gateway' }, /already at your gateway/);
-    ok(state, { type: 'addHop', serverId: 'relay-a' });
-    refused(state, { type: 'connect', serverId: 'relay-a' }, /relay in your route/);
     ok(state, { type: 'connect', serverId: 'corp' });
     refused(state, { type: 'connect', serverId: 'corp' }, /already connected/);
+  });
+
+  it('takes the target out of the route when you connect to a server in it', () => {
+    const state = knowAll();
+    ok(state, { type: 'addHop', serverId: 'relay-a' });
+    ok(state, { type: 'addHop', serverId: 'corp' });
+    ok(state, { type: 'addHop', serverId: 'relay-b' });
+    ok(state, { type: 'connect', serverId: 'corp' });
+    expect(state.connections[0]!.route).toEqual(['relay-a', 'relay-b']);
+    expect(state.connections[0]!.trace.hopMs).toHaveLength(2);
+    expect(state.route).toEqual(['relay-a', 'relay-b']);
+  });
+
+  it('fills the route with every spare relay, leaving out the target and live connections', () => {
+    const state = knowAll();
+    state.player.hardware.ports = 2;
+    ok(state, { type: 'connect', serverId: 'directory' });
+    ok(state, { type: 'autoRoute', targetId: 'corp' });
+    expect(state.route).not.toContain('corp');
+    expect(state.route).not.toContain('directory');
+    expect(state.route).not.toContain('gateway');
+    // relay-a is slowest to trace through, so it goes first.
+    expect(state.route[0]).toBe('relay-a');
+    expect(new Set(state.route).size).toBe(state.route.length);
+  });
+
+  it('stars and unstars servers in the address book', () => {
+    const state = knowAll();
+    ok(state, { type: 'toggleBookmark', serverId: 'corp' });
+    ok(state, { type: 'toggleBookmark', serverId: 'relay-a' });
+    expect(state.bookmarks).toEqual(['corp', 'relay-a']);
+    ok(state, { type: 'toggleBookmark', serverId: 'corp' });
+    expect(state.bookmarks).toEqual(['relay-a']);
+    refused(newGame(), { type: 'toggleBookmark', serverId: 'corp' }, /do not have that address/);
   });
 
   it('allows one connection at a time to start with, and more once the gateway supports it', () => {

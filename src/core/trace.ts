@@ -69,6 +69,34 @@ export function traceHopMs(content: Content, target: ServerDef, route: readonly 
     .reverse();
 }
 
+/**
+ * A route that keeps a trace busy for as long as it can, from the servers
+ * the player knows: up to `most` relays, never the target or a server
+ * already connected to. Picked one hop at a time, each time the server
+ * that adds the most to the trace from where the route has got to, so
+ * routes zig-zag across borders and oceans.
+ */
+export function bestRoute(state: GameState, content: Content, targetId: string | null, most: number): string[] {
+  const busy = new Set(state.connections.map((connection) => connection.serverId));
+  const pool = state.knownServers
+    .map((id) => findServer(content, id))
+    .filter((server): server is ServerDef => !!server && server.kind !== 'gateway' && server.id !== targetId && !busy.has(server.id));
+  const route: string[] = [];
+  let at: ServerDef = gatewayOf(content);
+  while (route.length < most && pool.length > 0) {
+    let pick = 0;
+    let best = -1;
+    pool.forEach((server, index) => {
+      const value = server.relayDelay * legFactor(content, legKind(at, server));
+      if (value > best) [pick, best] = [index, value];
+    });
+    const [next] = pool.splice(pick, 1);
+    route.push(next!.id);
+    at = next!;
+  }
+  return route;
+}
+
 /** How much longer each step of a trace takes, from the Long way round skill. */
 export const traceSlow = (state: GameState, content: Content): number => 1 + effect(state, content, 'traceSlow');
 

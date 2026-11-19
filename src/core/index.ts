@@ -96,7 +96,7 @@ export {
   rackStorageGb,
   storageGb,
 } from './hardware';
-export { hopUnderTrace, legFactor, legKind, maxReroutes, mostUrgentTrace, totalTraceMs, traceHeld, traceHopMs, traceLegs, traceReport, traceSlow, tracesByUrgency } from './trace';
+export { bestRoute, hopUnderTrace, legFactor, legKind, maxReroutes, mostUrgentTrace, totalTraceMs, traceHeld, traceHopMs, traceLegs, traceReport, traceSlow, tracesByUrgency } from './trace';
 export { heldBy, holding, monitorHeld } from './link';
 export type { LegKind, TraceLeg, TraceReport } from './trace';
 export {

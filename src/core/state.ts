@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 12;
+export const STATE_VERSION = 13;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -296,6 +296,8 @@ export interface GameState {
   player: PlayerState;
   /** Ids of servers the player has the address of. */
   knownServers: string[];
+  /** Servers the player has starred in the address book, in the order they were starred. */
+  bookmarks: string[];
   /** The bounce chain being planned for the next connection: relay server ids in order. */
   route: string[];
   connections: Connection[];
@@ -354,6 +356,7 @@ export function createGame(options: NewGameOptions): GameState {
       model: null,
     },
     knownServers: [],
+    bookmarks: [],
     route: [],
     connections: [],
     tasks: [],
