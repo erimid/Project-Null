@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 17;
+export const STATE_VERSION = 18;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -115,6 +115,18 @@ export interface ContractsState {
   stage: number;
   /** Game time the current stage began. */
   stageStartMs: number;
+}
+
+/** How far the player has got through the story, and which story contracts are on the board (see core/story.ts). */
+export interface StoryState {
+  /** Index of the beat the story is waiting on. Equal to the number of beats once the act is over. */
+  beat: number;
+  /** Whether the current beat has already arrived (its message sent, its contract posted). */
+  arrived: boolean;
+  /** Game time the current beat arrived, or the last one was finished: the clock the next beat's spacing counts from. */
+  lastMs: number;
+  /** Ids of story contracts the director has put on the board and are not yet delivered. */
+  offered: string[];
 }
 
 /** A job the board made up against a generated company. Taken down at `expiresMs` unless it is being worked on. */
@@ -421,6 +433,8 @@ export interface GameState {
   /** The player's inbox, oldest first. */
   messages: Message[];
   contracts: ContractsState;
+  /** How far the player has got through Act 1 (see core/story.ts). */
+  story: StoryState;
   phish: PhishState;
   /** Log reviews still to come, in no particular order. */
   reviews: Review[];
@@ -486,6 +500,7 @@ export function createGame(options: NewGameOptions): GameState {
     tasks: [],
     messages: [],
     contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0 },
+    story: { beat: 0, arrived: false, lastMs: 0, offered: [] },
     phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
     reviews: [],
     flags: [],

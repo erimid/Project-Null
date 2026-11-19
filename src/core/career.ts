@@ -693,7 +693,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     think();
     must({ type: 'login', connectionId: connection.id, user: board.accounts[0]!.user });
     if (!profile.bestRelays || state.contracts.completed.length > 0) read(connection);
-    const offered = availableContracts(state, content).filter((contract) => !skipped.has(contract.id));
+    // The balance career is the ordinary board; the story runs on its own clock, so the scripted player leaves story missions alone.
+    const offered = availableContracts(state, content).filter((contract) => !skipped.has(contract.id) && !contract.story);
     const doable = offered
       .map((contract) => ({ contract, needs: needs(contract) }))
       .filter((item): item is { contract: ContractDef; needs: string[] } => {
@@ -814,7 +815,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
   while (
     state.contracts.completed.length < options.maxContracts &&
     realMs < options.maxMinutes * 60_000 &&
-    !(state.player.rating >= options.untilRating && content.contracts.every((contract) => state.contracts.completed.includes(contract.id) || skipped.has(contract.id)))
+    !(state.player.rating >= options.untilRating && content.contracts.every((contract) => contract.story || state.contracts.completed.includes(contract.id) || skipped.has(contract.id)))
   ) {
     const startMs = realMs;
     closestMs = Infinity;

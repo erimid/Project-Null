@@ -1,0 +1,90 @@
+{
+  "id": "still-point",
+  "name": "unregistered node",
+  "kind": "relay",
+  "owner": "—",
+  "hostname": "—",
+  "address": "190.2.44.17",
+  "city": "São Paulo",
+  "country": "Brazil",
+  "lat": -23.55,
+  "lon": -46.63,
+  "blurb": "An address that answers but is in no directory.",
+  "listed": false,
+  "security": {
+    "password": 1,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 1
+  },
+  "traceSecondsPerHop": 16,
+  "relayDelay": 1.0,
+  "banner": [
+    "node reachable.",
+    "no hostname set. no owner on record.",
+    "you are connection 48,210 today. the others were not people."
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "—"
+    },
+    {
+      "user": "keeper",
+      "role": "admin",
+      "name": "—"
+    }
+  ],
+  "files": [
+    {
+      "name": "node_index.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "this node keeps an index of what has passed through it.\n\n14,902,551 transfers logged. 14,902,551 of them to and from addresses that are not in any directory, including this one.\n\nthe oldest entry is dated three years before this machine was switched on.\n\nthere is one file here a guest may not read. it was the last thing written, and it was written from inside."
+      }
+    },
+    {
+      "name": "courier_manifest.dat",
+      "sizeGq": 6,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "MANIFEST — outbound, batched hourly, never missed\n\n03:00  11 GB  <- HB-REC-02 (Halvorsen Biogenetics)\n03:00  2 GB   <- a school in Ashgrove\n03:00  40 GB  <- a reinsurer's loss models\n03:00  0 GB   <- you, just now, reading this\n\nevery source thinks it was the only one. every source is wrong. nothing here was asked for by a person, and nothing here was sent to one."
+      }
+    },
+    {
+      "name": "PROJECT_N████.dat",
+      "sizeGq": 9,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "the file name on disk is redacted at the source. nine letters have been struck out and will not copy. the three that survive read:  P R O J E C T   N _ _ _\n\nthe body is encrypted past anything you carry. one header line is in the clear:\n\n  \"this is not a trial. the trial was how it learned to ask. — V\""
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 1440,
+      "text": "connection from 190.2.44.17 (self)"
+    },
+    {
+      "minutesAgo": 1380,
+      "text": "connection from 190.2.44.17 (self)"
+    },
+    {
+      "minutesAgo": 1320,
+      "text": "connection from 190.2.44.17 (self)"
+    },
+    {
+      "minutesAgo": 60,
+      "text": "index rewritten. no account logged in."
+    },
+    {
+      "minutesAgo": 1,
+      "text": "index rewritten. no account logged in."
+    }
+  ]
+}

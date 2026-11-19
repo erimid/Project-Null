@@ -239,6 +239,8 @@ export interface ContractDef {
   readonly choices?: readonly ChoiceDef[];
   /** A module paid on top of the credits. */
   readonly part?: PartDef;
+  /** True for a story mission. The board never offers it on its own; the story director does (see core/story.ts). */
+  readonly story?: boolean;
 }
 
 /** A message the game sends the player. Text in {braces} is filled in when it is sent. */
@@ -709,6 +711,7 @@ export function parseContracts(data: unknown, file = 'contracts.json'): Contract
       ...(stages && stages.length > 0 ? { stages } : {}),
       ...(choices && choices.length > 0 ? { choices } : {}),
       ...(raw['part'] === undefined ? {} : { part: parsePart(file, where, raw['part']) }),
+      ...(raw['story'] === undefined ? {} : { story: flag(file, where, raw, 'story') }),
     };
   });
   unique(file, 'contracts', 'id', contracts.map((contract) => contract.id));

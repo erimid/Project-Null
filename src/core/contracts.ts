@@ -12,6 +12,7 @@ import { freeStorageGb } from './tasks';
 import { refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
+import { advanceStory } from './story';
 import { sellsProgram, shopOf, shopPrice } from './market';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
 import { findConnection, findProgram, findServer, noteProgress, once, securityOf, sendMail, type Content } from './world';
@@ -26,9 +27,15 @@ export function activeContract(state: GameState, content: Content): ContractDef 
   return findContract(state, content, state.contracts.activeId);
 }
 
-/** Keeps the board's repeatable jobs topped up. */
+/**
+ * Keeps the board's repeatable jobs topped up, and moves the story on.
+ * Called on load, on every delivery, and once a game minute from the clock,
+ * so a story beat arrives as soon as its rating, its spacing and the job it
+ * waits on allow.
+ */
 export function postJobs(state: GameState, content: Content): void {
   refreshJobs(state, content, (job) => objectivePossible(state, content, job));
+  advanceStory(state, content);
 }
 
 /**
@@ -57,7 +64,10 @@ export function objectivePossible(state: GameState, content: Content, contract: 
  * is one to take now, or none left.
  */
 export function nextContractRating(state: GameState, content: Content): number | undefined {
-  const left = content.contracts.filter((contract) => !state.contracts.completed.includes(contract.id) && objectivePossible(state, content, contract));
+  // Story missions appear on the story's own clock, not the board's rating gate, so they are left out here.
+  const left = content.contracts.filter(
+    (contract) => !contract.story && !state.contracts.completed.includes(contract.id) && objectivePossible(state, content, contract),
+  );
   if (left.length === 0 || left.some((contract) => contract.minRating <= state.player.rating)) return undefined;
   return Math.min(...left.map((contract) => contract.minRating));
 }
@@ -74,19 +84,19 @@ export function isLyingLow(state: GameState): boolean {
  * always a way forward.
  */
 export function availableContracts(state: GameState, content: Content): ContractDef[] {
-  const open = content.contracts.filter(
-    (contract) =>
-      contract.id !== state.contracts.activeId &&
-      !state.contracts.completed.includes(contract.id) &&
-      objectivePossible(state, content, contract),
-  );
+  const taken = (contract: ContractDef) =>
+    contract.id === state.contracts.activeId || state.contracts.completed.includes(contract.id) || !objectivePossible(state, content, contract);
+  // Ordinary written contracts, gated by rating. Story missions are left out: the director offers them on its own clock.
+  const open = content.contracts.filter((contract) => !contract.story && !taken(contract));
   const jobs = state.contracts.jobs.filter(
     (job) => job.id !== state.contracts.activeId && job.expiresMs > state.clock.gameTimeMs && objectivePossible(state, content, job),
   );
+  // Story missions the director has put on the board, shown whatever the rating ladder is doing.
+  const story = content.contracts.filter((contract) => contract.story && state.story.offered.includes(contract.id) && !taken(contract));
   const offered = open.filter((contract) => contract.minRating <= state.player.rating);
-  if (offered.length > 0 || jobs.length > 0 || state.contracts.activeId !== null) return [...offered, ...jobs];
+  if (offered.length > 0 || jobs.length > 0 || story.length > 0 || state.contracts.activeId !== null) return [...offered, ...jobs, ...story];
   const easiest = [...open].sort((a, b) => a.minRating - b.minRating)[0];
-  return [...(easiest ? [easiest] : []), ...jobs];
+  return [...(easiest ? [easiest] : []), ...jobs, ...story];
 }
 
 /** The connection, if it is logged in to a contracts board. Otherwise a reason. */
