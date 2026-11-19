@@ -1081,7 +1081,7 @@
   margin: 0 0 12px;
   padding: 0;
   list-style: none;
-  max-height: 200px;
+  max-height: min(340px, 42vh);
   overflow-y: auto;
 }
 
@@ -1879,8 +1879,8 @@ button.tabbar__contract--live:hover {
 
 .lineup__dial {
   flex: none;
-  width: 180px;
-  height: 180px;
+  width: 220px;
+  height: 220px;
   touch-action: none;
 }
 
@@ -1897,11 +1897,19 @@ button.tabbar__contract--live:hover {
   outline: none;
 }
 
+/* The whole band between two rings takes the click, not only the line drawn on it. */
+.lineup__hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 18;
+  pointer-events: stroke;
+}
+
 .lineup__track {
   fill: none;
   stroke: rgba(95, 212, 255, 0.28);
-  stroke-width: 9;
-  pointer-events: stroke;
+  stroke-width: 13;
+  pointer-events: none;
 }
 
 .lineup__ring:hover .lineup__track,
@@ -5029,8 +5037,8 @@ body {
 }
 
 .is-phone .lineup__dial {
-  width: 220px;
-  height: 220px;
+  width: 264px;
+  height: 264px;
 }
 
 .is-phone .echo__grid {
@@ -5835,4 +5843,68 @@ body {
 .is-phone .map__starred {
   height: 36px;
   padding: 0 14px;
+}
+
+/* ---- stage 4 step 0: sorted address book, map links in a contract ---- */
+
+.map__sort {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.map__sort-label {
+  margin-right: 4px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.map__sort-btn {
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.map__sort-btn:hover {
+  color: var(--text-bright);
+  border-color: var(--line-strong);
+}
+
+.map__sort-btn.is-on {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: rgba(95, 212, 255, 0.1);
+}
+
+.map__sort-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.is-phone .map__sort-btn {
+  height: 32px;
+  padding: 0 14px;
+}
+
+.place {
+  padding: 0;
+  font: inherit;
+  color: var(--cyan);
+  text-decoration: underline;
+  text-decoration-color: rgba(95, 212, 255, 0.45);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.place:hover,
+.place:focus-visible {
+  color: var(--text-bright);
+  text-decoration-color: currentColor;
 }

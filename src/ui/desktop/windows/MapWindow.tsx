@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { MAX_HOPS, bestRoute, hopUnderTrace, legKind, maxReroutes, ownedProgram, traceLegs, traceReport, traceSlow, type LegKind } from '../../../core';
 import { findServer, gatewayOf, type ServerDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
@@ -17,6 +17,36 @@ const KIND_LABELS: Record<ServerDef['kind'], string> = {
 };
 
 const byId = (id: string) => findServer(content, id);
+
+/** Ways to order the address book. Your own gateway always comes first. */
+const SORTS = [
+  { id: 'name', label: 'Name', tip: 'Sort by name, A to Z' },
+  { id: 'place', label: 'Place', tip: 'Sort by country, then city' },
+  { id: 'kind', label: 'Type', tip: 'Group boards, directories, relays and companies' },
+] as const;
+type SortId = (typeof SORTS)[number]['id'];
+const SORT_KEY = 'project-null.book-sort.v1';
+const KIND_ORDER: ServerDef['kind'][] = ['gateway', 'board', 'directory', 'relay', 'company'];
+
+function savedSort(): SortId {
+  try {
+    const value = localStorage.getItem(SORT_KEY);
+    return SORTS.some((sort) => sort.id === value) ? (value as SortId) : 'name';
+  } catch {
+    return 'name';
+  }
+}
+
+function sortServers(servers: readonly ServerDef[], sort: SortId): ServerDef[] {
+  const name = (a: ServerDef, b: ServerDef) => a.name.localeCompare(b.name);
+  const home = (server: ServerDef) => (server.kind === 'gateway' ? 0 : 1);
+  return [...servers].sort((a, b) => {
+    if (home(a) !== home(b)) return home(a) - home(b);
+    if (sort === 'place') return a.country.localeCompare(b.country) || a.city.localeCompare(b.city) || name(a, b);
+    if (sort === 'kind') return KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || name(a, b);
+    return name(a, b);
+  });
+}
 
 const LEG_WORDS: Record<LegKind, string> = { country: 'local', border: 'border', overseas: 'overseas' };
 const LEG_TIPS: Record<LegKind, string> = {
@@ -39,17 +69,31 @@ export function MapWindow() {
   const game = useWorld((state) => state);
   const [notice, setNotice] = useState('');
   const [starredOnly, setStarredOnly] = useState(false);
+  const [sort, setSort] = useState<SortId>(savedSort);
+  const chooseSort = (id: SortId) => {
+    setSort(id);
+    try {
+      localStorage.setItem(SORT_KEY, id);
+    } catch {
+      // The order still holds for this visit.
+    }
+  };
+  const book = useRef<HTMLUListElement>(null);
 
   const gateway = gatewayOf(content);
   const known = game.knownServers.map(byId).filter((server): server is ServerDef => server !== undefined);
-  // Starred servers come first, in the order they were starred.
+  // Starred servers come first. Both groups are in the order the player chose.
   const starred = (id: string) => game.bookmarks.includes(id);
   const listed = [
-    ...game.bookmarks.map((id) => known.find((server) => server.id === id)).filter((server): server is ServerDef => server !== undefined),
-    ...(starredOnly ? [] : known.filter((server) => !starred(server.id))),
+    ...sortServers(known.filter((server) => starred(server.id)), sort),
+    ...(starredOnly ? [] : sortServers(known.filter((server) => !starred(server.id)), sort)),
   ];
   const selected = desk.selectedServerId ? byId(desk.selectedServerId) : undefined;
   const live = activeConnection(game, desk);
+  // A server picked somewhere else (the globe, a contract) is brought into view in the list.
+  useEffect(() => {
+    book.current?.querySelector('.address.is-selected')?.scrollIntoView({ block: 'nearest' });
+  }, [desk.selectedServerId, sort, starredOnly]);
 
   // While connected, the map shows the live connection's route; otherwise the one being planned.
   // A picked server that is not a relay is the target. Picking a relay and pressing Connect takes it out of the route.
@@ -169,7 +213,23 @@ export function MapWindow() {
               ★ Starred {game.bookmarks.length > 0 && <span class="data">{game.bookmarks.length}</span>}
             </button>
           </div>
-          <ul class="addresses">
+          <div class="map__sort" role="group" aria-label="Sort the address book">
+            <span class="map__sort-label">Sort</span>
+            {SORTS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                class={`map__sort-btn${sort === option.id ? ' is-on' : ''}`}
+                aria-pressed={sort === option.id}
+                data-tip={option.tip}
+                onClick={() => chooseSort(option.id)}
+              >
+                {option.label}
+              </button>
+            ))}
+            <span class="map__sort-count data">{listed.length}</span>
+          </div>
+          <ul class="addresses" ref={book}>
             {starredOnly && listed.length === 0 && <li class="addresses__empty">Press ☆ next to a server to star it.</li>}
             {listed.map((server) => {
               const hop = routeIds.indexOf(server.id);
@@ -195,7 +255,19 @@ export function MapWindow() {
                   >
                     <span class="address__name">{server.name}</span>
                     <span class="address__tag">
-                      {server.id === gateway.id ? 'you' : isLive ? 'connected' : server.id === targetId ? 'target' : hop >= 0 ? `relay ${hop + 1}` : server.city}
+                      {server.id === gateway.id
+                        ? 'you'
+                        : isLive
+                          ? 'connected'
+                          : server.id === targetId
+                            ? 'target'
+                            : hop >= 0
+                              ? `relay ${hop + 1}`
+                              : sort === 'place'
+                                ? `${server.city}, ${server.country}`
+                                : sort === 'kind'
+                                  ? KIND_LABELS[server.kind]
+                                  : server.city}
                     </span>
                   </button>
                   {server.id !== gateway.id &&
