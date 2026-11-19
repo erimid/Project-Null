@@ -135,6 +135,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     const now = typeof clock?.gameTimeMs === 'number' ? clock.gameTimeMs : 0;
     return { ...old, contracts: { ...(old.contracts as object), stage: 0, stageStartMs: now } };
   },
+  // 15 -> 16: enemy hackers. Nobody was under attack before they existed.
+  15: (old) => ({ ...old, raid: null, raidPending: null, raidQuietUntilMs: 0 }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -282,6 +284,30 @@ const isTask = (t: unknown): t is Obj =>
       isList(t.puzzle.speeds, isNum) &&
       isList(t.puzzle.locked, (v): v is boolean => typeof v === 'boolean')));
 
+const isPort = (p: unknown): p is Obj =>
+  isObj(p) &&
+  isList(p.startAngles, isNum) &&
+  isList(p.speeds, isNum) &&
+  isList(p.locked, (v): v is boolean => typeof v === 'boolean') &&
+  isNum(p.ageMs);
+
+const isTrace = (t: unknown): t is Obj =>
+  isObj(t) && ['none', 'pending', 'active'].includes(t.status as string) && isNum(t.graceMs) && isNum(t.elapsedMs) && isList(t.hopMs, isNum);
+
+const isRaid = (r: unknown): r is Obj =>
+  isObj(r) &&
+  isText(r.attackerId) &&
+  isList(r.route, isText) &&
+  isNum(r.startedAtMs) &&
+  isNum(r.breachMs) &&
+  isNum(r.breachTotalMs) &&
+  isNum(r.barriers) &&
+  (r.port === null || isPort(r.port)) &&
+  (r.traceBack === null || isTrace(r.traceBack)) &&
+  isList(r.locked, isText) &&
+  ['open', 'won', 'lost', 'fled'].includes(r.result as string) &&
+  typeof r.story === 'boolean';
+
 const isMessage = (m: unknown): m is Obj =>
   isObj(m) &&
   isText(m.id) &&
@@ -359,5 +385,8 @@ function checkState(raw: Obj): GameState {
   if (!isObj(raw.relayHeat) || !Object.values(raw.relayHeat).every((mark) => isObj(mark) && isNum(mark.heat) && isNum(mark.atMs))) throw damaged;
   if (!isList(raw.connections, isConnection)) throw damaged;
   if (!isObj(servers) || !Object.values(servers).every(isServerState)) throw damaged;
+  if (!(raw.raid === null || isRaid(raw.raid))) throw damaged;
+  if (!(raw.raidPending === null || (isObj(raw.raidPending) && isText(raw.raidPending.attackerId) && typeof raw.raidPending.story === 'boolean'))) throw damaged;
+  if (!isNum(raw.raidQuietUntilMs)) throw damaged;
   return raw as unknown as GameState;
 }

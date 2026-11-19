@@ -23,7 +23,7 @@ import {
   type GameState,
   type SaveSummary,
 } from '../core';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, servers, skills, tuning } from '../content';
+import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, tuning } from '../content';
 import { diff, snapshot, type GameEvent, type Snapshot } from './events';
 import { createMemoryStore, openSaveStore, type SaveStore } from './storage/saveStore';
 
@@ -41,6 +41,7 @@ const baseContent: Content = {
   companies,
   skills,
   modules,
+  rivals,
   rules: tuning,
 };
 
@@ -224,7 +225,11 @@ function shape(): string {
   const monitors = state.connections.map((c) => `${c.monitor.blindMs > 0}${c.monitor.echo?.result ?? ''}`).join();
   const sealed = state.player.files.filter((file) => file.encrypted).length;
   const phish = `${state.phish.sent.length}${state.phish.done.length}${state.player.model?.id ?? ''}`;
-  return `${state.tasks.length}|${state.connections.length}|${state.messages.length}|${traces}|${monitors}|${sealed}|${phish}`;
+  // A raid changes the screen as it advances: who, how far in, the ports and the counter-trace.
+  const raid = state.raid
+    ? `${state.raid.attackerId}|${Math.floor(state.raid.breachMs / 500)}|${state.raid.port?.locked.join('') ?? ''}|${state.raid.traceBack ? Math.floor(state.raid.traceBack.elapsedMs / 500) : ''}`
+    : `${state.raidPending?.attackerId ?? ''}`;
+  return `${state.tasks.length}|${state.connections.length}|${state.messages.length}|${traces}|${monitors}|${sealed}|${phish}|${raid}`;
 }
 
 function startLoop(): void {

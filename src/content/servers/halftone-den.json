@@ -1,0 +1,71 @@
+{
+  "id": "halftone-den",
+  "name": "Halftone's Den",
+  "kind": "company",
+  "owner": "Halftone",
+  "hostname": "HT-DEN",
+  "address": "45.33.84.19",
+  "city": "Tallinn",
+  "country": "Estonia",
+  "lat": 59.44,
+  "lon": 24.75,
+  "blurb": "The machine a wrecker works from. Found only by tracing an attack home.",
+  "listed": false,
+  "security": {
+    "password": 3,
+    "proxy": 1,
+    "firewall": 3,
+    "monitor": 3
+  },
+  "traceSecondsPerHop": 18,
+  "relayDelay": 1.0,
+  "banner": [
+    "HALFTONE",
+    "I break things. Ask around.",
+    "access logged and ignored"
+  ],
+  "accounts": [
+    {
+      "user": "ht",
+      "role": "admin",
+      "name": "Halftone"
+    }
+  ],
+  "files": [
+    {
+      "name": "trophies.dat",
+      "sizeGq": 4,
+      "access": "admin"
+    },
+    {
+      "name": "wrecker.bin",
+      "sizeGq": 3,
+      "access": "admin",
+      "program": {
+        "modules": [
+          { "id": "swift", "grade": 2 },
+          { "id": "tidy", "grade": 2 }
+        ]
+      }
+    },
+    {
+      "name": "clean_up.mod",
+      "sizeGq": 1,
+      "access": "admin",
+      "part": {
+        "id": "tidy",
+        "grade": 2
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 400,
+      "text": "login ht from 45.33.84.2"
+    },
+    {
+      "minutesAgo": 90,
+      "text": "file deleted: notes_old.dat"
+    }
+  ]
+}

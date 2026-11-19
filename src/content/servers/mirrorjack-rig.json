@@ -1,0 +1,69 @@
+{
+  "id": "mirrorjack-rig",
+  "name": "Mirrorjack's Rig",
+  "kind": "company",
+  "owner": "Mirrorjack",
+  "hostname": "MJ-HOME",
+  "address": "45.33.19.7",
+  "city": "Rotterdam",
+  "country": "Netherlands",
+  "lat": 51.92,
+  "lon": 4.48,
+  "blurb": "A lone operator's home rig. You only find it by tracing them back from an attack.",
+  "listed": false,
+  "security": {
+    "password": 2,
+    "proxy": 1,
+    "firewall": 2,
+    "monitor": 2
+  },
+  "traceSecondsPerHop": 16,
+  "relayDelay": 1.0,
+  "banner": [
+    "no trespassing",
+    "you are not supposed to be here",
+    "if you can read this, nice trace"
+  ],
+  "accounts": [
+    {
+      "user": "mj",
+      "role": "admin",
+      "name": "Mirrorjack"
+    }
+  ],
+  "files": [
+    {
+      "name": "takings.dat",
+      "sizeGq": 3,
+      "access": "admin"
+    },
+    {
+      "name": "fast_hands.mod",
+      "sizeGq": 1,
+      "access": "admin",
+      "part": {
+        "id": "swift",
+        "grade": 2
+      }
+    },
+    {
+      "name": "readme.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "If you're reading this, you traced me. Fair enough.\n\nI go for the ones with money and a loud mouth. Nothing personal. Take what's here and we're square.\n\n- M"
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 300,
+      "text": "login mj from 45.33.19.1"
+    },
+    {
+      "minutesAgo": 120,
+      "text": "outbound session opened"
+    }
+  ]
+}

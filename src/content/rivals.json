@@ -1,0 +1,35 @@
+[
+  {
+    "id": "mirrorjack",
+    "handle": "Mirrorjack",
+    "blurb": "A smash-and-grab thief who goes for players with money and a reputation.",
+    "homeId": "mirrorjack-rig",
+    "relays": ["kestrel-net", "polar-mesh"],
+    "level": 2,
+    "minRating": 6,
+    "style": "thief",
+    "taunt": "Thanks for the donation."
+  },
+  {
+    "id": "halftone",
+    "handle": "Halftone",
+    "blurb": "A wrecker who breaks what they cannot take. Faster and meaner than most.",
+    "homeId": "halftone-den",
+    "relays": ["paulista-teleport", "tallis-library", "polar-mesh"],
+    "level": 3,
+    "minRating": 12,
+    "style": "vandal",
+    "taunt": "Hope that wasn't important."
+  },
+  {
+    "id": "sable",
+    "handle": "Sable",
+    "blurb": "A careful operator who leaves a false trail pointing at you. The hardest to shake.",
+    "homeId": "sable-relay",
+    "relays": ["kestrel-net", "paulista-teleport", "polar-mesh", "tallis-library"],
+    "level": 4,
+    "minRating": 20,
+    "style": "framer",
+    "taunt": "Do give my regards to the auditors."
+  }
+]

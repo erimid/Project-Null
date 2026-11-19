@@ -25,6 +25,7 @@ import { buyModule, preferProgram, refineModule, returnModules, scrapBuild } fro
 import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
 import { bestRoute, coolRelays, hopUnderTrace, intruding, newTrace, noteIntrusion, reroute, warmRelay } from './trace';
+import { lockRaidFile, lockRaidRing, openRaidPort, pullPlug, startRaidTrace } from './raid';
 import { findAccount, findConnection, findServer, gatewayOf, once, ownedProgram, sendMail, sourceAddress, type Content } from './world';
 
 export type Action =
@@ -101,7 +102,17 @@ export type Action =
   /** Buy a module from the board you are logged in to. */
   | { readonly type: 'buyModule'; readonly connectionId: string; readonly moduleId: string; readonly grade: number }
   /** Take a program file stored on the gateway apart into modules. */
-  | { readonly type: 'decompileFile'; readonly name: string };
+  | { readonly type: 'decompileFile'; readonly name: string }
+  /** Open a port line-up on the barrier an intruder is probing. */
+  | { readonly type: 'defendPort' }
+  /** Try to lock one ring of the open defence port. */
+  | { readonly type: 'defendRing'; readonly ring: number }
+  /** Start the counter-trace back along an intruder's route. */
+  | { readonly type: 'traceBack' }
+  /** Lock a file or program on the gateway so a lost attack cannot take it. */
+  | { readonly type: 'lockFile'; readonly name: string }
+  /** Pull the plug: break off an attack, dropping every connection. */
+  | { readonly type: 'pullPlug' };
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
@@ -389,6 +400,17 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
       return answer(buyModule(state, content, action.connectionId, action.moduleId, action.grade));
     case 'decompileFile':
       return answer(startTask(state, content, null, { kind: 'decompile', file: action.name }));
+
+    case 'defendPort':
+      return answer(openRaidPort(state, content));
+    case 'defendRing':
+      return answer(lockRaidRing(state, content, action.ring));
+    case 'traceBack':
+      return answer(startRaidTrace(state, content));
+    case 'lockFile':
+      return answer(lockRaidFile(state, content, action.name));
+    case 'pullPlug':
+      return answer(pullPlug(state, content));
 
     case 'readMessage': {
       const message = state.messages.find((item) => item.id === action.messageId);

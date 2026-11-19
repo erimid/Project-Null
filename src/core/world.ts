@@ -12,6 +12,7 @@ import type { ModelDef } from '../content/models';
 import type { PeopleDef } from '../content/people';
 import type { SkillDef } from '../content/skills';
 import type { ModuleDef } from '../content/modules';
+import type { RivalDef } from '../content/rivals';
 import { builtProgram } from './builds';
 import type { Connection, GameState, ServerState } from './state';
 
@@ -103,6 +104,26 @@ export interface Rules {
   readonly workbenchAfter: number;
   /** Rating needed before the market sells each grade of module, grade 1 first. */
   readonly moduleGradeRatings: readonly number[];
+  /** Lowest rating at which a random enemy attack can land. */
+  readonly raidMinRating: number;
+  /** Least a job must pay for a random attack to be considered after it. */
+  readonly raidProfilePay: number;
+  /** Chance of an attack after a high-profile job (0 to 1). */
+  readonly raidChance: number;
+  /** In-game hours between random attacks. */
+  readonly raidCooldownHours: number;
+  /** Seconds the intruder needs to break in, by rival level (level 1 first). */
+  readonly raidBreachSeconds: readonly number[];
+  /** Seconds a counter-trace needs, by rival level. */
+  readonly raidTraceSeconds: readonly number[];
+  /** Barriers (ports) before the breach, by rival level. */
+  readonly raidBarriers: readonly number[];
+  /** Seconds closing a port sets the break-in back. */
+  readonly raidPortSetbackSeconds: number;
+  /** How many files or programs the player can lock during one attack. */
+  readonly raidMaxLocks: number;
+  /** A thief or framer loss takes this fraction of the balance. */
+  readonly raidLossCredits: number;
 }
 
 export interface Content {
@@ -127,6 +148,8 @@ export interface Content {
   readonly skills: readonly SkillDef[];
   /** Modules that are fitted to programs at the Workbench. */
   readonly modules: readonly ModuleDef[];
+  /** Enemy hackers who break into the gateway (see core/raid.ts). */
+  readonly rivals: readonly RivalDef[];
   readonly rules: Rules;
 }
 
@@ -164,6 +187,10 @@ export function noteProgress(state: GameState, content: Content): void {
   }
   if (state.player.rating >= content.rules.linksAfterRating) {
     once(state, 'links', () => sendMail(state, content, 'links'));
+  }
+  // At the rating where enemy hackers start to take an interest, the fixer gives warning.
+  if (state.player.rating >= content.rules.raidMinRating && content.rivals.length > 0) {
+    once(state, 'defence', () => sendMail(state, content, 'defence'));
   }
   // The best rating is what skill points come from (see skills.ts).
   state.player.bestRating = Math.max(state.player.bestRating, state.player.rating);

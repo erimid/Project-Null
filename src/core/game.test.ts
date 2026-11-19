@@ -237,7 +237,9 @@ describe('save and load', () => {
       },
     };
     const loaded = syncWithContent(deserializeGame(JSON.stringify(v1)).state, content);
-    expect(loaded.version).toBe(15);
+    expect(loaded.version).toBe(16);
+    expect(loaded.raid).toBeNull();
+    expect(loaded.raidPending).toBeNull();
     expect(loaded.savedRoutes).toEqual([[], [], []]);
     expect(loaded.relayHeat).toEqual({});
     expect(loaded.bookmarks).toEqual([]);

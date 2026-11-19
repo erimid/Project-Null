@@ -275,6 +275,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     for (let left = seconds * 1000; left > 0 && !done?.(); left -= TICK_MS) {
       const balance = state.player.balance;
       tick(state, TICK_MS, content);
+      // An enemy hacker turned up: this player just pulls the plug, which costs nothing.
+      if (state.raid && state.raid.result === 'open') act({ type: 'pullPlug' });
       realMs += TICK_MS;
       // Money only goes down inside a tick through a fine.
       if (state.player.balance < balance) fines += balance - state.player.balance;

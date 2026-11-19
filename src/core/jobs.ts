@@ -105,8 +105,10 @@ function makeJob(state: GameState, content: Content): Job | undefined {
     expiresMs: state.clock.gameTimeMs + content.rules.jobHours * 3_600_000,
   };
   // From the middle tiers up, some jobs gain a first step on another server.
-  // Decided on a stream of its own (forked by job id) so it never shifts the main job sequence.
-  const own = rng.fork(`staged:${job.id}`);
+  // Decided on a stream of its own, forked on where the jobs stream stands
+  // (deterministic, and not on the job's id: an id would tie this to nextId,
+  // so any new message or entity made elsewhere would reshuffle the board).
+  const own = rng.fork(`staged:${server.id}:${rng.getState().state}`);
   if (pools.staged && serverTier >= 5 && own.chance(0.5)) return addFirstStep(state, content, job, server, values, own);
   return job;
 }

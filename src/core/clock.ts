@@ -12,15 +12,16 @@ import { endRental, shouldPullOut } from './model';
 import { runReviews } from './forensics';
 import { monitorHeld } from './link';
 import { runPhish } from './phish';
+import { advanceRaid, beginPendingRaid } from './raid';
 import { isConnected, type GameState, type Speed } from './state';
 import { advanceTasks } from './tasks';
 import { hasTrait } from './crafting';
 import { advanceMonitor, advanceTrace, intruding, noteIntrusion } from './trace';
 import type { Content } from './world';
 
-/** The speed the clock is actually running at right now. */
+/** The speed the clock is actually running at right now. An attack pins it to 1×, like a connection. */
 export function effectiveSpeed(state: GameState): Speed {
-  return isConnected(state) ? 1 : state.clock.speed;
+  return isConnected(state) || state.raid !== null ? 1 : state.clock.speed;
 }
 
 /**
@@ -60,6 +61,9 @@ export function tick(state: GameState, realMs: number, content: Content): number
   if (state.reviews.length > 0) runReviews(state, content);
   if (state.phish.sent.length > 0) runPhish(state, content);
   if (state.player.model) endRental(state, content);
+  // Enemy hackers: a waiting attack lands when the moment is right, and a live one presses on.
+  if (state.raidPending) beginPendingRaid(state, content);
+  if (state.raid) advanceRaid(state, content, simMs);
   // The board looks at its repeatable jobs once a game minute.
   if (Math.floor(state.clock.gameTimeMs / 60_000) !== minuteBefore) postJobs(state, content);
   return simMs;
