@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { hopUnderTrace, legKind, maxReroutes, ownedProgram, traceLegs, traceReport, traceSlow, type LegKind } from '../../../core';
+import { MAX_HOPS, bestRoute, hopUnderTrace, legKind, maxReroutes, ownedProgram, traceLegs, traceReport, traceSlow, type LegKind } from '../../../core';
 import { findServer, gatewayOf, type ServerDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
@@ -38,15 +38,23 @@ export function MapWindow() {
   const desk = useDesk();
   const game = useWorld((state) => state);
   const [notice, setNotice] = useState('');
+  const [starredOnly, setStarredOnly] = useState(false);
 
   const gateway = gatewayOf(content);
   const known = game.knownServers.map(byId).filter((server): server is ServerDef => server !== undefined);
+  // Starred servers come first, in the order they were starred.
+  const starred = (id: string) => game.bookmarks.includes(id);
+  const listed = [
+    ...game.bookmarks.map((id) => known.find((server) => server.id === id)).filter((server): server is ServerDef => server !== undefined),
+    ...(starredOnly ? [] : known.filter((server) => !starred(server.id))),
+  ];
   const selected = desk.selectedServerId ? byId(desk.selectedServerId) : undefined;
   const live = activeConnection(game, desk);
 
   // While connected, the map shows the live connection's route; otherwise the one being planned.
-  const routeIds = live ? live.route : game.route;
+  // A picked server that is not a relay is the target. Picking a relay and pressing Connect takes it out of the route.
   const targetId = live ? live.serverId : selected && selected.id !== gateway.id && !game.route.includes(selected.id) ? selected.id : null;
+  const routeIds = live ? live.route : game.route;
   const chain = [gateway, ...routeIds.map(byId), targetId ? byId(targetId) : undefined].filter(
     (server): server is ServerDef => server !== undefined,
   );
@@ -129,6 +137,11 @@ export function MapWindow() {
     !!live && !!selected && tracingHop >= 0 && selected.id !== gateway.id && selected.id !== live.serverId && !live.route.includes(selected.id);
 
   const inRoute = selected ? game.route.includes(selected.id) : false;
+  // Fill route is offered while it would change something.
+  // The server you have picked is the one you mean to connect to, so it stays out of the relays.
+  const fillTarget = selected && selected.id !== gateway.id ? selected.id : null;
+  const best = live ? [] : bestRoute(game, content, fillTarget, MAX_HOPS);
+  const canFill = best.length > 0 && best.join() !== game.route.join();
   const connectedTo = selected ? game.connections.some((c) => c.serverId === selected.id) : false;
   const note = live
     ? `${traced ? 'being traced' : 'connected'} · ${live.route.length === 0 ? 'direct' : `${live.route.length} ${live.route.length === 1 ? 'relay' : 'relays'}`}`
@@ -144,13 +157,36 @@ export function MapWindow() {
         </div>
 
         <div class="map__side">
-          <h3 class="map__heading">Address book</h3>
+          <div class="map__book-head">
+            <h3 class="map__heading">Address book</h3>
+            <button
+              type="button"
+              class={`map__starred${starredOnly ? ' is-on' : ''}`}
+              aria-pressed={starredOnly}
+              data-tip="Show only the servers you have starred"
+              onClick={() => setStarredOnly((on) => !on)}
+            >
+              ★ Starred {game.bookmarks.length > 0 && <span class="data">{game.bookmarks.length}</span>}
+            </button>
+          </div>
           <ul class="addresses">
-            {known.map((server) => {
+            {starredOnly && listed.length === 0 && <li class="addresses__empty">Press ☆ next to a server to star it.</li>}
+            {listed.map((server) => {
               const hop = routeIds.indexOf(server.id);
               const isLive = game.connections.some((c) => c.serverId === server.id);
+              const star = starred(server.id);
               return (
-                <li key={server.id} class="addresses__row">
+                <li key={server.id} class={`addresses__row${star ? ' is-starred' : ''}`}>
+                  <button
+                    type="button"
+                    class={`address__star${star ? ' is-on' : ''}`}
+                    aria-pressed={star}
+                    aria-label={star ? `Unstar ${server.name}` : `Star ${server.name}`}
+                    data-tip={star ? 'Take this server off your starred list' : 'Star this server to keep it at the top of the list'}
+                    onClick={() => run({ type: 'toggleBookmark', serverId: server.id })}
+                  >
+                    {star ? '★' : '☆'}
+                  </button>
                   <button
                     type="button"
                     class={`address${server.id === selected?.id ? ' is-selected' : ''}`}
@@ -159,11 +195,11 @@ export function MapWindow() {
                   >
                     <span class="address__name">{server.name}</span>
                     <span class="address__tag">
-                      {server.id === gateway.id ? 'you' : isLive ? 'connected' : hop >= 0 ? `relay ${hop + 1}` : server.city}
+                      {server.id === gateway.id ? 'you' : isLive ? 'connected' : server.id === targetId ? 'target' : hop >= 0 ? `relay ${hop + 1}` : server.city}
                     </span>
                   </button>
                   {server.id !== gateway.id &&
-                    (game.route.includes(server.id) ? (
+                    (routeIds.includes(server.id) ? (
                       <button
                         type="button"
                         class="address__relay is-on"
@@ -213,13 +249,12 @@ export function MapWindow() {
                     >
                       Reroute through here
                     </button>
-                  ) : inRoute ? (
+                  ) : inRoute && live ? (
                     <button
                       type="button"
                       class="btn"
-                      disabled={!!live}
+                      disabled
                       data-tip="Take this server out of your route"
-                      onClick={() => run({ type: 'removeHop', serverId: selected.id })}
                     >
                       Remove from route
                     </button>
@@ -227,7 +262,7 @@ export function MapWindow() {
                     <button
                       type="button"
                       class="btn"
-                      disabled={!!live || connectedTo}
+                      disabled={!!live || connectedTo || inRoute}
                       data-tip="Bounce your connection through this server. Each relay gives a trace one more step to follow."
                       onClick={() => run({ type: 'addHop', serverId: selected.id })}
                     >
@@ -242,8 +277,11 @@ export function MapWindow() {
                     <button
                       type="button"
                       class="btn btn--go"
-                      disabled={inRoute}
-                      data-tip="Connect to this server through the relays in your route"
+                      data-tip={
+                        inRoute
+                          ? 'Connect to this server through the other relays in your route. It comes out of the route.'
+                          : 'Connect to this server through the relays in your route'
+                      }
                       onClick={() => connect(selected)}
                     >
                       Connect
@@ -288,6 +326,17 @@ export function MapWindow() {
                   </span>
                 )}
                 {server.id === gateway.id ? 'You' : server.name}
+                {!live && index > 0 && index <= routeIds.length && (
+                  <button
+                    type="button"
+                    class="route__drop"
+                    aria-label={`Remove ${server.name} from the route`}
+                    data-tip="Take this relay out of the route"
+                    onClick={() => run({ type: 'removeHop', serverId: server.id })}
+                  >
+                    ×
+                  </button>
+                )}
               </li>
             ))}
             {!targetId && <li class="route__hop route__hop--empty">pick a target</li>}
@@ -303,6 +352,16 @@ export function MapWindow() {
             >
               Trace <span class="data">{tracker ? seconds(traceTotal) : '?'}</span>
             </span>
+          )}
+          {canFill && (
+            <button
+              type="button"
+              class="btn btn--go"
+              data-tip="Fill the route with the best relays you know, spread across borders and oceans. The server you have picked stays out of it, as your target."
+              onClick={() => run({ type: 'autoRoute', targetId: fillTarget })}
+            >
+              Fill route
+            </button>
           )}
           {!live && game.route.length > 0 && (
             <button type="button" class="btn" data-tip="Remove every relay from the route" onClick={() => run({ type: 'clearRoute' })}>

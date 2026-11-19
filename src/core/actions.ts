@@ -21,7 +21,7 @@ import { readFile, sendPhish } from './phish';
 import { buyModule, preferProgram, refineModule, returnModules, scrapBuild } from './crafting';
 import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
-import { hopUnderTrace, intruding, newTrace, noteIntrusion, reroute } from './trace';
+import { bestRoute, hopUnderTrace, intruding, newTrace, noteIntrusion, reroute } from './trace';
 import { findAccount, findConnection, findServer, gatewayOf, sendMail, sourceAddress, type Content } from './world';
 
 export type Action =
@@ -30,6 +30,9 @@ export type Action =
   | { readonly type: 'addHop'; readonly serverId: string }
   | { readonly type: 'removeHop'; readonly serverId: string }
   | { readonly type: 'clearRoute' }
+  /** Fills the route with the best relays the player knows, leaving out the server they mean to connect to. */
+  | { readonly type: 'autoRoute'; readonly targetId: string | null }
+  | { readonly type: 'toggleBookmark'; readonly serverId: string }
   /** Open a connection to a server through the planned route. */
   | { readonly type: 'connect'; readonly serverId: string }
   | { readonly type: 'disconnect'; readonly connectionId: string }
@@ -168,13 +171,25 @@ export function applyAction(state: GameState, action: Action, content: Content):
       return OK;
     }
 
+    case 'autoRoute': {
+      const route = bestRoute(state, content, action.targetId, MAX_HOPS);
+      if (route.length === 0) return refuse('You do not know any servers to use as relays yet.');
+      state.route = route;
+      return OK;
+    }
+
+    case 'toggleBookmark': {
+      if (!state.knownServers.includes(action.serverId)) return refuse('You do not have that address.');
+      state.bookmarks = state.bookmarks.includes(action.serverId)
+        ? state.bookmarks.filter((id) => id !== action.serverId)
+        : [...state.bookmarks, action.serverId];
+      return OK;
+    }
+
     case 'connect': {
       const server = findServer(content, action.serverId);
       if (!server || !state.knownServers.includes(server.id)) return refuse('You do not have that address.');
       if (server.kind === 'gateway') return refuse('You are already at your gateway.');
-      if (state.route.includes(server.id)) {
-        return refuse(`${server.name} is a relay in your route. Remove it from the route to connect to it.`);
-      }
       if (state.connections.some((connection) => connection.serverId === server.id)) {
         return refuse(`You are already connected to ${server.name}.`);
       }
@@ -186,6 +201,8 @@ export function applyAction(state: GameState, action: Action, content: Content):
             : `Your gateway can hold ${most} connections at a time. Disconnect one first.`,
         );
       }
+      // The target can't be its own relay: connecting to a server in the route takes it out of the route.
+      state.route = state.route.filter((id) => id !== server.id);
       const connection: Connection = {
         id: `c${state.nextId++}`,
         serverId: server.id,

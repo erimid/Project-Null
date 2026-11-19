@@ -125,6 +125,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   },
   // 11 -> 12: crafting. Nobody had parts or built programs before.
   11: (old) => ({ ...old, player: { ...(old.player as object), parts: {}, builds: [], preferred: {} } }),
+  // 12 -> 13: bookmarks in the address book. Nobody had starred anything.
+  12: (old) => ({ ...old, bookmarks: [] }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -340,7 +342,7 @@ function checkState(raw: Obj): GameState {
   if (!isList(raw.reviews, (r): r is Obj => isObj(r) && isText(r.serverId) && isNum(r.dueMs))) throw damaged;
   if (!isList(raw.tasks, isTask) || !isList(raw.messages, isMessage)) throw damaged;
   if (!isObj(rngStreams) || !Object.values(rngStreams).every(isNum)) throw damaged;
-  if (!isList(raw.knownServers, isText) || !isList(raw.route, isText)) throw damaged;
+  if (!isList(raw.knownServers, isText) || !isList(raw.route, isText) || !isList(raw.bookmarks, isText)) throw damaged;
   if (!isList(raw.connections, isConnection)) throw damaged;
   if (!isObj(servers) || !Object.values(servers).every(isServerState)) throw damaged;
   return raw as unknown as GameState;

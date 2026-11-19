@@ -5722,3 +5722,117 @@ body {
 .is-phone .route__leg {
   margin: 0 6px;
 }
+
+/* ---- address book stars and quick routes ---- */
+
+.map__book-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.map__book-head .map__heading {
+  flex: 1;
+  margin: 0;
+}
+
+.map__starred {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  white-space: nowrap;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+
+.map__starred:hover {
+  border-color: var(--cyan);
+}
+
+.map__starred.is-on {
+  border-color: var(--amber, #ffc24b);
+  color: var(--amber, #ffc24b);
+  background: rgba(255, 194, 75, 0.08);
+}
+
+.address__star {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-muted);
+  transition:
+    color 0.15s,
+    transform 0.15s;
+}
+
+.address__star:hover {
+  color: var(--text-bright);
+}
+
+.address__star.is-on {
+  color: var(--amber, #ffc24b);
+}
+
+.address__star.is-on:active,
+.address__star:active {
+  transform: scale(1.25);
+}
+
+/* The last starred server gets a hairline under it, so the starred ones read as their own group. */
+.addresses__row.is-starred + .addresses__row:not(.is-starred) {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.addresses__empty {
+  padding: 8px;
+  color: var(--text-dim);
+}
+
+.route__drop {
+  margin-left: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-dim);
+  vertical-align: 1px;
+}
+
+.route__drop:hover {
+  color: var(--red, #ff3b4e);
+  background: rgba(255, 59, 78, 0.12);
+}
+
+.is-phone .address__star {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+}
+
+.is-phone .route__drop {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  font-size: 18px;
+}
+
+.is-phone .map__starred {
+  height: 36px;
+  padding: 0 14px;
+}
