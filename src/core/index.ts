@@ -7,7 +7,7 @@
 export { createRng, restoreRng, hashSeed } from './rng';
 export type { Rng, RngState } from './rng';
 export { stream } from './streams';
-export { MAX_HOPS, ROUTE_SLOTS, SPEEDS, STATE_VERSION, createGame, isConnected } from './state';
+export { CLIENT_FILE, MAX_HOPS, ROUTE_SLOTS, SPEEDS, STATE_VERSION, createGame, isConnected } from './state';
 export type {
   Build,
   Fitted,
@@ -28,6 +28,7 @@ export type {
   PlayerState,
   Review,
   RingPuzzle,
+  ServerAlert,
   ServerState,
   Speed,
   StoredFile,
@@ -38,6 +39,10 @@ export type {
 export {
   findAccount,
   fileContent,
+  folderOf,
+  linkOf,
+  openedContent,
+  securityOf,
   findConnection,
   findProgram,
   findServer,
@@ -109,6 +114,7 @@ export {
   objectivePossible,
   postJobs,
 } from './contracts';
+export { ALERT_HOURS, currentStage, goalMet, goalPossible, stageDeadline, stageIndex, stagesOf, stageView } from './stages';
 export { applyAction } from './actions';
 export { REGIONS, fill, generateCompanies, regionOf, worldFor } from './generate';
 export type { Region } from './generate';

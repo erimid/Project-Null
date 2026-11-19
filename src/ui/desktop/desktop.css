@@ -6053,3 +6053,89 @@ body {
   flex-wrap: wrap;
   row-gap: 6px;
 }
+
+/* ---- Stage 4: folders and staged contracts ---- */
+.files__crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.files__crumb {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  color: var(--cyan);
+  font: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.files__crumb:disabled {
+  color: var(--text-bright);
+  cursor: default;
+}
+.files__crumb:not(:disabled):hover {
+  background: rgba(95, 212, 255, 0.08);
+}
+.files__sep {
+  color: var(--text-dim);
+}
+.row--folder {
+  padding: 0;
+}
+.files__folder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 10px 12px;
+  color: var(--text-bright);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.files__folder:hover {
+  background: rgba(95, 212, 255, 0.08);
+}
+.files__folder-icon {
+  color: var(--cyan);
+}
+
+.contract__steps {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.contract__step {
+  display: flex;
+  gap: 10px;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+}
+.contract__step.is-now {
+  color: var(--text-bright);
+}
+.contract__step.is-done {
+  color: var(--text-dim);
+}
+.contract__step.is-done .objective__mark {
+  color: var(--mint);
+}
+.contract__step.is-now .objective__mark {
+  color: var(--cyan);
+}
+.contract__actions {
+  flex-wrap: wrap;
+  gap: 8px;
+}

@@ -43,6 +43,7 @@ function makeFiles(rng: Rng, sector: SectorDef, values: Record<string, string>, 
       sizeGq: rng.int(template.sizeGb[0], template.sizeGb[1]),
       access: template.access ?? 'admin',
       ...(template.text ? { content: { kind: 'text' as const, text: fill(template.text, values) } } : {}),
+      ...(template.folder ? { folder: fill(template.folder, values) } : {}),
     });
   }
   // Module installers and program files come from their own streams, so adding or changing one
@@ -54,6 +55,7 @@ function makeFiles(rng: Rng, sector: SectorDef, values: Record<string, string>, 
       name: template.name,
       sizeGq: own.int(template.sizeGb[0], template.sizeGb[1]),
       access: 'admin',
+      folder: 'bin',
       ...(template.text ? { content: { kind: 'text' as const, text: fill(template.text, values) } } : {}),
       ...(template.part ? { part: bump(template.part, tier) } : {}),
       ...(template.program ? { program: { ...template.program, modules: template.program.modules.map((part) => bump(part, tier)) } } : {}),

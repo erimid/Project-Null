@@ -5,7 +5,7 @@
  * when without loading the game) and the full GameState. Where the text
  * is stored (browser storage, a downloaded file) is the UI's business.
  */
-import { ROLES } from '../content/schema';
+import { OBJECTIVE_KINDS, ROLES } from '../content/schema';
 import { SPEEDS, STATE_VERSION, type GameState } from './state';
 
 export const SAVE_FORMAT = 'project-null-save';
@@ -129,6 +129,12 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   12: (old) => ({ ...old, bookmarks: [] }),
   // 13 -> 14: saved routes and relays that warm with use. Every relay starts cold.
   13: (old) => ({ ...old, savedRoutes: [[], [], []], relayHeat: {} }),
+  // 14 -> 15: contracts with stages. A contract under way is on its first stage, begun now.
+  14: (old) => {
+    const clock = old.clock as Record<string, unknown> | undefined;
+    const now = typeof clock?.gameTimeMs === 'number' ? clock.gameTimeMs : 0;
+    return { ...old, contracts: { ...(old.contracts as object), stage: 0, stageStartMs: now } };
+  },
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -246,14 +252,16 @@ const isJob = (j: unknown): j is Obj =>
   ['id', 'title', 'client', 'targetId', 'summary', 'brief'].every((key) => isText(j[key])) &&
   ['pay', 'rating', 'minRating', 'expiresMs'].every((key) => isNum(j[key])) &&
   isObj(j.objective) &&
-  ['steal', 'destroy', 'record'].includes(j.objective.kind as string);
+  (OBJECTIVE_KINDS as readonly string[]).includes(j.objective.kind as string) &&
+  (j.stages === undefined ||
+    isList(j.stages, (stage): stage is Obj => isObj(stage) && isText(stage.targetId) && isObj(stage.objective) && (OBJECTIVE_KINDS as readonly string[]).includes(stage.objective.kind as string)));
 
 const isLevel = (value: unknown) => value === undefined || isNum(value);
 
 const isFitted = (f: unknown): f is Obj => isObj(f) && isText(f.id) && isNum(f.grade);
 const isBuild = (b: unknown): b is Obj => isObj(b) && isText(b.id) && isText(b.base) && isList(b.modules, isFitted);
 
-const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'deleteLog', 'build', 'decompile'];
+const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'uploadFile', 'deleteLog', 'build', 'decompile'];
 
 const isTask = (t: unknown): t is Obj =>
   isObj(t) &&
@@ -336,7 +344,9 @@ function checkState(raw: Obj): GameState {
     !isObj(contracts) ||
     !(contracts.activeId === null || isText(contracts.activeId)) ||
     !isList(contracts.completed, isText) ||
-    !isList(contracts.jobs, isJob)
+    !isList(contracts.jobs, isJob) ||
+    !isNum(contracts.stage) ||
+    !isNum(contracts.stageStartMs)
   ) {
     throw damaged;
   }

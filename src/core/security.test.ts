@@ -441,7 +441,7 @@ describe('saves from before security existed (version 2)', () => {
     // Old saves get the welcome message too, since it explains where the work is.
     expect(loaded.messages.map((message) => message.subject)).toEqual(['welcome']);
     expect(loaded.player).toMatchObject({ rating: 0, lieLowUntilMs: 0 });
-    expect(loaded.contracts).toEqual({ activeId: null, completed: [], jobs: [] });
+    expect(loaded.contracts).toMatchObject({ activeId: null, completed: [], jobs: [] });
     expect(loaded.connections[0]).toMatchObject({ bypassed: { proxy: false, firewall: false }, trace: { status: 'none' } });
     const ids = Object.values(loaded.servers).flatMap((server) => server.logs.map((log) => log.id));
     expect(new Set(ids).size).toBe(ids.length);

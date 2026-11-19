@@ -11,7 +11,8 @@ import { noteRating } from './skills';
 import { freeStorageGb } from './tasks';
 import { refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
-import { findConnection, findProgram, findServer, noteProgress, once, sendMail, type Content } from './world';
+import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
+import { findConnection, findProgram, findServer, noteProgress, once, securityOf, sendMail, type Content } from './world';
 
 /** A hand-written contract, or a job on this game's board. */
 export function findContract(state: GameState, content: Content, id: string | null): ContractDef | undefined {
@@ -28,28 +29,24 @@ export function postJobs(state: GameState, content: Content): void {
   refreshJobs(state, content, (job) => objectivePossible(state, content, job));
 }
 
-/** True once the thing the contract asks for has been done. */
+/**
+ * True once the whole contract is done: for the contract being worked on,
+ * its last step; for any other, its first.
+ */
 export function objectiveMet(state: GameState, content: Content, contract: ContractDef): boolean {
-  const target = state.servers[contract.targetId];
-  const goal = contract.objective;
-  switch (goal.kind) {
-    case 'steal':
-      // A client can't use a file they can't read.
-      return state.player.files.some((file) => file.name === goal.file && file.from === contract.targetId && !file.encrypted);
-    case 'destroy':
-      return target !== undefined && !target.files.some((file) => file.name === goal.file);
-    case 'record': {
-      const column = findServer(content, contract.targetId)?.records?.columns.indexOf(goal.column) ?? -1;
-      return target?.records.find((row) => row[0] === goal.key)?.[column] === goal.value;
-    }
-  }
+  const steps = stagesOf(contract);
+  const index = stageIndex(state, contract);
+  if (state.contracts.activeId === contract.id && index < steps.length - 1) return false;
+  const stage = steps[index]!;
+  return goalMet(state, content, stage.targetId, stage.objective);
 }
 
 /** False if the job can no longer be done at all (e.g. the file to copy was deleted). */
 export function objectivePossible(state: GameState, content: Content, contract: ContractDef): boolean {
-  const goal = contract.objective;
-  if (goal.kind !== 'steal' || objectiveMet(state, content, contract)) return true;
-  return state.servers[contract.targetId]?.files.some((file) => file.name === goal.file) ?? false;
+  const stage = currentStage(state, contract);
+  // A plant's file is handed over when the contract is taken, so before then it is always possible.
+  if (stage.objective.kind === 'plant' && state.contracts.activeId !== contract.id) return true;
+  return goalPossible(state, content, stage.targetId, stage.objective);
 }
 
 /**
@@ -108,7 +105,10 @@ export function acceptContract(state: GameState, content: Content, connectionId:
   const contract = availableContracts(state, content).find((item) => item.id === contractId);
   if (!contract) return 'That contract is not on offer.';
   state.contracts.activeId = contract.id;
+  startContract(state, content, contract);
   once(state, 'firstAccept', () => sendMail(state, content, 'firstAccept'));
+  if (stagesOf(contract).length > 1) once(state, 'stages', () => sendMail(state, content, 'stages'));
+  advanceContract(state, content, contract);
   return null;
 }
 
@@ -117,25 +117,40 @@ export function abandonContract(state: GameState): string | null {
   // A job given up is gone from the board; someone else will take it.
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== state.contracts.activeId);
   state.contracts.activeId = null;
+  clearClientFiles(state);
   return null;
 }
 
-export function deliverContract(state: GameState, content: Content): string | null {
+/**
+ * Hands the finished contract in. `choiceId` picks one of the other ways
+ * to finish it the brief offers; missing = the usual way.
+ */
+export function deliverContract(state: GameState, content: Content, choiceId?: string): string | null {
   const contract = activeContract(state, content);
   if (!contract) return 'You have no contract.';
   if (!objectiveMet(state, content, contract)) return 'The job is not done yet.';
-  const goal = contract.objective;
-  // The stolen file goes to the client.
-  if (goal.kind === 'steal') state.player.files = state.player.files.filter((file) => file.name !== goal.file);
-  state.player.balance += contract.pay;
-  state.player.rating += contract.rating;
+  const choice = choiceId === undefined ? undefined : contract.choices?.find((item) => item.id === choiceId);
+  if (choiceId !== undefined && !choice) return 'That is not one of the ways to finish this job.';
+  // Every stolen file goes to whoever is paid for it, unless the player keeps them.
+  if (!choice?.keep) {
+    const handed = stagesOf(contract).flatMap((stage) => (stage.objective.kind === 'steal' ? [{ name: stage.objective.file, from: stage.targetId }] : []));
+    state.player.files = state.player.files.filter((file) => !handed.some((item) => item.name === file.name && item.from === file.from));
+  }
+  clearClientFiles(state);
+  const pay = choice?.pay ?? contract.pay;
+  state.player.balance += pay;
+  state.player.rating = Math.max(0, state.player.rating + (choice?.rating ?? contract.rating));
   noteRating(state);
   state.contracts.completed.push(contract.id);
   state.contracts.activeId = null;
   // A delivered job comes off the board and another takes its place.
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
   postJobs(state, content);
-  sendMail(state, content, 'paid', { client: contract.client, title: contract.title, pay: String(contract.pay) });
+  if (choice?.reply) {
+    state.messages.push({ id: `m${state.nextId++}`, from: choice.reply.from, subject: choice.reply.subject, body: choice.reply.body, timeMs: state.clock.gameTimeMs, read: false });
+  } else {
+    sendMail(state, content, 'paid', { client: contract.client, title: contract.title, pay: String(pay) });
+  }
   const part = payPart(state, content, contract.part);
   if (part) {
     const paid = state.messages[state.messages.length - 1]!;
@@ -146,10 +161,40 @@ export function deliverContract(state: GameState, content: Content): string | nu
   return null;
 }
 
+/**
+ * Writes a false line into the access log that points at the person the
+ * active contract wants framed. Needs an administrator past the proxy,
+ * like any change to the log.
+ */
+export function frameLog(state: GameState, content: Content, connectionId: string): string | null {
+  const connection = findConnection(state, connectionId);
+  const active = activeContract(state, content);
+  const contract = active && stageView(state, active);
+  const goal = contract?.objective;
+  if (!connection || !contract || goal?.kind !== 'frame' || connection.serverId !== contract.targetId) {
+    return 'You have nobody to point this log at.';
+  }
+  const server = findServer(content, connection.serverId);
+  const serverState = state.servers[connection.serverId];
+  if (!server || !serverState) return 'That connection is closed.';
+  if (connection.role !== 'admin') return 'Only an administrator can change the log.';
+  if (securityOf(state, server).proxy > 0 && !connection.bypassed.proxy) return 'The proxy is blocking changes.';
+  if (serverState.logs.some((entry) => entry.framed === goal.who)) return 'The log already points at them.';
+  const user = server.accounts.find((account) => account.role === 'admin')?.user ?? 'admin';
+  // Slipped in a little before the player arrived, so it reads like part of the record.
+  const before = serverState.logs.filter((entry) => entry.timeMs < connection.openedAtMs);
+  const timeMs = Math.max((before[before.length - 1]?.timeMs ?? connection.openedAtMs - 3_600_000) + 60_000, connection.openedAtMs - 20 * 60_000);
+  serverState.logs.push({ id: state.nextId++, timeMs: Math.min(timeMs, connection.openedAtMs - 60_000), text: `login ${user} from ${goal.address}`, byPlayer: false, framed: goal.who });
+  serverState.logs.sort((a, b) => a.timeMs - b.timeMs);
+  noteIntrusion(state, content, connection);
+  return null;
+}
+
 /** Makes the record change the active contract asks for, on the connection given. */
 export function alterRecord(state: GameState, content: Content, connectionId: string): string | null {
   const connection = findConnection(state, connectionId);
-  const contract = activeContract(state, content);
+  const active = activeContract(state, content);
+  const contract = active && stageView(state, active);
   const goal = contract?.objective;
   if (!connection || !contract || goal?.kind !== 'record' || connection.serverId !== contract.targetId) {
     return 'You have no reason to change these records.';
@@ -158,7 +203,7 @@ export function alterRecord(state: GameState, content: Content, connectionId: st
   const serverState = state.servers[connection.serverId];
   if (!server || !serverState) return 'That connection is closed.';
   if (connection.role !== 'admin') return 'Only an administrator can change records.';
-  if (server.security.proxy > 0 && !connection.bypassed.proxy) return 'The proxy is blocking changes.';
+  if (securityOf(state, server).proxy > 0 && !connection.bypassed.proxy) return 'The proxy is blocking changes.';
   const row = serverState.records.find((item) => item[0] === goal.key);
   const column = server.records?.columns.indexOf(goal.column) ?? -1;
   if (!row || column < 1) return 'That record is gone.';
@@ -222,11 +267,13 @@ export function punish(state: GameState, content: Content, serverId: string): { 
   delete state.player.passwords[serverId];
   closeCase(state, serverId);
 
-  // A job that was already finished stands; one still in progress is withdrawn.
-  const contract = activeContract(state, content);
-  if (contract?.targetId === serverId && !objectiveMet(state, content, contract)) {
+  // A job that was already finished stands; one still in progress against this server is withdrawn.
+  const active = activeContract(state, content);
+  const contract = active && stageView(state, active);
+  if (active && contract?.targetId === serverId && !objectiveMet(state, content, active)) {
+    clearClientFiles(state);
     state.contracts.activeId = null;
-    state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
+    state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== active.id);
     sendMail(state, content, 'contractFailed', {
       client: contract.client,
       title: contract.title,

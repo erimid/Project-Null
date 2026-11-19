@@ -10,7 +10,7 @@ import { checkBuild, finishBuild, finishDecompile, hasTrait, partTaken, programF
 import { effect } from './skills';
 import { stream } from './streams';
 import { noteIntrusion } from './trace';
-import { fileDef, findAccount, findConnection, findProgram, findServer, ownedProgram, once, sendMail, type Content } from './world';
+import { fileDef, findAccount, securityOf, findConnection, findProgram, findServer, ownedProgram, once, sendMail, type Content } from './world';
 
 /** A program this many levels below a layer can't touch it at all. */
 export const MAX_LEVEL_GAP = 2;
@@ -23,6 +23,8 @@ const PROGRAM_FOR: Record<Exclude<TaskTarget['kind'], 'build'>, ProgramKind> = {
   decrypt: 'decrypt',
   copyFile: 'copyFile',
   deleteFile: 'deleteFile',
+  // Sending a file is the same work as fetching one.
+  uploadFile: 'copyFile',
   deleteLog: 'deleteLog',
   decompile: 'decompile',
 };
@@ -67,7 +69,7 @@ export function freeStorageGb(state: GameState, content: Content): number {
 export function canLogIn(state: GameState, server: ServerDef, user: string): boolean {
   const account = findAccount(server, user);
   if (!account) return false;
-  if (account.role !== 'admin' || server.security.password === 0) return true;
+  if (account.role !== 'admin' || securityOf(state, server).password === 0) return true;
   return state.player.passwords[server.id]?.includes(user) ?? false;
 }
 
@@ -82,7 +84,7 @@ export function checkTask(state: GameState, content: Content, connection: Connec
   const check = baseCheck(state, content, connection, target);
   if (!check.ok) return check;
   // The modem moves files; the processor does everything else.
-  const files = target.kind === 'copyFile' || target.kind === 'deleteFile';
+  const files = target.kind === 'copyFile' || target.kind === 'deleteFile' || target.kind === 'uploadFile';
   let speed = files ? fileSpeed(state, content) : cpuSpeed(state, content);
   if (CRACKING.includes(target.kind)) speed *= 1 + effect(state, content, 'crackSpeed');
   if (target.kind === 'deleteLog') speed *= 1 + effect(state, content, 'logSpeed');
@@ -145,19 +147,19 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
       if (!account) return no('No such account.');
       if (connection.user !== null) return no('You are already logged in.');
       if (canLogIn(state, server, target.user)) return no('You already have that password.');
-      return against('password', server.security.password);
+      return against('password', securityOf(state, server).password);
     }
     case 'proxy':
     case 'firewall': {
       if (connection.user === null) return no('Log in first.');
-      const level = server.security[target.kind];
+      const level = securityOf(state, server)[target.kind];
       if (level === 0) return no(`This server has no ${target.kind}.`);
       if (connection.bypassed[target.kind]) return no(`The ${target.kind} is already bypassed.`);
       if (target.kind === 'firewall' && heldBy(state, content, server.id, 'firewall')) return no('The firewall is already held open from elsewhere.');
       return against(target.kind, level);
     }
     case 'monitor': {
-      const level = server.security.monitor;
+      const level = securityOf(state, server).monitor;
       if (level === 0) return no('Nothing is watching this server closely enough to blind.');
       if (connection.monitor.blindMs > 0) return no('The monitor is already blind.');
       if (connection.monitor.used) return no('This monitor has seen that trick. Reconnect to try it again.');
@@ -167,7 +169,7 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
     case 'deleteFile': {
       const file = serverState.files.find((item) => item.name === target.file);
       if (!file || (file.access === 'admin' && !admin)) return no('No such file.');
-      if (server.security.firewall > 0 && !connection.bypassed.firewall && !heldBy(state, content, server.id, 'firewall')) {
+      if (securityOf(state, server).firewall > 0 && !connection.bypassed.firewall && !heldBy(state, content, server.id, 'firewall')) {
         return no('The firewall is blocking file access.');
       }
       if (target.kind === 'copyFile' && fileDef(content, server.id, file.name)?.part) {
@@ -181,11 +183,22 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
       }
       return fileTime(file.sizeGq);
     }
+    case 'uploadFile': {
+      const file = state.player.files.find((item) => item.name === target.file);
+      if (!file) return no('You have no such file.');
+      if (!admin) return no('Only an administrator can put files on this server.');
+      if (serverState.files.some((item) => item.name === file.name)) return no('The server already has a file by that name.');
+      if (securityOf(state, server).firewall > 0 && !connection.bypassed.firewall && !heldBy(state, content, server.id, 'firewall')) {
+        return no('The firewall is blocking file access.');
+      }
+      if (state.tasks.some((task) => task.target.kind === 'uploadFile' && task.target.file === file.name)) return no('That file is already being sent.');
+      return fileTime(file.sizeGq);
+    }
     case 'deleteLog': {
       if (!admin) return no('Only an administrator can change the log.');
       if (target.logIds.length === 0) return no('Pick the lines to remove first.');
       if (!target.logIds.every((id) => serverState.logs.some((entry) => entry.id === id))) return no('That log line is gone.');
-      if (server.security.proxy > 0 && !connection.bypassed.proxy) return no('The proxy is blocking changes.');
+      if (securityOf(state, server).proxy > 0 && !connection.bypassed.proxy) return no('The proxy is blocking changes.');
       // The first line takes the base time; each further line a third of that.
       const lines = 1 + (target.logIds.length - 1) / 3;
       return { ok: true, seconds: (program.baseSeconds * lines) / program.version, program };
@@ -259,7 +272,8 @@ function finish(state: GameState, content: Content, connection: Connection, task
     case 'build':
       return;
     case 'monitor': {
-      const level = findServer(content, connection.serverId)?.security.monitor ?? 0;
+      const at = findServer(content, connection.serverId);
+      const level = at ? securityOf(state, at).monitor : 0;
       connection.monitor = {
         blindMs: blindSeconds(content, program, level) * 1000,
         used: true,
@@ -292,6 +306,7 @@ function finish(state: GameState, content: Content, connection: Connection, task
         sizeGq: file.sizeGq,
         from: connection.serverId,
         ...(file.encrypted ? { encrypted: file.encrypted } : {}),
+        ...(file.text ? { text: file.text } : {}),
       });
       if (!tidy) serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file copied: ${file.name}`, byPlayer: true });
       return;
@@ -300,6 +315,21 @@ function finish(state: GameState, content: Content, connection: Connection, task
       if (!serverState.files.some((item) => item.name === target.file)) return;
       serverState.files = serverState.files.filter((item) => item.name !== target.file);
       if (!tidy) serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file deleted: ${target.file}`, byPlayer: true });
+      return;
+    }
+    case 'uploadFile': {
+      const file = state.player.files.find((item) => item.name === target.file);
+      if (!file || serverState.files.some((item) => item.name === file.name)) return;
+      // It goes, rather than being copied: a planted file should not also be found at home.
+      state.player.files = state.player.files.filter((item) => item !== file);
+      serverState.files.push({
+        name: file.name,
+        sizeGq: file.sizeGq,
+        access: 'admin',
+        ...(file.encrypted ? { encrypted: file.encrypted } : {}),
+        ...(file.text ? { text: file.text } : {}),
+      });
+      if (!tidy) serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file uploaded: ${file.name}`, byPlayer: true });
       return;
     }
     case 'deleteLog':

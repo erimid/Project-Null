@@ -5,7 +5,8 @@
  */
 import type { AskDef, FactDef, FileRef, PersonDef } from '../content/people';
 import type { GameState } from './state';
-import { findServer, sendMail, type Content } from './world';
+import { currentStage, readFlag } from './stages';
+import { findServer, securityOf, sendMail, type Content } from './world';
 
 export const findPerson = (content: Content, id: string): PersonDef | undefined =>
   content.people.people.find((person) => person.id === id);
@@ -36,7 +37,7 @@ export function canRead(state: GameState, content: Content, serverId: string, na
   const connection = state.connections.find((item) => item.serverId === serverId);
   if (!file || !server || !connection || connection.user === null || file.encrypted) return false;
   if (file.access === 'admin' && connection.role !== 'admin') return false;
-  return server.security.firewall === 0 || connection.bypassed.firewall;
+  return securityOf(state, server).firewall === 0 || connection.bypassed.firewall;
 }
 
 /** What one file has to teach: the people it names and the details in it. */
@@ -66,10 +67,22 @@ function learnFrom(state: GameState, content: Content, serverId: string, name: s
   return learned;
 }
 
+/** Remembers that a file has been read, if the step of the contract under way wants it read. */
+function noteRead(state: GameState, content: Content, serverId: string, name: string): void {
+  const id = state.contracts.activeId;
+  const contract = id === null ? undefined : (content.contracts.find((item) => item.id === id) ?? state.contracts.jobs.find((job) => job.id === id));
+  if (!contract) return;
+  const stage = currentStage(state, contract);
+  if (stage.targetId !== serverId || stage.objective.kind !== 'read' || stage.objective.file !== name) return;
+  const flag = readFlag(serverId, name);
+  if (!state.flags.includes(flag)) state.flags.push(flag);
+}
+
 /** The player opened a file. Returns a reason if they can't read it. */
 export function readFile(state: GameState, content: Content, serverId: string, name: string): string | null {
   if (!canRead(state, content, serverId, name)) return 'You cannot read that file from here.';
   learnFrom(state, content, serverId, name);
+  noteRead(state, content, serverId, name);
   return null;
 }
 
@@ -80,7 +93,9 @@ export function readFile(state: GameState, content: Content, serverId: string, n
 export function readEverything(state: GameState, content: Content, serverId: string): number {
   let learned = 0;
   for (const file of state.servers[serverId]?.files ?? []) {
-    if (canRead(state, content, serverId, file.name)) learned += learnFrom(state, content, serverId, file.name);
+    if (!canRead(state, content, serverId, file.name)) continue;
+    learned += learnFrom(state, content, serverId, file.name);
+    noteRead(state, content, serverId, file.name);
   }
   return learned;
 }

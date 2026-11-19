@@ -6,7 +6,8 @@
  * so trace timers stay tense.
  */
 import { caught, pullOut } from './actions';
-import { postJobs } from './contracts';
+import { activeContract, postJobs } from './contracts';
+import { advanceContract } from './stages';
 import { endRental, shouldPullOut } from './model';
 import { runReviews } from './forensics';
 import { monitorHeld } from './link';
@@ -53,6 +54,9 @@ export function tick(state: GameState, realMs: number, content: Content): number
     if (shouldPullOut(state, content, connection)) pullOut(state, content, connection);
     else if (advanceTrace(connection.trace, traceMs)) caught(state, content, connection);
   }
+  // Programs that finished this tick may have done a step of the contract; a step past its time is lost.
+  const contract = state.contracts.activeId === null ? undefined : activeContract(state, content);
+  if (contract) advanceContract(state, content, contract);
   if (state.reviews.length > 0) runReviews(state, content);
   if (state.phish.sent.length > 0) runPhish(state, content);
   if (state.player.model) endRental(state, content);

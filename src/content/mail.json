@@ -103,5 +103,20 @@
     "from": "Wren",
     "subject": "Relays are not what they were",
     "body": "{handle}, the easy years are over. Three things have changed about routes, and all three will get you caught if you carry on as before.\n\nRelays warm up. Every connection you run through a server leaves it a little warmer, and a warm relay holds a trace up for less time. They cool again over a few hours. Stop leaning on the same eight and rotate them. The address book marks the warm ones.\n\nA good monitor sees through a poor relay. A relay hides you about as well as its own monitor is good, and one level better if you hold a login there to tidy up behind yourself. Send a trace from a serious target through a library and it walks straight past. So every company you break into is worth keeping as a relay for the next one. Pick your target first and the map will tell you which relays it sees through.\n\nA trace gathers pace. The first three steps back from the target take their full time. After that each one takes less. Put your best relays last in the route, next to the target, where they count in full.\n\nThe Backroom sells a Route Planner that fills a route in one press. The cheap one is crude. The dear one is good, and still not as good as you can be by hand. You can also keep three routes of your own on the map and load them again.\n\nWren"
+  },
+  "stages": {
+    "from": "Wren",
+    "subject": "Jobs with more than one step",
+    "body": "{handle}, some jobs on the board run to several steps now. You will take one, do the first part, and the client will write again with the next: a file to find before you can reach the real target, a key to lift from one server to open another, maybe a choice at the end about who you sell to.\n\nThe Contract window shows every step and which one you are on. The next target's address comes with each new step, so watch your inbox. Pay climbs with the length, and so does the heat, so plan the whole chain before you start, not one server at a time."
+  },
+  "stageNote": {
+    "from": "{client}",
+    "subject": "Step {step} of {of}: {title}",
+    "body": "{brief}"
+  },
+  "contractLate": {
+    "from": "{client}",
+    "subject": "Too slow: {title}",
+    "body": "You missed the window on this one, {handle}. The moment has passed and the job is off. No payment. These things keep, so be ready next time."
   }
 }

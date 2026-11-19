@@ -107,7 +107,7 @@ describe('a firewall run from another server', () => {
     h.ok({ type: 'runProgram', connectionId: fort, target: { kind: 'deleteFile', file: 'bundle.dat' } });
     h.run(5);
     expect(h.state.servers.fort!.files).toEqual([]);
-    expect(holding(content, h.state.connections.find((c) => c.id === gate)!)).toEqual([{ serverId: 'fort', layer: 'firewall' }]);
+    expect(holding(h.state, content, h.state.connections.find((c) => c.id === gate)!)).toEqual([{ serverId: 'fort', layer: 'firewall' }]);
   });
 
   it('closes again when the gatehouse login ends', () => {

@@ -10,11 +10,14 @@ import {
   alterRecord,
   buyProgram,
   deleteStoredFile,
+  activeContract,
   deliverContract,
+  frameLog,
   punish,
   uninstallProgram,
 } from './contracts';
 import { scheduleReview } from './forensics';
+import { advanceContract } from './stages';
 import { buyHardware, loseHardware, maxConnections } from './hardware';
 import { modelRead, rentModel } from './model';
 import { readFile, sendPhish } from './phish';
@@ -57,8 +60,10 @@ export type Action =
   /** Take a contract from the board you are logged in to. */
   | { readonly type: 'acceptContract'; readonly connectionId: string; readonly contractId: string }
   | { readonly type: 'abandonContract' }
-  /** Hand in the finished contract and get paid. */
-  | { readonly type: 'deliverContract' }
+  /** Hand in the finished contract and get paid. `choiceId` picks another way to finish it, if the brief offers one. */
+  | { readonly type: 'deliverContract'; readonly choiceId?: string }
+  /** Write a false line into the log that points at the person the contract wants framed. */
+  | { readonly type: 'frameLog'; readonly connectionId: string }
   /** Make the record change the active contract asks for. */
   | { readonly type: 'alterRecord'; readonly connectionId: string }
   /** Buy a program from the market on the board you are logged in to. */
@@ -146,6 +151,14 @@ export function caught(state: GameState, content: Content, connection: Connectio
 }
 
 export function applyAction(state: GameState, action: Action, content: Content): ActionResult {
+  const result = act(state, action, content);
+  // Whatever the player did may have finished a step of the contract under way.
+  const contract = result.ok ? activeContract(state, content) : undefined;
+  if (contract) advanceContract(state, content, contract);
+  return result;
+}
+
+function act(state: GameState, action: Action, content: Content): ActionResult {
   switch (action.type) {
     case 'setSpeed': {
       if (!SPEEDS.includes(action.speed)) return refuse('Unknown speed.');
@@ -347,7 +360,9 @@ export function applyAction(state: GameState, action: Action, content: Content):
     case 'abandonContract':
       return answer(abandonContract(state));
     case 'deliverContract':
-      return answer(deliverContract(state, content));
+      return answer(deliverContract(state, content, action.choiceId));
+    case 'frameLog':
+      return answer(frameLog(state, content, action.connectionId));
     case 'alterRecord':
       return answer(alterRecord(state, content, action.connectionId));
     case 'buyProgram':
