@@ -1,6 +1,10 @@
 /** Re-exports the data-file types and lookups, so the UI has one place to import them from. */
 export type {
   AccountDef,
+  ChoiceDef,
+  StageDef,
+  TwistDef,
+  LayerName,
   ContractDef,
   CueDef,
   FileContent,

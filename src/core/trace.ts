@@ -7,7 +7,7 @@ import { MAX_HOPS, type Connection, type GameState, type TraceState } from './st
 import { monitorHeld } from './link';
 import { effect } from './skills';
 import { regionOf } from './generate';
-import { findServer, gatewayOf, type Content } from './world';
+import { findServer, gatewayOf, securityOf, type Content } from './world';
 
 /** What a leg of the route crosses: nothing much, a border, or a stretch of the world. */
 export type LegKind = 'country' | 'border' | 'overseas';
@@ -171,7 +171,7 @@ export function newTrace(state: GameState, content: Content, target: ServerDef, 
   const hopMs = traceHopMs(content, target, route, traceSlow(state, content), undefined, state);
   const trace: TraceState = { status: 'none', graceMs: 0, elapsedMs: 0, hopMs };
   // The strongest monitors start tracing the moment a connection opens.
-  if (target.security.monitor >= content.rules.monitorGraceSeconds.length) trace.status = 'active';
+  if (securityOf(state, target).monitor >= content.rules.monitorGraceSeconds.length) trace.status = 'active';
   return trace;
 }
 
@@ -184,7 +184,8 @@ export function noteIntrusion(state: GameState, content: Content, connection: Co
   if (connection.trace.status !== 'none' || connection.monitor.blindMs > 0) return;
   // A monitor whose alerts wait on a console the player is sitting at notices nothing.
   if (monitorHeld(state, content, connection)) return;
-  const monitor = findServer(content, connection.serverId)?.security.monitor ?? 0;
+  const at = findServer(content, connection.serverId);
+  const monitor = at ? securityOf(state, at).monitor : 0;
   const graceSeconds = (content.rules.monitorGraceSeconds[monitor] ?? 0) * (1 + effect(state, content, 'monitorGrace'));
   connection.trace.status = graceSeconds > 0 ? 'pending' : 'active';
   connection.trace.graceMs = graceSeconds * 1000;

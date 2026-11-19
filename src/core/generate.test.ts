@@ -113,7 +113,7 @@ describe('generated companies', () => {
       h.state.clock.gameTimeMs += 3 * 86_400_000;
       postJobs(h.state, h.world);
       for (const job of h.state.contracts.jobs) {
-        if (job.objective.kind === 'record') continue;
+        if (job.objective.kind !== 'steal' && job.objective.kind !== 'destroy') continue;
         const wanted = job.objective.file;
         const file = h.world.servers.find((server) => server.id === job.targetId)!.files.find((item) => item.name === wanted)!;
         expect(file.part ?? file.program).toBeUndefined();
@@ -141,15 +141,17 @@ describe('repeatable jobs', () => {
       expect(job.summary).not.toMatch(/\{\w+\}/);
       expect(job.brief).not.toMatch(/\{\w+\}/);
     }
-    // Each job is against a different company.
-    expect(new Set(h.state.contracts.jobs.map((job) => job.targetId)).size).toBe(h.state.contracts.jobs.length);
+    // No two jobs touch the same company, counting every server a staged job visits.
+    const touched = h.state.contracts.jobs.flatMap((job) => [job.targetId, ...(job.stages ?? []).map((stage) => stage.targetId)]);
+    expect(new Set(touched).size).toBe(touched.length);
   });
 
   it('offers harder companies as the rating goes up', () => {
     const h = game();
     h.state.player.rating = 8;
     postJobs(h.state, h.world);
-    const tiers = h.state.contracts.jobs.map((job) => h.world.servers.find((server) => server.id === job.targetId)!.generated!.tier);
+    const mainTarget = (job: (typeof h.state.contracts.jobs)[number]) => (job.stages && job.stages.length > 0 ? job.stages[job.stages.length - 1]!.targetId : job.targetId);
+    const tiers = h.state.contracts.jobs.map((job) => h.world.servers.find((server) => server.id === mainTarget(job))!.generated!.tier);
     expect(tiers.every((tier) => tier >= 4)).toBe(true);
   });
 
@@ -188,7 +190,7 @@ describe('repeatable jobs', () => {
     const goal = job.objective;
     if (goal.kind === 'destroy') target.files = target.files.filter((file) => file.name !== goal.file);
     else if (goal.kind === 'steal') h.state.player.files.push({ name: goal.file, sizeGq: 1, from: job.targetId });
-    else target.records.find((row) => row[0] === goal.key)![1] = goal.value;
+    else if (goal.kind === 'record') target.records.find((row) => row[0] === goal.key)![1] = goal.value;
     const before = h.state.player.balance;
     h.ok({ type: 'deliverContract' });
     expect(h.state.player.balance).toBe(before + job.pay);

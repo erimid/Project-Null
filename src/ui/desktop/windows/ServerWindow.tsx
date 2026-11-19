@@ -15,6 +15,9 @@ import {
   rentedModel,
   isLyingLow,
   ownedProgram,
+  folderOf,
+  securityOf,
+  stageView,
   ringAngle,
   ringTolerance,
   partTaken,
@@ -210,7 +213,7 @@ function Security({ game, server, connection, run }: View) {
   const showing = [connection.monitor.echo ? ('echo' as const) : null, lineup?.puzzle ? ('rings' as const) : null].filter((game) => game !== null);
   order.current.games = [...order.current.games.filter((game) => showing.includes(game)), ...showing.filter((game) => !order.current.games.includes(game))];
   const games = order.current.games;
-  const holds = holding(content, connection);
+  const holds = holding(game, content, connection);
   const holdNote = holds.length > 0 && (
     <p class="board__note link-note">
       {holds.map(({ serverId, layer }) => (
@@ -504,11 +507,11 @@ function PortLineup({ taskId, rings }: { taskId: string; rings: number }) {
 
 function Files({ game, state, connection, run, act }: View) {
   const [read, setRead] = useState('');
+  const [path, setPath] = useState('');
   const admin = connection.role === 'admin';
-  const files = state.files.filter((file) => admin || file.access === 'guest');
-  if (files.length === 0) return <p class="empty">No files.</p>;
+  const visible = state.files.filter((file) => admin || file.access === 'guest');
   // A firewall keeps files shut as well as stopping copies.
-  const walled = (findServer(content, connection.serverId)?.security.firewall ?? 0) > 0 && !connection.bypassed.firewall;
+  const walled = (securityOf(game, findServer(content, connection.serverId)!).firewall ?? 0) > 0 && !connection.bypassed.firewall;
   const reader = modelWith(game, content, 'read');
   const readAll = () => {
     const before = game.player.contacts.length + game.player.facts.length;
@@ -516,6 +519,26 @@ function Files({ game, state, connection, run, act }: View) {
     const after = session.getState().player.contacts.length + session.getState().player.facts.length;
     setRead(after === before ? 'Nothing new in these files.' : `Noted ${after - before} new ${after - before === 1 ? 'thing' : 'things'}. See Write to someone in Messages.`);
   };
+
+  // A job that wants a file planted here: offer the client's file to place.
+  const active = activeContract(game, content);
+  const stage = active ? stageView(game, active) : undefined;
+  const plant = stage && stage.targetId === connection.serverId && stage.objective.kind === 'plant' ? stage.objective : undefined;
+  const toPlant = plant && game.player.files.find((file) => file.name === plant.file);
+
+  // Files live in folders. Show the current folder's own files, and the subfolders below it as rows to open.
+  const here = visible.filter((file) => folderOf(content, connection.serverId, file) === path);
+  const subFolders = new Set<string>();
+  for (const file of visible) {
+    const folder = folderOf(content, connection.serverId, file);
+    if (folder === path || (path !== '' && !folder.startsWith(`${path}/`)) || (path === '' && folder === '')) continue;
+    const rest = path === '' ? folder : folder.slice(path.length + 1);
+    subFolders.add(rest.split('/')[0]!);
+  }
+  const crumbs = path === '' ? [] : path.split('/');
+  const up = (depth: number) => setPath(crumbs.slice(0, depth).join('/'));
+
+  if (visible.length === 0 && !toPlant) return <p class="empty">No files.</p>;
   return (
     <>
     {reader && (
@@ -526,8 +549,34 @@ function Files({ game, state, connection, run, act }: View) {
         </button>
       </div>
     )}
+    {toPlant && (
+      <div class="scrub">
+        <span class="scrub__hint">The job wants <span class="data">{toPlant.name}</span> left on this server.</span>
+        <button type="button" class="btn btn--go" disabled={walled} title={walled ? 'The firewall is blocking file access' : undefined} onClick={() => run({ kind: 'uploadFile', file: toPlant.name })}>
+          Place {toPlant.name}
+        </button>
+      </div>
+    )}
+    {(path !== '' || subFolders.size > 0) && (
+      <nav class="files__crumbs" aria-label="Folder path">
+        <button type="button" class="files__crumb" onClick={() => up(0)}>root</button>
+        {crumbs.map((name, i) => (
+          <span key={i}>
+            <span class="files__sep" aria-hidden="true"> / </span>
+            <button type="button" class="files__crumb" disabled={i === crumbs.length - 1} onClick={() => up(i + 1)}>{name}</button>
+          </span>
+        ))}
+      </nav>
+    )}
     <ul class="rows data">
-      {files.map((file) => {
+      {[...subFolders].sort().map((name) => (
+        <li key={`dir:${name}`} class="row row--folder">
+          <button type="button" class="files__folder" onClick={() => setPath(path === '' ? name : `${path}/${name}`)}>
+            <span class="files__folder-icon" aria-hidden="true">▸</span> {name}/
+          </button>
+        </li>
+      ))}
+      {here.map((file) => {
         const copying = findTask(game, connection, { kind: 'copyFile', file: file.name });
         const deleting = findTask(game, connection, { kind: 'deleteFile', file: file.name });
         const taken = partTaken(game, connection.serverId, file.name);
@@ -591,11 +640,16 @@ function Files({ game, state, connection, run, act }: View) {
   );
 }
 
-function Logs({ game, state, connection, run }: View) {
+function Logs({ game, state, connection, run, act }: View) {
   // Lines picked for removal. Picking is the hands-on part: knowing which lines are yours.
   const [picked, setPicked] = useState<readonly number[]>([]);
   const scrubber = modelWith(game, content, 'scrub');
-  if (state.logs.length === 0) return <p class="empty">The access log is empty.</p>;
+  // A job that wants a false trail left here.
+  const active = activeContract(game, content);
+  const stage = active ? stageView(game, active) : undefined;
+  const frame = stage && stage.targetId === connection.serverId && stage.objective.kind === 'frame' ? stage.objective : undefined;
+  const framed = frame && state.logs.some((entry) => entry.framed === frame.who);
+  if (state.logs.length === 0 && !frame) return <p class="empty">The access log is empty.</p>;
 
   const running = game.tasks.find((task) => task.connectionId === connection.id && task.target.kind === 'deleteLog');
   const removing = running?.target.kind === 'deleteLog' ? running.target.logIds : [];
@@ -604,6 +658,22 @@ function Logs({ game, state, connection, run }: View) {
 
   return (
     <>
+      {frame && (
+        <div class="scrub">
+          <span class="scrub__hint">
+            {framed ? `The log now points at ${frame.who}. Scrub any of your own lines to finish.` : `The job wants this log to blame ${frame.who}.`}
+          </span>
+          <button
+            type="button"
+            class="btn btn--go"
+            disabled={!!framed}
+            data-tip="Slip a false login into the log, timed before you arrived. Needs an administrator past the proxy."
+            onClick={() => act({ type: 'frameLog', connectionId: connection.id })}
+          >
+            Leave false trail
+          </button>
+        </div>
+      )}
       <div class="scrub">
         <span class="scrub__hint">
           {chosen.length === 0 ? 'Pick the lines to scrub.' : `${chosen.length} ${chosen.length === 1 ? 'line' : 'lines'} picked.`}
@@ -680,8 +750,9 @@ function Logs({ game, state, connection, run }: View) {
 
 function Records({ game, server, state, connection, act }: View) {
   const columns = server.records?.columns ?? [];
-  // The change the active contract wants made here, if it hasn't been made yet.
-  const contract = activeContract(game, content);
+  // The change the active contract's current step wants made here, if it hasn't been made yet.
+  const active = activeContract(game, content);
+  const contract = active ? stageView(game, active) : undefined;
   const goal = contract?.targetId === server.id && contract.objective.kind === 'record' ? contract.objective : null;
   const goalColumn = goal ? columns.indexOf(goal.column) : -1;
   return (

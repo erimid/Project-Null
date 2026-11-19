@@ -7,7 +7,7 @@ import { effect } from './skills';
 import { findServer, sendMail, type Content } from './world';
 
 /** Log lines that say someone logged in or changed something. A connection opening or closing proves nothing. */
-const EVIDENCE = /^(login |file copied|file deleted|record updated)/;
+const EVIDENCE = /^(login |file copied|file deleted|file uploaded|record updated)/;
 
 /** True for a line that would give the player away in a review. */
 export function isEvidence(entry: LogEntry): boolean {

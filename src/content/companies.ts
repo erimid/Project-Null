@@ -5,6 +5,8 @@
  * jobs posted against those companies. Written in companies.json;
  * checked here when the game starts.
  *
+ * Files may name a `folder` (e.g. "finance/{year}") to sit in.
+ *
  * Text may use these placeholders, filled in when a company or job is
  * made: {company} {city} {staff} {staff2} {year} {q} {n} {ip}, and in
  * jobs also {file} {key} {value} {column} {records} {tier}.
@@ -28,6 +30,8 @@ export interface FileTemplate {
   readonly access?: Role;
   /** What the file says when opened. Files without it show as raw data. */
   readonly text?: string;
+  /** The folder it sits in; may use placeholders. Missing = the top folder. */
+  readonly folder?: string;
 }
 
 export interface RecordsTemplate {
@@ -72,11 +76,31 @@ export interface JobWording {
   readonly briefs: readonly string[];
 }
 
+/**
+ * Wording for board jobs of several steps. Placeholders as for one-step
+ * jobs, plus {company2} {city2} {address2} {user} {steps}, and {goal}
+ * for one step's goal in a few words.
+ */
+export interface StagedWording {
+  readonly titles: readonly string[];
+  readonly summaries: readonly string[];
+  /** The brief shown on the board, before the first step. */
+  readonly briefs: readonly string[];
+  /** What the client writes as a later step begins. */
+  readonly next: readonly string[];
+  /** A note left on the first server that holds the login for the second. */
+  readonly keyNotes: readonly string[];
+  /** What a second buyer says at delivery. */
+  readonly rivals: readonly string[];
+}
+
 export interface JobPools {
   readonly clients: readonly string[];
   readonly steal: JobWording;
   readonly destroy: JobWording;
   readonly record: JobWording;
+  /** Missing = the board posts only one-step jobs. */
+  readonly staged?: StagedWording;
   /** Words for how strong a company's security is, by tier (1 first). */
   readonly tiers: readonly string[];
 }
@@ -153,6 +177,7 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
         sizeGb: [low, high],
         ...(access === undefined ? {} : { access: access as Role }),
         ...(f.text === undefined ? {} : { text: text(f.text, `${where} file ${j} text`) }),
+        ...(f.folder === undefined ? {} : { folder: text(f.folder, `${where} file ${j} folder`) }),
       };
     });
     if (!files.some((f) => (f.access ?? 'admin') === 'admin')) fail(`${where} needs at least one admin file for jobs`);
@@ -211,6 +236,20 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
       steal: wording('steal'),
       destroy: wording('destroy'),
       record: wording('record'),
+      ...(jobs.staged === undefined
+        ? {}
+        : (() => {
+            const w = obj(jobs.staged, 'jobs staged');
+            const staged: StagedWording = {
+              titles: texts(w.titles, 'jobs staged titles'),
+              summaries: texts(w.summaries, 'jobs staged summaries'),
+              briefs: texts(w.briefs, 'jobs staged briefs'),
+              next: texts(w.next, 'jobs staged next'),
+              keyNotes: texts(w.keyNotes, 'jobs staged keyNotes'),
+              rivals: texts(w.rivals, 'jobs staged rivals'),
+            };
+            return { staged };
+          })()),
       tiers: texts(jobs.tiers, 'jobs tiers', 5),
     },
   };

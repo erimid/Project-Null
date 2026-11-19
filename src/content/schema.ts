@@ -121,9 +121,68 @@ export type ObjectiveDef =
   /** Delete a file on the target. */
   | { readonly kind: 'destroy'; readonly file: string }
   /** Change one value in the target's records: the row whose first column is `key`. */
-  | { readonly kind: 'record'; readonly key: string; readonly column: string; readonly value: string };
+  | { readonly kind: 'record'; readonly key: string; readonly column: string; readonly value: string }
+  /**
+   * Open a file on the target and read it. If it `reveals` a login, the player
+   * has that account's password from then on, and the address of its server.
+   */
+  | { readonly kind: 'read'; readonly file: string; readonly reveals?: { readonly serverId: string; readonly user: string } }
+  /** Put a file the client sends you onto the target. It arrives on your gateway when the stage begins. */
+  | { readonly kind: 'plant'; readonly file: string; readonly sizeGq: number }
+  /**
+   * Make the target's access log point at someone else: write a false line
+   * naming `who` (from `address`), and leave none of your own lines behind.
+   */
+  | { readonly kind: 'frame'; readonly who: string; readonly address: string };
 
-export const OBJECTIVE_KINDS = ['steal', 'destroy', 'record'] as const;
+export const OBJECTIVE_KINDS = ['steal', 'destroy', 'record', 'read', 'plant', 'frame'] as const;
+
+/** A security layer by name. */
+export type LayerName = keyof SecurityDef;
+export const LAYER_NAMES = ['password', 'proxy', 'firewall', 'monitor'] as const;
+
+/** Something that changes in the world as a stage begins. */
+export type TwistDef =
+  /** The stage's target puts a layer up by `by` levels for a while (never past the top level). */
+  | { readonly kind: 'raise'; readonly layer: LayerName; readonly by: number }
+  /** A file turns up on the stage's target, moved there from another server. */
+  | { readonly kind: 'move'; readonly file: string; readonly fromId: string }
+  /** For a while, one of the stage target's layers is run from another server (see ServerLinkDef). */
+  | { readonly kind: 'link'; readonly layer: LinkLayer; readonly fromId: string }
+  /** A new file appears on the stage's target (a note left for the player, a backup copy). */
+  | { readonly kind: 'drop'; readonly file: string; readonly sizeGq: number; readonly text?: string; readonly folder?: string };
+
+export const TWIST_KINDS = ['raise', 'move', 'link', 'drop'] as const;
+
+/**
+ * One step of a contract after the first. The first step is the
+ * contract's own targetId and objective.
+ */
+export interface StageDef {
+  readonly targetId: string;
+  readonly objective: ObjectiveDef;
+  /** What the client writes as this stage begins. Blank lines separate paragraphs. */
+  readonly brief?: string;
+  /** In-game minutes this stage may take once it begins. Missed, the contract is lost. */
+  readonly withinMinutes?: number;
+  readonly twists?: readonly TwistDef[];
+}
+
+/** One way to finish a contract, when the brief offers more than one. */
+export interface ChoiceDef {
+  readonly id: string;
+  /** What the button says, e.g. "Sell to the rival". */
+  readonly label: string;
+  /** One line on what it means. */
+  readonly note: string;
+  readonly pay: number;
+  /** Rating it adds; may be negative. */
+  readonly rating: number;
+  /** True to keep what was taken instead of handing it over. */
+  readonly keep?: boolean;
+  /** The message that comes back, if not the usual one. */
+  readonly reply?: { readonly from: string; readonly subject: string; readonly body: string };
+}
 
 export interface ContractDef {
   readonly id: string;
@@ -142,6 +201,14 @@ export interface ContractDef {
   /** The full brief, in the client's voice. Blank lines separate paragraphs. */
   readonly brief: string;
   readonly objective: ObjectiveDef;
+  /** In-game minutes the first stage may take once the contract is taken. */
+  readonly withinMinutes?: number;
+  /** What changes in the world as the contract is taken (see StageDef). */
+  readonly twists?: readonly TwistDef[];
+  /** Steps after the first, in order. Missing = a one-step job. */
+  readonly stages?: readonly StageDef[];
+  /** Other ways to finish it, offered at delivery beside the usual one. */
+  readonly choices?: readonly ChoiceDef[];
   /** A module paid on top of the credits. */
   readonly part?: PartDef;
 }
@@ -154,7 +221,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes', 'stages', 'stageNote', 'contractLate'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -189,6 +256,8 @@ export interface FileDef {
   readonly part?: PartDef;
   /** A compiled program: copied home, a Decompiler takes it apart into these. */
   readonly program?: ProgramFileDef;
+  /** The folder it sits in, as names separated by "/", e.g. "mail/2034". Missing = the top folder. */
+  readonly folder?: string;
 }
 
 /** A module and its grade, as data files name one. */
@@ -479,27 +548,101 @@ export function parsePrograms(data: unknown, file = 'programs.json'): ProgramDef
   return programs;
 }
 
+export function parseObjective(file: string, where: string, value: unknown): ObjectiveDef {
+  const goal = entry(file, `${where} objective`, value);
+  const at = `${where} objective`;
+  const kind = text(file, at, goal, 'kind');
+  switch (kind) {
+    case 'steal':
+    case 'destroy':
+      return { kind, file: text(file, at, goal, 'file') };
+    case 'record':
+      return { kind, key: text(file, at, goal, 'key'), column: text(file, at, goal, 'column'), value: text(file, at, goal, 'value') };
+    case 'read': {
+      const reveals = goal['reveals'];
+      if (reveals === undefined) return { kind, file: text(file, at, goal, 'file') };
+      const raw = entry(file, `${at} reveals`, reveals);
+      return { kind, file: text(file, at, goal, 'file'), reveals: { serverId: text(file, `${at} reveals`, raw, 'serverId'), user: text(file, `${at} reveals`, raw, 'user') } };
+    }
+    case 'plant':
+      return { kind, file: text(file, at, goal, 'file'), sizeGq: num(file, at, goal, 'sizeGq', 1, 1000) };
+    case 'frame':
+      return { kind, who: text(file, at, goal, 'who'), address: text(file, at, goal, 'address') };
+  }
+  throw new ContentError(file, `${where}: objective kind "${kind}" is not one of ${OBJECTIVE_KINDS.join(', ')}`);
+}
+
+function parseTwist(file: string, where: string, value: unknown): TwistDef {
+  const raw = entry(file, `${where} twist`, value);
+  const kind = text(file, `${where} twist`, raw, 'kind');
+  if (kind === 'raise') {
+    const layer = text(file, `${where} twist`, raw, 'layer');
+    if (!(LAYER_NAMES as readonly string[]).includes(layer)) throw new ContentError(file, `${where}: twist layer "${layer}" is not one of ${LAYER_NAMES.join(', ')}`);
+    return { kind, layer: layer as LayerName, by: num(file, `${where} twist`, raw, 'by', 1, MAX_LAYER_LEVEL) };
+  }
+  if (kind === 'move') return { kind, file: text(file, `${where} twist`, raw, 'file'), fromId: text(file, `${where} twist`, raw, 'fromId') };
+  if (kind === 'link') {
+    const layer = text(file, `${where} twist`, raw, 'layer');
+    if (!(LINK_LAYERS as readonly string[]).includes(layer)) throw new ContentError(file, `${where}: twist link layer "${layer}" is not one of ${LINK_LAYERS.join(', ')}`);
+    return { kind, layer: layer as LinkLayer, fromId: text(file, `${where} twist`, raw, 'fromId') };
+  }
+  if (kind === 'drop') {
+    const body = raw['text'];
+    if (body !== undefined && (typeof body !== 'string' || body.trim() === '')) throw new ContentError(file, `${where}: twist text must be text`);
+    return {
+      kind,
+      file: text(file, `${where} twist`, raw, 'file'),
+      sizeGq: num(file, `${where} twist`, raw, 'sizeGq', 1, 1000),
+      ...(body === undefined ? {} : { text: body as string }),
+      ...(raw['folder'] === undefined ? {} : { folder: parseFolder(file, `${where} twist`, raw['folder']) }),
+    };
+  }
+  throw new ContentError(file, `${where}: twist kind "${kind}" is not one of ${TWIST_KINDS.join(', ')}`);
+}
+
+export function parseStage(file: string, where: string, value: unknown): StageDef {
+  const raw = entry(file, where, value);
+  const brief = raw['brief'];
+  if (brief !== undefined && (typeof brief !== 'string' || brief.trim() === '')) throw new ContentError(file, `${where}: brief must be text`);
+  const twists = raw['twists'] === undefined ? [] : list(file, where, raw, 'twists').map((item) => parseTwist(file, where, item));
+  return {
+    targetId: text(file, where, raw, 'targetId'),
+    objective: parseObjective(file, where, raw['objective']),
+    ...(brief === undefined ? {} : { brief: brief as string }),
+    ...(raw['withinMinutes'] === undefined ? {} : { withinMinutes: num(file, where, raw, 'withinMinutes', 1, 100_000) }),
+    ...(twists.length > 0 ? { twists } : {}),
+  };
+}
+
+function parseChoice(file: string, where: string, value: unknown): ChoiceDef {
+  const raw = entry(file, where, value);
+  const reply = raw['reply'];
+  let parsedReply: ChoiceDef['reply'];
+  if (reply !== undefined) {
+    const r = entry(file, `${where} reply`, reply);
+    parsedReply = { from: text(file, `${where} reply`, r, 'from'), subject: text(file, `${where} reply`, r, 'subject'), body: text(file, `${where} reply`, r, 'body') };
+  }
+  return {
+    id: text(file, where, raw, 'id'),
+    label: text(file, where, raw, 'label'),
+    note: text(file, where, raw, 'note'),
+    pay: num(file, where, raw, 'pay', 0, 10_000_000),
+    rating: num(file, where, raw, 'rating', -100, 100),
+    ...(raw['keep'] === undefined ? {} : { keep: flag(file, where, raw, 'keep') }),
+    ...(parsedReply ? { reply: parsedReply } : {}),
+  };
+}
+
 export function parseContracts(data: unknown, file = 'contracts.json'): ContractDef[] {
   if (!Array.isArray(data)) throw new ContentError(file, 'must be a list of contracts');
   const contracts = data.map((value, index): ContractDef => {
     const raw = entry(file, `entry ${index}`, value);
     const id = text(file, `entry ${index}`, raw, 'id');
     const where = `contract "${id}"`;
-    const goal = entry(file, `${where} objective`, raw.objective);
-    const kind = text(file, `${where} objective`, goal, 'kind');
-    let objective: ObjectiveDef;
-    if (kind === 'steal' || kind === 'destroy') {
-      objective = { kind, file: text(file, `${where} objective`, goal, 'file') };
-    } else if (kind === 'record') {
-      objective = {
-        kind,
-        key: text(file, `${where} objective`, goal, 'key'),
-        column: text(file, `${where} objective`, goal, 'column'),
-        value: text(file, `${where} objective`, goal, 'value'),
-      };
-    } else {
-      throw new ContentError(file, `${where}: objective kind "${kind}" is not one of ${OBJECTIVE_KINDS.join(', ')}`);
-    }
+    const objective = parseObjective(file, where, raw.objective);
+    const stages = raw['stages'] === undefined ? undefined : list(file, where, raw, 'stages').map((item, i) => parseStage(file, `${where} stage ${i + 2}`, item));
+    const choices = raw['choices'] === undefined ? undefined : list(file, where, raw, 'choices').map((item, i) => parseChoice(file, `${where} choice ${i + 1}`, item));
+    if (choices) unique(file, where, 'choice', choices.map((choice) => choice.id));
     return {
       id,
       title: text(file, where, raw, 'title'),
@@ -511,6 +654,10 @@ export function parseContracts(data: unknown, file = 'contracts.json'): Contract
       summary: text(file, where, raw, 'summary'),
       brief: text(file, where, raw, 'brief'),
       objective,
+      ...(raw['withinMinutes'] === undefined ? {} : { withinMinutes: num(file, where, raw, 'withinMinutes', 1, 100_000) }),
+      ...(raw['twists'] === undefined ? {} : { twists: list(file, where, raw, 'twists').map((item) => parseTwist(file, where, item)) }),
+      ...(stages && stages.length > 0 ? { stages } : {}),
+      ...(choices && choices.length > 0 ? { choices } : {}),
       ...(raw['part'] === undefined ? {} : { part: parsePart(file, where, raw['part']) }),
     };
   });
@@ -606,10 +753,19 @@ function parseFiles(file: string, where: string, raw: Obj): FileDef[] {
       ...(item['content'] === undefined ? {} : { content: parseFileContent(file, `${where} file "${name}"`, item['content']) }),
       ...(item['part'] === undefined ? {} : { part: parsePart(file, `${where} file "${name}"`, item['part']) }),
       ...(item['program'] === undefined ? {} : { program: parseProgramFile(file, `${where} file "${name}"`, item['program']) }),
+      ...(item['folder'] === undefined ? {} : { folder: parseFolder(file, `${where} file "${name}"`, item['folder']) }),
     };
   });
   unique(file, where, 'file', files.map((item) => item.name));
   return files;
+}
+
+/** A folder path: names of letters, digits, - _ . and spaces, separated by "/". */
+export function parseFolder(file: string, where: string, value: unknown): string {
+  if (typeof value !== 'string' || !/^[\w .-]+(\/[\w .-]+)*$/.test(value)) {
+    throw new ContentError(file, `${where}: folder must be names separated by "/", e.g. "mail/2034"`);
+  }
+  return value;
 }
 
 function parseLink(file: string, where: string, value: unknown): ServerLinkDef {
@@ -688,6 +844,43 @@ export function parseServers(data: unknown, file = 'servers.json'): ServerDef[] 
   return servers;
 }
 
+/** Checks one stage of a written contract against the servers. `before` are the stages ahead of it. */
+function checkStage(servers: readonly ServerDef[], where: string, stage: StageDef, before: readonly StageDef[]): void {
+  const fail = (problem: string) => {
+    throw new ContentError('contracts.json', `${where}: ${problem}`);
+  };
+  const target = servers.find((server) => server.id === stage.targetId);
+  if (!target) fail(`target "${stage.targetId}" is not a server`);
+  const goal = stage.objective;
+  // A file can be planted or moved there by this stage or one before it.
+  const arrives = (name: string) =>
+    [...before, stage].some(
+      (step) =>
+        (step.targetId === stage.targetId && step.objective.kind === 'plant' && step.objective.file === name) ||
+        (step.targetId === stage.targetId && (step.twists ?? []).some((twist) => (twist.kind === 'move' || twist.kind === 'drop') && twist.file === name)),
+    );
+  if (goal.kind === 'record') {
+    if (!target!.records?.columns.includes(goal.column) || goal.column === target!.records.columns[0]) fail(`${target!.id} has no changeable records column "${goal.column}"`);
+    if (!target!.records!.rows.some((row) => row[0] === goal.key)) fail(`${target!.id} has no record "${goal.key}"`);
+  } else if (goal.kind === 'steal' || goal.kind === 'destroy' || goal.kind === 'read') {
+    if (!target!.files.some((item) => item.name === goal.file) && !arrives(goal.file)) fail(`${target!.id} has no file "${goal.file}"`);
+    if (goal.kind === 'read' && goal.reveals) {
+      const other = servers.find((server) => server.id === goal.reveals!.serverId);
+      if (!other?.accounts.some((account) => account.user === goal.reveals!.user)) fail(`reveals "${goal.reveals.user}" on "${goal.reveals.serverId}", which has no such account`);
+    }
+  } else if (goal.kind === 'frame') {
+    if (target!.security.proxy === 0 && !target!.accounts.some((account) => account.role === 'admin')) fail(`${target!.id} has nobody to log in as`);
+  }
+  for (const twist of stage.twists ?? []) {
+    if (twist.kind === 'move' || twist.kind === 'link') {
+      const from = servers.find((server) => server.id === twist.fromId);
+      if (!from || from.id === stage.targetId) fail(`twist names "${twist.fromId}", which is not another server`);
+      if (twist.kind === 'move' && !from!.files.some((item) => item.name === twist.file)) fail(`twist moves "${twist.file}", which ${twist.fromId} does not have`);
+      if (twist.kind === 'link' && !from!.accounts.some((account) => account.role === 'admin')) fail(`${twist.fromId} has no admin account to hold the link with`);
+    }
+  }
+}
+
 /** Checks that the data files agree with each other. */
 export function checkContent(
   info: GameInfo,
@@ -697,19 +890,8 @@ export function checkContent(
 ): void {
   for (const contract of contracts) {
     const where = `contract "${contract.id}"`;
-    const target = servers.find((server) => server.id === contract.targetId);
-    if (!target) throw new ContentError('contracts.json', `${where}: target "${contract.targetId}" is not a server`);
-    const goal = contract.objective;
-    if (goal.kind === 'record') {
-      if (!target.records?.columns.includes(goal.column) || goal.column === target.records.columns[0]) {
-        throw new ContentError('contracts.json', `${where}: ${target.id} has no changeable records column "${goal.column}"`);
-      }
-      if (!target.records.rows.some((row) => row[0] === goal.key)) {
-        throw new ContentError('contracts.json', `${where}: ${target.id} has no record "${goal.key}"`);
-      }
-    } else if (!target.files.some((item) => item.name === goal.file)) {
-      throw new ContentError('contracts.json', `${where}: ${target.id} has no file "${goal.file}"`);
-    }
+    const steps: StageDef[] = [{ targetId: contract.targetId, objective: contract.objective, ...(contract.twists ? { twists: contract.twists } : {}) }, ...(contract.stages ?? [])];
+    steps.forEach((stage, index) => checkStage(servers, `${where}${index > 0 ? ` stage ${index + 1}` : ''}`, stage, steps.slice(0, index)));
   }
   if (contracts.length > 0 && !servers.some((server) => server.kind === 'board')) {
     throw new ContentError('servers/', 'there are contracts but no board server to post them on');

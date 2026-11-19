@@ -11,7 +11,7 @@ import type { ContractDef, ProgramDef, ProgramKind, ServerDef } from '../content
 import type { HardwareDef } from '../content/hardware';
 import { applyAction, type Action } from './actions';
 import { tick } from './clock';
-import { activeContract, availableContracts, isLyingLow, objectiveMet, postJobs } from './contracts';
+import { activeContract, availableContracts, isLyingLow, postJobs } from './contracts';
 import { buildBases, findModule, hasTrait, marketGrade, moduleSlots, partTaken } from './crafting';
 import { evidenceCount, isEvidence } from './forensics';
 import { worldFor } from './generate';
@@ -23,7 +23,8 @@ import { skillRank } from './skills';
 import { createGame, MAX_HOPS, type Connection, type Fitted, type GameState, type TaskTarget } from './state';
 import { checkTask, freeStorageGb, layerSeconds, MAX_LEVEL_GAP, ringAngle } from './tasks';
 import { intruding, relayWorth, totalTraceMs } from './trace';
-import { fileDef, findProgram, findServer, ownedProgram, syncWithContent, type Content } from './world';
+import { goalMet, readFlag, stagesOf, stageView } from './stages';
+import { fileDef, findProgram, findServer, linkOf, ownedProgram, securityOf, syncWithContent, type Content } from './world';
 
 /** How a player plays. The numbers stand in for a person's habits. */
 export interface Profile {
@@ -434,16 +435,30 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
   };
 
   const fileBlocked = (server: ServerDef, connection: Connection): boolean =>
-    server.security.firewall > 0 && !connection.bypassed.firewall && !heldBy(state, content, server.id, 'firewall');
+    securityOf(state, server).firewall > 0 && !connection.bypassed.firewall && !heldBy(state, content, server.id, 'firewall');
+
+  /** The step of a contract the player is working on now: its own target and goal. */
+  const step = (contract: ContractDef): ContractDef => (state.contracts.activeId === contract.id ? stageView(state, contract) : contract);
 
   const doObjective = (connection: Connection, contract: ContractDef): void => {
-    const server = findServer(content, contract.targetId)!;
-    const goal = contract.objective;
-    if (goal.kind === 'record') {
-      if (server.security.proxy > 0 && !connection.bypassed.proxy) run(connection, { kind: 'proxy' });
+    const stage = step(contract);
+    const server = findServer(content, stage.targetId)!;
+    const goal = stage.objective;
+    if (goal.kind === 'read') {
+      if (fileBlocked(server, connection)) run(connection, { kind: 'firewall' });
+      act({ type: 'readFile', serverId: server.id, name: goal.file });
+      return;
+    }
+    if (goal.kind === 'record' || goal.kind === 'frame') {
+      if (securityOf(state, server).proxy > 0 && !connection.bypassed.proxy) run(connection, { kind: 'proxy' });
       checkTime(connection, 0, true);
       think();
-      must({ type: 'alterRecord', connectionId: connection.id });
+      must(goal.kind === 'record' ? { type: 'alterRecord', connectionId: connection.id } : { type: 'frameLog', connectionId: connection.id });
+      return;
+    }
+    if (goal.kind === 'plant') {
+      if (fileBlocked(server, connection)) run(connection, { kind: 'firewall' });
+      run(connection, { kind: 'uploadFile', file: goal.file });
       return;
     }
     if (goal.kind === 'steal' && state.player.files.some((file) => file.name === goal.file && file.from === server.id)) return;
@@ -451,15 +466,17 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     run(connection, { kind: goal.kind === 'steal' ? 'copyFile' : 'deleteFile', file: goal.file });
   };
 
-  /** True once nothing is left to do on the target itself. */
+  /** True once nothing is left to do on the current step's target. */
   const fieldworkDone = (contract: ContractDef): boolean => {
-    const goal = contract.objective;
-    if (goal.kind === 'steal') return state.player.files.some((file) => file.name === goal.file && file.from === contract.targetId);
-    return objectiveMet(state, content, contract);
+    const stage = step(contract);
+    const goal = stage.objective;
+    if (goal.kind === 'read') return state.flags.includes(readFlag(stage.targetId, goal.file));
+    if (goal.kind === 'steal') return state.player.files.some((file) => file.name === goal.file && file.from === stage.targetId);
+    return goalMet(state, content, stage.targetId, goal);
   };
 
   /** A second connection is worth opening if it switches off a layer the job has to get past. */
-  const wantsHolder = (server: ServerDef): boolean => server.link !== undefined && maxConnections(state, content) >= 2;
+  const wantsHolder = (server: ServerDef): boolean => linkOf(state, server) !== undefined && maxConnections(state, content) >= 2;
 
   /** Takes any module installer lying on the server, if the trace leaves time for it and the cleaning up after. */
   const loot = (connection: Connection): void => {
@@ -482,13 +499,15 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     }
   };
 
-  /** One trip to the target. Returns false if it had to leave early. */
+  /** One trip to the current step's target. Returns false if it had to leave early. */
   const visit = (contract: ContractDef): boolean => {
-    const server = findServer(content, contract.targetId)!;
+    const stage = step(contract);
+    const server = findServer(content, stage.targetId)!;
     try {
       let holder: Connection | undefined;
-      if (wantsHolder(server)) {
-        holder = open(server.link!.serverId, [server.id]);
+      const link = linkOf(state, server);
+      if (wantsHolder(server) && link) {
+        holder = open(link.serverId, [server.id]);
         becomeAdmin(holder);
       }
       const connection = open(server.id, holder ? [holder.serverId] : []);
@@ -559,9 +578,6 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
 
   /** What a contract cannot be done without, as ids of things to own. Null if nothing sold would do. */
   const needs = (contract: ContractDef): string[] | null => {
-    const server = findServer(content, contract.targetId);
-    if (!server) return null;
-    const goal = contract.objective;
     const list: string[] = [];
     const cheapest = (kind: ProgramDef['kind'], level: number): string | null => {
       const fit = content.programs
@@ -577,32 +593,40 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       list.push(id);
       return true;
     };
-    const admin = adminOf(server);
-    if (admin && server.security.password > 0 && !state.player.passwords[server.id]?.includes(admin.user)) {
-      if (!want('breakPassword', server.security.password)) return null;
-    }
-    if (goal.kind === 'record') {
-      if (server.security.proxy > 0 && !want('bypassProxy', server.security.proxy)) return null;
-    } else if (server.security.firewall > 0) {
-      const linked = server.link?.layer === 'firewall';
-      const own = ownedProgram(state, content, 'bypassFirewall');
-      const reachable = cheapest('bypassFirewall', server.security.firewall) !== null;
-      if (linked && (!reachable || maxConnections(state, content) >= 2)) {
-        if (maxConnections(state, content) < 2) list.push('ports-2');
-      } else if (!own || server.security.firewall - own.version > MAX_LEVEL_GAP) {
-        if (!want('bypassFirewall', server.security.firewall)) return null;
+    // Every step must be doable, so gear for the hardest layer each one presents.
+    for (const stage of stagesOf(contract)) {
+      const server = findServer(content, stage.targetId);
+      if (!server) return null;
+      const sec = securityOf(state, server);
+      const goal = stage.objective;
+      const admin = adminOf(server);
+      const needsAdmin = goal.kind !== 'read' || goal.file === undefined;
+      if (admin && sec.password > 0 && needsAdmin && !state.player.passwords[server.id]?.includes(admin.user)) {
+        if (!want('breakPassword', sec.password)) return null;
+      }
+      if (goal.kind === 'record' || goal.kind === 'frame') {
+        if (sec.proxy > 0 && !want('bypassProxy', sec.proxy)) return null;
+      } else if ((goal.kind === 'steal' || goal.kind === 'destroy' || goal.kind === 'plant' || goal.kind === 'read') && sec.firewall > 0) {
+        const linked = linkOf(state, server)?.layer === 'firewall';
+        const own = ownedProgram(state, content, 'bypassFirewall');
+        const reachable = cheapest('bypassFirewall', sec.firewall) !== null;
+        if (linked && (!reachable || maxConnections(state, content) >= 2)) {
+          if (maxConnections(state, content) < 2) list.push('ports-2');
+        } else if (!own || sec.firewall - own.version > MAX_LEVEL_GAP) {
+          if (!want('bypassFirewall', sec.firewall)) return null;
+        }
+      }
+      if (goal.kind === 'steal') {
+        const file = state.servers[server.id]?.files.find((item) => item.name === goal.file);
+        if (file?.encrypted && !want('decrypt', file.encrypted)) return null;
+        if (file && file.sizeGq > freeStorageGb(state, content)) {
+          const next = content.hardware.find((part) => part.slot === 'storage' && part.tier === state.player.hardware.storage + 1);
+          if (!next) return null;
+          list.push(next.id);
+        }
       }
     }
-    if (goal.kind === 'steal') {
-      const file = state.servers[server.id]?.files.find((item) => item.name === goal.file);
-      if (file?.encrypted && !want('decrypt', file.encrypted)) return null;
-      if (file && file.sizeGq > freeStorageGb(state, content)) {
-        const next = content.hardware.find((part) => part.slot === 'storage' && part.tier === state.player.hardware.storage + 1);
-        if (!next) return null;
-        list.push(next.id);
-      }
-    }
-    return list;
+    return [...new Set(list)];
   };
 
   const price = (id: string): number => {
@@ -732,7 +756,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       if (fruitless >= 3) throw new Stuck(`"${contract.title}" at ${findServer(content, contract.targetId)?.name}: the trace leaves no time to get anything done`);
     }
     // One more trip to clean up, if it had to leave before it could.
-    const dirty = () => evidenceCount(state, contract.targetId) > 0;
+    const dirty = () => evidenceCount(state, step(contract).targetId) > 0;
     for (let trips = 0; profile.scrub && dirty() && trips < 2; trips++) {
       visits++;
       try {
@@ -744,10 +768,12 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
         idle(() => !isLyingLow(state));
       }
     }
-    const goal = contract.objective;
-    if (goal.kind === 'steal') {
-      const file = state.player.files.find((item) => item.name === goal.file);
-      if (file?.encrypted) {
+    // Decrypt any stolen file still sealed, across every step.
+    for (const stage of stagesOf(contract)) {
+      const goal = stage.objective;
+      if (goal.kind !== 'steal') continue;
+      const file = state.player.files.find((item) => item.name === goal.file && item.encrypted);
+      if (file) {
         must({ type: 'decryptFile', name: file.name });
         idle(() => state.tasks.length === 0);
       }

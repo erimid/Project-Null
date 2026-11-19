@@ -251,6 +251,9 @@ export const testMail: Record<MailKey, MailDef> = {
   workbench: letter('workbench'),
   decompiling: letter('decompiling'),
   routes: letter('routes'),
+  stages: letter('stages'),
+  stageNote: { from: '{client}', subject: 'Step {step} of {of}: {title}', body: '{brief}' },
+  contractLate: { from: '{client}', subject: 'Too slow: {title}', body: 'late' },
   hardwareLost: { from: 'Fixer', subject: 'Lost {part}', body: 'now {now}' },
 };
 

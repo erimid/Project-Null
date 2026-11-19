@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 14;
+export const STATE_VERSION = 15;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -109,6 +109,10 @@ export interface ContractsState {
   completed: string[];
   /** Repeatable jobs on the board right now, made for this game (see jobs.ts). */
   jobs: Job[];
+  /** Which stage of the active contract is being worked on: 0 = the first. */
+  stage: number;
+  /** Game time the current stage began. */
+  stageStartMs: number;
 }
 
 /** A job the board made up against a generated company. Taken down at `expiresMs` unless it is being worked on. */
@@ -120,11 +124,18 @@ export interface Job extends ContractDef {
 export interface StoredFile {
   name: string;
   sizeGq: number;
-  /** Id of the server it was copied from. */
+  /** Id of the server it was copied from, or CLIENT_FILE for one a client sent to be planted. */
   from: string;
   /** Level of the encryption on it. Missing = readable. */
   encrypted?: number;
+  /** What it says, for a file made during the game (see FileState.text). */
+  text?: string;
+  /** The folder it sat in on the server it came from. */
+  folder?: string;
 }
+
+/** `from` of a file a client sent to the gateway to be planted somewhere. */
+export const CLIENT_FILE = 'client';
 
 /**
  * A trace working its way back along a connection's route.
@@ -215,6 +226,8 @@ export type TaskTarget =
   | { kind: 'decrypt'; file: string }
   | { kind: 'copyFile'; file: string }
   | { kind: 'deleteFile'; file: string }
+  /** Put a file from the gateway onto the server. */
+  | { kind: 'uploadFile'; file: string }
   /** Remove one or more lines from the access log in a single run. */
   | { kind: 'deleteLog'; logIds: number[] }
   /** Take a program file stored on the gateway apart into modules. Runs at home. */
@@ -280,6 +293,10 @@ export interface FileState {
   access: Role;
   /** Level of the encryption on it. Missing = readable. */
   encrypted?: number;
+  /** The folder it is in. Missing = what the data files say, or the top folder. */
+  folder?: string;
+  /** What it says, for a file made during the game (a note left for a job, a planted file). Written files keep theirs in content/. */
+  text?: string;
 }
 
 export interface LogEntry {
@@ -290,6 +307,21 @@ export interface LogEntry {
   text: string;
   /** True if the player caused this entry. Never shown; cleanup and forensics use it. */
   byPlayer: boolean;
+  /** Set on a false line the player wrote to point at someone else: who it names. */
+  framed?: string;
+}
+
+/**
+ * A server on its guard for a while, after something a contract set off:
+ * layers raised, or a layer run from another server.
+ */
+export interface ServerAlert {
+  /** Levels added to each layer. */
+  raise: Partial<Record<'password' | 'proxy' | 'firewall' | 'monitor', number>>;
+  /** A layer run from another server, as if the data files said so. */
+  link?: { serverId: string; layer: 'firewall' | 'monitor' };
+  /** Game time it ends. */
+  untilMs: number;
 }
 
 /** The changeable parts of one server. The fixed parts live in content/servers/. */
@@ -298,6 +330,8 @@ export interface ServerState {
   logs: LogEntry[];
   /** Rows of the server's records table, if it has one. */
   records: string[][];
+  /** Set while the server is on its guard. */
+  alert?: ServerAlert;
 }
 
 export interface GameState {
@@ -383,7 +417,7 @@ export function createGame(options: NewGameOptions): GameState {
     connections: [],
     tasks: [],
     messages: [],
-    contracts: { activeId: null, completed: [], jobs: [] },
+    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0 },
     phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
     reviews: [],
     flags: [],

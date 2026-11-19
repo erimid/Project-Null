@@ -161,7 +161,7 @@ describe('doing the job', () => {
 
     ok({ type: 'deliverContract' });
     expect(state.player).toMatchObject({ balance: 400, rating: 1, files: [] });
-    expect(state.contracts).toEqual({ activeId: null, completed: ['steal'], jobs: [] });
+    expect(state.contracts).toMatchObject({ activeId: null, completed: ['steal'], jobs: [] });
     expect(subjects().slice(-2)).toEqual(['Paid: Steal it', 'firstDelivery']);
     expect(state.messages.at(-2)).toMatchObject({ from: 'Client S', body: '300' });
     refused({ type: 'deliverContract' }, /no contract/);

@@ -1,4 +1,4 @@
-import { activeContract, objectiveMet, objectivePossible } from '../../../core';
+import { activeContract, objectiveMet, objectivePossible, stageDeadline, stageIndex, stagesOf, stageView } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatMoney } from '../../format';
 import { useWorld } from '../../hooks';
@@ -22,6 +22,12 @@ function objectiveText(contract: ContractDef): string {
       return `Delete ${goal.file} on ${target}.`;
     case 'record':
       return `In ${target}'s records, set ${goal.column} to "${goal.value}" for ${goal.key}.`;
+    case 'read':
+      return `Open and read ${goal.file} on ${target}.`;
+    case 'plant':
+      return `Put ${goal.file} onto ${target}.`;
+    case 'frame':
+      return `On ${target}, leave a false trail pointing at ${goal.who}, and clear your own.`;
   }
 }
 
@@ -81,26 +87,33 @@ export function ContractWindow() {
   }
 
   // Once the contract is handed in or given up there is nothing left to show.
-  const finish = (action: { type: 'abandonContract' } | { type: 'deliverContract' }) => {
+  const finish = (action: { type: 'abandonContract' } | { type: 'deliverContract'; choiceId?: string }) => {
     if (session.dispatch(action).ok) windows.close('contract');
   };
+  const steps = stagesOf(contract);
+  const current = stageIndex(game, contract);
+  const stage = stageView(game, contract);
   const done = objectiveMet(game, content, contract);
   const possible = objectivePossible(game, content, contract);
-  const target = findServer(content, contract.targetId);
-  const goal = contract.objective;
+  const target = findServer(content, stage.targetId);
+  const goal = stage.objective;
   // The target can always be opened, even before it is in the address book list.
-  const places = [...new Set([contract.targetId, ...game.knownServers])];
+  const places = [...new Set([stage.targetId, ...steps.map((step) => step.targetId), ...game.knownServers])];
   const sealed = goal.kind === 'steal' && game.player.files.some((file) => file.name === goal.file && file.encrypted);
+  const deadlineMs = stageDeadline(game, contract);
+  const minutesLeft = deadlineMs === undefined ? undefined : Math.max(0, Math.round((deadlineMs - game.clock.gameTimeMs) / 60_000));
+  // The brief for the step being worked on: the stage's own, or the contract's for the first.
+  const brief = current === 0 ? contract.brief : steps[current]!.brief ?? contract.brief;
 
   return (
-    <Window id="contract" note={done ? 'ready to deliver' : 'in progress'}>
+    <Window id="contract" note={done ? 'ready to deliver' : steps.length > 1 ? `step ${current + 1} of ${steps.length}` : 'in progress'}>
       <h3 class="contract__title">{contract.title}</h3>
       <dl class="readout">
         <dt>client</dt>
         <dd>{contract.client}</dd>
         <dt>target</dt>
         <dd>
-          {target ? <Place id={target.id}>{target.name}</Place> : contract.targetId} <span class="data row__dim">{target?.address}</span>
+          {target ? <Place id={target.id}>{target.name}</Place> : stage.targetId} <span class="data row__dim">{target?.address}</span>
         </dd>
         <dt>pays</dt>
         <dd>
@@ -112,22 +125,42 @@ export function ContractWindow() {
           )}
         </dd>
       </dl>
+      {steps.length > 1 && (
+        <ol class="contract__steps">
+          {steps.map((step, index) => {
+            const stepTarget = findServer(content, step.targetId);
+            const state = index < current ? 'done' : index === current ? 'now' : 'next';
+            return (
+              <li key={index} class={`contract__step is-${state}`}>
+                <span class="objective__mark" aria-hidden="true">{index < current ? '✓' : index === current ? '▸' : '○'}</span>
+                <span>
+                  <WithPlaces text={objectiveText({ ...contract, targetId: step.targetId, objective: step.objective })} known={places} />
+                  {stepTarget && index > current && <span class="row__dim"> · {stepTarget.name}</span>}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
       <div class="contract__brief">
-        {contract.brief.split('\n\n').map((paragraph, index) => (
+        {brief.split('\n\n').map((paragraph, index) => (
           <p key={index}>
             <WithPlaces text={paragraph} known={places} />
           </p>
         ))}
       </div>
-      <p class={`objective${done ? ' is-done' : ''}`}>
-        <span class="objective__mark" aria-hidden="true">
-          {done ? '✓' : '○'}
-        </span>
-        <span>
-          <WithPlaces text={objectiveText(contract)} known={places} />
-          <span class="visually-hidden">{done ? ' Done.' : ' Not done yet.'}</span>
-        </span>
-      </p>
+      {steps.length === 1 && (
+        <p class={`objective${done ? ' is-done' : ''}`}>
+          <span class="objective__mark" aria-hidden="true">{done ? '✓' : '○'}</span>
+          <span>
+            <WithPlaces text={objectiveText(stage)} known={places} />
+            <span class="visually-hidden">{done ? ' Done.' : ' Not done yet.'}</span>
+          </span>
+        </p>
+      )}
+      {minutesLeft !== undefined && !done && (
+        <p class="board__warning">This step must be finished within <span class="data">{minutesLeft}</span> game {minutesLeft === 1 ? 'minute' : 'minutes'}.</p>
+      )}
       {sealed && <p class="board__warning">You have the file, but it is still encrypted. Run a Decrypter on it from Programs.</p>}
       {!possible && <p class="board__warning">This can no longer be done. Give the contract up.</p>}
       <div class="contract__actions">
@@ -139,11 +172,23 @@ export function ContractWindow() {
           class="btn btn--go"
           disabled={!done}
           title={done ? undefined : 'The goal is not done yet'}
-          data-tip="Hand the job in and get paid"
+          data-tip="Hand the job in and get paid the usual way"
           onClick={() => finish({ type: 'deliverContract' })}
         >
-          Deliver
+          Deliver{contract.choices && contract.choices.length > 0 ? ` for ${formatMoney(contract.pay)}` : ''}
         </button>
+        {done &&
+          (contract.choices ?? []).map((choice) => (
+            <button
+              key={choice.id}
+              type="button"
+              class="btn"
+              data-tip={choice.note}
+              onClick={() => finish({ type: 'deliverContract', choiceId: choice.id })}
+            >
+              {choice.label} ({formatMoney(choice.pay)})
+            </button>
+          ))}
       </div>
     </Window>
   );

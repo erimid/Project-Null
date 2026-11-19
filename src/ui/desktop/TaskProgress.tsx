@@ -24,6 +24,8 @@ export function describeTarget(target: TaskTarget): string {
       return `copying ${target.file}`;
     case 'deleteFile':
       return `deleting ${target.file}`;
+    case 'uploadFile':
+      return `uploading ${target.file}`;
     case 'deleteLog':
       return target.logIds.length === 1 ? 'removing a log line' : `removing ${target.logIds.length} log lines`;
     case 'build':

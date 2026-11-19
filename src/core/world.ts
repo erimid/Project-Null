@@ -5,7 +5,7 @@
  * hands them in as a `Content` object, so tests can use tiny made-up
  * worlds and the real data can change without touching the rules.
  */
-import type { AccountDef, ContractDef, FileContent, FileDef, MailDef, MailKey, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
+import { MAX_LAYER_LEVEL, type AccountDef, type ContractDef, type FileContent, type FileDef, type MailDef, type MailKey, type ProgramDef, type ProgramKind, type SecurityDef, type ServerDef, type ServerLinkDef } from '../content/schema';
 import type { CompanyPools } from '../content/companies';
 import type { HardwareDef } from '../content/hardware';
 import type { ModelDef } from '../content/models';
@@ -224,6 +224,38 @@ export function fileContent(content: Content, serverId: string, name: string): F
   return findServer(content, serverId)?.files.find((file) => file.name === name)?.content;
 }
 
+/** The alert a server is under right now, if any. */
+function liveAlert(state: GameState, serverId: string) {
+  const alert = state.servers[serverId]?.alert;
+  return alert && alert.untilMs > state.clock.gameTimeMs ? alert : undefined;
+}
+
+/** A server's security as it stands now: as written, plus anything a contract has put it on guard about. */
+export function securityOf(state: GameState, server: ServerDef): SecurityDef {
+  const raise = liveAlert(state, server.id)?.raise;
+  if (!raise) return server.security;
+  const up = (layer: keyof SecurityDef) => Math.min(MAX_LAYER_LEVEL, server.security[layer] + (server.security[layer] > 0 || layer === 'monitor' ? (raise[layer] ?? 0) : 0));
+  return { password: up('password'), proxy: up('proxy'), firewall: up('firewall'), monitor: up('monitor') };
+}
+
+/** The layer of a server that is run from another server right now, if any. */
+export function linkOf(state: GameState, server: ServerDef): ServerLinkDef | undefined {
+  return liveAlert(state, server.id)?.link ?? server.link;
+}
+
+/** Where a file sits on a server: its own folder, else the data files', else the top folder (''). */
+export function folderOf(content: Content, serverId: string, file: { name: string; folder?: string }): string {
+  return file.folder ?? fileDef(content, serverId, file.name)?.folder ?? '';
+}
+
+/** What opening a file shows, as the game stands: a file written during play says what it says, else what the data files wrote. */
+export function openedContent(state: GameState, content: Content, serverId: string, name: string): FileContent | undefined {
+  const own = state.player.files.find((file) => file.name === name && file.from === serverId);
+  const live = own ?? state.servers[serverId]?.files.find((file) => file.name === name);
+  if (live?.text) return { kind: 'text', text: live.text };
+  return fileContent(content, serverId, name);
+}
+
 export function findServer(content: Content, id: string): ServerDef | undefined {
   return content.servers.find((server) => server.id === id);
 }
@@ -246,6 +278,7 @@ function initialServerState(server: ServerDef, state: GameState): ServerState {
       sizeGq: file.sizeGq,
       access: file.access,
       ...(file.encrypted ? { encrypted: file.encrypted } : {}),
+      ...(file.folder ? { folder: file.folder } : {}),
     })),
     logs: server.logs
       .map((log) => ({ timeMs: state.clock.gameTimeMs - log.minutesAgo * 60_000, text: log.text }))
