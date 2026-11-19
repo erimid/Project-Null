@@ -37,6 +37,7 @@ import {
   type TaskTarget,
   REGIONS,
   isJob,
+  stagesOf,
   regionOf,
   type Region,
 } from '../../../core';
@@ -97,7 +98,14 @@ function sectionsFor(server: ServerDef, connection: Connection): Section[] {
   const admin = connection.role === 'admin';
   const sections: Section[] = [];
   if (server.kind === 'directory') sections.push('directory');
-  if (server.kind === 'board') sections.push(...(sellsOnly(server) ? [] : ['contracts' as const]), 'market', 'hardware');
+  if (server.kind === 'board') {
+    // A shop only shows the counters it has: no empty Hardware shelf at a program seller.
+    const shop = shopOf(server);
+    const rare = (kind: string) => (shop.rare ?? []).some((line) => line.kind === kind);
+    const market = shop.programs || shop.modules || shop.models || rare('program') || rare('module');
+    const hardware = shop.hardware || rare('hardware');
+    sections.push(...(sellsOnly(server) ? [] : ['contracts' as const]), ...(market ? ['market' as const] : []), ...(hardware ? ['hardware' as const] : []));
+  }
   sections.push('files');
   if (admin) sections.push('logs');
   if (admin && server.records) sections.push('records');
@@ -542,6 +550,14 @@ function Files({ game, state, connection, run, act }: View) {
     const rest = path === '' ? folder : folder.slice(path.length + 1);
     subFolders.add(rest.split('/')[0]!);
   }
+  // How many files sit under each subfolder, at any depth.
+  const inFolder = (name: string) => {
+    const full = path === '' ? name : `${path}/${name}`;
+    return visible.filter((file) => {
+      const folder = folderOf(content, connection.serverId, file);
+      return folder === full || folder.startsWith(`${full}/`);
+    }).length;
+  };
   const crumbs = path === '' ? [] : path.split('/');
   const up = (depth: number) => setPath(crumbs.slice(0, depth).join('/'));
 
@@ -575,11 +591,24 @@ function Files({ game, state, connection, run, act }: View) {
         ))}
       </nav>
     )}
-    <ul class="rows data">
+    <ul class="rows data" key={path}>
+      {path !== '' && (
+        <li class="row row--folder">
+          <button type="button" class="files__folder files__folder--up" onClick={() => up(crumbs.length - 1)}>
+            <span class="files__folder-go" aria-hidden="true">‹</span>
+            <span class="files__folder-name">back</span>
+          </button>
+        </li>
+      )}
       {[...subFolders].sort().map((name) => (
         <li key={`dir:${name}`} class="row row--folder">
           <button type="button" class="files__folder" onClick={() => setPath(path === '' ? name : `${path}/${name}`)}>
-            <span class="files__folder-icon" aria-hidden="true">▸</span> {name}/
+            <span class="files__folder-icon" aria-hidden="true" />
+            <span class="files__folder-name">{name}/</span>
+            <span class="files__folder-count">
+              {inFolder(name)} {inFolder(name) === 1 ? 'file' : 'files'}
+            </span>
+            <span class="files__folder-go" aria-hidden="true">›</span>
           </button>
         </li>
       ))}
@@ -906,6 +935,11 @@ function Contracts({ game, connection, act }: View) {
               <span>
                 <strong>{contract.title}</strong>
                 {isJob(contract) && <span class="row__tag">standing work</span>}
+                {!isJob(contract) && stagesOf(contract).length > 1 && (
+                  <span class="row__tag row__tag--steps" title="A longer job. Each step comes once the one before is done.">
+                    {stagesOf(contract).length} steps
+                  </span>
+                )}
               </span>
               <span class="contract__summary">{contract.summary}</span>
               <span class="row__dim">
@@ -940,6 +974,57 @@ function Contracts({ game, connection, act }: View) {
   );
 }
 
+/** What a shop asks against the list price, in words. */
+function priceWord(factor: number): string {
+  const percent = Math.round(Math.abs(factor - 1) * 100);
+  return percent === 0 ? 'list price' : `${percent}% ${factor < 1 ? 'under' : 'over'} list`;
+}
+
+/** The sign over a shop's shelf: who they are, how they price, and what is in for today only. */
+function ShopSign({ game, server }: Pick<View, 'game' | 'server'>) {
+  const shop = shopOf(server);
+  const rare = rareToday(game, server);
+  const hoursLeft = Math.max(1, Math.ceil((86_400_000 - (game.clock.gameTimeMs % 86_400_000)) / 3_600_000));
+  const nameOf = (line: (typeof rare)[number]) =>
+    line.kind === 'program'
+      ? content.programs.find((program) => program.id === line.id)?.name
+      : line.kind === 'hardware'
+        ? content.hardware.find((part) => part.id === line.id)?.name
+        : `${content.modules.find((module) => module.id === line.id)?.name ?? line.id}${line.grade ? ` ${line.grade}` : ''}`;
+  return (
+    <div class={`shopsign shopsign--${server.id}`}>
+      <div class="shopsign__top">
+        <span class="shopsign__place">
+          {server.city} · {sellsOnly(server) ? 'sells only' : 'board and shop'}
+        </span>
+        <span class={`shopsign__price${shop.priceFactor < 1 ? ' is-cheap' : shop.priceFactor > 1 ? ' is-dear' : ''}`}>{priceWord(shop.priceFactor)}</span>
+      </div>
+      <p class="shopsign__blurb">{server.blurb}</p>
+      <p class="shopsign__rare">
+        {rare.length > 0 ? (
+          <>
+            <span class="row__tag row__tag--rare shopsign__tag">today only</span>
+            {rare.map(nameOf).filter(Boolean).join(', ')}
+            <span class="row__dim"> · gone in {hoursLeft} h</span>
+          </>
+        ) : (
+          <span class="row__dim">Nothing rare on the shelf today. It changes in {hoursLeft} h.</span>
+        )}
+      </p>
+    </div>
+  );
+}
+
+/** A shop's price, with the list price struck through beside it when the two differ. */
+function Price({ base, price }: { base: number; price: number }) {
+  return (
+    <span class="data contract__pay price">
+      {price !== base && base > 0 && <s class="price__list">{formatMoney(base)}</s>}
+      {price > 0 ? formatMoney(price) : 'free'}
+    </span>
+  );
+}
+
 function Market({ game, server, connection, act }: View) {
   const shop = shopOf(server);
   const rareIds = new Set(rareToday(game, server).map((line) => `${line.kind}:${line.id}`));
@@ -951,15 +1036,18 @@ function Market({ game, server, connection, act }: View) {
   );
   const free = freeStorageGb(game, content);
   const rented = rentedModel(game, content);
+  // Today's rare lines go to the top of the shelf.
+  const shelf = [...forSale].sort((a, b) => Number(rareIds.has(`program:${b.id}`)) - Number(rareIds.has(`program:${a.id}`)));
   return (
     <>
+    <ShopSign game={game} server={server} />
     <ul class="rows">
-      {forSale.map((program) => {
+      {shelf.map((program) => {
         const owned = game.player.programs.includes(program.id);
         const price = shopPrice(shop, program.price);
         const rare = rareIds.has(`program:${program.id}`);
         return (
-          <li key={program.id} class="row row--contract row--market">
+          <li key={program.id} class={`row row--contract row--market${rare ? ' is-rare' : ''}`}>
             <span class="row__main">
               <span>
                 <strong>{program.name}</strong> <span class="data row__dim">v{program.version}</span>
@@ -968,7 +1056,7 @@ function Market({ game, server, connection, act }: View) {
               <span class="contract__summary">{program.blurb}</span>
             </span>
             <span class="data row__dim">{program.sizeGq} GB</span>
-            <span class="data contract__pay">{price > 0 ? formatMoney(price) : 'free'}</span>
+            <Price base={program.price} price={price} />
             {owned ? (
               <span class="row__done">Owned</span>
             ) : (
@@ -1068,8 +1156,10 @@ function Hardware({ game, server, connection, act }: View) {
   const [fresh, setFresh] = useState<string | null>(null);
   const free = freeStorageGb(game, content);
   const shop = shopOf(server);
+  const rareIds = new Set(rareToday(game, server).filter((line) => line.kind === 'hardware').map((line) => line.id));
   return (
     <>
+      <ShopSign game={game} server={server} />
       <p class="board__note">Parts install the moment you pay. Nothing is bought back.</p>
       {HARDWARE_SLOT_LABELS.map(([slot, label]) => {
         const tiers = content.hardware.filter((part) => part.slot === slot).sort((a, b) => a.tier - b.tier);
@@ -1077,6 +1167,8 @@ function Hardware({ game, server, connection, act }: View) {
         const now = installed(game, content, slot);
         const tier = game.player.hardware[slot];
         const upgrades = tiers.filter((part) => part.tier > tier && sellsHardware(game, server, part));
+        // A specialist shop shows only the counters it keeps.
+        if (upgrades.length === 0 && shop.hardwareSlots && !shop.hardwareSlots.includes(slot)) return null;
         return (
           <section key={slot} class="section-gap">
             <h3 class="map__heading">
@@ -1097,12 +1189,15 @@ function Hardware({ game, server, connection, act }: View) {
                   const tooBig = extraGb > free;
                   const price = shopPrice(shop, part.price);
                   return (
-                    <li key={part.id} class={`row row--contract row--part${fresh === part.id ? ' is-new' : ''}`}>
+                    <li key={part.id} class={`row row--contract row--part${fresh === part.id ? ' is-new' : ''}${rareIds.has(part.id) ? ' is-rare' : ''}`}>
                       <span class="row__main">
-                        <strong>{part.name}</strong>
+                        <span>
+                          <strong>{part.name}</strong>
+                          {rareIds.has(part.id) && <span class="row__tag row__tag--rare">today only</span>}
+                        </span>
                         <span class="contract__summary">{part.blurb}</span>
                       </span>
-                      <span class="data contract__pay">{formatMoney(price)}</span>
+                      <Price base={part.price} price={price} />
                       <button
                         type="button"
                         class="btn btn--go"

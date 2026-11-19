@@ -11,6 +11,9 @@ const RING_GAP = 20;
 
 const act = (action: Parameters<typeof session.dispatch>[0]) => session.dispatch(action);
 
+/** What each kind of intruder is after, for the tag beside their handle. */
+const AFTER: Record<string, string> = { thief: 'after your credits', vandal: 'here to wipe files', framer: 'here to frame you' };
+
 /** The attacker's bounce chain, nearest you last, with how far the counter-trace has got. */
 function TraceRoute({ raid }: { raid: RaidState }) {
   const traced = raid.traceBack ? raidReport(raid).trace ?? 0 : 0;
@@ -19,13 +22,19 @@ function TraceRoute({ raid }: { raid: RaidState }) {
   const home = findServer(content, findRival(content, raid.attackerId)?.homeId ?? '');
   const hops = [...raid.route.map((id) => findServer(content, id)?.name ?? id), home?.name ?? 'their server'];
   return (
-    <ol class="raid__route">
-      {hops.map((name, index) => (
-        <li key={index} class={`raid__hop${raid.traceBack && index < done ? ' is-traced' : ''}${index === hops.length - 1 ? ' is-home' : ''}`}>
-          <span class="objective__mark" aria-hidden="true">{raid.traceBack && index < done ? '✓' : '○'}</span>
-          {name}
-        </li>
-      ))}
+    <ol class={`raid__route${raid.traceBack ? ' is-running' : ''}`} aria-label="The intruder's route">
+      {hops.map((name, index) => {
+        const isTraced = !!raid.traceBack && index < done;
+        const isNow = !!raid.traceBack && index === done;
+        const isHome = index === hops.length - 1;
+        return (
+          <li key={index} class={`raid__hop${isTraced ? ' is-traced' : ''}${isNow ? ' is-now' : ''}${isHome ? ' is-home' : ''}`}>
+            <span class="raid__node" aria-hidden="true">{isTraced ? '✓' : ''}</span>
+            <span class="raid__hop-name">{isHome && !isTraced ? (raid.traceBack ? 'their server' : 'their server, unknown') : name}</span>
+            {isNow && <span class="raid__hop-note data">tracing</span>}
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -86,7 +95,7 @@ export function DefenceWindow() {
     return [
       raid.attackerId,
       report.barrier,
-      Math.round(report.breach * 100),
+      Math.round(report.breach * 1000),
       Math.ceil(report.breachRemainingMs / 1000),
       report.trace === null ? '' : Math.round(report.trace * 100),
       Math.ceil(report.traceRemainingMs / 1000),
@@ -118,66 +127,100 @@ export function DefenceWindow() {
   const items = lockables ? lockables.split('\n').filter(Boolean) : [];
   const canLock = locked.length < content.rules.raidMaxLocks;
   const tracing = trace !== '';
+  const shut = raidObj.shut ?? 0;
+  const lead = Number(breachLeft) - Number(traceLeft);
+  const urgent = Number(breachLeft) <= 15;
+  // How full each barrier's block is: the ones behind the intruder are gone, the one in front is going.
+  const through = (Number(breach) / 1000) * barriers;
 
   return (
-    <Window id="defence" title="Defence — intrusion" note={rival?.handle ?? 'intruder'}>
-      <p class="raid__who">
-        <strong>{rival?.handle ?? 'Someone'}</strong> is on your gateway. {rival?.blurb}
-      </p>
+    <Window id="defence" title="Defence" note="under attack">
+      <div class="raid__who">
+        <span class="raid__badge" aria-hidden="true">!</span>
+        <div>
+          <p class="raid__name">
+            <strong>{rival?.handle ?? 'Someone'}</strong>
+            {rival && <span class="row__tag row__tag--danger">{AFTER[rival.style] ?? 'intruder'}</span>}
+          </p>
+          <p class="raid__blurb">{rival?.blurb ?? 'Someone is on your gateway.'}</p>
+        </div>
+      </div>
 
       <div class="raid__gauges">
-        <div class="raid__gauge">
+        <div class={`raid__gauge raid__gauge--breach${urgent ? ' is-urgent' : ''}`}>
           <div class="row__between">
-            <span>Break-in · barrier {Number(barrier) + 1} of {barriers}</span>
-            <span class="data">{breachLeft}s</span>
+            <span class="raid__label">They break in</span>
+            <span class="raid__count data">{breachLeft}s</span>
           </div>
-          <span class="meter meter--over" aria-hidden="true">
-            <span class="meter__fill" style={{ width: `${breach}%` }} />
-          </span>
+          <div class="raid__barriers" key={shut} role="img" aria-label={`Barrier ${Number(barrier) + 1} of ${barriers}`}>
+            {Array.from({ length: barriers }, (_, index) => {
+              const fill = Math.max(0, Math.min(1, through - index));
+              return (
+                <span key={index} class={`raid__barrier${fill >= 1 ? ' is-down' : fill > 0 ? ' is-going' : ''}`}>
+                  <span class="raid__barrier-fill" style={{ width: `${fill * 100}%` }} />
+                  <span class="raid__barrier-name">{fill >= 1 ? 'down' : `barrier ${index + 1}`}</span>
+                </span>
+              );
+            })}
+          </div>
         </div>
-        <div class="raid__gauge">
+        <div class={`raid__gauge raid__gauge--trace${tracing ? ' is-on' : ''}`}>
           <div class="row__between">
-            <span>{tracing ? 'Your trace back' : 'Trace not started'}</span>
-            {tracing && <span class="data">{traceLeft}s</span>}
+            <span class="raid__label">{tracing ? 'Your trace reaches them' : 'Your trace back'}</span>
+            <span class="raid__count data">{tracing ? `${traceLeft}s` : 'not started'}</span>
           </div>
           <span class="meter meter--mint" aria-hidden="true">
             <span class="meter__fill" style={{ width: `${tracing ? trace : 0}%` }} />
           </span>
         </div>
+        <p class={`raid__race${!tracing ? '' : lead >= 0 ? ' is-ahead' : ' is-behind'}`} role="status">
+          {!tracing
+            ? 'Start the trace. It is the only way to win this.'
+            : lead >= 0
+              ? <>You are ahead by <span class="data">{lead}s</span>. Hold on.</>
+              : <>You are behind by <span class="data">{-lead}s</span>. Shut a port to buy time.</>}
+        </p>
       </div>
 
-      {port ? (
-        <div class="lineup lineup--raid">
-          <PortDial frameAngles={port} />
-          <p class="lineup__status data">Lock every ring to shut this port and set them back {Math.round(raidSetbackMs(raidObj, content) / 1000)}s.</p>
-        </div>
-      ) : (
-        <TraceRoute raid={raidObj} />
-      )}
-
       <div class="contract__actions raid__actions">
-        <button type="button" class="btn" disabled={!!port} data-tip="A line-up like a firewall bypass. Lock every ring to set the intruder back. Each port you shut buys less time than the last." onClick={() => act({ type: 'defendPort' })}>
-          Close a port
-        </button>
         <button type="button" class="btn btn--go" disabled={tracing} data-tip="Follow their route home. Finish before they break in and their server is yours." onClick={() => act({ type: 'traceBack' })}>
           {tracing ? 'Tracing…' : 'Trace back'}
+        </button>
+        <button type="button" class="btn" disabled={!!port} data-tip="A line-up like a firewall bypass. Lock every ring to set the intruder back. Each port you shut buys less time than the last." onClick={() => act({ type: 'defendPort' })}>
+          Close a port <span class="data raid__gain">+{Math.round(raidSetbackMs(raidObj, content) / 1000)}s</span>
         </button>
         <ConfirmButton class="btn btn--danger" confirmLabel="Pull the plug?" tip="Ends it at once. Drops your connections. Nothing lost, nothing learned." onConfirm={() => act({ type: 'pullPlug' })}>
           Pull the plug
         </ConfirmButton>
       </div>
+      {port ? (
+        <div class="lineup lineup--raid">
+          <PortDial frameAngles={port} />
+          <p class="lineup__status data">Click each ring as its dot crosses the marker. All locked sets them back {Math.round(raidSetbackMs(raidObj, content) / 1000)}s.</p>
+        </div>
+      ) : (
+        <TraceRoute raid={raidObj} />
+      )}
 
-      <h3 class="map__heading">Lock what you cannot lose</h3>
-      <p class="row__dim">Up to {content.rules.raidMaxLocks}. A locked file or program is safe if they break in.</p>
+      {shut > 0 && (
+        <p class="raid__shut" key={shut}>
+          {shut === 1 ? '1 port shut.' : `${shut} ports shut.`} They are learning: each one buys less.
+        </p>
+      )}
+
+      <h3 class="map__heading">
+        Lock what you cannot lose <span class="heading__note data">{locked.length} of {content.rules.raidMaxLocks}</span>
+      </h3>
+      <p class="row__dim">A locked file or program is safe if they break in.</p>
       <ul class="raid__locks">
         {items.length === 0 && <li class="row__dim">Nothing on your gateway to lock.</li>}
         {items.map((name) => {
           const isLocked = locked.includes(name);
           return (
             <li key={name} class={`raid__lock${isLocked ? ' is-locked' : ''}`}>
-              <span class="raid__lock-name">{name}</span>
+              <span class={`raid__lock-name${content.programs.some((program) => program.id === name) ? '' : ' data'}`}>{content.programs.find((program) => program.id === name)?.name ?? name}</span>
               {isLocked ? (
-                <span class="data">locked</span>
+                <span class="raid__lock-done">locked</span>
               ) : (
                 <button type="button" class="btn btn--small" disabled={!canLock} onClick={() => act({ type: 'lockFile', name })}>
                   Lock

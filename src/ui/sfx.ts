@@ -160,6 +160,67 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
       { freq: 1319, at: 0.48, seconds: 0.35, wave: 'triangle', level: 0.07 },
     ]);
   },
+  // A two-tone klaxon, three times: someone is in.
+  raidStarted: () => {
+    burst(0.25, 0.08);
+    play(
+      [0, 0.44, 0.88].flatMap((at) => [
+        { freq: 622, at, seconds: 0.2, wave: 'sawtooth' as const, level: 0.11 },
+        { freq: 415, at: at + 0.2, seconds: 0.22, wave: 'sawtooth' as const, level: 0.11 },
+      ]),
+    );
+  },
+  // A door giving way, low.
+  barrierFell: () => {
+    burst(0.3, 0.12);
+    play([
+      { freq: 110, seconds: 0.5, wave: 'sawtooth', level: 0.13, to: 45 },
+      { freq: 311, at: 0.05, seconds: 0.25, wave: 'square', level: 0.05, to: 155 },
+    ]);
+  },
+  ringLocked: () =>
+    play([
+      { freq: 180, seconds: 0.07, wave: 'square', level: 0.07 },
+      { freq: 1245, at: 0.02, seconds: 0.12, wave: 'triangle', level: 0.06 },
+    ]),
+  // A bolt thrown, then a bright confirm.
+  portShut: () => {
+    burst(0.08, 0.1);
+    play([
+      { freq: 130, seconds: 0.22, wave: 'square', level: 0.1, to: 65 },
+      { freq: 784, at: 0.12, seconds: 0.12, wave: 'triangle', level: 0.07 },
+      { freq: 1175, at: 0.22, seconds: 0.3, wave: 'triangle', level: 0.07 },
+    ]);
+  },
+  raidEnded: (event) => {
+    if (event.type !== 'raidEnded') return;
+    if (event.result === 'won') {
+      // A rising run that lands on a held chord: you have their address.
+      play([392, 523, 659, 784].map((freq, i) => ({ freq, at: i * 0.09, seconds: 0.16, wave: 'triangle' as const, level: 0.08 })));
+      play([
+        { freq: 1047, at: 0.4, seconds: 0.7, wave: 'triangle', level: 0.08 },
+        { freq: 1319, at: 0.4, seconds: 0.7, level: 0.05 },
+        { freq: 523, at: 0.4, seconds: 0.7, wave: 'triangle', level: 0.05 },
+      ]);
+    } else if (event.result === 'lost') {
+      burst(0.8, 0.18);
+      play([
+        { freq: 196, seconds: 0.35, wave: 'sawtooth', level: 0.12 },
+        { freq: 156, at: 0.3, seconds: 0.35, wave: 'sawtooth', level: 0.12 },
+        { freq: 104, at: 0.6, seconds: 0.9, wave: 'sawtooth', level: 0.13, to: 52 },
+      ]);
+    } else {
+      // The plug: everything winds down.
+      burst(0.2, 0.12);
+      play([{ freq: 440, seconds: 0.8, wave: 'triangle', level: 0.1, to: 60 }]);
+    }
+  },
+  // One step of a longer job done: two quick notes up.
+  stepDone: () =>
+    play([
+      { freq: 587, seconds: 0.1, wave: 'triangle', level: 0.07 },
+      { freq: 880, at: 0.1, seconds: 0.24, wave: 'triangle', level: 0.07 },
+    ]),
 };
 
 /** Starts the sound effects. Call once, after the game has loaded. */

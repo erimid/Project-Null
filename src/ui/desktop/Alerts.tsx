@@ -26,13 +26,30 @@ export function Alerts() {
     const timers = new Set<ReturnType<typeof setTimeout>>();
     const stop = session.subscribeEvents((event) => {
       if (event.type === 'moduleGained' && event.bought) return;
-      if (event.type !== 'disconnected' && event.type !== 'promoted' && event.type !== 'pointEarned' && event.type !== 'moduleGained') return;
-      const alert: Alert = event.type === 'promoted'
+      const shown = ['disconnected', 'promoted', 'pointEarned', 'moduleGained', 'raidStarted', 'barrierFell', 'portShut', 'raidEnded', 'stepDone'];
+      if (!shown.includes(event.type)) return;
+      const alert: Alert = event.type === 'raidStarted'
+        ? { id: nextId++, severe: true, opens: 'defence', title: 'Intrusion', text: `${event.who} is breaking into your gateway. Open Defence.` }
+        : event.type === 'barrierFell'
+        ? { id: nextId++, severe: true, opens: 'defence', title: 'Barrier down', text: event.left === 1 ? 'One barrier left between them and your gateway.' : `${event.left} barriers left between them and your gateway.` }
+        : event.type === 'portShut'
+        ? { id: nextId++, severe: false, good: true, title: 'Port shut', text: 'You set them back. The next port buys less time.' }
+        : event.type === 'raidEnded'
+        ? event.result === 'won'
+          ? { id: nextId++, severe: false, good: true, opens: 'messages', title: 'Traced', text: `You have ${event.who}'s address. Their server is in your address book.` }
+          : event.result === 'lost'
+          ? { id: nextId++, severe: true, opens: 'messages', title: 'They got in', text: `${event.who} broke through. See Messages for what it cost.` }
+          : { id: nextId++, severe: false, title: 'Plug pulled', text: `${event.who} got nothing, and nor did you.` }
+        : event.type === 'stepDone'
+        ? { id: nextId++, severe: false, good: true, opens: 'contract', title: `Step ${event.step} of ${event.of} done`, text: 'The client has sent the next step.' }
+        : event.type === 'promoted'
         ? { id: nextId++, severe: false, good: true, title: 'New standing', text: `The board now knows you as ${event.title}.` }
         : event.type === 'pointEarned'
         ? { id: nextId++, severe: false, good: true, opens: 'skills', title: 'Skill point', text: event.free === 1 ? 'You have a point to spend. Open Skills.' : `You have ${event.free} points to spend. Open Skills.` }
         : event.type === 'moduleGained'
         ? { id: nextId++, severe: false, good: true, opens: 'workbench', title: 'New module', text: `${event.name} is on your Workbench shelf.` }
+        : event.type !== 'disconnected'
+        ? { id: nextId++, severe: false, title: '', text: '' }
         : event.traced
         ? { id: nextId++, severe: true, title: 'Trace complete', text: `They found you. ${event.server} cut the connection.` }
         : event.pulled

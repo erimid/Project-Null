@@ -244,7 +244,7 @@ export function pullPlug(state: GameState, content: Content): string | null {
 
 /** One line on what a rival does if they win, for the warning message. */
 function styleLine(rival: RivalDef): string {
-  return rival.style === 'thief' ? 'drains credits' : rival.style === 'vandal' ? 'wipes files' : 'frames you for a break-in';
+  return rival.style === 'thief' ? 'drain your credits' : rival.style === 'vandal' ? 'wipe something you keep here' : 'frame you for a break-in';
 }
 
 /** The counter-trace reached their end: learn their address and clear the attack. */

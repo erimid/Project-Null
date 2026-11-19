@@ -6093,52 +6093,271 @@ body {
 .files__folder {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
   background: none;
-  border: none;
-  padding: 10px 12px;
-  color: var(--text-bright);
   font: inherit;
+  color: var(--text-bright);
   text-align: left;
   cursor: pointer;
-  border-radius: 6px;
+  transition: background 0.15s, padding-left 0.15s;
 }
-.files__folder:hover {
-  background: rgba(95, 212, 255, 0.08);
+.files__folder:hover,
+.files__folder:focus-visible {
+  background: rgba(95, 212, 255, 0.09);
+  padding-left: 12px;
 }
+/* A little folder drawn in CSS: a tab over a body. */
 .files__folder-icon {
+  position: relative;
+  flex: none;
+  width: 18px;
+  height: 12px;
+  margin-top: 3px;
+  border: 1.5px solid var(--cyan);
+  border-radius: 2px;
+  background: rgba(95, 212, 255, 0.14);
+}
+.files__folder-icon::before {
+  content: '';
+  position: absolute;
+  left: -1.5px;
+  top: -5px;
+  width: 8px;
+  height: 4px;
+  border: 1.5px solid var(--cyan);
+  border-bottom: 0;
+  border-radius: 2px 2px 0 0;
+}
+.files__folder-name {
+  flex: 1;
+}
+.files__folder-count {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.files__folder-go {
+  width: 14px;
+  font-size: 18px;
+  line-height: 1;
+  text-align: center;
   color: var(--cyan);
 }
+.files__folder--up {
+  color: var(--text-muted);
+}
+.files__folder--up .files__folder-name {
+  font-family: var(--font-ui);
+}
+/* Opening a folder: its rows slide in. */
+.rows.data > .row--folder,
+.rows.data > .row--file {
+  animation: files-in 0.22s ease-out both;
+}
+@keyframes files-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rows.data > .row--folder,
+  .rows.data > .row--file {
+    animation: none;
+  }
+}
 
+/* A staged job as a rail: numbered stops, the one being worked on lit. */
 .contract__steps {
   list-style: none;
   margin: 0 0 14px;
-  padding: 10px 12px;
+  padding: 12px 12px 4px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  border-radius: 10px;
+  background: rgba(95, 212, 255, 0.03);
 }
 .contract__step {
+  position: relative;
   display: flex;
-  gap: 10px;
+  gap: 12px;
+  padding-bottom: 12px;
   color: var(--text-dim);
   overflow-wrap: anywhere;
+}
+/* The rail down to the next stop. */
+.contract__step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 24px;
+  bottom: 0;
+  border-left: 2px dotted var(--line-strong);
+}
+.contract__step.is-done:not(:last-child)::before {
+  border-left: 2px solid var(--mint);
+}
+.contract__step-node {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--line-strong);
+  border-radius: 50%;
+  font-family: var(--font-data);
+  font-size: 12px;
+  line-height: 1;
+  background: var(--panel);
+}
+.contract__step-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-top: 1px;
+}
+.contract__step-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 .contract__step.is-now {
   color: var(--text-bright);
 }
-.contract__step.is-done {
-  color: var(--text-dim);
+.contract__step.is-now .contract__step-node {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: 0 0 10px rgba(95, 212, 255, 0.6);
+  animation: step-now 1.6s ease-in-out infinite;
 }
-.contract__step.is-done .objective__mark {
-  color: var(--mint);
-}
-.contract__step.is-now .objective__mark {
+.contract__step.is-now .contract__step-label {
   color: var(--cyan);
 }
+@keyframes step-now {
+  50% {
+    box-shadow: 0 0 0 5px rgba(95, 212, 255, 0.14);
+  }
+}
+.contract__step.is-done .contract__step-node {
+  border-color: var(--mint);
+  background: var(--mint);
+  color: #04121a;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  animation: step-done 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.6) both;
+}
+.contract__step.is-done .contract__step-label {
+  color: var(--mint);
+}
+@keyframes step-done {
+  from {
+    transform: scale(0.4);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .contract__step.is-now .contract__step-node,
+  .contract__step.is-done .contract__step-node {
+    animation: none;
+  }
+}
+
+/* A longer job, marked on the board. */
+.row__tag--steps {
+  border-color: rgba(185, 162, 255, 0.55);
+  color: #cdbcff;
+}
+
+/* ---- shops: the sign over the shelf ---- */
+.shopsign {
+  --hue: 95, 212, 255;
+  margin: 0 0 14px;
+  padding: 10px 14px 10px 16px;
+  border: 1px solid rgba(var(--hue), 0.4);
+  border-left-width: 4px;
+  border-radius: 10px;
+  background: linear-gradient(100deg, rgba(var(--hue), 0.13), rgba(var(--hue), 0.02) 75%);
+}
+.shopsign--tin-shed {
+  --hue: 255, 196, 107;
+}
+.shopsign--lowtide-exchange {
+  --hue: 185, 162, 255;
+}
+.shopsign--varga-surplus {
+  --hue: 78, 230, 200;
+}
+.shopsign__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.shopsign__place {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--hue));
+}
+.shopsign__price {
+  padding: 0 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+.shopsign__price.is-cheap {
+  border-color: rgba(78, 230, 200, 0.6);
+  color: var(--mint);
+}
+.shopsign__price.is-dear {
+  border-color: rgba(255, 196, 107, 0.6);
+  color: #ffc46b;
+}
+.shopsign__blurb {
+  margin: 4px 0 6px;
+  color: var(--text);
+  line-height: 1.4;
+}
+.shopsign__rare {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--text-bright);
+}
+.shopsign__tag {
+  margin: 0 8px 0 0;
+}
+
+/* The list price, struck through beside what this shop asks. */
+.price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+}
+.price__list {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* A line that is only here today glows a little. */
+.row.is-rare {
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(255, 196, 92, 0.1), transparent 60%);
+  box-shadow: inset 3px 0 0 rgba(255, 196, 92, 0.7);
+}
+
 .contract__actions {
   flex-wrap: wrap;
   gap: 8px;
@@ -6154,11 +6373,64 @@ body {
 }
 
 .raid__who {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
   margin: 0 0 14px;
-  line-height: 1.45;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 59, 78, 0.45);
+  border-radius: 10px;
+  background: linear-gradient(100deg, rgba(255, 59, 78, 0.16), rgba(255, 59, 78, 0.03) 70%);
+  animation: raid-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 }
 
-.raid__who strong {
+@keyframes raid-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+.raid__badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--red);
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--red-text);
+  box-shadow: 0 0 14px rgba(255, 59, 78, 0.55);
+  animation: raid-badge 0.85s ease-in-out infinite;
+}
+
+@keyframes raid-badge {
+  50% {
+    box-shadow: 0 0 4px rgba(255, 59, 78, 0.3);
+    background: rgba(255, 59, 78, 0.18);
+  }
+}
+
+.raid__name {
+  margin: 0 0 2px;
+  font-size: 18px;
+}
+
+.raid__name strong {
+  color: var(--red-text);
+  letter-spacing: 0.02em;
+}
+
+.raid__blurb {
+  margin: 0;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.row__tag--danger {
+  border-color: rgba(255, 59, 78, 0.55);
   color: var(--red-text);
 }
 
@@ -6173,50 +6445,245 @@ body {
 .raid__gauges {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin: 0 0 16px;
+  gap: 12px;
+  margin: 0 0 14px;
 }
 
-.raid__gauge {
-  font-size: 13px;
+.raid__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-/* The intruder's bounce chain, their server last, ticked off as the trace closes in. */
-.raid__route {
-  list-style: none;
-  margin: 0 0 16px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.raid__count {
+  font-size: 20px;
+  line-height: 1;
 }
 
-.raid__hop {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 10px;
-  border: 1px solid var(--line-soft);
-  border-radius: 6px;
+.raid__gauge--breach .raid__count {
+  color: var(--red-text);
+}
+
+.raid__gauge--breach.is-urgent .raid__count {
+  animation: raid-urgent 0.5s steps(2, jump-none) infinite;
+}
+
+@keyframes raid-urgent {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.raid__gauge--trace .raid__count {
+  font-size: 14px;
   color: var(--text-dim);
 }
 
+.raid__gauge--trace.is-on .raid__count {
+  font-size: 20px;
+  color: var(--mint);
+}
+
+.raid__gauge--trace .meter {
+  height: 6px;
+  border-radius: 3px;
+}
+
+/* One block per barrier. The intruder eats through them left to right. */
+.raid__barriers {
+  display: flex;
+  gap: 6px;
+  animation: raid-setback 0.6s ease-out;
+}
+
+@keyframes raid-setback {
+  0% {
+    filter: brightness(2.2);
+    transform: scale(1.015);
+  }
+}
+
+.raid__barrier {
+  position: relative;
+  flex: 1;
+  height: 26px;
+  border: 1px solid rgba(95, 212, 255, 0.4);
+  border-radius: 5px;
+  background: rgba(95, 212, 255, 0.07);
+  overflow: hidden;
+}
+
+.raid__barrier-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: repeating-linear-gradient(-45deg, rgba(255, 59, 78, 0.75) 0 6px, rgba(255, 59, 78, 0.5) 6px 12px);
+  box-shadow: 0 0 10px rgba(255, 59, 78, 0.6);
+  transition: width 0.5s linear;
+}
+
+.raid__barrier-name {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-shadow: 0 1px 3px #000;
+}
+
+.raid__barrier.is-going {
+  border-color: rgba(255, 59, 78, 0.7);
+}
+
+.raid__barrier.is-down {
+  border-color: rgba(255, 59, 78, 0.35);
+  opacity: 0.55;
+}
+
+.raid__barrier.is-down .raid__barrier-fill {
+  box-shadow: none;
+}
+
+/* Who is winning the race, in one line. */
+.raid__race {
+  margin: 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--line-strong);
+  border-radius: 0 6px 6px 0;
+  background: rgba(95, 212, 255, 0.06);
+  font-weight: 600;
+}
+
+.raid__race.is-ahead {
+  border-color: var(--mint);
+  background: rgba(78, 230, 200, 0.09);
+  color: var(--mint);
+}
+
+.raid__race.is-behind {
+  border-color: var(--red);
+  background: rgba(255, 59, 78, 0.1);
+  color: var(--red-text);
+}
+
+/* The intruder's bounce chain as a rail, their server last, lit up as the trace closes in. */
+.raid__route {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.raid__hop {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  color: var(--text-dim);
+}
+
+/* The rail between one stop and the next. */
+.raid__hop + .raid__hop::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: -9px;
+  height: 18px;
+  border-left: 2px dotted var(--line-strong);
+}
+
+.raid__hop.is-traced + .raid__hop::before {
+  border-left: 2px solid var(--mint);
+  box-shadow: 0 0 6px rgba(78, 230, 200, 0.7);
+}
+
+.raid__node {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--bg, #06101c);
+  font-size: 10px;
+  line-height: 1;
+  color: #04121a;
+}
+
 .raid__hop.is-traced {
-  border-color: rgba(78, 230, 200, 0.45);
   color: var(--text);
 }
 
-.raid__hop.is-traced .objective__mark {
+.raid__hop.is-traced .raid__node {
+  border-color: var(--mint);
+  background: var(--mint);
+  box-shadow: 0 0 8px rgba(78, 230, 200, 0.7);
+}
+
+.raid__hop.is-now {
+  color: var(--text);
+}
+
+.raid__hop.is-now .raid__node {
+  border-color: var(--mint);
+  animation: raid-node 0.9s ease-in-out infinite;
+}
+
+@keyframes raid-node {
+  50% {
+    box-shadow: 0 0 0 5px rgba(78, 230, 200, 0.22);
+  }
+}
+
+.raid__hop-note {
+  font-size: 11px;
   color: var(--mint);
 }
 
 .raid__hop.is-home {
-  border-color: rgba(255, 59, 78, 0.45);
   color: var(--red-text);
 }
 
+.raid__hop.is-home .raid__node {
+  border-color: var(--red);
+}
+
+.raid__hop.is-home.is-traced .raid__node {
+  border-color: var(--mint);
+}
+
 .raid__actions {
-  margin: 0 0 18px;
+  margin: 0 0 14px;
+}
+
+.raid__gain {
+  margin-left: 4px;
+  color: var(--mint);
+}
+
+.btn:disabled .raid__gain {
+  color: inherit;
+}
+
+.raid__shut {
+  margin: 0 0 14px;
+  color: var(--mint);
+  animation: raid-in 0.4s ease-out both;
+}
+
+.lineup--raid {
+  margin-bottom: 14px;
+  animation: raid-in 0.3s ease-out both;
 }
 
 .map__heading {
@@ -6228,8 +6695,8 @@ body {
   list-style: none;
   margin: 8px 0 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 6px;
 }
 
@@ -6238,23 +6705,47 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 6px 10px;
+  min-height: 36px;
+  padding: 4px 10px;
   border: 1px solid var(--line-soft);
   border-radius: 6px;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .raid__lock.is-locked {
-  border-color: rgba(78, 230, 200, 0.45);
+  border-color: rgba(78, 230, 200, 0.5);
+  background: rgba(78, 230, 200, 0.07);
 }
 
 .raid__lock.is-locked .raid__lock-name {
   color: var(--mint);
 }
 
+.raid__lock-done {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mint);
+}
+
 .raid__lock-name {
+  font-size: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .raid__who,
+  .raid__badge,
+  .raid__barriers,
+  .raid__shut,
+  .lineup--raid,
+  .raid__hop.is-now .raid__node,
+  .raid__gauge--breach.is-urgent .raid__count {
+    animation: none;
+  }
 }
 
 .btn--small {
@@ -6321,4 +6812,72 @@ body {
 
 .map__scan-btn {
   margin: 10px 0 4px;
+}
+
+/* ---- messages: alarms and letters ---- */
+
+/* Each paragraph of an opened message settles in, one after the other. */
+.message-body > p:not(.message-body__meta) {
+  animation: letter-in 0.35s ease-out both;
+}
+@keyframes letter-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .message-body > p:not(.message-body__meta) {
+    animation: none;
+  }
+}
+
+/* A letter from someone who writes as themselves. */
+.message.is-voice .message__from {
+  color: #cdbcff;
+}
+.message.is-voice .message__from::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 7px 2px 0;
+  border-radius: 50%;
+  background: #b9a2ff;
+  box-shadow: 0 0 8px rgba(185, 162, 255, 0.9);
+}
+.message-body.is-voice {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(185, 162, 255, 0.3);
+  border-left: 3px solid #b9a2ff;
+  border-radius: 0 10px 10px 0;
+  background: linear-gradient(100deg, rgba(185, 162, 255, 0.08), transparent 70%);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.message-body.is-voice .message-body__meta {
+  color: #a895e0;
+}
+.message-body__sign {
+  text-align: right;
+  font-style: italic;
+  color: var(--text-bright);
+}
+
+/* The gateway raising an alarm, or reporting how one ended. */
+.message.is-alert .message__from {
+  color: var(--red-text);
+}
+.message-body.is-alert {
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 59, 78, 0.3);
+  border-left: 3px solid var(--red);
+  border-radius: 0 10px 10px 0;
+  background: linear-gradient(100deg, rgba(255, 59, 78, 0.08), transparent 70%);
+}
+
+/* On a phone a title bar with a button of its own has no room for the note: "6.." told nobody anything. */
+.desktop--phone:not(.desktop--tablet) .window--phone .window__title:has(.tabbtn) .window__title-note {
+  display: none;
 }
