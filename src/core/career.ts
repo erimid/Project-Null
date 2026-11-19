@@ -17,6 +17,7 @@ import { evidenceCount, isEvidence } from './forensics';
 import { worldFor } from './generate';
 import { maxConnections } from './hardware';
 import { isJob } from './jobs';
+import { sellsProgram } from './market';
 import { heldBy, monitorHeld } from './link';
 import { canRead, judge, knownFacts, knownPeople, standing } from './phish';
 import { skillRank } from './skills';
@@ -583,7 +584,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     const list: string[] = [];
     const cheapest = (kind: ProgramDef['kind'], level: number): string | null => {
       const fit = content.programs
-        .filter((program) => program.kind === kind && layerSeconds(program, level) !== null)
+        .filter((program) => program.kind === kind && layerSeconds(program, level) !== null && sellsProgram(state, board, program))
         .sort((a, b) => a.price - b.price)[0];
       return fit?.id ?? null;
     };

@@ -24,6 +24,7 @@ import {
   marketGrade,
   shopOf,
   shopPrice,
+  sellsOnly,
   sellsProgram,
   sellsModule,
   sellsHardware,
@@ -96,7 +97,7 @@ function sectionsFor(server: ServerDef, connection: Connection): Section[] {
   const admin = connection.role === 'admin';
   const sections: Section[] = [];
   if (server.kind === 'directory') sections.push('directory');
-  if (server.kind === 'board') sections.push('contracts', 'market', 'hardware');
+  if (server.kind === 'board') sections.push(...(sellsOnly(server) ? [] : ['contracts' as const]), 'market', 'hardware');
   sections.push('files');
   if (admin) sections.push('logs');
   if (admin && server.records) sections.push('records');

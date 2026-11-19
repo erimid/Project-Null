@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { companies, contracts, findPage, gameInfo, hardware, mail, models, people, programs, rivals, servers, sites, tuning } from './index';
+import { companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, tuning } from './index';
 import companiesJson from './companies.json';
 import { parseCompanies } from './companies';
 import { parseHardware } from './hardware';
@@ -58,7 +58,8 @@ describe('shipped data files', () => {
     const count = (kind: string) => servers.filter((s) => s.kind === kind).length;
     expect(count('gateway')).toBe(1);
     expect(count('directory')).toBe(1);
-    expect(count('board')).toBe(1);
+    expect(count('board')).toBeGreaterThanOrEqual(1);
+    expect(servers.filter((s) => s.kind === 'board' && s.shop?.contracts !== false)).toHaveLength(1);
     expect(count('relay')).toBeGreaterThanOrEqual(3);
     expect(count('company')).toBeGreaterThanOrEqual(4);
   });
@@ -354,5 +355,52 @@ describe('company pools', () => {
     badNet.cities[0].net = '300.1';
     expect(() => parseCompanies(badNet)).toThrow(/net/);
     expect(() => parseCompanies({ ...good, count: good.stems.length + 1 })).toThrow(/stems/);
+  });
+});
+
+describe('the catalogue', () => {
+  it('is big: about 40 programs, 45 parts, 12 modules, 7 models and a deep skill tree', () => {
+    expect(programs.length).toBeGreaterThanOrEqual(40);
+    expect(hardware.length).toBeGreaterThanOrEqual(44);
+    expect(modules.length).toBeGreaterThanOrEqual(12);
+    expect(models.length).toBeGreaterThanOrEqual(7);
+    expect(skills.length).toBeGreaterThanOrEqual(25);
+  });
+
+  it('is on sale somewhere: every priced program, part and module grade is on some shop’s shelf, as a staple or a rare line', () => {
+    const shops = servers.filter((server) => server.kind === 'board');
+    const rare = (kind: string, id: string, grade?: number) =>
+      shops.some((server) => server.shop?.rare?.some((line) => line.kind === kind && line.id === id && (grade === undefined || line.grade === undefined || line.grade === grade)));
+    for (const program of programs.filter((item) => item.price > 0)) {
+      const sold = shops.some((server) => {
+        const shop = server.shop!;
+        return (
+          shop.programs &&
+          (!shop.programKinds || shop.programKinds.includes(program.kind)) &&
+          program.version <= (shop.maxVersion ?? Infinity) &&
+          !shop.excludePrograms?.includes(program.id)
+        );
+      });
+      expect(sold || rare('program', program.id), program.id).toBe(true);
+    }
+    for (const part of hardware.filter((item) => item.price > 0)) {
+      const sold = shops.some((server) => {
+        const shop = server.shop!;
+        return shop.hardware && part.tier <= (shop.maxTier ?? Infinity) && (!shop.hardwareSlots || shop.hardwareSlots.includes(part.slot));
+      });
+      expect(sold || rare('hardware', part.id), part.id).toBe(true);
+    }
+    for (const module of modules) {
+      for (let grade = 1; grade <= module.grades.length; grade++) {
+        const sold = shops.some((server) => server.shop!.modules && grade <= (server.shop!.maxGrade ?? Infinity));
+        expect(sold || rare('module', module.id, grade), `${module.id} ${grade}`).toBe(true);
+      }
+    }
+  });
+
+  it('has more than one shop, and only one of them posts contracts', () => {
+    const boards = servers.filter((server) => server.kind === 'board');
+    expect(boards.length).toBeGreaterThanOrEqual(4);
+    expect(boards.filter((server) => server.shop?.contracts !== false)).toHaveLength(1);
   });
 });

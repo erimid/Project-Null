@@ -25,6 +25,7 @@ export const SKILL_EFFECTS = [
   'coldTrail',
   'slipAway',
   'hardwareSpeed',
+  'modemSpeed',
   'secondSlot',
   'tightBuilds',
   'refine',
@@ -43,6 +44,7 @@ export const SKILL_EFFECTS = [
  * - coldTrail: log reviews come 1 + amount times as late, and their fines are (1 - amount) as big.
  * - slipAway: this many more reroutes per connection, and each sends the trace back this many more relays.
  * - hardwareSpeed: the processor and modem run 1 + amount times as fast.
+ * - modemSpeed: files copy and delete 1 + amount times as fast.
  * - secondSlot: crafted programs take this many more modules.
  * - tightBuilds: crafted programs take (1 - amount) of the room.
  * - refine: two modules of one grade can be melted into one of the next grade.

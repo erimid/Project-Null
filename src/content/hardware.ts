@@ -5,19 +5,20 @@
  */
 import { ContentError } from './schema';
 
-export const HARDWARE_SLOTS = ['cpu', 'storage', 'modem', 'ports', 'rack', 'sensor'] as const;
+export const HARDWARE_SLOTS = ['cpu', 'storage', 'modem', 'ports', 'rack', 'sensor', 'cooling'] as const;
 /**
  * - cpu: how fast programs run, and how many run at once.
  * - storage: room on the gateway, in GB.
  * - modem: how fast files copy and delete.
  * - ports: how many connections can be open at once.
  * - rack: hosts a language model on the gateway, so there is no rent to pay.
+ * - cooling: a cooler for the processor. Programs run this many times faster again.
  * - sensor: a trace sensor. Reads a trace earlier and, at the top tier, exactly, even without a Trace Tracker.
  */
 export type HardwareSlot = (typeof HARDWARE_SLOTS)[number];
 
 /** Slots a new gateway does not have: bought from tier 1, and empty (tier 0) until then. */
-export const OPTIONAL_SLOTS: readonly HardwareSlot[] = ['rack', 'sensor'];
+export const OPTIONAL_SLOTS: readonly HardwareSlot[] = ['rack', 'sensor', 'cooling'];
 
 export interface HardwareDef {
   readonly id: string;
@@ -42,6 +43,8 @@ export interface HardwareDef {
   readonly model?: string;
   /** rack: room the model's weights take on the gateway, in GB. */
   readonly sizeGb?: number;
+  /** cooling: programs run this many times faster, on top of the processor. */
+  readonly coolSpeed?: number;
   /** sensor: how good the read is. 1 = earlier warning; the top tier also shows the exact time with no Trace Tracker. */
   readonly warn?: number;
 }
@@ -57,6 +60,7 @@ const NEEDS: Record<HardwareSlot, readonly (readonly [keyof HardwareDef, number,
   ports: [['connections', 1, 10]],
   rack: [['sizeGb', 0, 1000]],
   sensor: [['warn', 1, 10]],
+  cooling: [['coolSpeed', 1, 10]],
 };
 
 export function parseHardware(data: unknown, modelIds: readonly string[], file = 'hardware.json'): HardwareDef[] {

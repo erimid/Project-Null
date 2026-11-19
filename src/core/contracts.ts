@@ -13,7 +13,7 @@ import { refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
 import { advanceStory } from './story';
-import { sellsProgram, shopOf, shopPrice } from './market';
+import { sellsOnly, sellsProgram, shopOf, shopPrice } from './market';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
 import { findConnection, findProgram, findServer, noteProgress, once, securityOf, sendMail, type Content } from './world';
 
@@ -103,7 +103,8 @@ export function availableContracts(state: GameState, content: Content): Contract
 function atBoard(state: GameState, content: Content, connectionId: string): Connection | string {
   const connection = findConnection(state, connectionId);
   if (!connection || connection.user === null) return 'Log in to the board first.';
-  if (findServer(content, connection.serverId)?.kind !== 'board') return 'This server is not a contracts board.';
+  const server = findServer(content, connection.serverId);
+  if (server?.kind !== 'board' || sellsOnly(server)) return 'This server is not a contracts board.';
   return connection;
 }
 

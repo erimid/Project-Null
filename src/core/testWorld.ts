@@ -266,6 +266,7 @@ export const testHardware: HardwareDef[] = [
   part('ports', 3, 150, { connections: 3 }),
   part('rack', 1, 200, { model: 'small', sizeGb: 8 }),
   part('sensor', 1, 90, { warn: 1 }),
+  part('cooling', 1, 60, { coolSpeed: 1.5 }),
 ];
 
 /** Two extra programs that are only for sale, never owned at the start. */

@@ -1,0 +1,111 @@
+{
+  "id": "lowtide-exchange",
+  "name": "Lowtide Exchange",
+  "kind": "board",
+  "owner": "Lowtide",
+  "hostname": "LT-XCHG-0",
+  "address": "103.152.220.14",
+  "city": "Valparaíso",
+  "country": "Chile",
+  "lat": -33.05,
+  "lon": -71.62,
+  "blurb": "A back-room market for the kind of gear nobody lists: monitor kit, model racks, the best coolers.",
+  "listed": true,
+  "security": {
+    "password": 0,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 0
+  },
+  "traceSecondsPerHop": 30,
+  "relayDelay": 1.2,
+  "banner": [
+    "lowtide",
+    "if it is on the shelf it fell off something.",
+    "prices are not negotiable. the tide is."
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Walk-in"
+    }
+  ],
+  "files": [
+    {
+      "name": "terms.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "LOWTIDE EXCHANGE · TERMS\n\nSpecialist programs, model racks, trace sensors and the best coolers. Priced a quarter over the Backroom, because we know why you are here.\n\nThe daily lines are not always the same. If you see something you want today, take it today.\n\nModels rent here too, the whole shelf, from the same compute farm as everywhere."
+      }
+    },
+    {
+      "name": "rumour_mill.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "heard the Kessel boards come from a lab nobody will name. heard somebody bought three. heard the lab burnt down."
+      }
+    }
+  ],
+  "logs": [],
+  "shop": {
+    "programs": true,
+    "hardware": true,
+    "modules": true,
+    "models": true,
+    "contracts": false,
+    "priceFactor": 1.25,
+    "maxGrade": 3,
+    "programKinds": [
+      "bypassMonitor",
+      "decrypt",
+      "decompile",
+      "planRoute",
+      "scan",
+      "jamTrace"
+    ],
+    "hardwareSlots": [
+      "rack",
+      "sensor",
+      "cooling"
+    ],
+    "rare": [
+      {
+        "kind": "hardware",
+        "id": "cpu-10",
+        "chance": 0.1
+      },
+      {
+        "kind": "hardware",
+        "id": "storage-10",
+        "chance": 0.1
+      },
+      {
+        "kind": "module",
+        "id": "ghost",
+        "grade": 3,
+        "chance": 0.3
+      },
+      {
+        "kind": "module",
+        "id": "twin",
+        "grade": 3,
+        "chance": 0.25
+      },
+      {
+        "kind": "program",
+        "id": "brute-breaker",
+        "chance": 0.35
+      },
+      {
+        "kind": "program",
+        "id": "password-breaker-4",
+        "chance": 0.2
+      }
+    ]
+  }
+}

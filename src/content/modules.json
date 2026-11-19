@@ -1,52 +1,370 @@
 [
   {
-    "id": "swift", "name": "Swift",
+    "id": "swift",
+    "name": "Swift",
     "blurb": "Unrolls the program's inner loops. It runs faster and takes more room.",
-    "fits": ["breakPassword", "bypassProxy", "bypassFirewall", "bypassMonitor", "decrypt", "copyFile", "deleteFile", "deleteLog"],
+    "fits": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall",
+      "bypassMonitor",
+      "decrypt",
+      "copyFile",
+      "deleteFile",
+      "deleteLog"
+    ],
     "grades": [
-      { "speed": 1.3, "size": 1.5, "price": 700 },
-      { "speed": 1.6, "size": 1.5, "price": 1800 },
-      { "speed": 2, "size": 1.5, "price": 4200 }
+      {
+        "speed": 1.3,
+        "size": 1.5,
+        "price": 700
+      },
+      {
+        "speed": 1.6,
+        "size": 1.5,
+        "price": 1800
+      },
+      {
+        "speed": 2,
+        "size": 1.5,
+        "price": 4200
+      }
     ]
   },
   {
-    "id": "compact", "name": "Compact",
+    "id": "compact",
+    "name": "Compact",
     "blurb": "Strips the program down to what it needs. It takes far less room and runs a little slower.",
-    "fits": ["breakPassword", "bypassProxy", "bypassFirewall", "bypassMonitor", "decrypt", "copyFile", "deleteFile", "deleteLog"],
+    "fits": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall",
+      "bypassMonitor",
+      "decrypt",
+      "copyFile",
+      "deleteFile",
+      "deleteLog"
+    ],
     "grades": [
-      { "speed": 0.9, "size": 0.6, "price": 500 },
-      { "speed": 0.9, "size": 0.45, "price": 1300 },
-      { "speed": 0.9, "size": 0.3, "price": 3000 }
+      {
+        "speed": 0.9,
+        "size": 0.6,
+        "price": 500
+      },
+      {
+        "speed": 0.9,
+        "size": 0.45,
+        "price": 1300
+      },
+      {
+        "speed": 0.9,
+        "size": 0.3,
+        "price": 3000
+      }
     ]
   },
   {
-    "id": "quiet", "name": "Quiet", "trait": "quiet",
+    "id": "quiet",
+    "name": "Quiet",
+    "trait": "quiet",
     "blurb": "Paces the program's traffic to look like ordinary use. A monitor does not notice it, even coming back from blind. It runs slower; better grades lose less.",
-    "fits": ["breakPassword", "bypassProxy", "bypassFirewall", "copyFile", "deleteFile", "deleteLog"],
+    "fits": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall",
+      "copyFile",
+      "deleteFile",
+      "deleteLog"
+    ],
     "grades": [
-      { "speed": 0.7, "size": 1, "price": 900 },
-      { "speed": 0.8, "size": 1, "price": 2200 },
-      { "speed": 0.9, "size": 1, "price": 5000 }
+      {
+        "speed": 0.7,
+        "size": 1,
+        "price": 900
+      },
+      {
+        "speed": 0.8,
+        "size": 1,
+        "price": 2200
+      },
+      {
+        "speed": 0.9,
+        "size": 1,
+        "price": 5000
+      }
     ]
   },
   {
-    "id": "tidy", "name": "Tidy", "trait": "tidy",
+    "id": "tidy",
+    "name": "Tidy",
+    "trait": "tidy",
     "blurb": "Writes over its own tracks as it goes. Files it copies or deletes leave no line in the access log.",
-    "fits": ["copyFile", "deleteFile"],
+    "fits": [
+      "copyFile",
+      "deleteFile"
+    ],
     "grades": [
-      { "speed": 0.8, "size": 1.2, "price": 800 },
-      { "speed": 0.9, "size": 1.1, "price": 2000 },
-      { "speed": 1, "size": 1, "price": 4500 }
+      {
+        "speed": 0.8,
+        "size": 1.2,
+        "price": 800
+      },
+      {
+        "speed": 0.9,
+        "size": 1.1,
+        "price": 2000
+      },
+      {
+        "speed": 1,
+        "size": 1,
+        "price": 4500
+      }
     ]
   },
   {
-    "id": "offload", "name": "Offload", "trait": "parallel",
+    "id": "offload",
+    "name": "Offload",
+    "trait": "parallel",
     "blurb": "Runs the program off to the side on spare cycles, so it does not count against how many programs your gateway can run at once. It runs a little slower and takes more room.",
-    "fits": ["breakPassword", "bypassProxy", "bypassFirewall", "copyFile", "deleteFile", "deleteLog", "decrypt"],
+    "fits": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall",
+      "copyFile",
+      "deleteFile",
+      "deleteLog",
+      "decrypt"
+    ],
     "grades": [
-      { "speed": 0.8, "size": 1.4, "price": 1100 },
-      { "speed": 0.9, "size": 1.3, "price": 2600 },
-      { "speed": 1, "size": 1.2, "price": 5500 }
+      {
+        "speed": 0.8,
+        "size": 1.4,
+        "price": 1100
+      },
+      {
+        "speed": 0.9,
+        "size": 1.3,
+        "price": 2600
+      },
+      {
+        "speed": 1,
+        "size": 1.2,
+        "price": 5500
+      }
+    ]
+  },
+  {
+    "id": "burst",
+    "name": "Burst",
+    "blurb": "Throws every cycle at the program at once. It runs a great deal faster and takes more than twice the room.",
+    "fits": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall",
+      "bypassMonitor",
+      "decrypt",
+      "copyFile",
+      "deleteFile",
+      "deleteLog"
+    ],
+    "grades": [
+      {
+        "speed": 2,
+        "size": 2.2,
+        "price": 900
+      },
+      {
+        "speed": 3,
+        "size": 2.4,
+        "price": 2300
+      },
+      {
+        "speed": 4.5,
+        "size": 2.6,
+        "price": 5200
+      }
+    ]
+  },
+  {
+    "id": "lean",
+    "name": "Lean",
+    "blurb": "Cuts the program down without slowing it. It takes much less room and runs at the same speed. Costs more than Compact.",
+    "fits": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall",
+      "bypassMonitor",
+      "decrypt",
+      "copyFile",
+      "deleteFile",
+      "deleteLog"
+    ],
+    "grades": [
+      {
+        "speed": 1,
+        "size": 0.8,
+        "price": 1200
+      },
+      {
+        "speed": 1,
+        "size": 0.65,
+        "price": 2800
+      },
+      {
+        "speed": 1,
+        "size": 0.5,
+        "price": 6000
+      }
+    ]
+  },
+  {
+    "id": "bare",
+    "name": "Bare",
+    "blurb": "Strips a program to the bone. It takes almost no room and runs slower for it.",
+    "fits": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall",
+      "bypassMonitor",
+      "decrypt",
+      "copyFile",
+      "deleteFile",
+      "deleteLog"
+    ],
+    "grades": [
+      {
+        "speed": 0.7,
+        "size": 0.2,
+        "price": 1500
+      },
+      {
+        "speed": 0.7,
+        "size": 0.15,
+        "price": 3200
+      },
+      {
+        "speed": 0.75,
+        "size": 0.1,
+        "price": 7000
+      }
+    ]
+  },
+  {
+    "id": "heavy",
+    "name": "Heavy",
+    "blurb": "Built for the hardest layers. The program runs far faster, takes a great deal of room, and only fits the cracking programs.",
+    "fits": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall"
+    ],
+    "grades": [
+      {
+        "speed": 2.5,
+        "size": 3,
+        "price": 1800
+      },
+      {
+        "speed": 3.2,
+        "size": 3,
+        "price": 4200
+      },
+      {
+        "speed": 4,
+        "size": 3,
+        "price": 9000
+      }
+    ]
+  },
+  {
+    "id": "ghost",
+    "name": "Ghost",
+    "blurb": "Spreads the program out so thin a monitor does not see it. A monitor does not notice it, even coming back from blind. It runs a little slower, and takes more room than Quiet.",
+    "trait": "quiet",
+    "fits": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall",
+      "bypassMonitor",
+      "copyFile",
+      "deleteFile",
+      "deleteLog"
+    ],
+    "grades": [
+      {
+        "speed": 0.85,
+        "size": 1.3,
+        "price": 2000
+      },
+      {
+        "speed": 0.95,
+        "size": 1.3,
+        "price": 4600
+      },
+      {
+        "speed": 1.05,
+        "size": 1.3,
+        "price": 9500
+      }
+    ]
+  },
+  {
+    "id": "scrubber",
+    "name": "Scrubber",
+    "blurb": "Cleans up as it works, and faster than Tidy. Files it copies or deletes leave no line in the access log.",
+    "trait": "tidy",
+    "fits": [
+      "copyFile",
+      "deleteFile"
+    ],
+    "grades": [
+      {
+        "speed": 1,
+        "size": 1.4,
+        "price": 1900
+      },
+      {
+        "speed": 1.2,
+        "size": 1.4,
+        "price": 4300
+      },
+      {
+        "speed": 1.4,
+        "size": 1.4,
+        "price": 8800
+      }
+    ]
+  },
+  {
+    "id": "twin",
+    "name": "Twin",
+    "blurb": "Runs a copy of itself on spare cycles. It does not count against how many programs your gateway can run at once, and it runs faster than Offload.",
+    "trait": "parallel",
+    "fits": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall",
+      "copyFile",
+      "deleteFile",
+      "deleteLog",
+      "decrypt"
+    ],
+    "grades": [
+      {
+        "speed": 1.1,
+        "size": 2,
+        "price": 2400
+      },
+      {
+        "speed": 1.3,
+        "size": 2,
+        "price": 5400
+      },
+      {
+        "speed": 1.5,
+        "size": 2,
+        "price": 11000
+      }
     ]
   }
 ]
