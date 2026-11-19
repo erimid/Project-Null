@@ -83,5 +83,20 @@
       }
     }
   ],
-  "logs": []
+  "logs": [],
+  "shop": {
+    "programs": true,
+    "hardware": true,
+    "modules": true,
+    "models": true,
+    "programKinds": [
+      "breakPassword", "bypassProxy", "bypassFirewall", "bypassMonitor",
+      "decrypt", "copyFile", "deleteFile", "deleteLog", "traceTracker",
+      "decompile", "planRoute", "scan"
+    ],
+    "priceFactor": 1,
+    "rare": [
+      { "kind": "program", "id": "trace-jammer", "chance": 0.5 }
+    ]
+  }
 }

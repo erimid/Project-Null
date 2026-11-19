@@ -1,4 +1,4 @@
-import { findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, pointsFree, traceHeld, traceReport, tracesByUrgency, type GameState } from '../../core';
+import { canReadTrace, findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, pointsFree, traceHeld, traceReport, tracesByUrgency, type GameState } from '../../core';
 import { useEffect, useRef } from 'preact/hooks';
 import { formatDay, formatTime, ratingStep } from '../format';
 import { useGame, useWorld } from '../hooks';
@@ -17,8 +17,10 @@ const clockText = (ms: number) => {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 };
 
-/** Without a Trace Tracker you only know that someone is coming, not how close they are. */
-const hasTracker = (game: GameState) => ownedProgram(game, content, 'traceTracker') !== undefined;
+/** Without a Trace Tracker program or a trace sensor you only know someone is coming, not how close they are. */
+const hasTracker = (game: GameState) => canReadTrace(game, content);
+/** The player owns a Trace Jammer to freeze a trace with. */
+const hasJammer = (game: GameState) => ownedProgram(game, content, 'jamTrace') !== undefined;
 
 function showTrace(connectionId?: string): void {
   const connection = connectionId ?? mostUrgentTrace(session.getState(), content)?.id;
@@ -86,9 +88,18 @@ export function TraceAlarm() {
   const held = useGame((game) => {
     const connection = mostUrgentTrace(game, content);
     if (!connection) return '';
-    return connection.monitor.blindMs > 0 ? clockText(connection.monitor.blindMs) : traceHeld(game, content, connection) ? 'busy' : '';
+    if (connection.monitor.blindMs > 0) return clockText(connection.monitor.blindMs);
+    if ((connection.trace.frozenMs ?? 0) > 0) return `jam ${clockText(connection.trace.frozenMs ?? 0)}`;
+    return traceHeld(game, content, connection) ? 'busy' : '';
+  });
+  // The connection a Trace Jammer could still freeze: owned, running, not jammed, not already frozen.
+  const jammable = useGame((game) => {
+    if (!hasJammer(game)) return '';
+    const connection = mostUrgentTrace(game, content);
+    return connection && connection.trace.status === 'active' && !connection.jammed && (connection.trace.frozenMs ?? 0) === 0 ? connection.id : '';
   });
   const isHeld = held !== '';
+  const jammed = held.startsWith('jam');
   const others = useGame((game) => tracesByUrgency(game, content).length - 1);
   if (server === null) return null;
 
@@ -98,18 +109,20 @@ export function TraceAlarm() {
         type="button"
         class="alarm__main"
         title={
-          held === 'busy'
-            ? 'Its monitor is kept busy from another server. The trace stands still while you hold it.'
-            : isHeld
-              ? `The monitor is blind for ${held}. The trace stands still until it wakes.`
-              : undefined
+          jammed
+            ? 'Jammed. The trace stands still until the noise clears.'
+            : held === 'busy'
+              ? 'Its monitor is kept busy from another server. The trace stands still while you hold it.'
+              : isHeld
+                ? `The monitor is blind for ${held}. The trace stands still until it wakes.`
+                : undefined
         }
         onClick={() => showTrace()}
       >
         <span class="alarm__label">
           {isHeld ? (
             <>
-              Trace held {held !== 'busy' && <span class="data">{held}</span>}
+              {jammed ? 'Trace jammed' : 'Trace held'} {held !== 'busy' && <span class="data">{held.replace('jam ', '')}</span>}
             </>
           ) : (
             'Trace in progress'
@@ -130,6 +143,11 @@ export function TraceAlarm() {
           </span>
         )}
       </button>
+      {jammable && (
+        <button type="button" class="alarm__jam" data-tip="Freeze this trace with a Trace Jammer. Once per connection." onClick={() => session.dispatch({ type: 'jamTrace', connectionId: jammable })}>
+          Jam
+        </button>
+      )}
       <OtherTraces tracker={tracker} />
     </div>
   );

@@ -5,9 +5,10 @@
 import type { ServerDef } from '../content/schema';
 import { MAX_HOPS, type Connection, type GameState, type TraceState } from './state';
 import { monitorHeld } from './link';
+import { installed } from './hardware';
 import { effect } from './skills';
 import { regionOf } from './generate';
-import { findServer, gatewayOf, securityOf, type Content } from './world';
+import { findConnection, findServer, gatewayOf, ownedProgram, securityOf, type Content } from './world';
 
 /** What a leg of the route crosses: nothing much, a border, or a stretch of the world. */
 export type LegKind = 'country' | 'border' | 'overseas';
@@ -161,6 +162,13 @@ export function bestRoute(state: GameState, content: Content, targetId: string |
   return route;
 }
 
+/** The trace sensor's level, 0 if none is fitted. A fitted sensor reads a running trace with no Trace Tracker. */
+export const traceSense = (state: GameState, content: Content): number => installed(state, content, 'sensor')?.warn ?? 0;
+
+/** True if the player can read how far a trace has got: a Trace Tracker program, or a trace sensor in the gateway. */
+export const canReadTrace = (state: GameState, content: Content): boolean =>
+  traceSense(state, content) > 0 || ownedProgram(state, content, 'traceTracker') !== undefined;
+
 /** How much longer each step of a trace takes, from the Long way round skill. */
 export const traceSlow = (state: GameState, content: Content): number => 1 + effect(state, content, 'traceSlow');
 
@@ -222,8 +230,35 @@ export function advanceTrace(trace: TraceState, simMs: number): boolean {
     trace.status = 'active';
   }
   if (trace.status !== 'active') return false;
+  // A Trace Jammer holds the trace still until its freeze runs out; the leftover then counts.
+  const frozen = trace.frozenMs ?? 0;
+  if (frozen > 0) {
+    if (frozen >= simMs) {
+      trace.frozenMs = frozen - simMs;
+      return false;
+    }
+    trace.frozenMs = 0;
+    simMs -= frozen;
+  }
   trace.elapsedMs += simMs;
   return trace.elapsedMs >= totalTraceMs(trace);
+}
+
+/**
+ * A Trace Jammer freezes one connection's trace for a while. It works
+ * once per connection, and only on a trace that is already running.
+ * Returns a reason if it can't be used.
+ */
+export function jamTrace(state: GameState, content: Content, connectionId: string): string | null {
+  const program = ownedProgram(state, content, 'jamTrace');
+  if (!program) return 'You do not own a Trace Jammer.';
+  const connection = findConnection(state, connectionId);
+  if (!connection) return 'That connection is closed.';
+  if (connection.trace.status !== 'active') return 'There is no trace running on this connection.';
+  if (connection.jammed) return 'The Trace Jammer only works once on a connection.';
+  connection.jammed = true;
+  connection.trace.frozenMs = (connection.trace.frozenMs ?? 0) + content.rules.traceJamSeconds * 1000 * program.version;
+  return null;
 }
 
 export function totalTraceMs(trace: TraceState): number {
@@ -256,9 +291,9 @@ export function traceReport(trace: TraceState): TraceReport {
   };
 }
 
-/** True while a connection's trace stands still: its monitor is blind, or kept busy from another server. */
+/** True while a connection's trace stands still: its monitor is blind, kept busy from another server, or jammed. */
 export function traceHeld(state: GameState, content: Content, connection: Connection): boolean {
-  return connection.monitor.blindMs > 0 || monitorHeld(state, content, connection);
+  return connection.monitor.blindMs > 0 || (connection.trace.frozenMs ?? 0) > 0 || monitorHeld(state, content, connection);
 }
 
 /** Every running trace, the one that will finish first at the front. A held trace is not closing in, so moving ones come first. */

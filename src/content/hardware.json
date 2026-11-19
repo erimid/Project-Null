@@ -36,5 +36,8 @@
   { "id": "rack-1", "slot": "rack", "tier": 1, "name": "Inference card", "price": 5000, "model": "magpie-8b", "sizeGb": 8,
     "blurb": "Runs Magpie 8B on your own gateway, for good. No rent, no farm. The weights take 8 GB of storage." },
   { "id": "rack-2", "slot": "rack", "tier": 2, "name": "Inference cluster", "price": 15000, "model": "heron-120b", "sizeGb": 30,
-    "blurb": "Runs Heron 120B on your own gateway, for good. The weights take 30 GB of storage." }
+    "blurb": "Runs Heron 120B on your own gateway, for good. The weights take 30 GB of storage." },
+
+  { "id": "sensor-1", "slot": "sensor", "tier": 1, "name": "Trace sensor", "price": 2200, "warn": 1,
+    "blurb": "Reads a trace closing in on your gateway and times it to the second, with no Trace Tracker program to run or store." }
 ]

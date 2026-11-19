@@ -32,6 +32,8 @@ export function describeTarget(target: TaskTarget): string {
       return 'building';
     case 'decompile':
       return 'decompiling';
+    case 'scan':
+      return 'scanning';
   }
 }
 

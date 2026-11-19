@@ -54,6 +54,8 @@ export interface Rules {
   readonly ringMissSeconds: number;
   /** Seconds a Monitor Bypass as strong as the monitor keeps it blind. */
   readonly monitorBlindSeconds: number;
+  /** Seconds a version 1 Trace Jammer freezes a trace. */
+  readonly traceJamSeconds: number;
   /** Echoing the handshake right multiplies the blind time left by this. */
   readonly echoBonusFactor: number;
   /** One wrong cell multiplies the blind time left by this. */

@@ -9,11 +9,12 @@ import { ContentError, PROGRAM_KINDS, type ContractDef, type PartDef, type Progr
 /** Highest grade a module comes in. Grades run 1 to this. */
 export const MAX_GRADE = 3;
 
-export const MODULE_TRAITS = ['quiet', 'tidy'] as const;
+export const MODULE_TRAITS = ['quiet', 'tidy', 'parallel'] as const;
 /**
  * Something a module makes a program do besides changing its speed and size.
  * - quiet: starting it does not alert a monitor, and a monitor back from blind does not notice it running.
  * - tidy: files it copies or deletes leave no line in the access log.
+ * - parallel: it runs off to the side and does not count against how many programs the gateway can run at once.
  */
 export type ModuleTrait = (typeof MODULE_TRAITS)[number];
 

@@ -27,6 +27,7 @@ const PROGRAM_FOR: Record<Exclude<TaskTarget['kind'], 'build'>, ProgramKind> = {
   uploadFile: 'copyFile',
   deleteLog: 'deleteLog',
   decompile: 'decompile',
+  scan: 'scan',
 };
 
 /**
@@ -91,11 +92,16 @@ export function checkTask(state: GameState, content: Content, connection: Connec
   return { ...check, seconds: check.seconds / speed };
 }
 
+/** Running programs that take a slot: a Parallel build runs off to the side and does not. */
+function usedSlots(state: GameState, content: Content): number {
+  return state.tasks.filter((task) => !hasTrait(state, content, task.programId, 'parallel')).length;
+}
+
 /** checkTask on a stock gateway. */
 function baseCheck(state: GameState, content: Content, connection: Connection | null, target: TaskTarget): Check {
   const most = maxPrograms(state, content);
   if (target.kind === 'build') {
-    if (state.tasks.length >= most) return no(`Your gateway can run ${most} programs at once.`);
+    if (usedSlots(state, content) >= most) return no(`Your gateway can run ${most} programs at once.`);
     if (state.tasks.some((task) => task.target.kind === 'build')) return no('The Workbench is already building something.');
     const build = checkBuild(state, content, target.base, target.modules);
     if (!build.ok) return build;
@@ -104,7 +110,9 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
   }
   const program = ownedProgram(state, content, PROGRAM_FOR[target.kind]);
   if (!program) return no('You do not own a program for that.');
-  if (state.tasks.length >= most) return no(`Your gateway can run ${most} programs at once.`);
+  if (!hasTrait(state, content, program.id, 'parallel') && usedSlots(state, content) >= most) {
+    return no(`Your gateway can run ${most} programs at once.`);
+  }
   const same = (task: Task) =>
     task.connectionId === (connection?.id ?? null) && JSON.stringify(task.target) === JSON.stringify(target);
   if (state.tasks.some(same)) return no('That is already running.');
@@ -129,6 +137,14 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
     if (!file.encrypted) return no('That file is not encrypted.');
     const check = against('encryption', file.encrypted);
     return check.ok ? { ...check, seconds: check.seconds + (program.secondsPerGq * file.sizeGq) / program.version } : check;
+  }
+
+  if (target.kind === 'scan') {
+    const toScan = findServer(content, target.serverId);
+    if (!toScan || toScan.kind === 'gateway') return no('No such server.');
+    if (!state.knownServers.includes(target.serverId)) return no('You do not have that address.');
+    if (state.scanned.includes(target.serverId)) return no('You have already scanned that server.');
+    return { ok: true, seconds: program.baseSeconds / program.version, program };
   }
 
   const server = connection && findServer(content, connection.serverId);
@@ -254,6 +270,10 @@ function finishLocal(state: GameState, content: Content, task: Task): void {
   const target = task.target;
   if (target.kind === 'build') return finishBuild(state, task);
   if (target.kind === 'decompile') return finishDecompile(state, content, task);
+  if (target.kind === 'scan') {
+    if (!state.scanned.includes(target.serverId)) state.scanned.push(target.serverId);
+    return;
+  }
   if (target.kind !== 'decrypt') return;
   const file = state.player.files.find((item) => item.name === target.file);
   if (file) delete file.encrypted;
@@ -459,7 +479,7 @@ export function lockRing(state: GameState, content: Content, taskId: string, rin
 /** Starts a program, over a connection or (connectionId null) on the gateway. Returns a reason if it can't start. */
 export function startTask(state: GameState, content: Content, connectionId: string | null, target: TaskTarget): string | null {
   const connection = findConnection(state, connectionId) ?? null;
-  const atHome = target.kind === 'decrypt' || target.kind === 'decompile' || target.kind === 'build';
+  const atHome = target.kind === 'decrypt' || target.kind === 'decompile' || target.kind === 'build' || target.kind === 'scan';
   if ((connection === null) !== atHome) {
     return connection ? 'That runs on your gateway, not over a connection.' : 'That connection is closed.';
   }

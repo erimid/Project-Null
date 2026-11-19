@@ -49,6 +49,32 @@ export interface ServerDef {
   readonly link?: ServerLinkDef;
   /** Set only on companies generated for one game: how strong they are (1 to 5) and their line of business. */
   readonly generated?: { readonly tier: number; readonly sector: string };
+  /** What this server sells, if it is a shop. A board with no shop is a general store (see shopOf). */
+  readonly shop?: ShopDef;
+}
+
+/** One line of rare stock a shop may put out for a day at a time. */
+export interface RareStockDef {
+  readonly kind: 'program' | 'hardware' | 'module';
+  readonly id: string;
+  /** Grade of a rare module. */
+  readonly grade?: number;
+  /** Chance (0 to 1) it is on the shelf on any given day. */
+  readonly chance: number;
+}
+
+/** What a shop stocks. Staples are always in stock; rare lines come and go by the day. */
+export interface ShopDef {
+  readonly programs: boolean;
+  readonly hardware: boolean;
+  readonly modules: boolean;
+  readonly models: boolean;
+  /** If set, only staple programs of these kinds are stocked. Left out, every program is. */
+  readonly programKinds?: readonly ProgramKind[];
+  /** Multiplies every price here. 1 = the list price. */
+  readonly priceFactor: number;
+  /** Lines that may appear for one day at a time. */
+  readonly rare?: readonly RareStockDef[];
 }
 
 export const LINK_LAYERS = ['firewall', 'monitor'] as const;
@@ -91,6 +117,8 @@ export const PROGRAM_KINDS = [
   'traceTracker',
   'decompile',
   'planRoute',
+  'scan',
+  'jamTrace',
 ] as const;
 export type ProgramKind = (typeof PROGRAM_KINDS)[number];
 
@@ -367,6 +395,8 @@ export interface Tuning {
   readonly ringMissSeconds: number;
   /** Seconds a Monitor Bypass as strong as the monitor keeps it blind. Each level of difference doubles or halves it. */
   readonly monitorBlindSeconds: number;
+  /** Seconds a version 1 Trace Jammer freezes a trace. A stronger jammer freezes for longer. */
+  readonly traceJamSeconds: number;
   /** Echo the handshake: repeating the pattern right multiplies the blind time left by this. */
   readonly echoBonusFactor: number;
   /** Echo the handshake: one wrong cell multiplies the blind time left by this. */
@@ -797,6 +827,48 @@ function parseLink(file: string, where: string, value: unknown): ServerLinkDef {
   return { serverId: text(file, `${where} link`, raw, 'serverId'), layer: layer as LinkLayer };
 }
 
+const RARE_KINDS = ['program', 'hardware', 'module'] as const;
+
+function parseShop(file: string, where: string, value: unknown): ShopDef {
+  const raw = entry(file, `${where} shop`, value);
+  const flagOr = (key: string, fallback: boolean): boolean => (raw[key] === undefined ? fallback : flag(file, `${where} shop`, raw, key));
+  const kinds = raw['programKinds'];
+  let programKinds: ProgramKind[] | undefined;
+  if (kinds !== undefined) {
+    if (!Array.isArray(kinds) || !kinds.every((k) => (PROGRAM_KINDS as readonly unknown[]).includes(k))) {
+      throw new ContentError(file, `${where} shop: programKinds must be a list of program kinds`);
+    }
+    programKinds = kinds as ProgramKind[];
+  }
+  const rareRaw = raw['rare'];
+  let rare: RareStockDef[] | undefined;
+  if (rareRaw !== undefined) {
+    if (!Array.isArray(rareRaw)) throw new ContentError(file, `${where} shop: rare must be a list`);
+    rare = rareRaw.map((item, i): RareStockDef => {
+      const line = entry(file, `${where} shop rare ${i}`, item);
+      const kind = text(file, `${where} shop rare ${i}`, line, 'kind');
+      if (!(RARE_KINDS as readonly string[]).includes(kind)) {
+        throw new ContentError(file, `${where} shop rare ${i}: kind "${kind}" is not one of ${RARE_KINDS.join(', ')}`);
+      }
+      return {
+        kind: kind as RareStockDef['kind'],
+        id: text(file, `${where} shop rare ${i}`, line, 'id'),
+        ...(line['grade'] === undefined ? {} : { grade: num(file, `${where} shop rare ${i}`, line, 'grade', 1, 10) }),
+        chance: num(file, `${where} shop rare ${i}`, line, 'chance', 0, 1),
+      };
+    });
+  }
+  return {
+    programs: flagOr('programs', true),
+    hardware: flagOr('hardware', true),
+    modules: flagOr('modules', true),
+    models: flagOr('models', true),
+    ...(programKinds ? { programKinds } : {}),
+    priceFactor: raw['priceFactor'] === undefined ? 1 : num(file, `${where} shop`, raw, 'priceFactor', 0.1, 10),
+    ...(rare ? { rare } : {}),
+  };
+}
+
 export function parseServers(data: unknown, file = 'servers.json'): ServerDef[] {
   if (!Array.isArray(data)) throw new ContentError(file, 'must be a list of servers');
   const seenIds = new Set<string>();
@@ -854,6 +926,7 @@ export function parseServers(data: unknown, file = 'servers.json'): ServerDef[] 
       }),
       ...(raw.records === undefined ? {} : { records: parseRecords(file, where, raw.records) }),
       ...(raw.link === undefined ? {} : { link: parseLink(file, where, raw.link) }),
+      ...(raw.shop === undefined ? {} : { shop: parseShop(file, where, raw.shop) }),
     };
   });
 
@@ -988,6 +1061,7 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     ringToleranceDegrees: num(file, 'tuning', data, 'ringToleranceDegrees', 1, 90),
     ringMissSeconds: num(file, 'tuning', data, 'ringMissSeconds', 0, 60),
     monitorBlindSeconds: num(file, 'tuning', data, 'monitorBlindSeconds', 1, 3600),
+    traceJamSeconds: num(file, 'tuning', data, 'traceJamSeconds', 1, 600),
     echoBonusFactor: num(file, 'tuning', data, 'echoBonusFactor', 1, 10),
     echoPenaltyFactor: num(file, 'tuning', data, 'echoPenaltyFactor', 0, 1),
     harderSecurityAfter: num(file, 'tuning', data, 'harderSecurityAfter', 0, 1000),

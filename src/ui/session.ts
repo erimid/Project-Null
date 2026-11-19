@@ -221,7 +221,7 @@ function autosave(): void {
 
 /** A short description of the things the clock can change besides the time. */
 function shape(): string {
-  const traces = state.connections.map((c) => `${c.trace.status}${traceReport(c.trace).relaysTraced}`).join();
+  const traces = state.connections.map((c) => `${c.trace.status}${traceReport(c.trace).relaysTraced}${Math.ceil((c.trace.frozenMs ?? 0) / 1000)}`).join();
   const monitors = state.connections.map((c) => `${c.monitor.blindMs > 0}${c.monitor.echo?.result ?? ''}`).join();
   const sealed = state.player.files.filter((file) => file.encrypted).length;
   const phish = `${state.phish.sent.length}${state.phish.done.length}${state.player.model?.id ?? ''}`;
