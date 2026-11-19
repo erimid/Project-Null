@@ -143,5 +143,15 @@
     "from": "Gateway",
     "subject": "Plug pulled",
     "body": "You pulled the plug on {who}. Every connection dropped and your gateway went dark. They got nothing, and nor did you: no address, no loot. Sometimes that is the right call."
+  },
+  "shops": {
+    "from": "Wren",
+    "subject": "The Backroom is not the only shelf",
+    "body": "{handle}, you have been buying everything from one counter. That was fine to start with. It is not the only counter.\n\nThe Open Relay Registry lists three more shops now. Tin Shed sells programs and modules, every version, and a few odd ones that are quick but fat, or slow but small. Varga Surplus sells gateway hardware pulled out of closed buildings, a little under the Backroom's price. Lowtide Exchange sells the specialist kit: monitor bypasses, model racks, trace sensors, the best coolers. It costs a quarter more, and its daily lines are the things that should not be for sale.\n\nNone of them post work. They only sell. Log in as a walk-in, look around, and look again tomorrow. The rare lines change at midnight.\n\nOne more thing. Two programs of the same kind and version are not the same program. Read the sizes and the times. When you own more than one, the Programs window lets you pick which runs.\n\nWren"
+  },
+  "gear": {
+    "from": "Wren",
+    "subject": "Things that are not locks",
+    "body": "{handle}, the work you are getting now is not only about getting through the door. Four things that help with everything else.\n\nA Scanner reads a server's security before you connect, so you buy the right bypass first and not the wrong one. A Trace Jammer freezes a trace for a few seconds, once on each connection. It is not a way out. It is a way to finish. A trace sensor, a part for your gateway, reads a trace to the second without a Tracker program taking up room. And a module called Offload lets a program you build run off to the side, without using one of your slots.\n\nNone of them make you quiet. All of them make you a little less loud.\n\nWren"
   }
 }

@@ -108,6 +108,26 @@
           }
         ]
       }
+    },
+    {
+      "name": "rota_march.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "staff",
+      "content": {
+        "kind": "text",
+        "text": "Rota, March. Mon: Pires. Tue: Pires. Wed: Costa (if she is better). Thu: Pires. Fri: whoever will. Sat: the volunteers. Sun: closed.\n\nThe sysop account is Pires’s and is also the building alarm code, since he could only remember one thing."
+      }
+    },
+    {
+      "name": "donated_papers.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "archive",
+      "content": {
+        "kind": "text",
+        "text": "Donated papers, catalogued for the Lisbon Quarterly: 14 letters, one diary, one box of unlabelled slides. A researcher asked to see the slides and was told the box was mislaid. It was in the same drawer as last time."
+      }
     }
   ],
   "logs": [

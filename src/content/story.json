@@ -39,6 +39,15 @@
       }
     },
     {
+      "id": "wren-doubts",
+      "afterHours": 3,
+      "mail": {
+        "from": "Wren",
+        "subject": "who you have been writing to",
+        "body": "{handle}, I read the board's logs, which I am allowed to do and you are not allowed to know. Somebody has been leaving work for you that I did not post. It is paid out of an account that has never paid anyone else.\n\nI am not telling you to stop. I vouched for you, and you have not made me regret it yet. I am telling you that when a client does not want to be found, there are two reasons. One is that they are careful. The other is that they are not a client.\n\nKeep your relays warm and your logs clean. And if the work starts to feel like it is about you, say so.\n\nWren"
+      }
+    },
+    {
       "id": "courier",
       "afterHours": 8,
       "minRating": 26,

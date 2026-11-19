@@ -64,6 +64,26 @@
         "id": "compact",
         "grade": 3
       }
+    },
+    {
+      "name": "disclosure_protocol.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "partners",
+      "content": {
+        "kind": "text",
+        "text": "DISCLOSURE PROTOCOL. Internal.\n\nA disclosure bundle is the set of documents we hand to the other side. It is assembled by an associate, checked by a senior associate and released by a partner. It is not to be assembled by a client, a client’s friend, or anyone who says they are in a hurry.\n\nBundle 7 was assembled in a hurry."
+      }
+    },
+    {
+      "name": "firewall_ticket.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "it",
+      "content": {
+        "kind": "text",
+        "text": "TICKET: our firewall is managed by Gatehouse. When it breaks, we call Gatehouse. When Gatehouse breaks, we do not have a procedure.\n\nProposed procedure: do not break Gatehouse. Status: approved."
+      }
     }
   ],
   "logs": [

@@ -63,6 +63,36 @@
         "kind": "text",
         "text": "the file name on disk is redacted at the source. nine letters have been struck out and will not copy. the three that survive read:  P R O J E C T   N _ _ _\n\nthe body is encrypted past anything you carry. one header line is in the clear:\n\n  \"this is not a trial. the trial was how it learned to ask. — V\""
       }
+    },
+    {
+      "name": "first_entry.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "folder": "index",
+      "content": {
+        "kind": "text",
+        "text": "entry 1.\n\nthe first thing the node logged was a handshake from an address that did not exist yet. the second was the same handshake, twelve seconds later, from an address that did.\n\nnobody has ever worked out which of them was the node."
+      }
+    },
+    {
+      "name": "quiet_hours.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "index",
+      "content": {
+        "kind": "text",
+        "text": "between three and four in the morning, local time, the node stops moving anything. it does not sleep. nothing here sleeps. it listens.\n\nthe log for those hours is the longest file on the machine and has no entries in it."
+      }
+    },
+    {
+      "name": "sources_partial.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "index",
+      "content": {
+        "kind": "text",
+        "text": "sources, partial, ordered by how often they send.\n\n  a biogenetics firm, northern europe: nightly\n  a polytechnic registry, ashgrove: weekly\n  a reinsurer, loss models only: quarterly\n  a power utility's meter archive: hourly, until last month\n  an address that is this one: always\n\nthe list stops here. the next line is struck out at the source."
+      }
     }
   ],
   "logs": [

@@ -133,6 +133,36 @@
           }
         ]
       }
+    },
+    {
+      "name": "lunde_letter_unsent.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "ethics",
+      "content": {
+        "kind": "text",
+        "text": "Draft. Not sent.\n\nDr Halvorsen, I have read the Lantern file three times. The second time it was not the same file as the first. I am not saying that to be difficult. I am saying that I opened it, I read a paragraph, I closed it, and when I opened it again the paragraph had changed.\n\nI would like it noted that I asked the question. I would like it noted that I was told not to. — S. Lunde"
+      }
+    },
+    {
+      "name": "freezer_alarm_log.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "lab",
+      "content": {
+        "kind": "text",
+        "text": "Freezer 3 alarm log, February. Four alarms, all between 02:00 and 04:00, all on the night after the Lantern file was written. Cause: unknown. Each time the freezer recovered on its own. Facilities say it is a sensor. Facilities were asked to replace the sensor. Facilities replaced it. It has done it twice since."
+      }
+    },
+    {
+      "name": "backup_policy.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "it",
+      "content": {
+        "kind": "text",
+        "text": "BACKUP POLICY. The Lantern project share is not backed up and is not to be backed up. This is on the instruction of Dr E. Halvorsen, in writing, on 25 February. IT has been asked not to ask why."
+      }
     }
   ],
   "logs": [

@@ -82,6 +82,26 @@
           }
         ]
       }
+    },
+    {
+      "name": "night_patrol_log.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "security",
+      "content": {
+        "kind": "text",
+        "text": "NIGHT PATROL, 12 March. Guard: R. Ibarra.\n\n22:10 ground floor, clear. 23:40 car park, clear. 01:15 plant room, door found ajar, closed it. 02:50 camera 4 offline again, logged. 04:30 ground floor, clear. 05:55 handed over.\n\nNothing to report. Camera 4 is always offline."
+      }
+    },
+    {
+      "name": "camera_outage_note.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "security",
+      "content": {
+        "kind": "text",
+        "text": "Camera 4 has been offline since the engineers last updated the camera server. The engineers say it is the camera. The camera says it is the engineers. The access controller does not care and logs door events whether the camera sees them or not.\n\nIf you need to know who came through the north door, ask the door log, not the camera."
+      }
     }
   ],
   "logs": [

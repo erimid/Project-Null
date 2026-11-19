@@ -115,6 +115,36 @@
         "id": "tidy",
         "grade": 3
       }
+    },
+    {
+      "name": "dunmore_site_visit.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "claims/dunmore",
+      "content": {
+        "kind": "text",
+        "text": "SITE VISIT, Dunmore Cold Storage, 9 March. Adjuster: R. Castellanos.\n\nCompressor hall fire. Cold room 3 lost. I counted eleven pallets in the room; the claim form lists thirty-eight. The fire marshal’s report says the fire began in an electrical cabinet that was serviced the week before by a company the insured owns half of.\n\nI have not put this in the system. I want to ask someone first who is not my manager."
+      }
+    },
+    {
+      "name": "payout_rules.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "claims",
+      "content": {
+        "kind": "text",
+        "text": "PAYOUT AUTHORISATION. Any claim over 1,000,000 needs two sign-offs. Any claim over 2,000,000 needs three. A claim split into smaller claims is a single claim for these purposes. A claim whose status is changed by someone who did not review it is a matter for Compliance.\n\nCompliance has two staff."
+      }
+    },
+    {
+      "name": "adjuster_training.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "hr",
+      "content": {
+        "kind": "text",
+        "text": "Training notes for new adjusters. Rule one: the policyholder is not your friend. Rule two: the policyholder is not your enemy. Rule three: if the file feels wrong, you are allowed to say so, and nothing will happen to you. (This last rule is not as true as it used to be.)"
+      }
     }
   ],
   "logs": [

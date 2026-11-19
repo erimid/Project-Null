@@ -96,6 +96,36 @@
           }
         ]
       }
+    },
+    {
+      "name": "partners_meeting_0310.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "partners",
+      "content": {
+        "kind": "text",
+        "text": "Partners’ meeting, 10 March. Present: Aldergate, Finch, Okonkwo-Reyes. Apologies: none, which is unusual.\n\n1. Harlow v Tessera. Settled on Friday. Mr Finch notes the terms are confidential and asks that nobody describe them as “generous” in writing.\n2. The Corvane treaty cover note. Mrs Aldergate to redraft. Nobody is to forward the first version to anyone outside the firm, including the client.\n3. Billing. March is late again. Mr Finch will speak to the associates."
+      }
+    },
+    {
+      "name": "harlow_closing_memo.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "matters/closed",
+      "content": {
+        "kind": "text",
+        "text": "CLOSING MEMO. Harlow v Tessera.\n\nSettlement paid in full on 7 March. The sealed schedule is held on the matter index and is not to be copied, printed or described. If the other side asks what we knew about the Brackley samples in June 2032, the answer is in the sealed schedule and we do not give it.\n\nFile to be archived in thirty days. Do not archive early."
+      }
+    },
+    {
+      "name": "backup_ticket_0311.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "it",
+      "content": {
+        "kind": "text",
+        "text": "IT TICKET 0311: nightly backup of the billing share failed again. Cause: someone left a spreadsheet open. Fix: told them. Status: closed.\n\nNote for the next person: the matter index is backed up weekly, not nightly. If it goes, it goes."
+      }
     }
   ],
   "logs": [

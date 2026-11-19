@@ -97,6 +97,8 @@ export interface Rules {
   readonly jobsAfter: number;
   /** Rating at which the fixer writes about jobs that need a second server. */
   readonly linksAfterRating: number;
+  readonly shopsAfterRating: number;
+  readonly gearAfterRating: number;
   /** Each time the best rating passes another multiple of this, the player earns a skill point. */
   readonly skillPointRating: number;
   /** Credits to unlearn every skill the first time; each time after costs this much more. */
@@ -192,6 +194,12 @@ export function noteProgress(state: GameState, content: Content): void {
   }
   if (state.player.rating >= content.rules.linksAfterRating) {
     once(state, 'links', () => sendMail(state, content, 'links'));
+  }
+  if (state.player.rating >= content.rules.shopsAfterRating && content.servers.some((server) => server.kind === 'board' && server.shop?.contracts === false)) {
+    once(state, 'shops', () => sendMail(state, content, 'shops'));
+  }
+  if (state.player.rating >= content.rules.gearAfterRating) {
+    once(state, 'gear', () => sendMail(state, content, 'gear'));
   }
   // At the rating where enemy hackers start to take an interest, the fixer gives warning.
   if (state.player.rating >= content.rules.raidMinRating && content.rivals.length > 0) {
