@@ -75,6 +75,8 @@
   ],
   "jobsAfter": 1,
   "linksAfterRating": 4,
+  "shopsAfterRating": 8,
+  "gearAfterRating": 13,
   "skillPointRating": 3,
   "unlearnPrice": 1500,
   "buildSeconds": 8,

@@ -82,6 +82,26 @@
         "id": "compact",
         "grade": 1
       }
+    },
+    {
+      "name": "meeting_notes_feb.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "volunteers",
+      "content": {
+        "kind": "text",
+        "text": "Volunteers’ meeting, February. Eleven present.\n\nThe committee proposes charging for bandwidth over the fair-use line. Three people object. One says it is not fair on the estate. One says it is not fair on the volunteers. One says nothing and writes it all down, and that one is the treasurer.\n\nVote deferred. Again."
+      }
+    },
+    {
+      "name": "outage_postmortem_jan.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "noc",
+      "content": {
+        "kind": "text",
+        "text": "POST-MORTEM, January outage. Cause: a power strip. Fix: a power strip. Lesson: we have eleven volunteers and one working power strip.\n\nAction: buy a second power strip. Owner: unassigned. Due: when someone puts their name down."
+      }
     }
   ],
   "logs": [

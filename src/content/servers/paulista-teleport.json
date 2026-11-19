@@ -82,6 +82,26 @@
           }
         ]
       }
+    },
+    {
+      "name": "transponder_fault_note.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "noc",
+      "content": {
+        "kind": "text",
+        "text": "Transponder 4 has been dropping packets between 02:00 and 03:00, three nights running. Cause: weather at the dish. Cause: not weather. Cause: unknown. Customers have not complained, which is the part that worries the NOC."
+      }
+    },
+    {
+      "name": "arrears_policy.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "billing",
+      "content": {
+        "kind": "text",
+        "text": "Customers more than ninety days in arrears lose service, unless they are a university, a hospital or a person who knows someone. The billing run on the twelfth is where arrears are calculated. If the run does not complete, nobody is cut off. That is not a policy. It is an observation."
+      }
     }
   ],
   "logs": [

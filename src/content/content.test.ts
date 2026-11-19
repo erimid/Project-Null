@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, tuning } from './index';
+import { companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, story, tuning } from './index';
 import companiesJson from './companies.json';
 import { parseCompanies } from './companies';
 import { parseHardware } from './hardware';
@@ -402,5 +402,24 @@ describe('the catalogue', () => {
     const boards = servers.filter((server) => server.kind === 'board');
     expect(boards.length).toBeGreaterThanOrEqual(4);
     expect(boards.filter((server) => server.shop?.contracts !== false)).toHaveLength(1);
+  });
+});
+
+describe('Act 1 and the written jobs', () => {
+  it('has about fifteen written multi-stage contracts for the middle and the top of the ladder', () => {
+    const staged = contracts.filter((contract) => !contract.story && (contract.stages?.length ?? 0) > 0);
+    expect(staged.length).toBeGreaterThanOrEqual(15);
+    expect(Math.min(...staged.map((contract) => contract.minRating))).toBeGreaterThanOrEqual(8);
+    expect(Math.max(...staged.map((contract) => contract.minRating))).toBeGreaterThanOrEqual(40);
+  });
+
+  it('has many openable files sorted into server folders', () => {
+    const inFolders = servers.flatMap((server) => server.files.filter((file) => file.folder !== undefined && file.content !== undefined));
+    expect(inFolders.length).toBeGreaterThanOrEqual(35);
+  });
+
+  it('never says the secret name outside the redacted last file', () => {
+    const text = JSON.stringify([servers, contracts, mail, story, programs, sites]).replace(/PROJECT_N████\.dat/g, '').replace(/P R O J E C T +N/g, '');
+    expect(text).not.toMatch(/project null/i);
   });
 });

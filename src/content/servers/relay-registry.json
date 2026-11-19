@@ -96,6 +96,16 @@
         "id": "swift",
         "grade": 1
       }
+    },
+    {
+      "name": "registrar_leave_note.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "admin",
+      "content": {
+        "kind": "text",
+        "text": "M. Egli is on leave until the 20th. For listing problems, write to the abuse desk. For abuse problems, write to the listing desk. For anything else, wait.\n\nThe registrar login stays active during leave. Please do not use it for anything exciting."
+      }
     }
   ],
   "logs": [

@@ -429,5 +429,463 @@
       "kind": "steal",
       "file": "PROJECT_N████.dat"
     }
+  },
+  {
+    "id": "kestrel-handover",
+    "title": "The rota and the inbox",
+    "client": "A former volunteer",
+    "targetId": "kestrel-net",
+    "pay": 2100,
+    "rating": 0,
+    "minRating": 10,
+    "summary": "Read the rota at Kestrel, then clear a complaint at Polar Mesh.",
+    "brief": "I ran the night shift at Kestrel for two years and they pushed me out over a power strip.\n\nOpen volunteer_rota.txt on their system and read it. I want to know who has been covering my nights, and whether they are being paid. Then I will tell you what else I need.",
+    "objective": {
+      "kind": "read",
+      "file": "volunteer_rota.txt"
+    },
+    "stages": [
+      {
+        "targetId": "polar-mesh",
+        "objective": {
+          "kind": "destroy",
+          "file": "abuse_desk_inbox.dat"
+        },
+        "brief": "The rota says what I thought it would. One of the volunteers also works the abuse desk at Polar Mesh, and a complaint about me is sitting in their inbox. Delete abuse_desk_inbox.dat before it is read. You will need an operator login there."
+      }
+    ]
+  },
+  {
+    "id": "registry-trail",
+    "title": "Who asked",
+    "client": "A network researcher",
+    "targetId": "relay-registry",
+    "pay": 2500,
+    "rating": 0,
+    "minRating": 12,
+    "summary": "Copy the Registry’s query log, then delete the abuse reports.",
+    "brief": "The Registry says its queries are logged for thirty days. I want the log, so I can see who has been asking about me.\n\nCopy query.log from the registrar account. Then I will want something taken out afterwards.",
+    "objective": {
+      "kind": "steal",
+      "file": "query.log"
+    },
+    "stages": [
+      {
+        "targetId": "relay-registry",
+        "objective": {
+          "kind": "destroy",
+          "file": "abuse_reports_q1.dat"
+        },
+        "brief": "Thank you. My name is in the log, twice, which is two times more than I wanted. It is also in the abuse reports, filed by someone who read the log before I did. Delete abuse_reports_q1.dat. Fair warning: after you took the log, the Registry stiffened its firewall.",
+        "twists": [
+          {
+            "kind": "raise",
+            "layer": "firewall",
+            "by": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "meridian-asta",
+    "title": "Before the Asta docks",
+    "client": "A shipping agent",
+    "targetId": "meridian-freight",
+    "pay": 3000,
+    "rating": 0,
+    "minRating": 13,
+    "summary": "Read the berth schedule, free a held container, then delete its manifest.",
+    "brief": "The MV Asta Harbour docks on Thursday. A container of mine is on hold at Meridian, and the berth schedule will tell me how long I have.\n\nOpen berth_schedule_wk11.txt and read it. Meridian has a proxy and a monitor, so be quiet.",
+    "objective": {
+      "kind": "read",
+      "file": "berth_schedule_wk11.txt"
+    },
+    "stages": [
+      {
+        "targetId": "meridian-freight",
+        "objective": {
+          "kind": "record",
+          "key": "MRDU 518830-7",
+          "column": "Status",
+          "value": "Released"
+        },
+        "brief": "The schedule says Thursday at six. That is not much time. Change the status of container MRDU 518830-7 to Released in their records. They sit behind a proxy."
+      },
+      {
+        "targetId": "meridian-freight",
+        "objective": {
+          "kind": "destroy",
+          "file": "manifest_MV_Asta_Harbour_0314.dat"
+        },
+        "brief": "Released. Now delete the Asta Harbour manifest, so there is nothing for anybody to compare the release against."
+      }
+    ]
+  },
+  {
+    "id": "ashgrove-waiver",
+    "title": "A waiver, quietly",
+    "client": "A third-year student",
+    "targetId": "ashgrove-poly",
+    "pay": 3000,
+    "rating": 0,
+    "minRating": 14,
+    "summary": "Copy the fee waiver list, then restore one student’s standing.",
+    "brief": "Half my year is on the fee waiver list and half of them are not meant to be. I am not one of them, which is why I am asking you.\n\nCopy fee_waivers.dat from the registrar’s system. Do not open it. I do not want to know what it says.",
+    "objective": {
+      "kind": "steal",
+      "file": "fee_waivers.dat"
+    },
+    "stages": [
+      {
+        "targetId": "ashgrove-poly",
+        "objective": {
+          "kind": "record",
+          "key": "20319947",
+          "column": "Standing",
+          "value": "Good"
+        },
+        "brief": "There is one student I do want to help. Declan Shaw is on probation for something that was not his fault. Set his standing to Good. Their records are behind a proxy."
+      }
+    ]
+  },
+  {
+    "id": "paulista-arrears",
+    "title": "The arrears run",
+    "client": "A reseller",
+    "targetId": "paulista-teleport",
+    "pay": 3400,
+    "rating": 0,
+    "minRating": 16,
+    "summary": "Copy the customer accounts, then delete the arrears run.",
+    "brief": "Paulista Teleport cuts off anyone ninety days behind, and I am ninety-one days behind.\n\nCopy customer_accounts.dat from their NOC. I want to know who else is, and whether anyone was spared.",
+    "objective": {
+      "kind": "steal",
+      "file": "customer_accounts.dat"
+    },
+    "stages": [
+      {
+        "targetId": "paulista-teleport",
+        "objective": {
+          "kind": "destroy",
+          "file": "billing_run_0312.arc"
+        },
+        "brief": "Nobody was spared who was not already friends with someone. Delete billing_run_0312.arc, the run that calculated all of it. It is eleven gigabytes, so it takes time. Leave nothing running when you go."
+      }
+    ]
+  },
+  {
+    "id": "tallis-sunday",
+    "title": "Sunday’s backup",
+    "client": "A local historian",
+    "targetId": "tallis-library",
+    "pay": 3000,
+    "rating": 0,
+    "minRating": 17,
+    "summary": "Copy the library’s Sunday backup, then delete the overdue notices.",
+    "brief": "The library is going to digitise its archive and then throw the paper away. I would like to have the digital copy first.\n\nCopy backup_sunday.arc. It is fourteen gigabytes, and your drive will notice.",
+    "objective": {
+      "kind": "steal",
+      "file": "backup_sunday.arc"
+    },
+    "stages": [
+      {
+        "targetId": "tallis-library",
+        "objective": {
+          "kind": "destroy",
+          "file": "overdue_notices.dat"
+        },
+        "brief": "I now owe the library eleven years of fines. Delete overdue_notices.dat. They will not mind. They never read it."
+      }
+    ],
+    "choices": [
+      {
+        "id": "keep",
+        "label": "Keep a copy",
+        "note": "Take less money and keep the archive on your own drive.",
+        "pay": 2000,
+        "rating": 1,
+        "keep": true,
+        "reply": {
+          "from": "A local historian",
+          "subject": "Re: Sunday’s backup",
+          "body": "You kept it. I do not mind. Someone should have it who reads it.\n\nThe fee has been sent, less than we agreed. I am not asking for the rest back."
+        }
+      }
+    ]
+  },
+  {
+    "id": "polar-storm",
+    "title": "Before the storm",
+    "client": "A grid analyst",
+    "targetId": "polar-mesh",
+    "pay": 3300,
+    "rating": 0,
+    "minRating": 18,
+    "summary": "Read the storm ops note, then delete the session log.",
+    "brief": "A storm is forecast on the fifteenth and the Polar Mesh operator will be asleep. I want to be sure the night intern has nothing in the logs with my name on it.\n\nRead storm_ops_note.txt on their operator account. It will tell you whether the intern is still using the shared login.",
+    "objective": {
+      "kind": "read",
+      "file": "storm_ops_note.txt"
+    },
+    "stages": [
+      {
+        "targetId": "polar-mesh",
+        "objective": {
+          "kind": "destroy",
+          "file": "session.log"
+        },
+        "brief": "He is. Delete session.log, so there is no record of whose login was used for what."
+      }
+    ]
+  },
+  {
+    "id": "sunderby-orders",
+    "title": "Not the health station",
+    "client": "A nurse at Norrfjarden",
+    "targetId": "sunderby-kraft",
+    "pay": 3700,
+    "rating": 0,
+    "minRating": 20,
+    "summary": "Read the week 11 orders, then clear the health station’s account.",
+    "brief": "Sunderby Kraft is going to cut the power to our health station on Saturday over a bill we have already been told is a clerical error.\n\nRead disconnection_orders_week11.txt and tell me what it says. If we are on it, we are on it.",
+    "objective": {
+      "kind": "read",
+      "file": "disconnection_orders_week11.txt"
+    },
+    "stages": [
+      {
+        "targetId": "sunderby-kraft",
+        "objective": {
+          "kind": "record",
+          "key": "SK-40118",
+          "column": "Status",
+          "value": "Paid"
+        },
+        "brief": "We are on it. Set the status of account SK-40118 to Paid and the order falls out of the run. Their records are behind a proxy and the monitor is quick, so take care."
+      }
+    ]
+  },
+  {
+    "id": "tessera-chain",
+    "title": "Sample seven",
+    "client": "A former lab technician",
+    "targetId": "tessera-water",
+    "pay": 5200,
+    "rating": 0,
+    "minRating": 23,
+    "summary": "Read the chain of custody, delete the destruction certificates, then copy the 2032 returns.",
+    "brief": "Three of the Brackley samples were never tested, and I know because I labelled them. I was told afterwards that I had not.\n\nOpen sample_chain_of_custody.txt on their administrator account. It will tell you who signed what.",
+    "objective": {
+      "kind": "read",
+      "file": "sample_chain_of_custody.txt"
+    },
+    "stages": [
+      {
+        "targetId": "tessera-water",
+        "objective": {
+          "kind": "destroy",
+          "file": "certificates_of_destruction.dat"
+        },
+        "brief": "The pencil note is in there, and it is not mine. The certificates of destruction say samples 7 to 9 were destroyed in a tested batch. They were not. Delete certificates_of_destruction.dat so nobody can say they were."
+      },
+      {
+        "targetId": "tessera-water",
+        "objective": {
+          "kind": "steal",
+          "file": "regulator_returns_2032.dat"
+        },
+        "brief": "Last one. Copy regulator_returns_2032.dat. It is not the file they sent the regulator, and I would like someone to be able to say so."
+      }
+    ]
+  },
+  {
+    "id": "aldergate-cover",
+    "title": "The sealed schedule",
+    "client": "A junior associate",
+    "targetId": "aldergate-finch",
+    "pay": 5400,
+    "rating": 0,
+    "minRating": 25,
+    "summary": "Copy the matter index, then delete the March billing file.",
+    "brief": "Harlow v Tessera was settled with a sealed schedule, and the sealed schedule is mentioned in the matter index. I need to know what the firm will say if asked.\n\nCopy matter_index_2034.dat from their system. The administrator account is shared, so nobody will notice one more person.",
+    "objective": {
+      "kind": "steal",
+      "file": "matter_index_2034.dat"
+    },
+    "stages": [
+      {
+        "targetId": "aldergate-finch",
+        "objective": {
+          "kind": "destroy",
+          "file": "client_billing_march.dat"
+        },
+        "brief": "The billing file shows how many hours the partners billed on the Tessera matter, which is how you can tell how long they knew. Delete client_billing_march.dat. They have tightened up since you were in: the firewall is higher now.",
+        "twists": [
+          {
+            "kind": "raise",
+            "layer": "firewall",
+            "by": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "calder-cameras",
+    "title": "Camera four",
+    "client": "A night guard",
+    "targetId": "calder-facilities",
+    "pay": 4800,
+    "rating": 0,
+    "minRating": 28,
+    "summary": "Read the camera note, then delete the camera index and the door events.",
+    "brief": "I was on the north door on the twelfth. Camera 4 was offline, as always. If anyone looks at the door events they will see my badge, and I was not where my sheet says.\n\nRead camera_outage_note.txt on the security desk account. It will tell you what a door log shows.",
+    "objective": {
+      "kind": "read",
+      "file": "camera_outage_note.txt"
+    },
+    "stages": [
+      {
+        "targetId": "calder-facilities",
+        "objective": {
+          "kind": "destroy",
+          "file": "camera_index.dat"
+        },
+        "brief": "So the door log is what matters. First the camera index, so nobody checks what camera 4 might have seen. Delete camera_index.dat."
+      },
+      {
+        "targetId": "calder-facilities",
+        "objective": {
+          "kind": "destroy",
+          "file": "door_events_0313.dat"
+        },
+        "brief": "Then the door events themselves. Delete door_events_0313.dat. Be quick after the first one: the desk will notice an index gone and look for what else is missing."
+      }
+    ]
+  },
+  {
+    "id": "gatehouse-configs",
+    "title": "Quarterly review",
+    "client": "A rival security firm",
+    "targetId": "gatehouse-perimeter",
+    "pay": 5000,
+    "rating": 0,
+    "minRating": 29,
+    "summary": "Read the handover, then copy Gatehouse’s client configs.",
+    "brief": "Gatehouse Managed Security is eating our clients. Their handover notes say how.\n\nRead shift_handover_0313.txt on the ops account. It will say when the client configs are exported.",
+    "objective": {
+      "kind": "read",
+      "file": "shift_handover_0313.txt"
+    },
+    "stages": [
+      {
+        "targetId": "gatehouse-perimeter",
+        "objective": {
+          "kind": "steal",
+          "file": "client_configs.dat"
+        },
+        "brief": "Exported at two in the morning, in the usual place. Copy client_configs.dat. It is five gigabytes and the monitor will want a word about it."
+      }
+    ],
+    "choices": [
+      {
+        "id": "sell",
+        "label": "Sell the configs to a bidder",
+        "note": "Pays more. Gatehouse will hear about it, and so will the board.",
+        "pay": 6800,
+        "rating": -2,
+        "reply": {
+          "from": "A bidder",
+          "subject": "Received",
+          "body": "The configs have arrived. The fee is higher than we agreed, because we agreed it before we knew what was in them.\n\nPlease do not do business with Gatehouse’s clients for a while."
+        }
+      }
+    ]
+  },
+  {
+    "id": "halvorsen-lunde",
+    "title": "What Lunde wrote down",
+    "client": "A colleague of Dr Lunde",
+    "targetId": "halvorsen",
+    "pay": 7600,
+    "rating": 0,
+    "minRating": 35,
+    "summary": "Read Dr Lunde’s unsent letter, then copy the trial summary.",
+    "brief": "Dr Lunde has not been at her desk since Tuesday. Her unsent letter to Halvorsen is still on the ethics share.\n\nRead lunde_letter_unsent.txt. I want to know what she saw, and whether it matches what I saw.",
+    "objective": {
+      "kind": "read",
+      "file": "lunde_letter_unsent.txt"
+    },
+    "stages": [
+      {
+        "targetId": "halvorsen",
+        "objective": {
+          "kind": "steal",
+          "file": "HB-2206_trial_summary.dat"
+        },
+        "brief": "It matches. Her trial summary is the only file that records what she said before they moved her. Copy HB-2206_trial_summary.dat."
+      }
+    ]
+  },
+  {
+    "id": "corvane-castellanos",
+    "title": "The adjuster’s note",
+    "client": "R. Castellanos",
+    "targetId": "corvane-mutual",
+    "pay": 9500,
+    "rating": 0,
+    "minRating": 40,
+    "summary": "Read the Dunmore site visit, approve a denied claim, then delete the fraud watchlist.",
+    "brief": "I am an adjuster at Corvane and I wrote a note about Dunmore Cold Storage that I did not put in the system. It is in a folder only I use.\n\nRead dunmore_site_visit.txt. I need to know if the version I wrote is the version still there.",
+    "objective": {
+      "kind": "read",
+      "file": "dunmore_site_visit.txt"
+    },
+    "stages": [
+      {
+        "targetId": "corvane-mutual",
+        "objective": {
+          "kind": "record",
+          "key": "C-88240",
+          "column": "Status",
+          "value": "Approved"
+        },
+        "brief": "It is the same, thank God. There is another claim, C-88240, Fenwick Auto, that was denied for the same reason Dunmore was approved. Set it to Approved. Their records sit behind a proxy and a patient monitor."
+      },
+      {
+        "targetId": "corvane-mutual",
+        "objective": {
+          "kind": "destroy",
+          "file": "fraud_watchlist.dat"
+        },
+        "brief": "Last: delete fraud_watchlist.dat. If Fenwick is on it, and I think they are, someone will ask why they were approved."
+      }
+    ]
+  },
+  {
+    "id": "calder-modelling",
+    "title": "Still modelling",
+    "client": "A reinsurance broker",
+    "targetId": "calder-re",
+    "pay": 9800,
+    "rating": 0,
+    "minRating": 46,
+    "summary": "Read the renewal email, then copy the loss model.",
+    "brief": "Calder Re keeps telling Corvane it is “still modelling.” I would like to know what it has modelled.\n\nRead corvane_renewal_email.txt on their administrator account. You will need the facilities desk too: their monitor is run from there.",
+    "objective": {
+      "kind": "read",
+      "file": "corvane_renewal_email.txt"
+    },
+    "stages": [
+      {
+        "targetId": "calder-re",
+        "objective": {
+          "kind": "steal",
+          "file": "loss_model_q1.dat"
+        },
+        "brief": "The email is what I thought. Copy loss_model_q1.dat. It is six gigabytes and the monitor is run from the facilities desk, so you will want two connections."
+      }
+    ]
   }
 ]

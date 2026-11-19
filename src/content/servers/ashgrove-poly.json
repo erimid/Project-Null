@@ -107,6 +107,36 @@
           }
         ]
       }
+    },
+    {
+      "name": "appeals_queue.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "registry",
+      "content": {
+        "kind": "text",
+        "text": "APPEALS QUEUE, March.\n\n14 pending. Oldest: 211 days. Average time to hearing: 9 months. The panel meets twice a term and has not yet met this term.\n\nA student on suspension may not sit assessments. A suspended student whose appeal is still pending may not sit assessments. Staff should not use the second sentence in correspondence."
+      }
+    },
+    {
+      "name": "suspension_policy.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "registry",
+      "content": {
+        "kind": "text",
+        "text": "SUSPENSION POLICY. Summary for staff.\n\nA suspension takes effect on the date the standing field changes to Suspended in the student records. It ends when a registrar sets it back to Good, or Probation if the panel so directs. No other staff role has write access to the standing field. The registrar account is shared by three people, because nobody has had time to ask for two more."
+      }
+    },
+    {
+      "name": "password_resets.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "it",
+      "content": {
+        "kind": "text",
+        "text": "Password reset requests this term: 312. Of these, 41 were from the registrar account, which should not need one, since only three people use it and they all use the same one.\n\nRecommendation: give each person their own. Cost: nothing. Status: deferred."
+      }
     }
   ],
   "logs": [

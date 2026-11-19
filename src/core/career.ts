@@ -23,7 +23,7 @@ import { canRead, judge, knownFacts, knownPeople, standing } from './phish';
 import { skillRank } from './skills';
 import { createGame, MAX_HOPS, type Connection, type Fitted, type GameState, type TaskTarget } from './state';
 import { checkTask, freeStorageGb, layerSeconds, MAX_LEVEL_GAP, ringAngle } from './tasks';
-import { intruding, relayWorth, totalTraceMs } from './trace';
+import { intruding, relayHeat, relayWorth, totalTraceMs } from './trace';
 import { goalMet, readFlag, stagesOf, stageView } from './stages';
 import { fileDef, findProgram, findServer, linkOf, ownedProgram, securityOf, syncWithContent, type Content } from './world';
 
@@ -690,6 +690,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
 
   /** Logs in to the board, takes the best contract it can do, and shops. Returns the contract taken. */
   const visitBoard = (): ContractDef | undefined => {
+    // A player with more work to do than the relays can bear lets them cool between jobs.
+    idle(() => Object.keys(state.relayHeat).every((id) => relayHeat(state, content, id) <= 1.5), 600);
     const connection = open(board.id, [], false);
     think();
     must({ type: 'login', connectionId: connection.id, user: board.accounts[0]!.user });

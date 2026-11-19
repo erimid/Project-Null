@@ -79,6 +79,26 @@
         "id": "quiet",
         "grade": 1
       }
+    },
+    {
+      "name": "storm_ops_note.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "noc",
+      "content": {
+        "kind": "text",
+        "text": "Ops note, 13 March. Geomagnetic storm forecast for the 15th. Expect the ionosonde to saturate. Expect the transit link to flap. Expect the operator to be asleep, since last week the operator account was shared with the night intern, who has been asleep since Tuesday."
+      }
+    },
+    {
+      "name": "reply_templates.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "abuse",
+      "content": {
+        "kind": "text",
+        "text": "Abuse desk reply templates. #1: “Thank you for your report. We are looking into it.” #2: “Thank you for your report. We have looked into it.” #3: “Thank you for your report.”\n\nTemplate 3 is the most used."
+      }
     }
   ],
   "logs": [

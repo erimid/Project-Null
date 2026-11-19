@@ -117,6 +117,26 @@
         ],
         "unlocks": "proxy-bypass"
       }
+    },
+    {
+      "name": "broker_complaint.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "customs",
+      "content": {
+        "kind": "text",
+        "text": "Complaint from a customs broker, received 12 March: “You held a container for undeclared weight and the weight on your own scale was wrong.”\n\nReply sent: “Thank you. The scale has been checked and is correct.”\n\nThe scale has not been checked."
+      }
+    },
+    {
+      "name": "crane_fault_log.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "yard",
+      "content": {
+        "kind": "text",
+        "text": "Crane 2: fault, 11 March, 14:20. Crane 2: fault, 12 March, 09:05. Crane 2: fault, 13 March, 16:40. Gate B camera: working, 11 to 13 March. The cause of the cranes has not been found. The camera is fine."
+      }
     }
   ],
   "logs": [

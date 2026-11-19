@@ -73,6 +73,26 @@
           }
         ]
       }
+    },
+    {
+      "name": "shift_handover_0313.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "ops",
+      "content": {
+        "kind": "text",
+        "text": "HANDOVER, 13 March, night to day.\n\nFirewall tickets: Brennan & Marsh (closed), Calder Re Facilities (open, low), Aldergate & Finch (closed). One client rang at 03:00 asking whether we could see who was inside their network. We told them yes, and that it was them.\n\nClient configs were exported at 02:00 for the quarterly review. They are in the usual place."
+      }
+    },
+    {
+      "name": "escalation_matrix.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "ops",
+      "content": {
+        "kind": "text",
+        "text": "ESCALATION. Level 1: duty analyst. Level 2: duty manager. Level 3: managing director, at home, with the phone off. Level 4: there is no level 4. If you reach level 3 and he does not answer, you may use your own judgement, which is how we got here."
+      }
     }
   ],
   "logs": [
