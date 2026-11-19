@@ -237,7 +237,9 @@ describe('save and load', () => {
       },
     };
     const loaded = syncWithContent(deserializeGame(JSON.stringify(v1)).state, content);
-    expect(loaded.version).toBe(13);
+    expect(loaded.version).toBe(14);
+    expect(loaded.savedRoutes).toEqual([[], [], []]);
+    expect(loaded.relayHeat).toEqual({});
     expect(loaded.bookmarks).toEqual([]);
     expect(loaded.player).toEqual({ handle: 'OLD', balance: 1200, ...fullPlayer });
     expect(loaded.clock).toEqual({ gameTimeMs: 2025936000000, speed: 2 });

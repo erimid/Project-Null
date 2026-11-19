@@ -160,6 +160,8 @@ describe('connecting', () => {
     const state = knowAll();
     state.player.hardware.ports = 2;
     ok(state, { type: 'connect', serverId: 'directory' });
+    refused(state, { type: 'autoRoute', targetId: 'corp' }, /Route Planner/);
+    state.player.programs.push('planner-3');
     ok(state, { type: 'autoRoute', targetId: 'corp' });
     expect(state.route).not.toContain('corp');
     expect(state.route).not.toContain('directory');

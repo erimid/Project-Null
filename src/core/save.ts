@@ -127,6 +127,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   11: (old) => ({ ...old, player: { ...(old.player as object), parts: {}, builds: [], preferred: {} } }),
   // 12 -> 13: bookmarks in the address book. Nobody had starred anything.
   12: (old) => ({ ...old, bookmarks: [] }),
+  // 13 -> 14: saved routes and relays that warm with use. Every relay starts cold.
+  13: (old) => ({ ...old, savedRoutes: [[], [], []], relayHeat: {} }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -343,6 +345,8 @@ function checkState(raw: Obj): GameState {
   if (!isList(raw.tasks, isTask) || !isList(raw.messages, isMessage)) throw damaged;
   if (!isObj(rngStreams) || !Object.values(rngStreams).every(isNum)) throw damaged;
   if (!isList(raw.knownServers, isText) || !isList(raw.route, isText) || !isList(raw.bookmarks, isText)) throw damaged;
+  if (!isList(raw.savedRoutes, (route): route is string[] => isList(route, isText))) throw damaged;
+  if (!isObj(raw.relayHeat) || !Object.values(raw.relayHeat).every((mark) => isObj(mark) && isNum(mark.heat) && isNum(mark.atMs))) throw damaged;
   if (!isList(raw.connections, isConnection)) throw damaged;
   if (!isObj(servers) || !Object.values(servers).every(isServerState)) throw damaged;
   return raw as unknown as GameState;

@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 13;
+export const STATE_VERSION = 14;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -194,6 +194,16 @@ export interface EchoPuzzle {
   result: 'open' | 'won' | 'lost';
 }
 
+/** How many slots there are for saved routes. */
+export const ROUTE_SLOTS = 3;
+
+/** A relay's heat as it stood at one moment. One use adds 1. */
+export interface RelayHeat {
+  heat: number;
+  /** Game time `heat` was true. */
+  atMs: number;
+}
+
 /** What a running program is working on. */
 export type TaskTarget =
   | { kind: 'password'; user: string }
@@ -306,6 +316,10 @@ export interface GameState {
   bookmarks: string[];
   /** The bounce chain being planned for the next connection: relay server ids in order. */
   route: string[];
+  /** Routes the player has kept to load again, one per slot. An empty list is an empty slot. */
+  savedRoutes: string[][];
+  /** How warm each relay is from recent use, by server id. Cools with game time. */
+  relayHeat: Record<string, RelayHeat>;
   connections: Connection[];
   /** Programs that are running right now. */
   tasks: Task[];
@@ -363,6 +377,8 @@ export function createGame(options: NewGameOptions): GameState {
     },
     knownServers: [],
     bookmarks: [],
+    savedRoutes: Array.from({ length: ROUTE_SLOTS }, () => []),
+    relayHeat: {},
     route: [],
     connections: [],
     tasks: [],

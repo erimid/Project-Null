@@ -27,6 +27,16 @@ export interface Rules {
   readonly sameCountryLegFactor: number;
   readonly borderLegFactor: number;
   readonly overseasLegFactor: number;
+  /** Trace steps, counting back from the target, that take their full time. */
+  readonly relayFullSteps: number;
+  /** What each step after those is worth, in order; the last value covers the rest. */
+  readonly relayFade: readonly number[];
+  /** A relay's step is divided by 1 + this times its heat. */
+  readonly relayHeatSlow: number;
+  /** In-game hours a relay needs to cool by one use. */
+  readonly relayCoolHours: number;
+  /** A relay's worth by how many levels the target's monitor outclasses it. */
+  readonly coverShort: readonly number[];
   /** In-game hours without contracts after being traced. */
   readonly lieLowHours: number;
   readonly finePerSecurityLevel: number;

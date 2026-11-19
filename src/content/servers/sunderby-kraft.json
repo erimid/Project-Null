@@ -17,7 +17,7 @@
     "firewall": 0,
     "monitor": 3
   },
-  "traceSecondsPerHop": 10,
+  "traceSecondsPerHop": 15,
   "relayDelay": 1.0,
   "banner": [
     "SUNDERBY KRAFT AB",

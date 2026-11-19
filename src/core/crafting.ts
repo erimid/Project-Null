@@ -47,7 +47,7 @@ export const hasTrait = (state: GameState, content: Content, programId: string, 
 
 /** Market programs the player has installed, which can be built on. */
 export function buildBases(state: GameState, content: Content): ProgramDef[] {
-  return content.programs.filter((program) => state.player.programs.includes(program.id) && program.kind !== 'traceTracker');
+  return content.programs.filter((program) => state.player.programs.includes(program.id) && program.kind !== 'traceTracker' && program.kind !== 'planRoute');
 }
 
 type BuildCheck = { ok: true; preview: BuiltProgram; seconds: number } | { ok: false; reason: string };
@@ -58,6 +58,7 @@ export function checkBuild(state: GameState, content: Content, baseId: string, m
   const base = content.programs.find((program) => program.id === baseId);
   if (!base || !state.player.programs.includes(base.id)) return no('Pick a program you have installed.');
   if (base.kind === 'traceTracker') return no('The Trace Tracker takes no modules.');
+  if (base.kind === 'planRoute') return no('A Route Planner takes no modules.');
   if (modules.length === 0) return no('Pick a module to fit.');
   const slots = moduleSlots(state, content);
   if (modules.length > slots) return no(slots === 1 ? 'A build takes one module.' : `A build takes up to ${slots} modules.`);

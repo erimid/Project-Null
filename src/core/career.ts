@@ -22,7 +22,7 @@ import { canRead, judge, knownFacts, knownPeople, standing } from './phish';
 import { skillRank } from './skills';
 import { createGame, MAX_HOPS, type Connection, type Fitted, type GameState, type TaskTarget } from './state';
 import { checkTask, freeStorageGb, layerSeconds, MAX_LEVEL_GAP, ringAngle } from './tasks';
-import { intruding, totalTraceMs } from './trace';
+import { intruding, relayWorth, totalTraceMs } from './trace';
 import { fileDef, findProgram, findServer, ownedProgram, syncWithContent, type Content } from './world';
 
 /** How a player plays. The numbers stand in for a person's habits. */
@@ -156,6 +156,7 @@ const WISHES: readonly string[] = [
   'firewall-bypass',
   'ports-2',
   'monitor-bypass',
+  'route-planner',
   'cpu-2',
   'decrypter',
   'modem-2',
@@ -172,7 +173,9 @@ const WISHES: readonly string[] = [
   'cpu-4',
   'modem-4',
   'storage-4',
+  'route-planner-2',
   'rack-2',
+  'route-planner-3',
 ];
 
 /** The same list for someone who uses the Workbench: modules ("mod:id:grade") and the Decompiler among the rest. */
@@ -320,17 +323,28 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     }
   };
 
-  const relays = (exclude: readonly string[]): string[] => {
+  /**
+   * The relays this player would pick for one target. Everyone can read
+   * the map's marks, so nobody takes a relay the target sees through or a
+   * warm one while a better one is to hand. A careful player also takes
+   * the slowest relays and puts the best of them last, next to the
+   * target, where a trace step counts in full.
+   */
+  const relays = (targetId: string, exclude: readonly string[]): string[] => {
+    const target = findServer(content, targetId)!;
+    const worth = (server: ServerDef) => relayWorth(content, target, server, state) * (profile.bestRelays ? server.relayDelay : 1);
     const usable = state.knownServers
       .map((id) => findServer(content, id)!)
-      .filter((server) => server.kind !== 'gateway' && !exclude.includes(server.id));
-    if (profile.bestRelays) usable.sort((a, b) => b.relayDelay - a.relayDelay);
-    return usable.slice(0, profile.hops).map((server) => server.id);
+      .filter((server) => server.kind !== 'gateway' && server.id !== targetId && !exclude.includes(server.id));
+    if (profile.hops > 2) usable.sort((a, b) => worth(b) - worth(a));
+    const picked = usable.slice(0, profile.hops);
+    if (profile.bestRelays) picked.reverse();
+    return picked.map((server) => server.id);
   };
 
   const open = (serverId: string, exclude: readonly string[], hops = true): Connection => {
     must({ type: 'clearRoute' });
-    if (hops) for (const id of relays([serverId, ...exclude])) must({ type: 'addHop', serverId: id });
+    if (hops) for (const id of relays(serverId, exclude)) must({ type: 'addHop', serverId: id });
     must({ type: 'connect', serverId });
     return state.connections[state.connections.length - 1]!;
   };

@@ -98,5 +98,10 @@
     "from": "Wren",
     "subject": "Taking tools apart",
     "body": "{handle}, that file you copied home is not data. It is a compiled program, the kind that ends in .bin. Some systems keep their own tools on the server, and every one of them is built from the same parts you fit at the Workbench.\n\nThe Backroom's Market sells a Decompiler. Run it on the file from Programs, on your own gateway, like the Decrypter. It takes a while, and it uses the file up. What comes out is the modules it was built from, added to your parts. Now and then the file turns out to be a copy of something the Market sells, and then you get that program as well, for nothing.\n\nThere is a skill for this too. Teardown, under Engineering, gets one more module out of every file you take apart.\n\nWren"
+  },
+  "routes": {
+    "from": "Wren",
+    "subject": "Relays are not what they were",
+    "body": "{handle}, the easy years are over. Three things have changed about routes, and all three will get you caught if you carry on as before.\n\nRelays warm up. Every connection you run through a server leaves it a little warmer, and a warm relay holds a trace up for less time. They cool again over a few hours. Stop leaning on the same eight and rotate them. The address book marks the warm ones.\n\nA good monitor sees through a poor relay. A relay hides you about as well as its own monitor is good, and one level better if you hold a login there to tidy up behind yourself. Send a trace from a serious target through a library and it walks straight past. So every company you break into is worth keeping as a relay for the next one. Pick your target first and the map will tell you which relays it sees through.\n\nA trace gathers pace. The first three steps back from the target take their full time. After that each one takes less. Put your best relays last in the route, next to the target, where they count in full.\n\nThe Backroom sells a Route Planner that fills a route in one press. The cheap one is crude. The dear one is good, and still not as good as you can be by hand. You can also keep three routes of your own on the map and load them again.\n\nWren"
   }
 }

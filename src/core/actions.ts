@@ -3,7 +3,7 @@
  * "action": a small plain object. The UI never changes GameState itself.
  * That keeps the rules in one place and makes them testable.
  */
-import { MAX_HOPS, SPEEDS, isConnected, type Connection, type Fitted, type GameState, type Speed, type TaskTarget } from './state';
+import { MAX_HOPS, ROUTE_SLOTS, SPEEDS, isConnected, type Connection, type Fitted, type GameState, type Speed, type TaskTarget } from './state';
 import {
   abandonContract,
   acceptContract,
@@ -21,8 +21,8 @@ import { readFile, sendPhish } from './phish';
 import { buyModule, preferProgram, refineModule, returnModules, scrapBuild } from './crafting';
 import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
-import { bestRoute, hopUnderTrace, intruding, newTrace, noteIntrusion, reroute } from './trace';
-import { findAccount, findConnection, findServer, gatewayOf, sendMail, sourceAddress, type Content } from './world';
+import { bestRoute, coolRelays, hopUnderTrace, intruding, newTrace, noteIntrusion, reroute, warmRelay } from './trace';
+import { findAccount, findConnection, findServer, gatewayOf, once, ownedProgram, sendMail, sourceAddress, type Content } from './world';
 
 export type Action =
   | { readonly type: 'setSpeed'; readonly speed: Speed }
@@ -32,6 +32,10 @@ export type Action =
   | { readonly type: 'clearRoute' }
   /** Fills the route with the best relays the player knows, leaving out the server they mean to connect to. */
   | { readonly type: 'autoRoute'; readonly targetId: string | null }
+  /** Keep the planned route in a slot, to load again later. */
+  | { readonly type: 'saveRoute'; readonly slot: number }
+  /** Make a kept route the planned route. Servers that cannot be relays any more are left out. */
+  | { readonly type: 'loadRoute'; readonly slot: number }
   | { readonly type: 'toggleBookmark'; readonly serverId: string }
   /** Open a connection to a server through the planned route. */
   | { readonly type: 'connect'; readonly serverId: string }
@@ -171,8 +175,23 @@ export function applyAction(state: GameState, action: Action, content: Content):
       return OK;
     }
 
+    case 'saveRoute': {
+      if (!Number.isInteger(action.slot) || action.slot < 0 || action.slot >= ROUTE_SLOTS) return refuse('There is no such slot.');
+      if (state.route.length === 0) return refuse('There is no route to keep. Add some relays first.');
+      state.savedRoutes[action.slot] = [...state.route];
+      return OK;
+    }
+    case 'loadRoute': {
+      const saved = state.savedRoutes[action.slot];
+      if (!saved || saved.length === 0) return refuse('That slot is empty.');
+      const busy = new Set(state.connections.map((connection) => connection.serverId));
+      state.route = saved.filter((id) => state.knownServers.includes(id) && !busy.has(id) && !!findServer(content, id)).slice(0, MAX_HOPS);
+      return OK;
+    }
     case 'autoRoute': {
-      const route = bestRoute(state, content, action.targetId, MAX_HOPS);
+      const planner = ownedProgram(state, content, 'planRoute');
+      if (!planner) return refuse('You need a Route Planner program for that. The Backroom sells them.');
+      const route = bestRoute(state, content, action.targetId, planner.version);
       if (route.length === 0) return refuse('You do not know any servers to use as relays yet.');
       state.route = route;
       return OK;
@@ -215,6 +234,11 @@ export function applyAction(state: GameState, action: Action, content: Content):
         reroutes: 0,
         monitor: { blindMs: 0, used: false, echo: null },
       };
+      // Every relay is a little warmer for the use. The trace above was worked out as they stood before.
+      coolRelays(state, content);
+      for (const id of connection.route) warmRelay(state, content, id);
+      // The first proper route brings Wren's note on what relays are worth.
+      if (connection.route.length >= 2) once(state, 'routes', () => sendMail(state, content, 'routes'));
       state.connections.push(connection);
       logConnection(state, content, connection, true);
       return OK;
