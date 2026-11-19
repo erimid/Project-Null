@@ -397,7 +397,8 @@ describe('the trace', () => {
     wait(8 + 29);
     ok({ type: 'disconnectAll' });
     wait(60);
-    expect(state.messages.map((message) => message.subject)).toEqual(['welcome']);
+    // Wren's note on routes comes with the first route of two relays or more; nothing else arrives.
+    expect(state.messages.map((message) => message.subject)).toEqual(['welcome', 'routes']);
     expect(state.player.balance).toBe(100);
   });
 

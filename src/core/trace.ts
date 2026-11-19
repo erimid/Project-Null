@@ -3,7 +3,7 @@
  * relay, until it finds your gateway.
  */
 import type { ServerDef } from '../content/schema';
-import type { Connection, GameState, TraceState } from './state';
+import { MAX_HOPS, type Connection, type GameState, type TraceState } from './state';
 import { monitorHeld } from './link';
 import { effect } from './skills';
 import { regionOf } from './generate';
@@ -24,6 +24,57 @@ export function legFactor(content: Content, kind: LegKind): number {
   return kind === 'country' ? rules.sameCountryLegFactor : kind === 'border' ? rules.borderLegFactor : rules.overseasLegFactor;
 }
 
+/** How warm a relay is right now: 1 for each recent use, less what has cooled off since. */
+export function relayHeat(state: GameState, content: Content, serverId: string): number {
+  const mark = state.relayHeat[serverId];
+  if (!mark) return 0;
+  const cooled = (state.clock.gameTimeMs - mark.atMs) / (content.rules.relayCoolHours * 3_600_000);
+  return Math.max(0, mark.heat - Math.max(0, cooled));
+}
+
+/** Marks a relay as used once more. */
+export function warmRelay(state: GameState, content: Content, serverId: string): void {
+  state.relayHeat[serverId] = { heat: relayHeat(state, content, serverId) + 1, atMs: state.clock.gameTimeMs };
+}
+
+/** Forgets relays that have cooled all the way down. */
+export function coolRelays(state: GameState, content: Content): void {
+  for (const id of Object.keys(state.relayHeat)) if (relayHeat(state, content, id) <= 0) delete state.relayHeat[id];
+}
+
+/** True if the player holds a login on a server that asks for one. */
+export const holdsLogin = (state: GameState, server: ServerDef): boolean =>
+  server.security.password > 0 && (state.player.passwords[server.id]?.length ?? 0) > 0;
+
+/**
+ * How well a relay hides what passes through it: its own monitor's level,
+ * and one more if the player holds a login there to tidy up behind them.
+ */
+export const relayCover = (state: GameState, relay: ServerDef): number => relay.security.monitor + (holdsLogin(state, relay) ? 1 : 0);
+
+/** How many levels a relay falls short of what a target's monitor can see through. 0 if it holds. */
+export const coverShortfall = (state: GameState, target: ServerDef, relay: ServerDef): number =>
+  Math.max(0, target.security.monitor - relayCover(state, relay));
+
+/**
+ * What a relay is worth against one target, as a share of its full trace
+ * step: less when the target's monitor outclasses it, and less while it
+ * is warm from recent use. Without a game to look at it is worth all of it.
+ */
+export function relayWorth(content: Content, target: ServerDef, relay: ServerDef, state?: GameState): number {
+  if (!state) return 1;
+  const short = content.rules.coverShort;
+  const cover = short[Math.min(short.length - 1, coverShortfall(state, target, relay))] ?? 1;
+  return cover / (1 + content.rules.relayHeatSlow * relayHeat(state, content, relay.id));
+}
+
+/** What the trace step `step` places back from the target is worth: the first few in full, later ones less. */
+export function stepFade(content: Content, step: number): number {
+  const { relayFullSteps, relayFade } = content.rules;
+  if (step < relayFullSteps || relayFade.length === 0) return 1;
+  return relayFade[Math.min(relayFade.length - 1, step - relayFullSteps)]!;
+}
+
 export interface TraceLeg {
   /** Server ids at each end of the leg, the end nearer you first. */
   readonly fromId: string;
@@ -39,9 +90,9 @@ export interface TraceLeg {
  * back towards you, so where that relay sits against the one before it
  * matters. The last leg, into the target, costs the trace nothing.
  */
-export function traceLegs(content: Content, gatewayId: string, target: ServerDef, route: readonly string[], slow = 1): TraceLeg[] {
+export function traceLegs(content: Content, gatewayId: string, target: ServerDef, route: readonly string[], slow = 1, state?: GameState): TraceLeg[] {
   const ids = [gatewayId, ...route, target.id];
-  const hopMs = traceHopMs(content, target, route, slow, gatewayId);
+  const hopMs = traceHopMs(content, target, route, slow, gatewayId, state);
   const servers = ids.map((id) => findServer(content, id));
   return ids.slice(1).map((toId, index) => {
     const from = servers[index];
@@ -57,26 +108,37 @@ export function traceLegs(content: Content, gatewayId: string, target: ServerDef
  * How long the trace needs for each step back along a route, last relay
  * first. `slow` comes from the player's skills. Each relay's step is
  * stretched by its own delay and by the leg back to the server before it.
+ * With a game to look at, it is also cut by what the relay is worth
+ * against this target right now (see `relayWorth`), and a trace gathers
+ * pace: steps beyond the first few take less and less (see `stepFade`).
  */
-export function traceHopMs(content: Content, target: ServerDef, route: readonly string[], slow = 1, gatewayId?: string): number[] {
+export function traceHopMs(content: Content, target: ServerDef, route: readonly string[], slow = 1, gatewayId?: string, state?: GameState): number[] {
   const perHopMs = target.traceSecondsPerHop * 1000 * slow;
   const home = findServer(content, gatewayId ?? gatewayOf(content).id);
   const leg = (from: ServerDef | undefined, to: ServerDef | undefined) => (from && to ? legFactor(content, legKind(from, to)) : 1);
   if (route.length === 0) return [perHopMs * content.rules.directTraceFactor * leg(home, target)];
   const relays = route.map((id) => findServer(content, id));
   return relays
-    .map((relay, index) => perHopMs * (relay?.relayDelay ?? 1) * leg(index === 0 ? home : relays[index - 1], relay))
-    .reverse();
+    .map((relay, index) => perHopMs * (relay?.relayDelay ?? 1) * leg(index === 0 ? home : relays[index - 1], relay) * (relay ? relayWorth(content, target, relay, state) : 1))
+    .reverse()
+    .map((ms, step) => ms * stepFade(content, step));
 }
 
+/** How many relays each version of a Route Planner will place, and what it takes into account. */
+export const PLANNER_HOPS = [0, 4, 6, 8] as const;
+
 /**
- * A route that keeps a trace busy for as long as it can, from the servers
- * the player knows: up to `most` relays, never the target or a server
- * already connected to. Picked one hop at a time, each time the server
- * that adds the most to the trace from where the route has got to, so
- * routes zig-zag across borders and oceans.
+ * The route a Route Planner of this version builds from the servers the
+ * player knows: never the target or a server already connected to.
+ * Picked one hop at a time from the gateway outwards. Version 1 only
+ * knows how slow each relay is. Version 2 also reads borders and oceans.
+ * Version 3 also knows which relays the target sees through and which
+ * are warm. None of them weighs where in the route a relay does most
+ * good, so a route built by hand can beat them.
  */
-export function bestRoute(state: GameState, content: Content, targetId: string | null, most: number): string[] {
+export function bestRoute(state: GameState, content: Content, targetId: string | null, version = 3): string[] {
+  const most = Math.min(MAX_HOPS, PLANNER_HOPS[Math.max(0, Math.min(3, version))] ?? 0);
+  const target = targetId ? findServer(content, targetId) : undefined;
   const busy = new Set(state.connections.map((connection) => connection.serverId));
   const pool = state.knownServers
     .map((id) => findServer(content, id))
@@ -87,7 +149,9 @@ export function bestRoute(state: GameState, content: Content, targetId: string |
     let pick = 0;
     let best = -1;
     pool.forEach((server, index) => {
-      const value = server.relayDelay * legFactor(content, legKind(at, server));
+      let value = server.relayDelay;
+      if (version >= 2) value *= legFactor(content, legKind(at, server));
+      if (version >= 3) value *= target ? relayWorth(content, target, server, state) : 1 / (1 + content.rules.relayHeatSlow * relayHeat(state, content, server.id));
       if (value > best) [pick, best] = [index, value];
     });
     const [next] = pool.splice(pick, 1);
@@ -104,7 +168,7 @@ export const traceSlow = (state: GameState, content: Content): number => 1 + eff
 export const maxReroutes = (state: GameState, content: Content): number => content.rules.maxReroutes + effect(state, content, 'slipAway');
 
 export function newTrace(state: GameState, content: Content, target: ServerDef, route: readonly string[]): TraceState {
-  const hopMs = traceHopMs(content, target, route, traceSlow(state, content));
+  const hopMs = traceHopMs(content, target, route, traceSlow(state, content), undefined, state);
   const trace: TraceState = { status: 'none', graceMs: 0, elapsedMs: 0, hopMs };
   // The strongest monitors start tracing the moment a connection opens.
   if (target.security.monitor >= content.rules.monitorGraceSeconds.length) trace.status = 'active';
@@ -237,7 +301,8 @@ export function reroute(state: GameState, content: Content, connection: Connecti
   const step = connection.route.length - 1 - index;
   connection.route[index] = relay.id;
   // The new relay changes its own step and the step of the relay after it, whose leg now starts at the new one.
-  const fresh = traceHopMs(content, target, connection.route, traceSlow(state, content));
+  const fresh = traceHopMs(content, target, connection.route, traceSlow(state, content), undefined, state);
+  warmRelay(state, content, relay.id);
   connection.trace.hopMs[step] = fresh[step]!;
   if (step > 0) connection.trace.hopMs[step - 1] = fresh[step - 1]!;
   // Back to the start of this step, or further with Slip away.

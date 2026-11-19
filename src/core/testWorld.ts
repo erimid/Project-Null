@@ -146,6 +146,12 @@ export const testRules: Rules = {
   sameCountryLegFactor: 1,
   borderLegFactor: 1,
   overseasLegFactor: 1,
+  // Every relay counts in full in tests unless a test says otherwise.
+  relayFullSteps: 99,
+  relayFade: [],
+  relayHeatSlow: 0,
+  relayCoolHours: 8,
+  coverShort: [1],
   lieLowHours: 6,
   finePerSecurityLevel: 20,
   caughtRatingLoss: 1,
@@ -211,6 +217,9 @@ export const shopPrograms: ProgramDef[] = [
   { ...program('breaker-2', 'breakPassword', 10), version: 2, price: 60 },
   { ...program('gold-plated', 'copyFile', 1), price: 5000 },
   { ...program('decompiler', 'decompile', 10, 1), price: 50 },
+  { ...program('planner-1', 'planRoute', 0), price: 20 },
+  { ...program('planner-2', 'planRoute', 0), version: 2, price: 40 },
+  { ...program('planner-3', 'planRoute', 0), version: 3, price: 60 },
 ];
 
 export const testContracts: ContractDef[] = [
@@ -241,6 +250,7 @@ export const testMail: Record<MailKey, MailDef> = {
   skills: letter('skills'),
   workbench: letter('workbench'),
   decompiling: letter('decompiling'),
+  routes: letter('routes'),
   hardwareLost: { from: 'Fixer', subject: 'Lost {part}', body: 'now {now}' },
 };
 

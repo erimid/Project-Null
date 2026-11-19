@@ -12,6 +12,21 @@
   "sameCountryLegFactor": 0.8,
   "borderLegFactor": 1,
   "overseasLegFactor": 1.35,
+  "relayFullSteps": 3,
+  "relayFade": [
+    0.6,
+    0.4,
+    0.3,
+    0.2,
+    0.15
+  ],
+  "relayHeatSlow": 0.4,
+  "relayCoolHours": 8,
+  "coverShort": [
+    1,
+    0.6,
+    0.3
+  ],
   "lieLowHours": 6,
   "finePerSecurityLevel": 350,
   "caughtRatingLoss": 2,

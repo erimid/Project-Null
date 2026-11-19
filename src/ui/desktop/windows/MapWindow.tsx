@@ -1,5 +1,22 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { MAX_HOPS, bestRoute, hopUnderTrace, legKind, maxReroutes, ownedProgram, traceLegs, traceReport, traceSlow, type LegKind } from '../../../core';
+import {
+  PLANNER_HOPS,
+  ROUTE_SLOTS,
+  bestRoute,
+  coverShortfall,
+  holdsLogin,
+  hopUnderTrace,
+  legKind,
+  maxReroutes,
+  ownedProgram,
+  relayCover,
+  relayHeat,
+  stepFade,
+  traceLegs,
+  traceReport,
+  traceSlow,
+  type LegKind,
+} from '../../../core';
 import { findServer, gatewayOf, type ServerDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
@@ -17,6 +34,79 @@ const KIND_LABELS: Record<ServerDef['kind'], string> = {
 };
 
 const byId = (id: string) => findServer(content, id);
+
+const PLANNER_TIPS: Record<number, string> = {
+  1: 'It only knows how slow each relay is.',
+  2: 'It reads borders and oceans.',
+  3: 'It reads borders and oceans, and knows which relays are warm or seen through by your target.',
+};
+
+/** Small marks beside a server in the address book: a login held there, warmth from use, and a target that sees through it. */
+function RelayMarks({ heat, short, login }: { heat: number; short: number; login: boolean }) {
+  if (heat < 0.2 && short === 0 && !login) return null;
+  return (
+    <span class="address__marks">
+      {login && (
+        <span class="mark mark--login" data-tip="You hold a login here, so it covers you one level better as a relay">
+          key
+        </span>
+      )}
+      {heat >= 0.2 && (
+        <span class={`mark ${heat >= 1.5 ? 'mark--hot' : 'mark--warm'}`} data-tip="Warm from recent use as a relay. It holds a trace up for less time until it cools.">
+          {heat >= 1.5 ? 'hot' : 'warm'}
+        </span>
+      )}
+      {short > 0 && (
+        <span
+          class={`mark ${short >= 2 ? 'mark--seen' : 'mark--thin'}`}
+          data-tip={
+            short >= 2
+              ? "Your target's monitor sees straight through this relay. It will barely slow a trace."
+              : "Your target's monitor is a level better than this relay's cover. It slows a trace about half as well."
+          }
+        >
+          {short >= 2 ? 'seen through' : 'thin'}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** A line in the detail panel on what the picked server is worth as a relay. */
+function RelayNote({
+  server,
+  cover,
+  heat,
+  short,
+  login,
+  target,
+}: {
+  server: ServerDef;
+  cover: number;
+  heat: number;
+  short: number;
+  login: boolean;
+  target: ServerDef | undefined;
+}) {
+  const isTarget = target?.id === server.id;
+  return (
+    <p class="map__relay-note">
+      {isTarget ? (
+        <>
+          As your target: its monitor is level <span class="data">{server.security.monitor}</span>. Relays with less cover than that hold its trace up
+          for less time.
+        </>
+      ) : (
+        <>
+          As a relay: cover <span class="data">{cover}</span>
+          {login ? ' (its monitor, plus your login)' : server.security.password > 0 ? ' (a login here would add 1)' : ''}
+          {heat >= 0.2 ? `, ${heat >= 1.5 ? 'hot' : 'warm'} from use` : ', cool'}
+          {target && short > 0 ? `. ${target.name} sees ${short >= 2 ? 'straight through it' : 'partly through it'}.` : '.'}
+        </>
+      )}
+    </p>
+  );
+}
 
 /** Ways to order the address book. Your own gateway always comes first. */
 const SORTS = [
@@ -79,6 +169,8 @@ export function MapWindow() {
     }
   };
   const book = useRef<HTMLUListElement>(null);
+  // True while the next press on a slot keeps the planned route there.
+  const [saving, setSaving] = useState(false);
 
   const gateway = gatewayOf(content);
   const known = game.knownServers.map(byId).filter((server): server is ServerDef => server !== undefined);
@@ -92,7 +184,13 @@ export function MapWindow() {
   const live = activeConnection(game, desk);
   // A server picked somewhere else (the globe, a contract) is brought into view in the list.
   useEffect(() => {
-    book.current?.querySelector('.address.is-selected')?.scrollIntoView({ block: 'nearest' });
+    // Scroll the list itself, never the window around it.
+    const list = book.current;
+    const row = list?.querySelector<HTMLElement>('.address.is-selected')?.closest<HTMLElement>('.addresses__row');
+    if (!list || !row) return;
+    const top = row.offsetTop - list.offsetTop;
+    if (top < list.scrollTop) list.scrollTop = top;
+    else if (top + row.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = top + row.offsetHeight - list.clientHeight;
   }, [desk.selectedServerId, sort, starredOnly]);
 
   // While connected, the map shows the live connection's route; otherwise the one being planned.
@@ -117,7 +215,19 @@ export function MapWindow() {
 
   // Where each hop goes decides how long a trace needs to follow it. With a target picked, a Trace Tracker can say how long.
   const target = targetId ? byId(targetId) : undefined;
-  const legs = target ? traceLegs(content, gateway.id, target, routeIds, traceSlow(game, content)) : undefined;
+  // A planned route is worked out as the relays stand now. A live one keeps the times it was opened with.
+  const planned = target ? traceLegs(content, gateway.id, target, routeIds, traceSlow(game, content), game) : undefined;
+  const legs =
+    live && planned && live.route.length > 0
+      ? planned.map((leg, index) => (index < live.route.length ? { ...leg, ms: live.trace.hopMs[live.route.length - 1 - index] ?? leg.ms } : leg))
+      : planned;
+
+  /** What is worth knowing about a server as a relay: how warm it is, and whether the picked target sees through it. */
+  const relayMarks = (server: ServerDef) => {
+    const heat = relayHeat(game, content, server.id);
+    const short = target && server.id !== target.id ? coverShortfall(game, target, server) : 0;
+    return { heat, short, login: holdsLogin(game, server) };
+  };
   const legKinds = chain.slice(1).map((server, index) => legKind(chain[index]!, server));
   const traceTotal = legs?.reduce((sum, leg) => sum + leg.ms, 0) ?? 0;
   const legLabel = (index: number) => {
@@ -184,7 +294,8 @@ export function MapWindow() {
   // Fill route is offered while it would change something.
   // The server you have picked is the one you mean to connect to, so it stays out of the relays.
   const fillTarget = selected && selected.id !== gateway.id ? selected.id : null;
-  const best = live ? [] : bestRoute(game, content, fillTarget, MAX_HOPS);
+  const planner = ownedProgram(game, content, 'planRoute');
+  const best = live || !planner ? [] : bestRoute(game, content, fillTarget, planner.version);
   const canFill = best.length > 0 && best.join() !== game.route.join();
   const connectedTo = selected ? game.connections.some((c) => c.serverId === selected.id) : false;
   const note = live
@@ -203,6 +314,20 @@ export function MapWindow() {
         <div class="map__side">
           <div class="map__book-head">
             <h3 class="map__heading">Address book</h3>
+            <div class="map__sort" role="group" aria-label="Sort the address book">
+              {SORTS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  class={`map__sort-btn${sort === option.id ? ' is-on' : ''}`}
+                  aria-pressed={sort === option.id}
+                  data-tip={option.tip}
+                  onClick={() => chooseSort(option.id)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               class={`map__starred${starredOnly ? ' is-on' : ''}`}
@@ -212,22 +337,6 @@ export function MapWindow() {
             >
               ★ Starred {game.bookmarks.length > 0 && <span class="data">{game.bookmarks.length}</span>}
             </button>
-          </div>
-          <div class="map__sort" role="group" aria-label="Sort the address book">
-            <span class="map__sort-label">Sort</span>
-            {SORTS.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                class={`map__sort-btn${sort === option.id ? ' is-on' : ''}`}
-                aria-pressed={sort === option.id}
-                data-tip={option.tip}
-                onClick={() => chooseSort(option.id)}
-              >
-                {option.label}
-              </button>
-            ))}
-            <span class="map__sort-count data">{listed.length}</span>
           </div>
           <ul class="addresses" ref={book}>
             {starredOnly && listed.length === 0 && <li class="addresses__empty">Press ☆ next to a server to star it.</li>}
@@ -254,6 +363,7 @@ export function MapWindow() {
                     onClick={() => pick(server.id)}
                   >
                     <span class="address__name">{server.name}</span>
+                    {server.id !== gateway.id && <RelayMarks {...relayMarks(server)} />}
                     <span class="address__tag">
                       {server.id === gateway.id
                         ? 'you'
@@ -309,6 +419,7 @@ export function MapWindow() {
               </div>
               <div class="data map__detail-address">{selected.address}</div>
               <p class="map__detail-blurb">{selected.blurb}</p>
+              {selected.id !== gateway.id && <RelayNote server={selected} cover={relayCover(game, selected)} {...relayMarks(selected)} target={target} />}
               {selected.id !== gateway.id && (
                 <div class="map__actions">
                   {canReroute && live ? (
@@ -398,6 +509,14 @@ export function MapWindow() {
                   </span>
                 )}
                 {server.id === gateway.id ? 'You' : server.name}
+                {index > 0 && index <= routeIds.length && stepFade(content, routeIds.length - index) < 1 && (
+                  <span
+                    class="route__fade data"
+                    data-tip="A trace gathers pace. This relay is far enough from the target that its step counts for less. Put your best relays last, next to the target."
+                  >
+                    {Math.round(stepFade(content, routeIds.length - index) * 100)}%
+                  </span>
+                )}
                 {!live && index > 0 && index <= routeIds.length && (
                   <button
                     type="button"
@@ -425,16 +544,67 @@ export function MapWindow() {
               Trace <span class="data">{tracker ? seconds(traceTotal) : '?'}</span>
             </span>
           )}
-          {canFill && (
-            <button
-              type="button"
-              class="btn btn--go"
-              data-tip="Fill the route with the best relays you know, spread across borders and oceans. The server you have picked stays out of it, as your target."
-              onClick={() => run({ type: 'autoRoute', targetId: fillTarget })}
-            >
-              Fill route
-            </button>
+          {!live && (
+            <span class="route__slots" role="group" aria-label="Saved routes">
+              {Array.from({ length: ROUTE_SLOTS }, (_, slot) => {
+                const saved = game.savedRoutes[slot] ?? [];
+                const same = saved.length > 0 && saved.join() === game.route.join();
+                return saved.length > 0 && (same || game.route.length === 0 || !saving) ? (
+                  <button
+                    key={slot}
+                    type="button"
+                    class={`route__slot is-kept${same ? ' is-on' : ''}`}
+                    data-tip={`Load saved route ${slot + 1}: ${saved.map((id) => byId(id)?.name ?? id).join(', ')}`}
+                    onClick={() => run({ type: 'loadRoute', slot })}
+                  >
+                    {slot + 1}
+                  </button>
+                ) : (
+                  <button
+                    key={slot}
+                    type="button"
+                    class={`route__slot${saving ? ' is-saving' : ''}`}
+                    disabled={game.route.length === 0}
+                    data-tip={saved.length > 0 ? `Replace saved route ${slot + 1} with this one` : `Keep this route in slot ${slot + 1}`}
+                    onClick={() => {
+                      run({ type: 'saveRoute', slot });
+                      setSaving(false);
+                    }}
+                  >
+                    {saved.length > 0 ? slot + 1 : '+'}
+                  </button>
+                );
+              })}
+              {game.route.length > 0 && game.savedRoutes.some((saved) => saved.length > 0) && (
+                <button
+                  type="button"
+                  class={`route__slot route__slot--save${saving ? ' is-on' : ''}`}
+                  aria-pressed={saving}
+                  data-tip="Keep this route: press Save, then the slot to put it in"
+                  onClick={() => setSaving((on) => !on)}
+                >
+                  Save
+                </button>
+              )}
+            </span>
           )}
+          {!live &&
+            (planner ? (
+              canFill && (
+                <button
+                  type="button"
+                  class="btn btn--go"
+                  data-tip={`${planner.name} v${planner.version} places up to ${PLANNER_HOPS[planner.version] ?? 0} relays. ${PLANNER_TIPS[planner.version] ?? ''} The server you have picked stays out of it, as your target.`}
+                  onClick={() => run({ type: 'autoRoute', targetId: fillTarget })}
+                >
+                  Plan route
+                </button>
+              )
+            ) : (
+              <button type="button" class="btn" disabled data-tip="A Route Planner program fills the route in one press. The Backroom sells them.">
+                Plan route
+              </button>
+            ))}
           {!live && game.route.length > 0 && (
             <button type="button" class="btn" data-tip="Remove every relay from the route" onClick={() => run({ type: 'clearRoute' })}>
               Clear

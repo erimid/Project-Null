@@ -166,5 +166,41 @@
     "price": 1500,
     "sizeGq": 3,
     "blurb": "Takes a program you have copied home apart into modules for your Workbench. Runs at home."
+  },
+  {
+    "id": "route-planner",
+    "name": "Route Planner",
+    "short": "Planner",
+    "kind": "planRoute",
+    "version": 1,
+    "baseSeconds": 0,
+    "secondsPerGq": 0,
+    "price": 800,
+    "sizeGq": 1,
+    "blurb": "Fills your route in one press on the Route map. This version places four relays and only knows how slow each one is."
+  },
+  {
+    "id": "route-planner-2",
+    "name": "Route Planner",
+    "short": "Planner",
+    "kind": "planRoute",
+    "version": 2,
+    "baseSeconds": 0,
+    "secondsPerGq": 0,
+    "price": 2600,
+    "sizeGq": 2,
+    "blurb": "Places six relays and reads the map: it sends the route back and forth across borders and oceans."
+  },
+  {
+    "id": "route-planner-3",
+    "name": "Route Planner",
+    "short": "Planner",
+    "kind": "planRoute",
+    "version": 3,
+    "baseSeconds": 0,
+    "secondsPerGq": 0,
+    "price": 6500,
+    "sizeGq": 3,
+    "blurb": "Places eight relays, reads the map, and knows which relays your target sees through and which are still warm from use."
   }
 ]

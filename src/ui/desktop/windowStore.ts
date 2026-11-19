@@ -95,7 +95,7 @@ function defaults(): Layouts {
   const desk = window.innerHeight - BARS_HEIGHT;
   const fitted = fittedWidths();
   // The map takes what the gateway's readout leaves of the right-hand column, within reason.
-  const mapHeight = Math.round(Math.min(640, Math.max(430, desk - TOP - GAP - GATEWAY_HEIGHT - GAP)));
+  const mapHeight = Math.round(Math.min(720, Math.max(430, desk - TOP - GAP - GATEWAY_HEIGHT - GAP)));
   const entries = WINDOW_IDS.map((id, index) => {
     const def = WINDOW_DEFS[id];
     const width = fitted[id] ?? def.width;

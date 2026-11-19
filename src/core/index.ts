@@ -7,7 +7,7 @@
 export { createRng, restoreRng, hashSeed } from './rng';
 export type { Rng, RngState } from './rng';
 export { stream } from './streams';
-export { MAX_HOPS, SPEEDS, STATE_VERSION, createGame, isConnected } from './state';
+export { MAX_HOPS, ROUTE_SLOTS, SPEEDS, STATE_VERSION, createGame, isConnected } from './state';
 export type {
   Build,
   Fitted,
@@ -96,7 +96,7 @@ export {
   rackStorageGb,
   storageGb,
 } from './hardware';
-export { bestRoute, hopUnderTrace, legFactor, legKind, maxReroutes, mostUrgentTrace, totalTraceMs, traceHeld, traceHopMs, traceLegs, traceReport, traceSlow, tracesByUrgency } from './trace';
+export { PLANNER_HOPS, bestRoute, coverShortfall, holdsLogin, relayCover, relayHeat, relayWorth, stepFade, hopUnderTrace, legFactor, legKind, maxReroutes, mostUrgentTrace, totalTraceMs, traceHeld, traceHopMs, traceLegs, traceReport, traceSlow, tracesByUrgency } from './trace';
 export { heldBy, holding, monitorHeld } from './link';
 export type { LegKind, TraceLeg, TraceReport } from './trace';
 export {

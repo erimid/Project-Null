@@ -90,6 +90,7 @@ export const PROGRAM_KINDS = [
   'deleteLog',
   'traceTracker',
   'decompile',
+  'planRoute',
 ] as const;
 export type ProgramKind = (typeof PROGRAM_KINDS)[number];
 
@@ -153,7 +154,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -266,6 +267,19 @@ export interface Tuning {
   readonly borderLegFactor: number;
   /** A trace step that crosses to another part of the world takes this times as long. */
   readonly overseasLegFactor: number;
+  /** How many trace steps, counting back from the target, take their full time. Later steps are cut by `relayFade`. */
+  readonly relayFullSteps: number;
+  /** What each trace step after the full ones is worth, in order. Steps past the end of the list use its last value. */
+  readonly relayFade: readonly number[];
+  /** How much one use of a relay cuts what it adds to a trace: its step is divided by 1 + this times its heat. */
+  readonly relayHeatSlow: number;
+  /** In-game hours a relay needs to cool by one use. */
+  readonly relayCoolHours: number;
+  /**
+   * What a relay's trace step is worth when the target's monitor outclasses it, by how many levels it falls short:
+   * [0 short, 1 short, 2 or more short].
+   */
+  readonly coverShort: readonly number[];
   /** In-game hours you can't take contracts after being traced. */
   readonly lieLowHours: number;
   /** Fine for being traced, per level of security on the server that caught you. */
@@ -727,6 +741,16 @@ export function checkContent(
   }
 }
 
+/** A list of numbers from 0 to 1 in tuning. */
+function fractions(file: string, data: Obj, key: string): number[] {
+  return list(file, 'tuning', data, key).map((value) => {
+    if (typeof value !== 'number' || !(value >= 0 && value <= 1)) {
+      throw new ContentError(file, `${key} must be a list of numbers from 0 to 1`);
+    }
+    return value;
+  });
+}
+
 export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
   if (!isObj(data)) throw new ContentError(file, 'must be an object');
   const startDate = text(file, 'tuning', data, 'startDate');
@@ -748,6 +772,11 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     sameCountryLegFactor: num(file, 'tuning', data, 'sameCountryLegFactor', 0.1, 5),
     borderLegFactor: num(file, 'tuning', data, 'borderLegFactor', 0.1, 5),
     overseasLegFactor: num(file, 'tuning', data, 'overseasLegFactor', 0.1, 5),
+    relayFullSteps: num(file, 'tuning', data, 'relayFullSteps', 0, 100),
+    relayFade: fractions(file, data, 'relayFade'),
+    relayHeatSlow: num(file, 'tuning', data, 'relayHeatSlow', 0, 10),
+    relayCoolHours: num(file, 'tuning', data, 'relayCoolHours', 0.01, 24 * 365),
+    coverShort: fractions(file, data, 'coverShort'),
     lieLowHours: num(file, 'tuning', data, 'lieLowHours', 0, 24 * 365),
     finePerSecurityLevel: num(file, 'tuning', data, 'finePerSecurityLevel', 0, 1_000_000),
     caughtRatingLoss: num(file, 'tuning', data, 'caughtRatingLoss', 0, 100),

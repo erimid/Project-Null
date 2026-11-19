@@ -117,7 +117,7 @@ function makeCompany(rng: Rng, pools: CompanyPools, index: number, stem: string,
     hostname: `${initials}${stem.length > 1 ? stem[1]!.toUpperCase() : ''}-${sector.tag}-${rng.int(1, 9)}`,
     listed: true,
     security: { ...SECURITY_BY_TIER[tier - 1]! },
-    traceSecondsPerHop: 30 - 4 * tier,
+    traceSecondsPerHop: 22 - Math.round(2.4 * tier),
     relayDelay: Math.round(rng.range(0.8, 1.3) * 10) / 10,
     banner: [name.toUpperCase(), `${city.city} · ${sector.tag} system`, 'Authorised users only. Activity on this system is logged.'],
     accounts: [

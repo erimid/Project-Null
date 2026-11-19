@@ -61,6 +61,7 @@ export function parseModules(data: unknown, file = 'modules.json'): ModuleDef[] 
       throw new ContentError(file, `${where}: fits must be a list of program kinds`);
     }
     if (fits.includes('traceTracker')) throw new ContentError(file, `${where}: the Trace Tracker takes no modules`);
+    if (fits.includes('planRoute')) throw new ContentError(file, `${where}: a Route Planner takes no modules`);
     const grades = item['grades'];
     if (!Array.isArray(grades) || grades.length !== MAX_GRADE) throw new ContentError(file, `${where} needs ${MAX_GRADE} grades`);
     return {

@@ -338,7 +338,7 @@ describe('the log review', () => {
     const { state, wait } = visit(true);
     wait(4 * HOURS);
     expect(state.player.balance).toBe(100);
-    expect(state.messages.map((message) => message.subject)).toEqual(['welcome']);
+    expect(state.messages.map((message) => message.subject).filter((subject) => subject !== 'routes')).toEqual(['welcome']);
     expect(state.reviews).toEqual([]);
   });
 
