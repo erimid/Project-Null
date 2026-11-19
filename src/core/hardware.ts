@@ -20,10 +20,11 @@ export const HARDWARE_SLOT_LABELS: readonly (readonly [HardwareSlot, string])[] 
   ['ports', 'Connection ports'],
   ['rack', 'Model rack'],
   ['sensor', 'Trace sensor'],
+  ['cooling', 'Cooling'],
 ];
 
 /** What a new gateway has: tier 1 of everything, and an empty model rack. */
-export const STOCK_HARDWARE: HardwareState = { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0 };
+export const STOCK_HARDWARE: HardwareState = { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0, cooling: 0 };
 
 export function findPart(content: Content, slot: HardwareSlot, tier: number): HardwareDef | undefined {
   return content.hardware.find((part) => part.slot === slot && part.tier === tier);
@@ -38,10 +39,10 @@ export function installed(state: GameState, content: Content, slot: HardwareSlot
 const tuned = (state: GameState, content: Content): number => 1 + effect(state, content, 'hardwareSpeed');
 /** Programs run this many times faster than on a stock gateway. */
 export const cpuSpeed = (state: GameState, content: Content): number =>
-  (installed(state, content, 'cpu')?.speed ?? 1) * tuned(state, content);
+  (installed(state, content, 'cpu')?.speed ?? 1) * (installed(state, content, 'cooling')?.coolSpeed ?? 1) * tuned(state, content);
 /** Files copy and delete this many times faster than on a stock gateway. */
 export const fileSpeed = (state: GameState, content: Content): number =>
-  (installed(state, content, 'modem')?.fileSpeed ?? 1) * tuned(state, content);
+  (installed(state, content, 'modem')?.fileSpeed ?? 1) * tuned(state, content) * (1 + effect(state, content, 'modemSpeed'));
 export const maxPrograms = (state: GameState, content: Content): number =>
   (installed(state, content, 'cpu')?.programs ?? 3) + effect(state, content, 'extraPrograms');
 export const storageGb = (state: GameState, content: Content): number => installed(state, content, 'storage')?.storageGb ?? 40;

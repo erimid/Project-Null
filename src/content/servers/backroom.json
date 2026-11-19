@@ -89,14 +89,67 @@
     "hardware": true,
     "modules": true,
     "models": true,
-    "programKinds": [
-      "breakPassword", "bypassProxy", "bypassFirewall", "bypassMonitor",
-      "decrypt", "copyFile", "deleteFile", "deleteLog", "traceTracker",
-      "decompile", "planRoute", "scan"
-    ],
     "priceFactor": 1,
+    "maxVersion": 2,
+    "maxTier": 4,
+    "maxGrade": 2,
+    "hardwareSlots": [
+      "cpu",
+      "storage",
+      "modem",
+      "ports",
+      "rack"
+    ],
+    "excludePrograms": [
+      "brute-breaker",
+      "slim-breaker",
+      "sprint-firewall",
+      "pocket-firewall",
+      "whisper-proxy",
+      "archivist",
+      "wipe-deleter"
+    ],
+    "programKinds": [
+      "breakPassword",
+      "bypassProxy",
+      "bypassFirewall",
+      "bypassMonitor",
+      "decrypt",
+      "copyFile",
+      "deleteFile",
+      "deleteLog",
+      "traceTracker",
+      "decompile",
+      "planRoute",
+      "scan"
+    ],
     "rare": [
-      { "kind": "program", "id": "trace-jammer", "chance": 0.5 }
+      {
+        "kind": "program",
+        "id": "trace-jammer",
+        "chance": 0.5
+      },
+      {
+        "kind": "program",
+        "id": "brute-breaker",
+        "chance": 0.25
+      },
+      {
+        "kind": "program",
+        "id": "archivist",
+        "chance": 0.3
+      },
+      {
+        "kind": "module",
+        "id": "heavy",
+        "grade": 2,
+        "chance": 0.2
+      },
+      {
+        "kind": "hardware",
+        "id": "cpu-5",
+        "chance": 0.15
+      }
     ]
   }
 }

@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 18;
+export const STATE_VERSION = 19;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -83,6 +83,8 @@ export interface HardwareState {
   rack: number;
   /** 0 = no trace sensor fitted. */
   sensor: number;
+  /** 0 = no cooler fitted. */
+  cooling: number;
 }
 
 /** A message sent to someone under a borrowed name, waiting for its answer. */
@@ -474,7 +476,7 @@ export function createGame(options: NewGameOptions): GameState {
     player: {
       handle: options.handle,
       balance: options.startingBalance,
-      hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0 },
+      hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0, cooling: 0 },
       programs: [],
       files: [],
       passwords: {},

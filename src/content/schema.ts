@@ -71,6 +71,18 @@ export interface ShopDef {
   readonly models: boolean;
   /** If set, only staple programs of these kinds are stocked. Left out, every program is. */
   readonly programKinds?: readonly ProgramKind[];
+  /** Program ids this shop never stocks as staples (rare lines can still bring them in). */
+  readonly excludePrograms?: readonly string[];
+  /** If set, staple programs above this version are not stocked (the best ones are elsewhere). */
+  readonly maxVersion?: number;
+  /** If set, staple hardware above this tier is not stocked. */
+  readonly maxTier?: number;
+  /** If set, staple hardware is only stocked for these slots. */
+  readonly hardwareSlots?: readonly string[];
+  /** If set, staple modules above this grade are not stocked. */
+  readonly maxGrade?: number;
+  /** False if this shop posts no contracts: it only sells. Left out, a board posts them. */
+  readonly contracts?: boolean;
   /** Multiplies every price here. 1 = the list price. */
   readonly priceFactor: number;
   /** Lines that may appear for one day at a time. */
@@ -843,6 +855,22 @@ function parseShop(file: string, where: string, value: unknown): ShopDef {
     }
     programKinds = kinds as ProgramKind[];
   }
+  const slotsRaw = raw['hardwareSlots'];
+  let hardwareSlots: string[] | undefined;
+  if (slotsRaw !== undefined) {
+    if (!Array.isArray(slotsRaw) || !slotsRaw.every((k) => typeof k === 'string')) {
+      throw new ContentError(file, `${where} shop: hardwareSlots must be a list of slot names`);
+    }
+    hardwareSlots = slotsRaw as string[];
+  }
+  const excludeRaw = raw['excludePrograms'];
+  let excluded: string[] | undefined;
+  if (excludeRaw !== undefined) {
+    if (!Array.isArray(excludeRaw) || !excludeRaw.every((k) => typeof k === 'string')) {
+      throw new ContentError(file, `${where} shop: excludePrograms must be a list of program ids`);
+    }
+    excluded = excludeRaw as string[];
+  }
   const rareRaw = raw['rare'];
   let rare: RareStockDef[] | undefined;
   if (rareRaw !== undefined) {
@@ -867,6 +895,12 @@ function parseShop(file: string, where: string, value: unknown): ShopDef {
     modules: flagOr('modules', true),
     models: flagOr('models', true),
     ...(programKinds ? { programKinds } : {}),
+    ...(raw['maxVersion'] === undefined ? {} : { maxVersion: num(file, `${where} shop`, raw, 'maxVersion', 1, 20) }),
+    ...(raw['maxTier'] === undefined ? {} : { maxTier: num(file, `${where} shop`, raw, 'maxTier', 1, 20) }),
+    ...(raw['maxGrade'] === undefined ? {} : { maxGrade: num(file, `${where} shop`, raw, 'maxGrade', 1, 10) }),
+    ...(hardwareSlots ? { hardwareSlots } : {}),
+    ...(excluded ? { excludePrograms: excluded } : {}),
+    ...(raw['contracts'] === undefined ? {} : { contracts: flag(file, `${where} shop`, raw, 'contracts') }),
     priceFactor: raw['priceFactor'] === undefined ? 1 : num(file, `${where} shop`, raw, 'priceFactor', 0.1, 10),
     ...(rare ? { rare } : {}),
   };

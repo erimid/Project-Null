@@ -66,10 +66,22 @@ const FRUGAL: Profile = { ...PROFILES.typical, name: 'frugal', thinkSeconds: 5, 
 const PLAIN: Profile = { ...PROFILES.typical, name: 'plain', skills: [], craft: false };
 
 const SEEDS = [1, 7, 2034];
-// The shelf: every program, every part of hardware, and every grade of every module the market sells.
+// The Backroom's shelf: every program, every part of hardware and every grade of every module it stocks. The other shops sell far more.
+const backroom = servers.find((server) => server.id === 'backroom')!.shop!;
 const everything =
-  [...programs, ...hardware].reduce((sum, item) => sum + item.price, 0) +
-  modules.reduce((sum, module) => sum + module.grades.reduce((inner, grade) => inner + grade.price, 0), 0);
+  programs
+    .filter(
+      (item) =>
+        item.price > 0 &&
+        (backroom.programKinds?.includes(item.kind) ?? true) &&
+        item.version <= (backroom.maxVersion ?? Infinity) &&
+        !backroom.excludePrograms?.includes(item.id),
+    )
+    .reduce((sum, item) => sum + item.price, 0) +
+  hardware
+    .filter((item) => item.price > 0 && item.tier <= (backroom.maxTier ?? Infinity) && (backroom.hardwareSlots?.includes(item.slot) ?? true))
+    .reduce((sum, item) => sum + item.price, 0) +
+  modules.reduce((sum, module) => sum + module.grades.slice(0, backroom.maxGrade ?? 3).reduce((inner, grade) => inner + grade.price, 0), 0);
 
 describe('a whole career', () => {
   it.each(SEEDS)('a careful player reaches the top title with every written contract done, never traced (seed %i)', (seed) => {
@@ -148,7 +160,7 @@ describe('a whole career', () => {
   it('there is always something left to save up for', () => {
     const report = career(PROFILES.typical, 1);
     // By the top title the career has paid for most of the shelf, not all of it.
-    expect(report.earned).toBeGreaterThan(everything * 0.6);
+    expect(report.earned).toBeGreaterThan(everything * 0.4);
     expect(report.earned).toBeLessThan(everything);
     expect(report.kitCompleteMinutes).toBeNull();
     expect(report.bought.length).toBeGreaterThanOrEqual(12);

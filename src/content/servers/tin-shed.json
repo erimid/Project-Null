@@ -1,0 +1,70 @@
+{
+  "id": "tin-shed",
+  "name": "Tin Shed",
+  "kind": "board",
+  "owner": "Tin Shed",
+  "hostname": "TINSHED-1",
+  "address": "91.198.17.60",
+  "city": "Gdańsk",
+  "country": "Poland",
+  "lat": 54.35,
+  "lon": 18.65,
+  "blurb": "A hobbyist tool seller. Programs and the modules to build on them.",
+  "listed": true,
+  "security": {
+    "password": 0,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 0
+  },
+  "traceSecondsPerHop": 30,
+  "relayDelay": 1.2,
+  "banner": [
+    "tin shed",
+    "tools, as described. no refunds.",
+    "everything on the shelf is on the shelf."
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Walk-in"
+    }
+  ],
+  "files": [
+    {
+      "name": "shelf_notes.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "TIN SHED · SHELF NOTES\n\nPrograms: every kind, every version, and a few oddities that are quicker, or smaller, than they have any right to be. If two of a thing look the same, read the sizes.\n\nModules: all three grades, for the Workbench.\n\nNo hardware. No contracts. No questions. Prices are a little under what the Backroom asks, because nobody here has to hide the shop.\n\nIf you need a part for your gateway, try the surplus yard in Rotterdam."
+      }
+    },
+    {
+      "name": "how_to_pay.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "Credits go through the same ledger as everywhere else. Whatever you buy lands on your gateway at once. If your drive is full, nothing happens and you get your credits back. Clear some room first."
+      }
+    }
+  ],
+  "logs": [],
+  "shop": {
+    "programs": true,
+    "hardware": false,
+    "modules": true,
+    "models": false,
+    "contracts": false,
+    "priceFactor": 0.95,
+    "rare": [
+      {
+        "kind": "program",
+        "id": "trace-jammer-2",
+        "chance": 0.2
+      }
+    ]
+  }
+}

@@ -15,6 +15,9 @@ import tuningJson from './tuning.json';
 import gateway from './servers/gateway.json';
 import relayRegistry from './servers/relay-registry.json';
 import backroom from './servers/backroom.json';
+import tinShed from './servers/tin-shed.json';
+import vargaSurplus from './servers/varga-surplus.json';
+import lowtideExchange from './servers/lowtide-exchange.json';
 import tallisLibrary from './servers/tallis-library.json';
 import kestrelNet from './servers/kestrel-net.json';
 import polarMesh from './servers/polar-mesh.json';
@@ -92,7 +95,7 @@ export const gameInfo = parseGameInfo(gameJson);
 export const sites = parseSites(sitesJson);
 export const tuning = parseTuning(tuningJson);
 export const servers = parseServers(
-  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint],
+  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint, tinShed, vargaSurplus, lowtideExchange],
   'servers/',
 );
 export const programs = parsePrograms(programsJson);

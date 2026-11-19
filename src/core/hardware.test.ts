@@ -57,7 +57,7 @@ function game(balance = 1000) {
 describe('a new gateway', () => {
   it('has stock parts: three programs, the stock drive, one connection, no model', () => {
     const { state } = game();
-    expect(state.player.hardware).toEqual({ cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0 });
+    expect(state.player.hardware).toEqual({ cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0, cooling: 0 });
     expect(maxPrograms(state, content)).toBe(3);
     expect(storageGb(state, content)).toBe(20);
     expect(maxConnections(state, content)).toBe(1);
@@ -214,7 +214,7 @@ describe('being traced by a strong system', () => {
   it('never takes a stock part', () => {
     const h = game();
     traceAtVault(h);
-    expect(h.state.player.hardware).toEqual({ cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0 });
+    expect(h.state.player.hardware).toEqual({ cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0, cooling: 0 });
   });
 
   it('can take the model rack', () => {
@@ -246,7 +246,7 @@ describe('old saves', () => {
     file.state.player.maxConnections = 2;
     const loaded = deserializeGame(JSON.stringify(file)).state;
     expect(loaded.version).toBe(STATE_VERSION);
-    expect(loaded.player.hardware).toEqual({ cpu: 1, storage: 1, modem: 1, ports: 2, rack: 0, sensor: 0 });
+    expect(loaded.player.hardware).toEqual({ cpu: 1, storage: 1, modem: 1, ports: 2, rack: 0, sensor: 0, cooling: 0 });
     expect('maxConnections' in loaded.player).toBe(false);
   });
 
@@ -254,6 +254,6 @@ describe('old saves', () => {
     const h = game();
     h.buy('cpu-2', 'rack-1');
     const loaded = deserializeGame(serializeGame(h.state, 'now')).state;
-    expect(loaded.player.hardware).toEqual({ cpu: 2, storage: 1, modem: 1, ports: 1, rack: 1, sensor: 0 });
+    expect(loaded.player.hardware).toEqual({ cpu: 2, storage: 1, modem: 1, ports: 1, rack: 1, sensor: 0, cooling: 0 });
   });
 });

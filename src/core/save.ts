@@ -145,6 +145,11 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   }),
   // 17 -> 18: the story director. The story picks up from the save's rating, so it starts at the first beat.
   17: (old) => ({ ...old, story: { beat: 0, arrived: false, lastMs: 0, offered: [] } }),
+  // 18 -> 19: the cooling slot. Nobody had a cooler fitted before it existed.
+  18: (old) => ({
+    ...old,
+    player: { ...(old.player as object), hardware: { ...((old.player as { hardware: object }).hardware), cooling: 0 } },
+  }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -255,7 +260,7 @@ const isConnection = (c: unknown): c is Obj =>
       ['open', 'won', 'lost'].includes(c.monitor.echo.result as string)));
 
 const isHardware = (h: unknown) =>
-  isObj(h) && ['cpu', 'storage', 'modem', 'ports', 'rack', 'sensor'].every((slot) => isNum(h[slot]) && Number.isInteger(h[slot]) && (h[slot] as number) >= 0);
+  isObj(h) && ['cpu', 'storage', 'modem', 'ports', 'rack', 'sensor', 'cooling'].every((slot) => isNum(h[slot]) && Number.isInteger(h[slot]) && (h[slot] as number) >= 0);
 
 const isJob = (j: unknown): j is Obj =>
   isObj(j) &&

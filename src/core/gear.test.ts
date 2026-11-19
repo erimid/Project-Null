@@ -3,8 +3,13 @@ import {
   applyAction,
   canReadTrace,
   checkTask,
+  cpuSpeed,
   createGame,
   jamTrace,
+  sellsHardware,
+  sellsModule,
+  sellsOnly,
+  sellsProgram,
   syncWithContent,
   tick,
   traceHeld,
@@ -168,5 +173,38 @@ describe('Shops', () => {
     const id = h.login('hidden', 'member');
     h.ok({ type: 'buyProgram', connectionId: id, programId: 'breaker-2' });
     expect(h.state.player.balance).toBe(2940);
+  });
+});
+
+describe('Shop shelves and gear', () => {
+  const server = (shop: Record<string, unknown>) => ({ ...content.servers.find((item) => item.id === 'hidden')!, shop: { programs: true, hardware: true, modules: true, models: true, priceFactor: 1, ...shop } });
+
+  it('a shop can cap versions, tiers and grades, leave programs out, and limit hardware to some slots', () => {
+    const h = game();
+    const shop = server({ maxVersion: 1, maxTier: 1, maxGrade: 1, excludePrograms: ['scanner'], hardwareSlots: ['cpu'] }) as never;
+    const find = (id: string) => content.programs.find((program) => program.id === id)!;
+    expect(sellsProgram(h.state, shop, find('breaker-2'))).toBe(false);
+    expect(sellsProgram(h.state, shop, find('scanner'))).toBe(false);
+    expect(sellsProgram(h.state, shop, find('decompiler'))).toBe(true);
+    expect(sellsHardware(h.state, shop, content.hardware.find((part) => part.id === 'cpu-1')!)).toBe(true);
+    expect(sellsHardware(h.state, shop, content.hardware.find((part) => part.id === 'cpu-2')!)).toBe(false);
+    expect(sellsHardware(h.state, shop, content.hardware.find((part) => part.id === 'modem-1')!)).toBe(false);
+    const module = content.modules[0]!;
+    expect(sellsModule(h.state, shop, module, 1)).toBe(true);
+    expect(sellsModule(h.state, shop, module, 2)).toBe(false);
+  });
+
+  it('a shop that only sells posts no contracts', () => {
+    expect(sellsOnly(server({ contracts: false }) as never)).toBe(true);
+    expect(sellsOnly(server({}) as never)).toBe(false);
+  });
+
+  it('a cooler speeds the processor up on top of its own speed', () => {
+    const h = game();
+    expect(cpuSpeed(h.state, content)).toBe(1);
+    h.state.player.hardware.cooling = 1;
+    expect(cpuSpeed(h.state, content)).toBe(1.5);
+    h.state.player.hardware.cpu = 2;
+    expect(cpuSpeed(h.state, content)).toBe(3);
   });
 });

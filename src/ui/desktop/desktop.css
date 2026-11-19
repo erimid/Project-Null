@@ -3850,7 +3850,8 @@ button.lead:hover {
 }
 
 /* A skill that needs another sits in from the spine, under it. */
-.skill--row3 {
+.skill--row3,
+.skill--row4 {
   margin-left: 14px;
 }
 
@@ -3865,11 +3866,13 @@ button.lead:hover {
   background: var(--panel);
 }
 
-.skill--row3 .skill__node {
+.skill--row3 .skill__node,
+.skill--row4 .skill__node {
   left: -31px;
 }
 
 .skill--row3 .skill__node::after,
+.skill--row4 .skill__node::after,
 .skill__node::after {
   content: '';
   position: absolute;
@@ -3880,7 +3883,8 @@ button.lead:hover {
   background: rgba(var(--hue), 0.45);
 }
 
-.skill--row3 .skill__node::after {
+.skill--row3 .skill__node::after,
+.skill--row4 .skill__node::after {
   width: 22px;
 }
 

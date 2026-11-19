@@ -1,0 +1,83 @@
+{
+  "id": "varga-surplus",
+  "name": "Varga Surplus",
+  "kind": "board",
+  "owner": "Varga Reclamation BV",
+  "hostname": "VRG-YARD-3",
+  "address": "145.40.112.8",
+  "city": "Rotterdam",
+  "country": "Netherlands",
+  "lat": 51.92,
+  "lon": 4.48,
+  "blurb": "A reclamation yard that sells gateway hardware pulled from decommissioned racks.",
+  "listed": true,
+  "security": {
+    "password": 0,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 0
+  },
+  "traceSecondsPerHop": 30,
+  "relayDelay": 1.2,
+  "banner": [
+    "varga reclamation",
+    "every board was in a rack. every rack was in a building that closed.",
+    "guest terminal"
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Walk-in"
+    }
+  ],
+  "files": [
+    {
+      "name": "yard_list.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "VARGA RECLAMATION · YARD LIST\n\nProcessors. Storage. Modems. Connection cards. Coolers.\n\nEverything here is pulled from a building that was shut down and is sold for less than the Backroom asks. The very top boards are not in the yard; they go to a buyer who does not haggle.\n\nWe do not sell programs. We do not take contracts."
+      }
+    },
+    {
+      "name": "condition_notes.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "Tested on delivery. Installed on payment. Whatever you pull out of your gateway goes to the scrapper, not back to you."
+      }
+    }
+  ],
+  "logs": [],
+  "shop": {
+    "programs": false,
+    "hardware": true,
+    "modules": false,
+    "models": false,
+    "contracts": false,
+    "priceFactor": 0.9,
+    "maxTier": 9,
+    "hardwareSlots": [
+      "cpu",
+      "storage",
+      "modem",
+      "ports",
+      "cooling"
+    ],
+    "rare": [
+      {
+        "kind": "hardware",
+        "id": "rack-2",
+        "chance": 0.4
+      },
+      {
+        "kind": "hardware",
+        "id": "sensor-1",
+        "chance": 0.5
+      }
+    ]
+  }
+}

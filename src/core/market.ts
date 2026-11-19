@@ -43,18 +43,22 @@ export const shopPrice = (shop: ShopDef, base: number): number => Math.round(bas
 /** True if a shop sells this program today: a staple it carries, or a rare line shown today. */
 export function sellsProgram(state: GameState, server: ServerDef, program: ProgramDef): boolean {
   const shop = shopOf(server);
-  if (shop.programs && (!shop.programKinds || shop.programKinds.includes(program.kind))) return true;
+  if (shop.programs && (!shop.programKinds || shop.programKinds.includes(program.kind)) && program.version <= (shop.maxVersion ?? Infinity) && !shop.excludePrograms?.includes(program.id)) return true;
   return rareToday(state, server).some((line) => line.kind === 'program' && line.id === program.id);
 }
 
 /** True if a shop sells this hardware part today. */
 export function sellsHardware(state: GameState, server: ServerDef, part: HardwareDef): boolean {
-  if (shopOf(server).hardware) return true;
+  const shop = shopOf(server);
+  if (shop.hardware && part.tier <= (shop.maxTier ?? Infinity) && (!shop.hardwareSlots || shop.hardwareSlots.includes(part.slot))) return true;
   return rareToday(state, server).some((line) => line.kind === 'hardware' && line.id === part.id);
 }
 
 /** True if a shop sells this module at this grade today. */
 export function sellsModule(state: GameState, server: ServerDef, module: ModuleDef, grade: number): boolean {
-  if (shopOf(server).modules) return true;
+  if (shopOf(server).modules && grade <= (shopOf(server).maxGrade ?? Infinity)) return true;
   return rareToday(state, server).some((line) => line.kind === 'module' && line.id === module.id && (line.grade ?? grade) === grade);
 }
+
+/** True if this server is a shop only: it sells, and posts no contracts. */
+export const sellsOnly = (server: ServerDef): boolean => server.shop?.contracts === false;
