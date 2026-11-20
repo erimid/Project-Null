@@ -58,6 +58,8 @@ export {
 } from './world';
 export type { Content, Rules } from './world';
 export { effectiveSpeed, gameDate, tick } from './clock';
+export { REFERENCE_FILE_GB, bestPace, compareProgram, programPace, speedShare, topVersion } from './compare';
+export type { ProgramComparison } from './compare';
 export type { GameDate } from './clock';
 export { MAX_LEVEL_GAP, blindSeconds, canLogIn, checkTask, layerSeconds, freeStorageGb, programStorageGq, ringAngle, ringTolerance, usedStorageGq } from './tasks';
 export {

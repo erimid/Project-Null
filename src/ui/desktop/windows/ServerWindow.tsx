@@ -12,7 +12,6 @@ import {
   canLogIn,
   isEvidence,
   modelWith,
-  rentedModel,
   isLyingLow,
   ownedProgram,
   folderOf,
@@ -21,19 +20,15 @@ import {
   ringAngle,
   ringTolerance,
   partTaken,
-  marketGrade,
   shopOf,
   shopPrice,
   sellsOnly,
-  sellsProgram,
-  sellsModule,
   sellsHardware,
   rareToday,
   type Action,
   type Connection,
   type EchoPuzzle,
   type GameState,
-  type ServerState,
   type TaskTarget,
   REGIONS,
   isJob,
@@ -51,6 +46,9 @@ import { viewer } from '../viewerStore';
 import { FileName } from '../FileName';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
+import { Market } from './MarketSection';
+import type { View } from './serverView';
+import { Price, ShopSign } from './Shop';
 
 const SECTION_LABELS: Record<Section, string> = {
   contracts: 'Contracts',
@@ -80,18 +78,6 @@ const KIND_LABELS: Record<ServerDef['kind'], string> = {
   relay: 'Relay',
   company: 'Company',
 };
-
-/** Everything a section needs to show one connection. */
-interface View {
-  game: GameState;
-  server: ServerDef;
-  state: ServerState;
-  connection: Connection;
-  /** Starts a program on this connection; any refusal is shown at the bottom of the window. */
-  run: (target: TaskTarget) => void;
-  /** Does anything else on this connection, with refusals shown the same way. True if it worked. */
-  act: (action: Action) => boolean;
-}
 
 /** Sections this login can open, in menu order. */
 function sectionsFor(server: ServerDef, connection: Connection): Section[] {
@@ -970,183 +956,6 @@ function Contracts({ game, connection, act }: View) {
           </li>
         ))}
       </ul>
-    </>
-  );
-}
-
-/** What a shop asks against the list price, in words. */
-function priceWord(factor: number): string {
-  const percent = Math.round(Math.abs(factor - 1) * 100);
-  return percent === 0 ? 'list price' : `${percent}% ${factor < 1 ? 'under' : 'over'} list`;
-}
-
-/** The sign over a shop's shelf: who they are, how they price, and what is in for today only. */
-function ShopSign({ game, server }: Pick<View, 'game' | 'server'>) {
-  const shop = shopOf(server);
-  const rare = rareToday(game, server);
-  const hoursLeft = Math.max(1, Math.ceil((86_400_000 - (game.clock.gameTimeMs % 86_400_000)) / 3_600_000));
-  const nameOf = (line: (typeof rare)[number]) =>
-    line.kind === 'program'
-      ? content.programs.find((program) => program.id === line.id)?.name
-      : line.kind === 'hardware'
-        ? content.hardware.find((part) => part.id === line.id)?.name
-        : `${content.modules.find((module) => module.id === line.id)?.name ?? line.id}${line.grade ? ` ${line.grade}` : ''}`;
-  return (
-    <div class={`shopsign shopsign--${server.id}`}>
-      <div class="shopsign__top">
-        <span class="shopsign__place">
-          {server.city} · {sellsOnly(server) ? 'sells only' : 'board and shop'}
-        </span>
-        <span class={`shopsign__price${shop.priceFactor < 1 ? ' is-cheap' : shop.priceFactor > 1 ? ' is-dear' : ''}`}>{priceWord(shop.priceFactor)}</span>
-      </div>
-      <p class="shopsign__blurb">{server.blurb}</p>
-      <p class="shopsign__rare">
-        {rare.length > 0 ? (
-          <>
-            <span class="row__tag row__tag--rare shopsign__tag">today only</span>
-            {rare.map(nameOf).filter(Boolean).join(', ')}
-            <span class="row__dim"> · gone in {hoursLeft} h</span>
-          </>
-        ) : (
-          <span class="row__dim">Nothing rare on the shelf today. It changes in {hoursLeft} h.</span>
-        )}
-      </p>
-    </div>
-  );
-}
-
-/** A shop's price, with the list price struck through beside it when the two differ. */
-function Price({ base, price }: { base: number; price: number }) {
-  return (
-    <span class="data contract__pay price">
-      {price !== base && base > 0 && <s class="price__list">{formatMoney(base)}</s>}
-      {price > 0 ? formatMoney(price) : 'free'}
-    </span>
-  );
-}
-
-function Market({ game, server, connection, act }: View) {
-  const shop = shopOf(server);
-  const rareIds = new Set(rareToday(game, server).map((line) => `${line.kind}:${line.id}`));
-  // Starting programs only show up here if the player has removed one: the market gives those back.
-  const forSale = content.programs.filter(
-    (program) =>
-      (program.price > 0 || (content.startingPrograms.includes(program.id) && !game.player.programs.includes(program.id))) &&
-      sellsProgram(game, server, program),
-  );
-  const free = freeStorageGb(game, content);
-  const rented = rentedModel(game, content);
-  // Today's rare lines go to the top of the shelf.
-  const shelf = [...forSale].sort((a, b) => Number(rareIds.has(`program:${b.id}`)) - Number(rareIds.has(`program:${a.id}`)));
-  return (
-    <>
-    <ShopSign game={game} server={server} />
-    <ul class="rows">
-      {shelf.map((program) => {
-        const owned = game.player.programs.includes(program.id);
-        const price = shopPrice(shop, program.price);
-        const rare = rareIds.has(`program:${program.id}`);
-        return (
-          <li key={program.id} class={`row row--contract row--market${rare ? ' is-rare' : ''}`}>
-            <span class="row__main">
-              <span>
-                <strong>{program.name}</strong> <span class="data row__dim">v{program.version}</span>
-                {rare && <span class="row__tag row__tag--rare">today only</span>}
-              </span>
-              <span class="contract__summary">{program.blurb}</span>
-            </span>
-            <span class="data row__dim">{program.sizeGq} GB</span>
-            <Price base={program.price} price={price} />
-            {owned ? (
-              <span class="row__done">Owned</span>
-            ) : (
-              <button
-                type="button"
-                class="btn btn--go"
-                disabled={game.player.balance < price || program.sizeGq > free}
-                title={program.sizeGq > free ? 'Not enough room on your gateway' : undefined}
-                onClick={() => act({ type: 'buyProgram', connectionId: connection.id, programId: program.id })}
-              >
-                {price > 0 ? 'Buy' : 'Install'}
-              </button>
-            )}
-          </li>
-        );
-      })}
-    </ul>
-    <h3 class="map__heading section-gap">
-      Modules <span class="heading__note">for your Workbench</span>
-    </h3>
-    <ul class="rows">
-      {content.modules.filter((module) => shop.modules || rareIds.has(`module:${module.id}`)).map((module) => {
-        const best = marketGrade(game, content);
-        const next = content.rules.moduleGradeRatings[best];
-        return (
-          <li key={module.id} class="row row--contract row--market">
-            <span class="row__main">
-              <span>
-                <strong>{module.name}</strong>
-              </span>
-              <span class="contract__summary">
-                {module.blurb}
-                {next !== undefined ? ` Grade ${best + 1} at rating ${next}.` : ''}
-              </span>
-            </span>
-            <span class="market__grades">
-              {module.grades.slice(0, best).map((grade, index) => {
-                const price = shopPrice(shop, grade.price);
-                return sellsModule(game, server, module, index + 1) ? (
-                  <button
-                    key={index}
-                    type="button"
-                    class="btn btn--go"
-                    disabled={game.player.balance < price}
-                    title={`${module.name} ${index + 1}: ${formatMoney(price)}`}
-                    onClick={() => act({ type: 'buyModule', connectionId: connection.id, moduleId: module.id, grade: index + 1 })}
-                  >
-                    {index + 1} · {formatMoney(price)}
-                  </button>
-                ) : null;
-              })}
-            </span>
-          </li>
-        );
-      })}
-    </ul>
-    {shop.models && (
-    <>
-    <h3 class="map__heading section-gap">
-      Models for rent <span class="heading__note">by the day, from Lowlight Compute</span>
-    </h3>
-    <ul class="rows">
-      {content.models.map((model) => {
-        const mine = rented?.id === model.id;
-        const price = shopPrice(shop, model.price);
-        return (
-          <li key={model.id} class="row row--contract row--market">
-            <span class="row__main">
-              <span>
-                <strong>{model.name}</strong>
-                {mine && game.player.model && <span class="row__tag row__tag--good">yours until {formatGameTime(game.player.model.untilMs)}</span>}
-              </span>
-              <span class="contract__summary">{model.blurb}</span>
-            </span>
-            <span class="data row__dim">{content.rules.modelRentHours} h</span>
-            <span class="data contract__pay">{formatMoney(price)}</span>
-            <button
-              type="button"
-              class="btn btn--go"
-              disabled={game.player.balance < price}
-              onClick={() => act({ type: 'rentModel', connectionId: connection.id, modelId: model.id })}
-            >
-              {mine ? 'Add a day' : 'Rent'}
-            </button>
-          </li>
-        );
-      })}
-    </ul>
-    </>
-    )}
     </>
   );
 }
