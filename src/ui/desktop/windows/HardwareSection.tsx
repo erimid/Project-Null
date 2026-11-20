@@ -5,6 +5,7 @@ import { content } from '../../session';
 import { GatewayBoard, SLOT_BLURBS, partStats, slotLabel, type SlotMark } from '../GatewayBoard';
 import { IconTile, Pips, StatBar } from '../Gear';
 import { Icon, slotIcon } from '../Icon';
+import { uiSound } from '../../sfx';
 import type { View } from './serverView';
 import { Price, ShopSign } from './Shop';
 
@@ -61,7 +62,10 @@ function PartCard({ part, fitted, scale, rare, view, onFitted }: { part: Hardwar
           title={tooBig ? 'Not enough room on your gateway for the model' : poor ? 'You cannot afford this yet' : undefined}
           data-tip="Pay and fit it straight away. It replaces what is in the slot."
           onClick={() => {
-            if (act({ type: 'buyHardware', connectionId: connection.id, partId: part.id })) onFitted();
+            if (act({ type: 'buyHardware', connectionId: connection.id, partId: part.id })) {
+              uiSound('fitted');
+              onFitted();
+            }
           }}
         >
           Install

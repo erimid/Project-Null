@@ -223,9 +223,72 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
     ]),
 };
 
+/**
+ * Sounds for things the player does on the desk that the game itself
+ * takes no notice of: picking a slot, seating a module, flipping a tab.
+ * A button asks for one with a `data-sfx` attribute.
+ */
+const UI_SOUNDS = {
+  // A soft blip: something picked up to look at.
+  pick: () => play([{ freq: 880, seconds: 0.06, wave: 'triangle', level: 0.045, to: 1100 }]),
+  // A card flicked across: a tab or a sort order changed.
+  tab: () =>
+    play([
+      { freq: 620, seconds: 0.04, wave: 'triangle', level: 0.04 },
+      { freq: 930, at: 0.035, seconds: 0.07, wave: 'triangle', level: 0.04 },
+    ]),
+  // A module pressed home: a click, then a short rising hum.
+  socket: () =>
+    play([
+      { freq: 190, seconds: 0.05, wave: 'square', level: 0.06 },
+      { freq: 520, at: 0.03, seconds: 0.16, wave: 'triangle', level: 0.06, to: 880 },
+    ]),
+  unsocket: () =>
+    play([
+      { freq: 700, seconds: 0.12, wave: 'triangle', level: 0.05, to: 380 },
+      { freq: 170, at: 0.1, seconds: 0.05, wave: 'square', level: 0.045 },
+    ]),
+  // A part seated on the board: a low thunk, then the board lighting up. It follows the money going.
+  fitted: () => {
+    burst(0.05, 0.05);
+    play([
+      { freq: 140, at: 0.14, seconds: 0.16, wave: 'square', level: 0.08, to: 80 },
+      { freq: 660, at: 0.22, seconds: 0.12, wave: 'triangle', level: 0.06 },
+      { freq: 990, at: 0.31, seconds: 0.12, wave: 'triangle', level: 0.06 },
+      { freq: 1320, at: 0.4, seconds: 0.4, wave: 'triangle', level: 0.06 },
+    ]);
+  },
+  // A job taken: a stamp coming down, and one note to say it is yours.
+  accepted: () => {
+    burst(0.06, 0.07);
+    play([
+      { freq: 150, seconds: 0.12, wave: 'square', level: 0.08, to: 90 },
+      { freq: 587, at: 0.1, seconds: 0.1, wave: 'triangle', level: 0.07 },
+      { freq: 880, at: 0.19, seconds: 0.3, wave: 'triangle', level: 0.07 },
+    ]);
+  },
+} as const;
+
+export type UiSound = keyof typeof UI_SOUNDS;
+
+export function uiSound(name: UiSound): void {
+  UI_SOUNDS[name]();
+}
+
 /** Starts the sound effects. Call once, after the game has loaded. */
 export function startSfx(): void {
   session.subscribeEvents((event) => EFFECTS[event.type](event));
+
+  // Buttons that ask for a sound of their own get it when they are pressed.
+  document.addEventListener(
+    'click',
+    (event) => {
+      const button = (event.target as HTMLElement | null)?.closest?.<HTMLElement>('[data-sfx]');
+      const name = button?.dataset.sfx;
+      if (button && !(button as HTMLButtonElement).disabled && name && name in UI_SOUNDS) uiSound(name as UiSound);
+    },
+    true,
+  );
 
   // A soft tick for every button, so the desk feels like it has keys.
   document.addEventListener(
