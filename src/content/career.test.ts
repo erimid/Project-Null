@@ -191,18 +191,19 @@ describe('a whole career', () => {
     for (const profile of [PROFILES.careful, PROFILES.typical]) {
       const report = career(profile, seed);
       expect(report.story.map((beat) => beat.id), profile.name).toEqual(story.beats.map((beat) => beat.id));
-      // It starts before the Wraith title and ends past the Phantom one, long before the top.
+      // It starts before the Wraith title and, with Act 2, ends past the Spectre one, close to the top.
       expect(report.story[0]!.rating, profile.name).toBeLessThan(gameInfo.ratings[6]!.min);
-      expect(report.story.at(-1)!.rating, profile.name).toBeGreaterThanOrEqual(gameInfo.ratings[7]!.min);
-      expect(report.story.at(-1)!.rating, profile.name).toBeLessThan(top.min);
+      expect(report.story.at(-1)!.rating, profile.name).toBeGreaterThanOrEqual(gameInfo.ratings[8]!.min);
+      // A scripted player keeps climbing on standing jobs while the story waits, so allow a little past the top.
+      expect(report.story.at(-1)!.rating, profile.name).toBeLessThan(top.min + 6);
     }
   });
 
   it.each(SEEDS)('enemy hackers are rare, never early, and can be beaten (seed %i)', (seed) => {
     for (const profile of [PROFILES.careful, PROFILES.typical, PLAIN]) {
       const report = career(profile, seed);
-      // The story sends one. The rest are a handful over a whole career.
-      expect(report.raids.filter((raid) => raid.story).length, profile.name).toBe(1);
+      // The story sends two (one in each act). The rest are a handful over a whole career.
+      expect(report.raids.filter((raid) => raid.story).length, profile.name).toBe(2);
       expect(report.raids.length, profile.name).toBeGreaterThanOrEqual(2);
       expect(report.raids.length, profile.name).toBeLessThanOrEqual(5);
       for (const raid of report.raids) expect(raid.rating, profile.name).toBeGreaterThanOrEqual(tuning.raidMinRating);

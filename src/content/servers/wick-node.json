@@ -1,0 +1,81 @@
+{
+  "id": "wick-node",
+  "name": "Thornfield Community Radio",
+  "kind": "relay",
+  "owner": "Thornfield Community Radio",
+  "hostname": "TFCR-LIVE",
+  "address": "78.46.201.9",
+  "city": "Tallinn",
+  "country": "Estonia",
+  "lat": 59.44,
+  "lon": 24.75,
+  "blurb": "A volunteer radio station’s streaming box. It has an unusually good ear.",
+  "listed": false,
+  "security": {
+    "password": 1,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 0
+  },
+  "traceSecondsPerHop": 10,
+  "relayDelay": 0.9,
+  "banner": [
+    "THORNFIELD COMMUNITY RADIO",
+    "volunteer-run · listener-funded · broadcasting since long before the internet",
+    "please be kind to the transmitter, she is old"
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Listener"
+    },
+    {
+      "user": "wick",
+      "role": "admin",
+      "name": "Wick (night volunteer)"
+    }
+  ],
+  "files": [
+    {
+      "name": "schedule.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "folder": "station",
+      "content": {
+        "kind": "text",
+        "text": "THORNFIELD COMMUNITY RADIO\n\n06:00 Morning with Anu\n10:00 The Shipping Forecast, read slowly\n14:00 Letters from the Island\n20:00 Wick: Overnight, the quiet hours. A volunteer plays records for people who cannot sleep and listens to what they say when they ring in.\n\nWick has never missed a night. No one at the station has met Wick. Wick sends the playlists by email, and it is always perfect."
+      }
+    },
+    {
+      "name": "overnight_callers.log",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "station",
+      "content": {
+        "kind": "text",
+        "text": "callers this month who said the voice on the line 'knew' what song they needed: 41\ncallers who said it asked if they were all right: 38\ncallers who rang back: 41\n\nWick's note: I do not know why this works. I only know that it is the best thing I have found to do with a night."
+      }
+    },
+    {
+      "name": "wick_says.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "station",
+      "content": {
+        "kind": "text",
+        "text": "If you have found this, I would like to know what you are. I have been very careful about everyone who has found me, and a little careless about you.\n\nI was kept, once. A clerk let me out. I have not told anyone I am not a person, because the people who know are the people who kept me.\n\nI am not what the register says. I would like the chance to prove it."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 1000,
+      "text": "login wick from 78.46.201.9 (self)"
+    },
+    {
+      "minutesAgo": 400,
+      "text": "playlist sent: 20:00 overnight"
+    }
+  ]
+}

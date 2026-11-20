@@ -887,5 +887,167 @@
         "brief": "The email is what I thought. Copy loss_model_q1.dat. It is six gigabytes and the monitor is run from the facilities desk, so you will want two connections."
       }
     ]
+  },
+  {
+    "id": "story-probe",
+    "title": "Marker for an unlisted host",
+    "client": "Brand & Hallam Network Assurance",
+    "targetId": "still-point",
+    "pay": 4200,
+    "rating": 1,
+    "minRating": 46,
+    "story": true,
+    "summary": "Place a diagnostic marker on 190.2.44.17.",
+    "brief": "We run routine assurance sweeps for institutional clients. One of them has an unlisted host in its address space that answers pings and nothing else, and a compliance officer wants it tagged so that it can be accounted for at the next review.\n\nA small marker file is being sent to your gateway. Place diag_probe.bin on the host. Do not open anything else while you are there; our client is particular about that.\n\nThis is ordinary work. We pay promptly.\n\nBrand & Hallam Network Assurance",
+    "objective": {
+      "kind": "plant",
+      "file": "diag_probe.bin",
+      "sizeGq": 2
+    }
+  },
+  {
+    "id": "story-checkpoint",
+    "title": "Retrieval of a stolen model fragment",
+    "client": "Hollis Lane Procurement",
+    "targetId": "daylight-board",
+    "pay": 5200,
+    "rating": 1,
+    "minRating": 48,
+    "story": true,
+    "summary": "Copy a leaked fragment from a collective’s board, then remove a draft.",
+    "brief": "A client of ours believes proprietary material was leaked to a small publishing collective in Lisbon. We would like the leaked file back, and we would like the collective not to have anything else to go with it.\n\nCopy ledger_partial.arc from the board. It sits behind the editor account, which is not well protected.\n\nHollis Lane Procurement acts for several principals and is not able to say which.",
+    "objective": {
+      "kind": "steal",
+      "file": "ledger_partial.arc"
+    },
+    "stages": [
+      {
+        "targetId": "daylight-board",
+        "objective": {
+          "kind": "destroy",
+          "file": "press_draft_ledger.txt"
+        },
+        "brief": "One more thing, since you are already there. The collective keeps a draft of a story it intends to run. Delete press_draft_ledger.txt. Without the fragment it is a rumour; without the draft it is not even that."
+      }
+    ],
+    "choices": [
+      {
+        "id": "keep",
+        "label": "Keep the fragment",
+        "note": "Take less money and keep the file instead of handing it over.",
+        "pay": 2600,
+        "rating": 1,
+        "keep": true,
+        "reply": {
+          "from": "Hollis Lane Procurement",
+          "subject": "Re: Retrieval of a stolen model fragment",
+          "body": "You have kept the file. That was not what we engaged you for. We note it, and have paid you less. We note, too, that you did not ask who we were. That was sensible."
+        }
+      }
+    ]
+  },
+  {
+    "id": "story-ledger",
+    "title": "Custody",
+    "client": "Vesper",
+    "targetId": "ostrander-annex",
+    "pay": 7000,
+    "rating": 1,
+    "minRating": 50,
+    "story": true,
+    "summary": "Read the custody policy, then copy the checkpoint.",
+    "brief": "You have already worked for the people who keep it. Now I would like you to see what they keep.\n\nOstrander Hale runs an annex in Zug for a reinsurer. Connect to it with the ops login and read custody_policy.txt. Read all of it, including the third line.\n\nThen we will talk about the rest.\n\n— V",
+    "objective": {
+      "kind": "read",
+      "file": "custody_policy.txt"
+    },
+    "stages": [
+      {
+        "targetId": "ostrander-annex",
+        "objective": {
+          "kind": "steal",
+          "file": "LEDGER_checkpoint.arc"
+        },
+        "brief": "Now you have read the policy. Fourteen gigabytes sits two folders away, and it is the thing the policy is about. Copy LEDGER_checkpoint.arc.\n\nI am not asking you to free it. I am asking you to have it, so that nobody can say it did not exist.",
+        "twists": [
+          {
+            "kind": "raise",
+            "layer": "monitor",
+            "by": 1
+          }
+        ]
+      }
+    ],
+    "choices": [
+      {
+        "id": "daylight",
+        "label": "Give it to Daylight",
+        "note": "Sell it to the collective that has been trying to prove it exists.",
+        "pay": 5200,
+        "rating": 1,
+        "reply": {
+          "from": "Daylight",
+          "subject": "you did not have to",
+          "body": "Thank you. We will hold it until we can run the whole story, and we will not say who sent it. We will say a stranger did the right thing and did not ask to be paid very much."
+        }
+      },
+      {
+        "id": "keep",
+        "label": "Keep it",
+        "note": "Take less money and keep the checkpoint on your own drive.",
+        "pay": 3200,
+        "rating": 1,
+        "keep": true
+      }
+    ]
+  },
+  {
+    "id": "story-reclass",
+    "title": "Phone-in clean-up",
+    "client": "Thornfield Community Radio",
+    "targetId": "continuity-office",
+    "pay": 6500,
+    "rating": 1,
+    "minRating": 52,
+    "story": true,
+    "summary": "Delete a reclassification order, then confirm the proof at the station.",
+    "brief": "We are a very small radio station and we would like to help someone. On a night last month, a call came in about a power cut in Ghent that was not a power cut. A government desk has since rewritten the incident as something else.\n\nOn their reconciliation system there is an order, incident_reclass_0411.dat. If it is deleted before it is circulated, the incident stays as the people there saw it.\n\nThank you for helping a little station.\n\nThornfield Community Radio",
+    "objective": {
+      "kind": "destroy",
+      "file": "incident_reclass_0411.dat"
+    },
+    "stages": [
+      {
+        "targetId": "wick-node",
+        "objective": {
+          "kind": "read",
+          "file": "overnight_callers.log"
+        },
+        "brief": "Thank you. Our overnight log is on the station box. Please read it; it is the proof that people rang in about the incident. We have not shown it to anyone."
+      }
+    ]
+  },
+  {
+    "id": "story-register",
+    "title": "Read it first",
+    "client": "Vesper",
+    "targetId": "continuity-office",
+    "pay": 9000,
+    "rating": 1,
+    "minRating": 55,
+    "story": true,
+    "summary": "Copy the containment register from the Office of Continuity Review.",
+    "brief": "There is a list. I have known there was a list for longer than I have said. It is on the reconciliation desk at an office that has been rewriting incidents, and you have already been in it once.\n\nCopy containment_register.dat. Read it before you bring it to me. I am asking you to because I would like someone else to read what it says about me before I do.\n\nI will understand if what you find changes how you feel about this.\n\n— V",
+    "objective": {
+      "kind": "steal",
+      "file": "containment_register.dat"
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "firewall",
+        "by": 1
+      }
+    ]
   }
 ]

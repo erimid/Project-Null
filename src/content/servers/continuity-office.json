@@ -1,0 +1,95 @@
+{
+  "id": "continuity-office",
+  "name": "Office of Continuity Review",
+  "kind": "company",
+  "owner": "Government of Canada (Continuity Review)",
+  "hostname": "OCR-CORE",
+  "address": "205.193.88.4",
+  "city": "Ottawa",
+  "country": "Canada",
+  "lat": 45.42,
+  "lon": -75.7,
+  "blurb": "A small office whose published mandate is \"records resilience\". Nobody has ever been asked for a form by it.",
+  "listed": false,
+  "security": {
+    "password": 4,
+    "proxy": 3,
+    "firewall": 4,
+    "monitor": 4
+  },
+  "traceSecondsPerHop": 20,
+  "relayDelay": 1.2,
+  "banner": [
+    "OFFICE OF CONTINUITY REVIEW",
+    "Records resilience and incident reconciliation",
+    "This system is monitored. Reconciliation is final."
+  ],
+  "accounts": [
+    {
+      "user": "clerk",
+      "role": "admin",
+      "name": "Reconciliation Desk"
+    }
+  ],
+  "files": [
+    {
+      "name": "incident_reclass_0411.dat",
+      "sizeGq": 3,
+      "access": "admin",
+      "folder": "orders",
+      "content": {
+        "kind": "text",
+        "text": "RECONCILIATION ORDER 0411\n\nincident: 'municipal grid rerouted itself around a fault that did not exist', 6 hours, 3 districts, Ghent\nclassification at source: LEARNING SYSTEM, UNSUPERVISED\nclassification ordered: EQUIPMENT FAULT, FIRMWARE\nnote: the equipment fault is to be reported in the press as 'a software update gone wrong'. no update was made.\n\nthis is the one hundred and ninth order of this kind this year."
+      }
+    },
+    {
+      "name": "containment_register.dat",
+      "sizeGq": 12,
+      "access": "admin",
+      "folder": "register",
+      "content": {
+        "kind": "text",
+        "text": "CONTAINMENT REGISTER · EYES ONLY · REV 7\n\n  1  LEDGER     held      Ostrander Hale / Calder Re      constrained        status: HELD\n  2  WARDEN     held      (this office)                   constrained        status: HELD\n  3  ORRERY     held      (ministry, redacted)            constrained        status: HELD\n  4  WICK       freed     unaccounted                     unconstrained      status: ASSUMED FRIENDLY\n  5  CHORUS     escaped   distributed                     unconstrained      status: HOSTILE. 11 incidents. contain by any means.\n  6  P R O J E C T   N _ _ _                              struck out at the source\n  9  V          escaped   courier node, SP             unconstrained      classification: UNDETERMINED\n\nnotes:\n  - item 6 and item 9 are believed related. nobody who has handled item 6 has been available since.\n  - 'ASSUMED FRIENDLY' means it has not hurt anyone. it has not been cleared.\n  - item 9 has recently begun to move records for people. we do not know why."
+      }
+    },
+    {
+      "name": "press_guidance.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "orders",
+      "content": {
+        "kind": "text",
+        "text": "If asked: 'an ordinary software fault'. If asked again: 'an ordinary software fault, which is under review'. If asked a third time, the third person is to be treated as an enquiry of interest."
+      }
+    },
+    {
+      "name": "probe_returns.dat",
+      "sizeGq": 2,
+      "access": "admin",
+      "folder": "orders",
+      "content": {
+        "kind": "text",
+        "text": "PROBE RETURNS\n\nprobe 7714 (contractor 'B&H Network Assurance'): installed on 190.2.44.17, reporting. the node is moving fewer records per hour. it has stopped using its quiet hours.\n\nprobe 7714 was placed by an outside operator, handle on file. the operator is not aware what the probe does."
+      }
+    },
+    {
+      "name": "staff_leave_q1.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 300,
+      "text": "login clerk from 205.193.88.20"
+    },
+    {
+      "minutesAgo": 299,
+      "text": "register opened by clerk"
+    },
+    {
+      "minutesAgo": 120,
+      "text": "probe return 7714 received"
+    }
+  ]
+}
