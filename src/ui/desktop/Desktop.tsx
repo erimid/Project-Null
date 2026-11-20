@@ -68,6 +68,17 @@ export function Desktop() {
     if (underAttack) windows.focus('defence');
     else windows.close('defence');
   }, [underAttack]);
+  // Windows are kept on the desk, so it reports its size whenever that changes.
+  const workspace = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const area = workspace.current;
+    if (phone || !area) return;
+    const report = () => windows.setArea({ w: area.clientWidth, h: area.clientHeight });
+    report();
+    const watch = new ResizeObserver(report);
+    watch.observe(area);
+    return () => watch.disconnect();
+  }, [phone]);
   // The whole desk jolts when a trace cuts the line.
   const desk = useRef<HTMLDivElement>(null);
   useEffect(
@@ -87,7 +98,7 @@ export function Desktop() {
   return (
     <div ref={desk} class={`desktop${phone ? ' desktop--phone' : ''}${layoutKind === 'tablet' ? ' desktop--tablet' : ''}${tracing ? ' is-tracing' : ''}${underAttack ? ' is-attacked' : ''}`}>
       <TopBar />
-      <main class="workspace">
+      <main ref={workspace} class="workspace">
         {layoutKind === 'phone' && <p class="workspace__empty">Pick a window below.</p>}
         <GatewayWindow />
         <MapWindow />

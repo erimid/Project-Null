@@ -4,11 +4,10 @@ import { WINDOW_HELP } from './help';
 import { hintStore, useHints } from './hintStore';
 import { useLayout } from './layout';
 import { usePanes } from './panes';
+import { fitOnDesk } from './fit';
 import { grabOffset, snapMove, snapSize, zoneAt, zoneRect, type Area, type Rect, type Zone } from './snap';
 import { snapping } from './snapStore';
-import { KEEP_VISIBLE, MIN_HEIGHT, MIN_WIDTH, WINDOW_DEFS, windows, useWindows, type WindowId } from './windowStore';
-
-const TITLE_HEIGHT = 40;
+import { MIN_HEIGHT, MIN_WIDTH, WINDOW_DEFS, windows, useWindows, type WindowId } from './windowStore';
 
 interface Props {
   id: WindowId;
@@ -24,8 +23,11 @@ interface Props {
 }
 
 type Drag = { pointerId: number; dx: number; dy: number };
-/** A title-bar drag: also where it started, and the zone being offered. */
-type Move = Drag & { startX: number; startY: number; moved: boolean; zone: Zone | null };
+/**
+ * A title-bar drag: also where it started, the zone being offered, and the
+ * window's full size (its whole height, even where the desk cuts it short).
+ */
+type Move = Drag & { startX: number; startY: number; moved: boolean; zone: Zone | null; w: number; h: number };
 
 /** How far the pointer has to travel before a press on the title bar counts as a drag. */
 const DRAG_START = 4;
@@ -43,6 +45,16 @@ const areaOf = (self: HTMLElement): Area | null => {
   const area = self.parentElement;
   return area ? { w: area.clientWidth, h: area.clientHeight } : null;
 };
+
+/**
+ * How tall a window really is: its set height, or for one as tall as its
+ * contents, the height of those contents even where the desk cuts it short.
+ */
+function fullHeight(self: HTMLElement, set: number | null): number {
+  if (set !== null) return set;
+  const body = self.querySelector<HTMLElement>(':scope > .window__body');
+  return body ? self.offsetHeight - body.clientHeight + body.scrollHeight : self.offsetHeight;
+}
 
 /**
  * A floating window. Drag it by its title bar; drag its bottom-right
@@ -125,17 +137,21 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
     );
   }
 
-  const width = layout.w ?? def.width;
-  const clamp = (x: number, y: number): [number, number] => {
-    const area = frame.current?.parentElement;
-    if (!area) return [x, y];
-    return [
-      Math.min(Math.max(x, KEEP_VISIBLE - width), area.clientWidth - KEEP_VISIBLE),
-      Math.min(Math.max(y, 0), area.clientHeight - TITLE_HEIGHT),
-    ];
+  // Never past an edge of the desk: narrower or shorter if need be. Also
+  // applied when drawing, so a window saved on a bigger screen still fits.
+  const desk = windows.area();
+  const { x, y, w: width, h: height } = fitOnDesk(
+    { x: layout.x, y: layout.y, w: layout.w ?? def.width, h: layout.h },
+    desk,
+    MIN_HEIGHT,
+  );
+  /** Where a window of the given size can go, wholly on the desk. */
+  const clamp = (x: number, y: number, w: number, h: number): [number, number] => {
+    const self = frame.current;
+    const area = (self && areaOf(self)) ?? desk;
+    const fitted = fitOnDesk({ x, y, w, h }, area);
+    return [fitted.x, fitted.y];
   };
-  // Also applied when drawing, so a window saved on a bigger screen can't be lost off the edge.
-  const [x, y] = clamp(layout.x, layout.y);
 
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== 0 || (event.target as HTMLElement).closest('button')) return;
@@ -147,6 +163,8 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
       startY: event.clientY,
       moved: false,
       zone: null,
+      w: width,
+      h: frame.current ? fullHeight(frame.current, height) : (height ?? MIN_HEIGHT),
     };
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   };
@@ -159,7 +177,11 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
       active.moved = true;
       // A window filling a zone goes back to its own size as soon as it is pulled away.
       if (layout.restore) {
-        active.dx = grabOffset(active.dx, width, layout.restore.w ?? def.width);
+        const area = areaOf(self);
+        const w = Math.min(layout.restore.w ?? def.width, area?.w ?? Infinity);
+        active.dx = grabOffset(active.dx, width, w);
+        active.w = w;
+        active.h = layout.restore.h ?? fullHeight(self, null);
         windows.unplace(id, true);
       }
     }
@@ -170,34 +192,33 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
     if (!snapping.isOn() || event.shiftKey || !area || !box) {
       active.zone = null;
       snapping.setPreview(null);
-      windows.move(id, ...clamp(rawX, rawY));
+      windows.move(id, ...clamp(rawX, rawY, active.w, active.h));
       return;
     }
     active.zone = zoneAt(event.clientX - box.left, event.clientY - box.top, area);
     snapping.setPreview(active.zone ? zoneRect(active.zone, area) : null);
     if (active.zone) {
-      windows.move(id, ...clamp(rawX, rawY));
+      windows.move(id, ...clamp(rawX, rawY, active.w, active.h));
       return;
     }
-    const w = layout.restore?.w ?? self.offsetWidth;
-    const snapped = snapMove({ x: rawX, y: rawY, w, h: self.offsetHeight }, area, otherWindows(self));
-    windows.move(id, ...clamp(snapped.x, snapped.y));
+    // Snap with its full size: the drawn height shrinks near the bottom of the desk, and its bottom edge would stick wherever it was.
+    const h = Math.min(active.h, area.h);
+    const snapped = snapMove({ x: rawX, y: rawY, w: active.w, h }, area, otherWindows(self));
+    windows.move(id, ...clamp(snapped.x, snapped.y, active.w, h));
   };
   const endDrag = (event: PointerEvent) => {
     const active = drag.current;
     if (active?.pointerId !== event.pointerId) return;
     drag.current = null;
     snapping.setPreview(null);
-    const area = frame.current && areaOf(frame.current);
-    if (active.zone && area && event.type === 'pointerup') windows.place(id, zoneRect(active.zone, area));
+    if (active.zone && event.type === 'pointerup') windows.place(id, active.zone);
     else windows.settle();
   };
   // Double-click the title bar: fill the desk, or go back to how it was.
   const onTitleDblClick = (event: MouseEvent) => {
     if ((event.target as HTMLElement).closest('button')) return;
-    const area = frame.current && areaOf(frame.current);
     if (layout.restore) windows.unplace(id);
-    else if (area) windows.place(id, zoneRect('full', area));
+    else windows.place(id, 'full');
   };
 
   // The corner grip: dx and dy are how far the pointer is from the window's bottom-right corner.
@@ -240,7 +261,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
         left: `${x}px`,
         top: `${y}px`,
         width: `${width}px`,
-        height: layout.h === null ? undefined : `${layout.h}px`,
+        height: height === null ? undefined : `${height}px`,
         // Never taller than the room below its top edge; the contents scroll instead.
         maxHeight: `calc(100% - ${y}px)`,
         zIndex: layout.z,
