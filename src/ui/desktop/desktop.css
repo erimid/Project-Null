@@ -1083,6 +1083,9 @@
   list-style: none;
   max-height: min(250px, 30vh);
   overflow-y: auto;
+  /* Keep the scrollbar in its own lane so it never sits on the + / - buttons. */
+  scrollbar-gutter: stable;
+  padding-right: 10px;
 }
 
 .address {
@@ -6882,6 +6885,96 @@ body {
   display: none;
 }
 
+
+/* ---- stage 5 step 0: address book gutter, heat sort, big Connect button ---- */
+
+.addresses {
+  scrollbar-width: thin;
+}
+
+.address__heat {
+  flex: none;
+  width: 28px;
+  height: 4px;
+  margin-left: auto;
+  border-radius: 2px;
+  background: rgba(95, 212, 255, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.address__heat::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--heat, 0) * 100%);
+  background: #ffb45c;
+  border-radius: 2px;
+}
+
+.address__heat.is-hot::after {
+  background: #ff6b6b;
+}
+
+.address__heat + .address__marks,
+.address__heat + .address__tag {
+  margin-left: 8px;
+}
+
+.map__connect {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 56px;
+  margin: 10px 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.map__connect-main {
+  line-height: 1.1;
+}
+
+.map__connect-sub {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  opacity: 0.8;
+}
+
+.map__connect.is-ready {
+  animation: connect-ready 1.6s ease-in-out infinite;
+}
+
+@keyframes connect-ready {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(78, 230, 200, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgba(78, 230, 200, 0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map__connect.is-ready {
+    animation: none;
+  }
+}
+
+.is-phone .map__connect {
+  min-height: 64px;
+}
+
+.map__sort-btn {
+  white-space: nowrap;
+}
 /* ---- Stage 5 step 1: window snapping ---- */
 
 /* Where a dragged window will land when it is let go in a zone. */
