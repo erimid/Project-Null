@@ -8,7 +8,7 @@
 import type { ContractDef, ObjectiveDef, StageDef, TwistDef } from '../content/schema';
 import { evidenceCount } from './forensics';
 import { CLIENT_FILE, type GameState } from './state';
-import { fileDef, findServer, sendMail, type Content } from './world';
+import { fileDef, findServer, securityOf, sendMail, type Content } from './world';
 
 /** How long a server stays on its guard after a stage twist, in game hours. */
 export const ALERT_HOURS = 48;
@@ -24,6 +24,23 @@ export function stagesOf(contract: ContractDef): StageDef[] {
     },
     ...(contract.stages ?? []),
   ];
+}
+
+/**
+ * How dangerous a contract looks from the board, 0 to 5: the strongest
+ * security layer on any server it sends the player to, as that server
+ * stands right now. A rough read for a job card; a Scanner gives the
+ * layers one by one.
+ */
+export function contractRisk(state: GameState, content: Content, contract: ContractDef): number {
+  let risk = 0;
+  for (const targetId of new Set(stagesOf(contract).map((stage) => stage.targetId))) {
+    const server = findServer(content, targetId);
+    if (!server) continue;
+    const { password, proxy, firewall, monitor } = securityOf(state, server);
+    risk = Math.max(risk, password, proxy, firewall, monitor);
+  }
+  return risk;
 }
 
 /** True for the contract being worked on. */

@@ -1,13 +1,15 @@
-import { activeContract, objectiveMet, objectivePossible, stageDeadline, stageIndex, stagesOf, stageView } from '../../../core';
+import { activeContract, contractRisk, findModule, objectiveMet, objectivePossible, stageDeadline, stageIndex, stagesOf, stageView } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatMoney } from '../../format';
 import { useWorld } from '../../hooks';
 import type { ComponentChildren } from 'preact';
 import { content, session } from '../../session';
-import { deskStore } from '../deskStore';
 import { ConfirmButton } from '../ConfirmButton';
+import { IconTile, ModulePlate } from '../Gear';
+import { Icon, objectiveIcon } from '../Icon';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
+import { OBJECTIVE_WORDS, Place, RiskMeter, showOnMap } from './Place';
 
 /** What has to happen, in one line. */
 function objectiveText(contract: ContractDef): string {
@@ -29,21 +31,6 @@ function objectiveText(contract: ContractDef): string {
     case 'frame':
       return `On ${target}, leave a false trail pointing at ${goal.who}, and clear your own.`;
   }
-}
-
-/** Shows a server on the route map, picked and in view. */
-function showOnMap(serverId: string) {
-  deskStore.select(serverId);
-  windows.focus('map');
-}
-
-/** A server's name as a link that opens it on the route map. */
-function Place({ id, children }: { id: string; children: ComponentChildren }) {
-  return (
-    <button type="button" class="place" data-tip="Show this server on the route map" onClick={() => showOnMap(id)}>
-      {children}
-    </button>
-  );
 }
 
 /** Text with every server the player knows by name turned into a link to the map. */
@@ -97,6 +84,7 @@ export function ContractWindow() {
   const possible = objectivePossible(game, content, contract);
   const target = findServer(content, stage.targetId);
   const goal = stage.objective;
+  const part = contract.part && findModule(content, contract.part.id);
   // The target can always be opened, even before it is in the address book list.
   const places = [...new Set([stage.targetId, ...steps.map((step) => step.targetId), ...game.knownServers])];
   const sealed = goal.kind === 'steal' && game.player.files.some((file) => file.name === goal.file && file.encrypted);
@@ -107,24 +95,47 @@ export function ContractWindow() {
 
   return (
     <Window id="contract" note={done ? 'ready to deliver' : steps.length > 1 ? `step ${current + 1} of ${steps.length}` : 'in progress'}>
-      <h3 class="contract__title">{contract.title}</h3>
-      <dl class="readout">
-        <dt>client</dt>
-        <dd>{contract.client}</dd>
-        <dt>target</dt>
-        <dd>
-          {target ? <Place id={target.id}>{target.name}</Place> : stage.targetId} <span class="data row__dim">{target?.address}</span>
-        </dd>
-        <dt>pays</dt>
-        <dd>
-          <span class="data">{formatMoney(contract.pay)}</span>{' '}
-          {contract.rating > 0 && (
-            <span class="contract__rating">
-              +<span class="data">{contract.rating}</span> rating
+      <header class={`jobhead${contract.story ? ' is-story' : ''}`}>
+        <div class="jobhead__top">
+          <IconTile icon={contract.story ? 'star' : objectiveIcon(goal.kind)} size="lg" tone={contract.story ? 'rare' : undefined} />
+          <div class="jobhead__main">
+            <h3 class="contract__title">{contract.title}</h3>
+            <span class="jobhead__client">
+              <Icon name="person" size={14} /> {contract.client}
+              <span class="jobhead__kind">
+                <Icon name={objectiveIcon(goal.kind)} size={14} /> {OBJECTIVE_WORDS[goal.kind]}
+              </span>
             </span>
+          </div>
+          <div class="jobhead__reward">
+            <span class="data jobhead__pay">{formatMoney(contract.pay)}</span>
+            {contract.rating > 0 && (
+              <span class="contract__rating">
+                +<span class="data">{contract.rating}</span> rating
+              </span>
+            )}
+            {part && contract.part && <ModulePlate module={part} grade={contract.part.grade} />}
+          </div>
+        </div>
+        <div class="jobhead__target">
+          <Icon name="pin" size={18} />
+          <div class="jobhead__place">
+            <span class="jobhead__label">Target</span>
+            <strong>{target ? <Place id={target.id}>{target.name}</Place> : stage.targetId}</strong>
+            {target && (
+              <span class="jobhead__where">
+                <span class="data">{target.address}</span> · {target.city}
+              </span>
+            )}
+          </div>
+          <RiskMeter risk={contractRisk(game, content, contract)} />
+          {target && (
+            <button type="button" class="btn jobhead__map" data-tip="Open the route map with this server picked" onClick={() => showOnMap(target.id)}>
+              <Icon name="route" size={16} /> Show on map
+            </button>
           )}
-        </dd>
-      </dl>
+        </div>
+      </header>
       {steps.length > 1 && (
         <ol class="contract__steps" aria-label={`Step ${current + 1} of ${steps.length}`}>
           {steps.map((step, index) => {
