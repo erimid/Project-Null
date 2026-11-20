@@ -96,7 +96,7 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
           )}
           {part && contract.part && <ModulePlate module={part} grade={contract.part.grade} />}
         </span>
-        <button type="button" class="btn btn--go card__buy" disabled={!!blocked} title={blocked} data-tip="Take this job. It shows in your Contract window." onClick={onAccept}>
+        <button type="button" class="btn btn--go card__buy" disabled={!!blocked} title={blocked} data-tip="Take this job. It shows in your Contract window." data-sfx="accepted" onClick={onAccept}>
           Accept
         </button>
       </div>
@@ -186,6 +186,7 @@ export function Contracts({ game, connection, act }: View) {
                   role="tab"
                   class={`shoptab${item.id === filter ? ' is-current' : ''}${item.id === 'story' ? ' shoptab--rare' : ''}`}
                   aria-selected={item.id === filter}
+                  data-sfx="tab"
                   onClick={() => change({ filter: item.id })}
                 >
                   <Icon name={item.icon} size={18} />
@@ -204,6 +205,7 @@ export function Contracts({ game, connection, act }: View) {
                   type="button"
                   class={`toggle toggle--sort${on ? ' is-on' : ''}`}
                   aria-pressed={on}
+                  data-sfx="tab"
                   data-tip={`Order the board by ${item.label.toLowerCase()}. Press again to turn it round, once more to go back to the board's own order.`}
                   onClick={() => change(!on ? { sort: item.id, flipped: false } : view.flipped ? { sort: 'board', flipped: false } : { flipped: true })}
                 >

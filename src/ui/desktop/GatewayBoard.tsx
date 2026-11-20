@@ -121,6 +121,7 @@ export function GatewayBoard({ hardware, selected, onSelect, marks, fresh, strip
             type="button"
             class={`slot slot--${slot}${slot === selected ? ' is-picked' : ''}${part ? '' : ' is-empty'}${fresh === slot ? ' is-new' : ''}`}
             aria-pressed={slot === selected}
+            data-sfx="pick"
             onClick={() => onSelect(slot)}
           >
             <span class="slot__label">{label}</span>

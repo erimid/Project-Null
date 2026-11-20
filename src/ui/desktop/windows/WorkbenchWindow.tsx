@@ -138,6 +138,7 @@ export function WorkbenchWindow() {
                   aria-pressed={program.id === baseId}
                   disabled={!!running}
                   data-tip={`${kindLabel(program.kind)}. Put it on the bench to fit modules to a copy of it.`}
+                  data-sfx="pick"
                   onClick={() => pickBase(program.id)}
                 >
                   <Icon name={programIcon(program.kind)} size={18} />
@@ -182,6 +183,7 @@ export function WorkbenchWindow() {
                       class={`socket is-filled bench__slot--${module.id}`}
                       disabled={!!running}
                       data-tip="Click to take this module back out"
+                      data-sfx="unsocket"
                       onClick={() => unfit(item)}
                     >
                       <IconTile icon={moduleIcon(module.id)} tone={module.id} size="sm" />
@@ -250,6 +252,7 @@ export function WorkbenchWindow() {
                       title={base && !fits ? `${module.name} does nothing for a ${base.name}.` : undefined}
                       data-tip={module.blurb}
                       aria-pressed={on}
+                      data-sfx={on ? 'unsocket' : 'socket'}
                       onClick={() => toggle({ id: module.id, grade })}
                     >
                       <IconTile icon={moduleIcon(module.id)} tone={module.id} size="sm" />

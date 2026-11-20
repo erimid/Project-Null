@@ -331,6 +331,7 @@ export function Market(view: View) {
               role="tab"
               class={`shoptab${counter.id === category ? ' is-current' : ''}${counter.id === 'rare' ? ' shoptab--rare' : ''}`}
               aria-selected={counter.id === category}
+              data-sfx="tab"
               onClick={() => change({ category: counter.id })}
             >
               <Icon name={counter.icon} size={18} />
