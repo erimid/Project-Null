@@ -1,0 +1,816 @@
+/*
+ * Stage 5: the redesigned windows. The Market as a shop floor, Hardware
+ * as a board, Programs as tiles, the Workbench's sockets and the
+ * Contracts board as job cards all share the pieces at the top of this
+ * file: icons on lit tiles, pips, stat bars and cards.
+ *
+ * Everything sizes itself to the window it is in (the window body is the
+ * `win` container), so a narrow window, a tablet pane and a phone all
+ * get the same rules.
+ */
+
+/* ---- colours for things that have one ---- */
+
+.icontile,
+.card,
+.plate,
+.part,
+.bench__slot {
+  --tone: 95, 212, 255;
+}
+
+.tone--rare {
+  --tone: 255, 196, 92;
+}
+.tone--model {
+  --tone: 185, 162, 255;
+}
+.tone--good {
+  --tone: 78, 230, 200;
+}
+
+/* Each module has a colour, used wherever it shows (--mod is what the Workbench's plates read). */
+.tone--swift,
+.plate--swift,
+.part--swift,
+.bench__slot--swift {
+  --tone: 255, 196, 107;
+  --mod: 255, 196, 107;
+}
+.tone--compact,
+.plate--compact,
+.part--compact,
+.bench__slot--compact {
+  --tone: 95, 212, 255;
+  --mod: 95, 212, 255;
+}
+.tone--quiet,
+.plate--quiet,
+.part--quiet,
+.bench__slot--quiet {
+  --tone: 185, 162, 255;
+  --mod: 185, 162, 255;
+}
+.tone--tidy,
+.plate--tidy,
+.part--tidy,
+.bench__slot--tidy {
+  --tone: 78, 230, 200;
+  --mod: 78, 230, 200;
+}
+.tone--offload,
+.plate--offload,
+.part--offload,
+.bench__slot--offload {
+  --tone: 122, 170, 255;
+  --mod: 122, 170, 255;
+}
+.tone--burst,
+.plate--burst,
+.part--burst,
+.bench__slot--burst {
+  --tone: 255, 146, 96;
+  --mod: 255, 146, 96;
+}
+.tone--lean,
+.plate--lean,
+.part--lean,
+.bench__slot--lean {
+  --tone: 190, 230, 120;
+  --mod: 190, 230, 120;
+}
+.tone--bare,
+.plate--bare,
+.part--bare,
+.bench__slot--bare {
+  --tone: 164, 196, 212;
+  --mod: 164, 196, 212;
+}
+.tone--heavy,
+.plate--heavy,
+.part--heavy,
+.bench__slot--heavy {
+  --tone: 255, 118, 138;
+  --mod: 255, 118, 138;
+}
+.tone--ghost,
+.plate--ghost,
+.part--ghost,
+.bench__slot--ghost {
+  --tone: 214, 176, 255;
+  --mod: 214, 176, 255;
+}
+.tone--scrubber,
+.plate--scrubber,
+.part--scrubber,
+.bench__slot--scrubber {
+  --tone: 112, 236, 168;
+  --mod: 112, 236, 168;
+}
+.tone--twin,
+.plate--twin,
+.part--twin,
+.bench__slot--twin {
+  --tone: 255, 152, 220;
+  --mod: 255, 152, 220;
+}
+
+/* ---- shared pieces ---- */
+
+.icon {
+  flex: none;
+  display: block;
+}
+
+/* An icon on a lit tile. */
+.icontile {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(var(--tone), 0.5);
+  border-radius: 11px;
+  background: radial-gradient(circle at 30% 20%, rgba(var(--tone), 0.3), rgba(var(--tone), 0.06) 70%);
+  box-shadow:
+    inset 0 1px 0 rgba(var(--tone), 0.35),
+    0 0 14px rgba(var(--tone), 0.14);
+  color: rgb(var(--tone));
+}
+
+.icontile--sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.icontile--lg {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+}
+
+.pips {
+  display: inline-flex;
+  gap: 3px;
+  vertical-align: middle;
+}
+
+.pips i {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+}
+
+.pips i.is-on {
+  border-color: var(--cyan);
+  background: var(--cyan);
+  box-shadow: 0 0 6px rgba(95, 212, 255, 0.6);
+}
+
+/* One figure as a bar, with a tick where your own stands. */
+.stat {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 50px;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.stat__bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(95, 212, 255, 0.12);
+}
+
+.stat__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  min-width: 3px;
+  border-radius: 3px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(95, 212, 255, 0.45);
+  animation: stat-grow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: left;
+}
+
+@keyframes stat-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.stat.is-better .stat__fill {
+  background: var(--mint);
+  box-shadow: 0 0 8px rgba(78, 230, 200, 0.5);
+}
+
+.stat.is-worse .stat__fill {
+  background: #ff8a95;
+  box-shadow: 0 0 8px rgba(255, 59, 78, 0.4);
+}
+
+.stat__mine {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--text-bright);
+  box-shadow: 0 0 0 1px var(--panel);
+}
+
+.stat__value {
+  font-size: 12px;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+/* An on/off filter. */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 12px 2px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-muted);
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+}
+
+.toggle:hover {
+  border-color: var(--cyan);
+  color: var(--text-bright);
+}
+
+.toggle.is-on {
+  border-color: var(--mint);
+  background: rgba(78, 230, 200, 0.14);
+  color: var(--mint-text);
+  box-shadow: 0 0 12px rgba(78, 230, 200, 0.18);
+}
+
+/* ---- cards: one thing for sale, or one thing you own ---- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(var(--tone), 0.07), rgba(var(--tone), 0.012) 60%);
+  transition:
+    border-color 0.14s,
+    box-shadow 0.14s,
+    transform 0.14s;
+}
+
+.card:hover {
+  border-color: rgba(var(--tone), 0.55);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35), 0 0 18px rgba(var(--tone), 0.14);
+  transform: translateY(-1px);
+}
+
+.card.is-rare {
+  --tone: 255, 196, 92;
+  border-color: rgba(255, 196, 92, 0.45);
+}
+
+.card--module.is-rare {
+  border-color: rgba(255, 196, 92, 0.45);
+}
+
+.card.is-owned {
+  background: rgba(95, 212, 255, 0.02);
+}
+
+.card.is-owned .icontile {
+  --tone: 78, 230, 200;
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.card__title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.card__title strong {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text-bright);
+  overflow-wrap: anywhere;
+}
+
+.card__sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.card__version {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+.card__tag {
+  align-self: flex-start;
+  margin-left: 0;
+}
+
+.card__have {
+  align-self: flex-start;
+  font-size: 12px;
+  white-space: nowrap;
+  color: rgb(var(--tone));
+}
+
+.card__blurb {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.card__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.card__compare {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+
+.card__compare .icon {
+  margin-top: 2px;
+}
+
+.card__compare.is-better {
+  color: var(--mint-text);
+}
+
+.card__compare.is-better .icon,
+.card.is-owned .card__compare .icon {
+  color: var(--mint);
+}
+
+.card__compare.is-worse {
+  color: #ff9aa4;
+}
+
+.card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 9px;
+  border-top: 1px solid rgba(95, 212, 255, 0.1);
+}
+
+.card__foot .price {
+  align-items: flex-start;
+  padding-top: 0;
+  font-size: 16px;
+  text-align: left;
+}
+
+.card__buy {
+  padding: 4px 22px;
+}
+
+.card__owned {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mint);
+}
+
+/* What a module fits: a row of the program icons. */
+.card__fits {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+.card__fits-label {
+  margin-right: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.card__fit {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+
+/* A module's grades: one button each. */
+.grades {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: auto 0 0;
+  padding: 9px 0 0;
+  border-top: 1px solid rgba(95, 212, 255, 0.1);
+  list-style: none;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 5px 10px;
+  border: 1px solid rgba(var(--tone), 0.35);
+  border-radius: 8px;
+  text-align: left;
+  font-size: 14px;
+  color: var(--text);
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+
+button.grade:not(:disabled):hover {
+  border-color: rgb(var(--tone));
+  background: rgba(var(--tone), 0.12);
+  color: var(--text-bright);
+}
+
+button.grade:disabled {
+  opacity: 0.5;
+}
+
+.grade__price {
+  color: var(--mint);
+}
+
+.grade--locked {
+  border-style: dashed;
+  border-color: var(--line-soft);
+  color: var(--text-dim);
+}
+
+/* Grades have colours: steel, cyan, gold. */
+.pips--grade i.is-on {
+  border-color: rgb(var(--grade, 143, 184, 204));
+  background: rgb(var(--grade, 143, 184, 204));
+  box-shadow: 0 0 6px rgba(var(--grade, 143, 184, 204), 0.6);
+}
+
+.grade--1 {
+  --grade: 164, 196, 212;
+}
+.grade--2 {
+  --grade: 95, 212, 255;
+}
+.grade--3 {
+  --grade: 255, 205, 110;
+}
+
+.card__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+}
+
+.card__skill {
+  padding: 0 9px;
+  border: 1px solid rgba(185, 162, 255, 0.45);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  color: #d9ccff;
+}
+
+/* ---- the Market: a shop floor ---- */
+
+.shopfloor {
+  display: flex;
+  flex-direction: column;
+}
+
+.shopgroup {
+  margin-bottom: 16px;
+}
+
+.shopgroup .map__heading {
+  margin: 0 0 9px;
+}
+
+.shopgroup .map__heading .icon {
+  color: var(--cyan);
+}
+
+/* The day's rare stock: a shelf with its own light. */
+.rareshelf {
+  position: relative;
+  margin: 0 0 12px;
+  padding: 10px 12px 12px;
+  border: 1px solid rgba(255, 196, 92, 0.42);
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 90px at 50% 0, rgba(255, 196, 92, 0.2), transparent 70%),
+    rgba(255, 196, 92, 0.03);
+  box-shadow: inset 0 1px 0 rgba(255, 220, 150, 0.5);
+  overflow: hidden;
+}
+
+/* A slow sweep of light along the shelf. */
+.rareshelf::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 232, 180, 0.9), transparent);
+  animation: shelf-sweep 5s linear infinite;
+}
+
+@keyframes shelf-sweep {
+  to {
+    left: 100%;
+  }
+}
+
+.rareshelf.is-bare {
+  padding-bottom: 10px;
+  border-color: rgba(255, 196, 92, 0.22);
+  background: rgba(255, 196, 92, 0.03);
+  box-shadow: none;
+}
+
+.rareshelf.is-bare::before {
+  display: none;
+}
+
+.rareshelf__head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffc45c;
+}
+
+.rareshelf.is-bare .rareshelf__head {
+  margin-bottom: 0;
+}
+
+.rareshelf__clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--text-muted);
+}
+
+.rareshelf__none {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.rareshelf__more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  color: var(--text-bright);
+}
+
+.rareshelf__more .icon {
+  color: #ffc45c;
+}
+
+.rareshelf__more .btn {
+  margin-left: auto;
+}
+
+/* Counters and filters stay in reach while the shelves scroll. */
+.shopbar {
+  position: sticky;
+  top: -14px;
+  z-index: 3;
+  margin: 0 -16px 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  background: rgba(6, 17, 29, 0.94);
+  backdrop-filter: blur(6px);
+}
+
+.shoptabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.shoptab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-muted);
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+}
+
+.shoptab:hover {
+  border-color: var(--line-strong);
+  color: var(--text-bright);
+}
+
+.shoptab.is-current {
+  border-color: var(--cyan);
+  background: rgba(95, 212, 255, 0.13);
+  box-shadow: 0 0 14px rgba(95, 212, 255, 0.18);
+  color: var(--text-bright);
+}
+
+.shoptab.is-current .icon {
+  color: var(--cyan);
+}
+
+.shoptab--rare .icon,
+.shoptab--rare.is-current .icon {
+  color: #ffc45c;
+}
+
+.shoptab--rare.is-current {
+  border-color: #ffc45c;
+  background: rgba(255, 196, 92, 0.12);
+  box-shadow: 0 0 14px rgba(255, 196, 92, 0.2);
+}
+
+.shoptab__count {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.shopfilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.shopfilters__note {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* A new card settles in when the counter changes. */
+.shopgroup .card,
+.rareshelf .card {
+  animation: card-in 0.22s ease-out both;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ---- narrow windows, tablet panes and phones ---- */
+
+@container win (max-width: 430px) {
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* One line of counters that slides sideways, so the bar stays short. */
+  .shoptabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .shoptab {
+    padding: 7px 12px 7px 10px;
+  }
+}
+
+.window--phone .shopbar {
+  top: -12px;
+  margin-left: calc(-1 * max(14px, env(safe-area-inset-left)));
+  margin-right: calc(-1 * max(14px, env(safe-area-inset-right)));
+  padding-left: max(14px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
+}
+
+.desktop--tablet .window--pane .shopbar {
+  top: -10px;
+  margin-left: -12px;
+  margin-right: -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+@media (pointer: coarse) {
+  .toggle {
+    padding: 6px 14px 6px 10px;
+  }
+
+  .card__buy {
+    padding: 8px 26px;
+  }
+
+  .grade {
+    padding: 9px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rareshelf::before,
+  .stat__fill,
+  .shopgroup .card,
+  .rareshelf .card {
+    animation: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}

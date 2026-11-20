@@ -47,3 +47,21 @@ export function ratingStep(rating: number): { title: string; next: { title: stri
   const next = ladder[index + 1] ?? null;
   return { title: here.title, next, share: next ? (rating - here.min) / (next.min - here.min) : 1 };
 }
+
+/** How one speed measures against another, in words: 2 -> "twice as fast", 1.4 -> "40% faster", 0.8 -> "20% slower". */
+export function speedWord(times: number): string {
+  if (times >= 1.95) {
+    const whole = Math.round(times);
+    if (Math.abs(times - whole) < 0.06) return whole === 2 ? 'twice as fast' : `${whole}× as fast`;
+    return `${times.toFixed(1)}× as fast`;
+  }
+  if (times > 1.01) return `${Math.round((times - 1) * 100)}% faster`;
+  if (times < 0.99) return `${Math.round((1 - times) * 100)}% slower`;
+  return 'same speed';
+}
+
+/** A change in size with its sign: "+2 GB", "−3 GB". */
+export const sizeChange = (gb: number): string => `${gb > 0 ? '+' : '−'}${Math.abs(Math.round(gb * 10) / 10)} GB`;
+
+/** Seconds for a readout: "8s", "2.7s". */
+export const formatSeconds = (value: number): string => `${value < 10 ? Number(value.toFixed(1)) : Math.round(value)}s`;
