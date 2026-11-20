@@ -1,16 +1,97 @@
 import { useState } from 'preact/hooks';
-import { findProgram, findServer, hostedModel, installedOfKind, ownedProgram, programFile, maxPrograms, programStorageGq, rackStorageGb, storageGb, usedStorageGq } from '../../../core';
+import {
+  findModule,
+  findProgram,
+  findServer,
+  hostedModel,
+  installedOfKind,
+  maxPrograms,
+  ownedProgram,
+  programFile,
+  programStorageGq,
+  rackStorageGb,
+  storageGb,
+  topVersion,
+  usedStorageGq,
+  type GameState,
+} from '../../../core';
+import type { ProgramDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
+import { FileName } from '../FileName';
+import { IconTile, ModulePlate, Pips } from '../Gear';
+import { Icon, PROGRAM_GROUPS, fileIcon, kindLabel, programIcon } from '../Icon';
 import { TaskProgress, describeTarget, findTask } from '../TaskProgress';
 import { viewer } from '../viewerStore';
-import { FileName } from '../FileName';
 import { Window } from '../Window';
 
+/** One installed program as a tile: its icon, version and size, whether it is running, and what can be done with it. */
+function ProgramTile({ game, program, choice }: { game: GameState; program: ProgramDef; choice: boolean }) {
+  const build = game.player.builds.find((item) => item.id === program.id);
+  const running = game.tasks.some((task) => task.programId === program.id);
+  const inUse = ownedProgram(game, content, program.kind)?.id === program.id;
+  // A crafted program keeps the name and the top version of the one it was built from.
+  const base = build ? content.programs.find((item) => item.id === build.base) : undefined;
+  return (
+    <li class={`ptile${running ? ' is-running' : ''}${choice && inUse ? ' is-used' : ''}${choice && !inUse ? ' is-spare' : ''}`} data-tip={program.blurb}>
+      <IconTile icon={programIcon(program.kind)} tone={running ? 'good' : undefined} />
+      <div class="ptile__text">
+        <strong>{base?.name ?? program.name}</strong>
+        <span class="ptile__meta">
+          <span class="data">v{program.version}</span>
+          <Pips on={program.version} of={topVersion(content, program.kind)} label={`version ${program.version}`} />
+          <span class="data ptile__size">{program.sizeGq} GB</span>
+        </span>
+        {build && (
+          <span class="build__plates">
+            {build.modules.map((fit) => {
+              const module = findModule(content, fit.id);
+              return module ? <ModulePlate key={fit.id} module={module} grade={fit.grade} /> : null;
+            })}
+          </span>
+        )}
+      </div>
+      <div class="ptile__actions">
+        {running ? (
+          <span class="ptile__state is-running">
+            <i class="ptile__beat" aria-hidden="true" /> Running
+          </span>
+        ) : choice && inUse ? (
+          <span class="ptile__state is-used">
+            <Icon name="check" size={14} /> This one runs
+          </span>
+        ) : choice ? (
+          <button
+            type="button"
+            class="btn btn--go"
+            data-tip="Run this copy from now on, instead of the others of its kind"
+            onClick={() => session.dispatch({ type: 'preferProgram', programId: program.id })}
+          >
+            Use this
+          </button>
+        ) : (
+          <span />
+        )}
+        {!running && (
+          <ConfirmButton
+            class="btn btn--danger"
+            confirmLabel={build ? 'Scrap?' : 'Remove?'}
+            tip={build ? 'Take this build apart and get its modules back.' : 'Uninstall to free storage. The market gives it back if you need it.'}
+            onConfirm={() => session.dispatch({ type: 'uninstallProgram', programId: program.id })}
+          >
+            {build ? 'Scrap' : 'Remove'}
+          </ConfirmButton>
+        )}
+      </div>
+    </li>
+  );
+}
+
 /**
- * The gateway's programs and storage: what is running, how the room is
- * used, and buttons to remove a program or delete a file to free some.
+ * The gateway's programs and storage: how the drive is used, what is
+ * running, the installed programs as tiles grouped by what they do, and
+ * the files brought home.
  */
 export function ProgramsWindow() {
   const game = useWorld((state) => state);
@@ -32,22 +113,66 @@ export function ProgramsWindow() {
     const result = session.dispatch({ type: 'decompileFile', name });
     setNotice(result.ok ? '' : result.reason);
   };
-  const isRunning = (programId: string) => game.tasks.some((task) => task.programId === programId);
 
   return (
     <Window id="programs" note={`${game.tasks.length} of ${maxPrograms(game, content)} running`}>
-      <h3 class="map__heading">Running</h3>
+      <div class={`drive${used > capacity ? ' is-over' : ''}`}>
+        <div class="drive__head">
+          <Icon name="drives" size={18} />
+          <strong>Drive</strong>
+          <span class="data drive__used">
+            {used} of {capacity} GB
+          </span>
+          <span class="data drive__free">{free} GB free</span>
+        </div>
+        <div
+          class={`storage${used > capacity ? ' is-over' : ''}`}
+          role="img"
+          aria-label={`Programs ${byPrograms} GB,${model ? ` ${model.name} ${byModel} GB,` : ''} files ${byFiles} GB, free ${free} GB`}
+        >
+          <span class="storage__part storage__part--programs" style={{ width: share(byPrograms) }} />
+          {byModel > 0 && <span class="storage__part storage__part--model" style={{ width: share(byModel) }} />}
+          <span class="storage__part storage__part--files" style={{ width: share(byFiles) }} />
+        </div>
+        <p class="storage__key">
+          <span class="storage__dot storage__dot--programs" /> Programs <span class="data">{byPrograms} GB</span>
+          {model && (
+            <>
+              <span class="storage__dot storage__dot--model" /> {model.name} <span class="data">{byModel} GB</span>
+            </>
+          )}
+          <span class="storage__dot storage__dot--files" /> Files <span class="data">{byFiles} GB</span>
+        </p>
+      </div>
+      {used > capacity && (
+        <p class="board__warning">Your gateway holds more than its drive is meant to. Nothing new fits until you free some room.</p>
+      )}
+
+      <h3 class="map__heading section-gap">
+        Running{' '}
+        <span class="data heading__note">
+          {game.tasks.length} of {maxPrograms(game, content)}
+        </span>
+      </h3>
       {game.tasks.length === 0 ? (
         <p class="empty">Nothing is running. Programs start from buttons on a server you are connected to.</p>
       ) : (
         <ul class="rows">
           {game.tasks.map((task) => {
             const connection = game.connections.find((item) => item.id === task.connectionId);
+            const program = findProgram(content, task.programId, game);
             return (
               <li key={task.id} class="row row--task">
-                <span class="row__main">
-                  <strong>{findProgram(content, task.programId, game)?.name ?? task.programId}</strong>
-                  <span class="row__dim"> · {connection ? serverName(connection.serverId) : 'Gateway'}</span>
+                <span class="row__main runrow">
+                  {program && (
+                    <span class="runrow__icon">
+                      <Icon name={programIcon(program.kind)} size={18} />
+                    </span>
+                  )}
+                  <span>
+                    <strong>{program?.name ?? task.programId}</strong>
+                    <span class="row__dim"> · {connection ? serverName(connection.serverId) : 'Gateway'}</span>
+                  </span>
                 </span>
                 <TaskProgress taskId={task.id} label={describeTarget(task.target)} />
                 <button
@@ -65,83 +190,43 @@ export function ProgramsWindow() {
       )}
 
       <h3 class="map__heading section-gap">
-        Storage{' '}
-        <span class="data heading__note">
-          {used} of {capacity} GB used
-        </span>
+        Installed programs <span class="data heading__note">{game.player.programs.length}</span>
       </h3>
-      <div
-        class={`storage${used > capacity ? ' is-over' : ''}`}
-        role="img"
-        aria-label={`Programs ${byPrograms} GB,${model ? ` ${model.name} ${byModel} GB,` : ''} files ${byFiles} GB, free ${free} GB`}
-      >
-        <span class="storage__part storage__part--programs" style={{ width: share(byPrograms) }} />
-        {byModel > 0 && <span class="storage__part storage__part--model" style={{ width: share(byModel) }} />}
-        <span class="storage__part storage__part--files" style={{ width: share(byFiles) }} />
-      </div>
-      <p class="storage__key">
-        <span class="storage__dot storage__dot--programs" /> Programs <span class="data">{byPrograms} GB</span>
-        {model && (
-          <>
-            <span class="storage__dot storage__dot--model" /> {model.name} <span class="data">{byModel} GB</span>
-          </>
-        )}
-        <span class="storage__dot storage__dot--files" /> Files <span class="data">{byFiles} GB</span>
-        <span class="storage__dot" /> Free <span class="data">{free} GB</span>
-      </p>
-      {used > capacity && (
-        <p class="board__warning">Your gateway holds more than its drive is meant to. Nothing new fits until you free some room.</p>
-      )}
-
-      <h3 class="map__heading section-gap">Installed programs</h3>
-      <ul class="rows rows--scroll">
-        {game.player.programs.map((id) => {
-          const program = findProgram(content, id, game);
-          const built = game.player.builds.some((build) => build.id === id);
-          // Where there is a choice of program for a job, say which one runs.
-          const choice = program ? installedOfKind(game, content, program.kind).length > 1 : false;
-          const inUse = program ? ownedProgram(game, content, program.kind)?.id === id : false;
-          return (
-            program && (
-              <li key={id} class="row row--program">
-                <span class="row__main">
-                  <strong>{program.name}</strong> <span class="data row__dim">v{program.version}</span>
-                  <span class="program__blurb">{program.blurb}</span>
-                </span>
-                <span class="data row__dim">{program.sizeGq} GB</span>
-                {choice &&
-                  (inUse ? (
-                    <span class="row__done">In use</span>
-                  ) : (
-                    <button
-                      type="button"
-                      class="btn"
-                      data-tip="Use this version instead of the others of the same kind"
-                      onClick={() => session.dispatch({ type: 'preferProgram', programId: id })}
-                    >
-                      Use
-                    </button>
-                  ))}
-                {isRunning(id) ? (
-                  <span class="row__done">Running</span>
-                ) : (
-                  <ConfirmButton
-                    class="btn btn--danger"
-                    confirmLabel={built ? 'Scrap?' : 'Remove?'}
-                    tip={built ? 'Take this build apart and get its modules back.' : 'Uninstall to free storage. The market gives it back if you need it.'}
-                    onConfirm={() => session.dispatch({ type: 'uninstallProgram', programId: id })}
-                  >
-                    {built ? 'Scrap' : 'Remove'}
-                  </ConfirmButton>
-                )}
-              </li>
-            )
-          );
-        })}
-      </ul>
       {game.player.programs.length === 0 && <p class="empty">No programs installed. The Backroom market has them.</p>}
+      {PROGRAM_GROUPS.map((group) => {
+        const kinds = group.kinds.map((kind) => ({ kind, list: installedOfKind(game, content, kind) })).filter(({ list }) => list.length > 0);
+        if (kinds.length === 0) return null;
+        return (
+          <section key={group.id} class="progs">
+            <p class="progs__group">
+              <Icon name={group.icon} size={15} /> {group.label}
+            </p>
+            <ul class="progs__grid">
+              {kinds.map(({ kind, list }) =>
+                list.length > 1 ? (
+                  // Several copies of one tool: boxed together, the one that runs lit.
+                  <li key={kind} class="kindset">
+                    <span class="kindset__label">
+                      {kindLabel(kind)}: <b>{list.length} copies</b>. Pick the one that runs.
+                    </span>
+                    <ul class="progs__grid">
+                      {list.map((program) => (
+                        <ProgramTile key={program.id} game={game} program={program} choice />
+                      ))}
+                    </ul>
+                  </li>
+                ) : (
+                  <ProgramTile key={list[0]!.id} game={game} program={list[0]!} choice={false} />
+                ),
+              )}
+            </ul>
+          </section>
+        );
+      })}
 
-      <h3 class="map__heading section-gap">Stored files</h3>
+      <h3 class="map__heading section-gap">
+        Stored files <span class="data heading__note">{game.player.files.length}</span>
+      </h3>
       {game.player.files.length === 0 ? (
         <p class="empty">No files yet. Copy one from a server and it shows up here.</p>
       ) : (
@@ -151,58 +236,59 @@ export function ProgramsWindow() {
             const decompiling = findTask(game, null, { kind: 'decompile', file: file.name });
             const isProgram = programFile(game, content, file.name) !== undefined;
             return (
-            <li key={file.name} class={`row row--stored${file.encrypted ? ' is-sealed' : ''}`}>
-              <span class="row__main data">
-                <FileName name={file.name} />
-                <span class="program__blurb">
-                  from {serverName(file.from)}
-                  {file.encrypted ? <span class="sealed"> · encrypted, level {file.encrypted}</span> : null}
-                  {isProgram ? <span> · a program, can be decompiled</span> : null}
+              <li key={file.name} class={`row row--stored${file.encrypted ? ' is-sealed' : ''}`}>
+                <span class="row__main data filerow">
+                  <span class={`filerow__icon${file.encrypted ? ' is-sealed' : ''}`}>
+                    <Icon name={fileIcon(file.name, !!file.encrypted)} size={18} />
+                  </span>
+                  <span>
+                    <FileName name={file.name} />
+                    <span class="program__blurb">
+                      from {serverName(file.from)}
+                      {file.encrypted ? <span class="sealed"> · encrypted, level {file.encrypted}</span> : null}
+                      {isProgram ? <span> · a program, can be decompiled</span> : null}
+                    </span>
+                  </span>
                 </span>
-              </span>
-              <span class="data row__dim">{file.sizeGq} GB</span>
-              {file.encrypted ? (
-                <span class="row__decrypt">
-                  {decrypting ? (
-                    <TaskProgress taskId={decrypting.id} label="Decrypting" />
-                  ) : (
-                    <button type="button" class="btn btn--go" data-tip="Run your decrypter on this file so it can be read" onClick={() => decrypt(file.name)}>
-                      Decrypt
-                    </button>
-                  )}
-                </span>
-              ) : isProgram ? (
-                <span class="row__decrypt">
-                  {decompiling ? (
-                    <TaskProgress taskId={decompiling.id} label="Decompiling" />
-                  ) : (
-                    <button
-                      type="button"
-                      class="btn btn--go"
-                      data-tip="Take this program apart for a module you can fit at the Workbench"
-                      onClick={() => decompile(file.name)}
-                    >
-                      Decompile
-                    </button>
-                  )}
-                </span>
-              ) : null}
-              <button
-                type="button"
-                class="btn"
-                onClick={() => viewer.open({ serverId: file.from, name: file.name, sizeGq: file.sizeGq })}
-              >
-                Open
-              </button>
-              <ConfirmButton
-                class="btn btn--danger"
-                confirmLabel="Delete?"
-                tip="Delete this file to free storage."
-                onConfirm={() => session.dispatch({ type: 'deleteStoredFile', name: file.name })}
-              >
-                Delete
-              </ConfirmButton>
-            </li>
+                <span class="data row__dim">{file.sizeGq} GB</span>
+                {file.encrypted ? (
+                  <span class="row__decrypt">
+                    {decrypting ? (
+                      <TaskProgress taskId={decrypting.id} label="Decrypting" />
+                    ) : (
+                      <button type="button" class="btn btn--go" data-tip="Run your decrypter on this file so it can be read" onClick={() => decrypt(file.name)}>
+                        Decrypt
+                      </button>
+                    )}
+                  </span>
+                ) : isProgram ? (
+                  <span class="row__decrypt">
+                    {decompiling ? (
+                      <TaskProgress taskId={decompiling.id} label="Decompiling" />
+                    ) : (
+                      <button
+                        type="button"
+                        class="btn btn--go"
+                        data-tip="Take this program apart for a module you can fit at the Workbench"
+                        onClick={() => decompile(file.name)}
+                      >
+                        Decompile
+                      </button>
+                    )}
+                  </span>
+                ) : null}
+                <button type="button" class="btn" onClick={() => viewer.open({ serverId: file.from, name: file.name, sizeGq: file.sizeGq })}>
+                  Open
+                </button>
+                <ConfirmButton
+                  class="btn btn--danger"
+                  confirmLabel="Delete?"
+                  tip="Delete this file to free storage."
+                  onConfirm={() => session.dispatch({ type: 'deleteStoredFile', name: file.name })}
+                >
+                  Delete
+                </ConfirmButton>
+              </li>
             );
           })}
         </ul>

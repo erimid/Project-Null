@@ -20,7 +20,7 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
     points: [
       'Rating goes up with every job delivered. A higher rating opens better work on the Backroom board.',
       'Storage fills with programs and copied files. Free some room in Programs when it runs out.',
-      'Hardware is bought from the Backroom and makes everything faster.',
+      'Hardware is bought from the Backroom and makes everything faster. Click a slot on the board to see what is fitted.',
     ],
   },
   map: {
@@ -52,7 +52,7 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
     points: [
       'Running programs show their progress here. How many can run at once depends on your hardware.',
       'Copied files land in storage. Open, decrypt or delete them from the Stored files list.',
-      'Remove a program you no longer need to free room.',
+      'Remove a program you no longer need to free room. With two of a kind, pick the one that runs.',
     ],
   },
   messages: {
@@ -82,7 +82,7 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
   workbench: {
     summary: 'Fit modules to your programs to make faster, smaller or quieter versions.',
     points: [
-      'Pick a program, then a module you own. The build runs on your gateway.',
+      'Pick a program on the left, then click a module in the tray to socket it. Click a socket to take the module back out.',
       'Your original program is kept. Scrap a build to get its modules back.',
       'Modules come from the Backroom market, from jobs, and from files on other servers.',
     ],

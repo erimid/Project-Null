@@ -8,6 +8,7 @@ import {
   findProgram,
   moduleSlots,
   ownedProgram,
+  topVersion,
   type Fitted,
   type GameState,
 } from '../../../core';
@@ -15,28 +16,14 @@ import type { ModuleDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
+import { IconTile, ModulePlate, Pips, TRAIT_WORDS } from '../Gear';
+import { Icon, kindLabel, moduleIcon, programIcon } from '../Icon';
 import { TaskProgress } from '../TaskProgress';
 import { Window } from '../Window';
+import { gradeEffect } from './MarketSection';
 
+const capital = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 const seconds = (value: number) => `${value < 10 ? value.toFixed(1) : Math.round(value)}s`;
-
-/** What a trait does, in the fewest words. */
-const TRAITS: Record<string, string> = { quiet: 'Monitors do not notice it', tidy: 'Leaves no line in the log' };
-
-/** A module as a small plate: its colour, its name, a pip for each grade. */
-function ModulePlate({ module, grade, count }: { module: ModuleDef; grade: number; count?: number }) {
-  return (
-    <span class={`plate plate--${module.id}`}>
-      <span class="plate__name">{module.name}</span>
-      <span class="plate__grade" aria-label={`grade ${grade}`}>
-        {module.grades.map((_, index) => (
-          <i key={index} class={index < grade ? 'is-on' : ''} />
-        ))}
-      </span>
-      {count !== undefined && <span class="plate__count data">×{count}</span>}
-    </span>
-  );
-}
 
 /** One figure before and after a build, with a bar for each and the change in colour. */
 function Gauge({ label, before, after, unit, lowerIsBetter }: { label: string; before: number; after: number; unit: string; lowerIsBetter: boolean }) {
@@ -53,6 +40,18 @@ function Gauge({ label, before, after, unit, lowerIsBetter }: { label: string; b
       </span>
       <span class="gauge__figures data">
         {show(before)} <span class="gauge__arrow">›</span> <strong>{show(after)}</strong>
+      </span>
+    </div>
+  );
+}
+
+/** Something a build does or does not do, before and after: stealth, log lines, the program slot. */
+function Change({ label, before, after, gained }: { label: string; before: string; after: string; gained: boolean }) {
+  return (
+    <div class={`gauge gauge--words${gained ? ' is-better' : ''}`}>
+      <span class="gauge__label">{label}</span>
+      <span class="gauge__figures gauge__figures--words">
+        {before} <span class="gauge__arrow">›</span> <strong>{gained ? after : 'no change'}</strong>
       </span>
     </div>
   );
@@ -119,119 +118,166 @@ export function WorkbenchWindow() {
   const fitted = running && running.target.kind === 'build' ? running.target.modules : chosen;
   const benchBase = running && running.target.kind === 'build' ? (content.programs.find((program) => program.id === (running.target as { base: string }).base) ?? null) : base;
 
+  const unfit = (item: Fitted) => {
+    setNotice('');
+    setChosen(chosen.filter((other) => !(other.id === item.id && other.grade === item.grade)));
+  };
+  const gains = (trait: string) => !!check?.ok && (check.preview.traits as readonly string[]).includes(trait);
+
   return (
     <Window id="workbench" note={`${slots} ${slots === 1 ? 'module' : 'modules'} per build`}>
-      <div class={`bench${running ? ' is-building' : ''}`}>
-        <div class="bench__line">
-          <div class={`bench__slot bench__slot--program${benchBase ? ' is-filled' : ''}`}>
-            <span class="bench__tag">Program</span>
-            {benchBase ? (
-              <strong>
-                {benchBase.name} <span class="data">v{benchBase.version}</span>
-              </strong>
-            ) : (
-              <span class="bench__hint">Pick one below</span>
-            )}
-          </div>
-          {Array.from({ length: slots }, (_, index) => {
-            const item = fitted[index];
-            const module = item && findModule(content, item.id);
-            return (
-              <span key={index} class="bench__pair">
-                <span class="bench__plus" aria-hidden="true">
-                  +
-                </span>
-                <div class={`bench__slot${module ? ` is-filled bench__slot--${module.id}` : ''}`}>
-                  <span class="bench__tag">{slots === 1 ? 'Module' : `Module ${index + 1}`}</span>
-                  {module && item ? <ModulePlate module={module} grade={item.grade} /> : <span class="bench__hint">Empty</span>}
-                </div>
-              </span>
-            );
-          })}
-        </div>
-        {running ? (
-          <div class="bench__result is-building">
-            <strong>Building…</strong>
-            <TaskProgress taskId={running.id} label="Building" />
-          </div>
-        ) : base && check?.ok && timed?.ok ? (
-          <div class="bench__result">
-            <strong class="bench__name">{check.preview.name}</strong>
-            <Gauge label="Base time" before={base.baseSeconds} after={check.preview.baseSeconds} unit="s" lowerIsBetter />
-            <Gauge label="Room" before={base.sizeGq} after={check.preview.sizeGq} unit="GB" lowerIsBetter />
-            {check.preview.traits.map((trait) => (
-              <span key={trait} class={`bench__trait bench__trait--${trait}`}>
-                <b>{trait}</b> {TRAITS[trait]}
-              </span>
-            ))}
-            <button type="button" class="btn btn--go bench__go" onClick={build}>
-              Build · <span class="data">{seconds(timed.seconds)}</span>
-            </button>
-          </div>
-        ) : base && check && !check.ok ? (
-          <p class="map__notice">{check.reason}</p>
-        ) : (
-          <p class="bench__prompt">
-            {base ? 'Now pick a module to fit.' : 'Pick a program, fit a module, build. Your original stays as it is.'}
-          </p>
-        )}
-      </div>
-
-      <p class="bench__step">Programs you own</p>
-      <div class="bench__chips">
-        {bases.map((program) => (
-          <button
-            key={program.id}
-            type="button"
-            class={`chip${program.id === baseId ? ' is-picked' : ''}`}
-            aria-pressed={program.id === baseId}
-            disabled={!!running}
-            onClick={() => pickBase(program.id)}
-          >
-            {program.name} <span class="data">v{program.version}</span>
-          </button>
-        ))}
-      </div>
-
-      <h3 class="map__heading section-gap">
-        Modules on hand <span class="heading__note">{base ? `click to fit to ${base.name}` : 'pick a program first'}</span>
-      </h3>
-      {parts.length === 0 ? (
-        <p class="empty">You have no modules yet. They come from contacts, contracts, servers and the market.</p>
-      ) : (
-        <ul class="bench__shelf">
-          {parts.map(([module, grade, count]) => {
-            const fits = !base || module.fits.includes(base.kind);
-            const on = chosen.some((item) => item.id === module.id && item.grade === grade);
-            return (
-              <li key={`${module.id}:${grade}`} class={`part part--${module.id}${on ? ' is-picked' : ''}${base && !fits ? ' is-unfit' : ''}`}>
+      <div class="wb">
+        <aside class="wb__programs">
+          <p class="bench__step">1. Pick a program</p>
+          <ul class="wb__list">
+            {bases.map((program) => (
+              <li key={program.id}>
                 <button
                   type="button"
-                  class="part__pick chip--module"
-                  disabled={!base || !fits || !!running}
-                  title={base && !fits ? `${module.name} does nothing for a ${base.name}.` : undefined}
-                  aria-pressed={on}
-                  onClick={() => toggle({ id: module.id, grade })}
+                  class={`wb__prog${program.id === baseId ? ' is-picked' : ''}`}
+                  aria-pressed={program.id === baseId}
+                  disabled={!!running}
+                  data-tip={`${kindLabel(program.kind)}. Put it on the bench to fit modules to a copy of it.`}
+                  onClick={() => pickBase(program.id)}
                 >
-                  <ModulePlate module={module} grade={grade} count={count} />
-                  <span class="part__blurb">{module.blurb}</span>
+                  <Icon name={programIcon(program.kind)} size={18} />
+                  <span class="wb__prog-name">{program.name}</span>
+                  <span class="data wb__prog-version">v{program.version}</span>
                 </button>
-                {canRefine && grade < module.grades.length ? (
-                  <button
-                    type="button"
-                    class="btn part__refine"
-                    disabled={count < 2}
-                    title={count < 2 ? 'Refining takes two of the same.' : `Two ${module.name} ${grade} into one ${module.name} ${grade + 1}`}
-                    onClick={() => act(session.dispatch({ type: 'refineModule', moduleId: module.id, grade }))}
-                  >
-                    Refine
-                  </button>
-                ) : null}
               </li>
-            );
-          })}
-        </ul>
-      )}
+            ))}
+          </ul>
+        </aside>
+
+        <div class="wb__main">
+          <div class={`bench${running ? ' is-building' : ''}${benchBase ? ' has-program' : ''}`}>
+            <div class={`rig rig--${slots}`}>
+              <div class={`rig__program${benchBase ? ' is-filled' : ''}`}>
+                <IconTile icon={benchBase ? programIcon(benchBase.kind) : 'terminal'} size="lg" tone={benchBase ? undefined : 'empty'} />
+                {benchBase ? (
+                  <span class="rig__text">
+                    <span class="bench__tag">On the bench</span>
+                    <strong>{benchBase.name}</strong>
+                    <span class="rig__meta">
+                      <span class="data">v{benchBase.version}</span>
+                      <Pips on={benchBase.version} of={topVersion(content, benchBase.kind)} label={`version ${benchBase.version}`} />
+                      <span class="data">{benchBase.sizeGq} GB</span>
+                    </span>
+                  </span>
+                ) : (
+                  <span class="rig__text">
+                    <span class="bench__tag">The bench</span>
+                    <span class="bench__hint">Pick a program to put on it.</span>
+                  </span>
+                )}
+              </div>
+              <div class="rig__sockets">
+                {Array.from({ length: slots }, (_, index) => {
+                  const item = fitted[index];
+                  const module = item && findModule(content, item.id);
+                  return module && item ? (
+                    <button
+                      key={index}
+                      type="button"
+                      class={`socket is-filled bench__slot--${module.id}`}
+                      disabled={!!running}
+                      data-tip="Click to take this module back out"
+                      onClick={() => unfit(item)}
+                    >
+                      <IconTile icon={moduleIcon(module.id)} tone={module.id} size="sm" />
+                      <span class="socket__text">
+                        <span class="bench__tag">{slots === 1 ? 'Socket' : `Socket ${index + 1}`}</span>
+                        <ModulePlate module={module} grade={item.grade} icon={false} />
+                      </span>
+                    </button>
+                  ) : (
+                    <div key={index} class="socket">
+                      <span class="socket__hole" aria-hidden="true" />
+                      <span class="socket__text">
+                        <span class="bench__tag">{slots === 1 ? 'Socket' : `Socket ${index + 1}`}</span>
+                        <span class="bench__hint">{base ? 'Click a module below' : 'Empty'}</span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            {running ? (
+              <div class="bench__result is-building">
+                <strong>Building…</strong>
+                <TaskProgress taskId={running.id} label="Building" />
+              </div>
+            ) : base && check?.ok && timed?.ok ? (
+              <div class="bench__result">
+                <strong class="bench__name">{check.preview.name}</strong>
+                <Gauge label="Time" before={base.baseSeconds} after={check.preview.baseSeconds} unit="s" lowerIsBetter />
+                <Gauge label="Size" before={base.sizeGq} after={check.preview.sizeGq} unit="GB" lowerIsBetter />
+                <Change label="Stealth" before="Monitors see it" after="Monitors do not" gained={gains('quiet')} />
+                {gains('tidy') && <Change label="Log" before="Leaves a line" after="Leaves none" gained />}
+                {gains('parallel') && <Change label="Slot" before="Uses one" after="Uses none" gained />}
+                <button type="button" class="btn btn--go bench__go" onClick={build}>
+                  Build · <span class="data">{seconds(timed.seconds)}</span>
+                </button>
+              </div>
+            ) : base && check && !check.ok ? (
+              <p class="map__notice">{check.reason}</p>
+            ) : base && timed && !timed.ok ? (
+              <p class="map__notice">{timed.reason}</p>
+            ) : (
+              <p class="bench__prompt">
+                {base ? 'Now click a module in the tray to socket it.' : 'Pick a program, socket a module, build. Your original stays as it is.'}
+              </p>
+            )}
+          </div>
+
+          <p class="bench__step">
+            2. Parts tray <span class="heading__note">{base ? `click a module to socket it into ${base.name}` : 'pick a program first'}</span>
+          </p>
+          {parts.length === 0 ? (
+            <p class="empty">You have no modules yet. They come from contacts, contracts, servers and the market.</p>
+          ) : (
+            <ul class="bench__shelf">
+              {parts.map(([module, grade, count]) => {
+                const fits = !base || module.fits.includes(base.kind);
+                const on = chosen.some((item) => item.id === module.id && item.grade === grade);
+                const figures = module.grades[grade - 1];
+                return (
+                  <li key={`${module.id}:${grade}`} class={`part part--${module.id}${on ? ' is-picked' : ''}${base && !fits ? ' is-unfit' : ''}`}>
+                    <button
+                      type="button"
+                      class="part__pick chip--module"
+                      disabled={!base || !fits || !!running}
+                      title={base && !fits ? `${module.name} does nothing for a ${base.name}.` : undefined}
+                      data-tip={module.blurb}
+                      aria-pressed={on}
+                      onClick={() => toggle({ id: module.id, grade })}
+                    >
+                      <IconTile icon={moduleIcon(module.id)} tone={module.id} size="sm" />
+                      <span class="part__text">
+                        <ModulePlate module={module} grade={grade} count={count} icon={false} />
+                        <span class="part__blurb">
+                          {capital(`${figures ? gradeEffect(figures) : ''}${module.trait ? `. ${TRAIT_WORDS[module.trait]}` : ''}`)}
+                        </span>
+                      </span>
+                    </button>
+                    {canRefine && grade < module.grades.length ? (
+                      <button
+                        type="button"
+                        class="btn part__refine"
+                        disabled={count < 2}
+                        title={count < 2 ? 'Refining takes two of the same.' : `Two ${module.name} ${grade} into one ${module.name} ${grade + 1}`}
+                        onClick={() => act(session.dispatch({ type: 'refineModule', moduleId: module.id, grade }))}
+                      >
+                        Refine
+                      </button>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
 
       <h3 class="map__heading section-gap">Your builds</h3>
       {game.player.builds.length === 0 ? (

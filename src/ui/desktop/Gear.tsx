@@ -3,7 +3,7 @@
  * share: an icon on a lit tile, a row of pips, and a labelled bar.
  */
 import type { ComponentChildren } from 'preact';
-import { Icon, type IconName } from './Icon';
+import { Icon, moduleIcon, type IconName } from './Icon';
 
 /** An icon on a square tile. `tone` picks its colour: a module id, 'rare', 'good' or nothing for the usual cyan. */
 export function IconTile({ icon, tone, size = 'md', children }: { icon: IconName; tone?: string; size?: 'sm' | 'md' | 'lg'; children?: ComponentChildren }) {
@@ -51,5 +51,28 @@ export function StatBar({ label, share, mine, value, tone, tip }: StatProps) {
       </span>
       <span class="stat__value data">{value}</span>
     </div>
+  );
+}
+
+/** What a trait does, in the fewest words. */
+export const TRAIT_WORDS: Record<string, string> = {
+  quiet: 'Monitors do not notice it',
+  tidy: 'Leaves no line in the log',
+  parallel: 'Does not use up a program slot',
+};
+
+/** A module as a small plate: its colour, its icon and name, and a pip for each grade in the grade's own colour. */
+export function ModulePlate({ module, grade, count, icon = true }: { module: { id: string; name: string; grades: readonly unknown[] }; grade: number; count?: number; icon?: boolean }) {
+  return (
+    <span class={`plate plate--${module.id} grade--${grade}`}>
+      {icon && <Icon name={moduleIcon(module.id)} size={14} class="plate__icon" />}
+      <span class="plate__name">{module.name}</span>
+      <span class="plate__grade" aria-label={`grade ${grade}`}>
+        {module.grades.map((_, index) => (
+          <i key={index} class={index < grade ? 'is-on' : ''} />
+        ))}
+      </span>
+      {count !== undefined && <span class="plate__count data">×{count}</span>}
+    </span>
   );
 }
