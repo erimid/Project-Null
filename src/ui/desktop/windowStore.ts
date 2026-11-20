@@ -4,6 +4,8 @@
  * localStorage) and not in save files.
  */
 import { useEffect, useState } from 'preact/hooks';
+import { fitOnDesk, refit } from './fit';
+import { zoneRect, type Area, type Zone } from './snap';
 
 export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'contract', 'skills', 'workbench', 'web', 'dark', 'viewer', 'saves', 'defence'] as const;
 export type WindowId = (typeof WINDOW_IDS)[number];
@@ -57,8 +59,6 @@ export const MIN_WIDTH = 320;
 export const MIN_HEIGHT = 140;
 /** Height of the top bar plus the bottom bar: the desktop is the browser window minus these. */
 const BARS_HEIGHT = 110;
-/** How much of a window must stay on screen so it can always be grabbed again. */
-export const KEEP_VISIBLE = 80;
 
 export interface WindowLayout {
   readonly x: number;
@@ -77,6 +77,8 @@ export interface WindowLayout {
    * puts it back. Null when it is just where it was left.
    */
   readonly restore: SavedPlace | null;
+  /** The snap zone it fills, so it can fill it again when the desk changes size. */
+  readonly zone: Zone | null;
 }
 
 export interface SavedPlace {
@@ -117,7 +119,7 @@ function defaults(): Layouts {
     const x = def.x >= 0 ? def.x : Math.max(EDGE, window.innerWidth + def.x - width);
     const y = id === 'gateway' ? TOP + mapHeight + GAP : def.y;
     const h = id === 'map' ? mapHeight : (def.height ?? null);
-    return [id, { x, y, open: def.open, z: index + 1, minimized: false, w: fitted[id] ?? null, h, restore: null }] as const;
+    return [id, { x, y, open: def.open, z: index + 1, minimized: false, w: fitted[id] ?? null, h, restore: null, zone: null }] as const;
   });
   return Object.fromEntries(entries) as Layouts;
 }
@@ -125,6 +127,8 @@ function defaults(): Layouts {
 /** The height a window goes back to when its corner is double-clicked. */
 const usualWidth = (id: WindowId): number | null => defaults()[id].w;
 const usualHeight = (id: WindowId): number | null => defaults()[id].h;
+
+const ZONES: readonly Zone[] = ['left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'full'];
 
 function savedPlace(value: unknown): SavedPlace | null {
   if (typeof value !== 'object' || value === null) return null;
@@ -158,6 +162,7 @@ function load(): Layouts {
           w: size(entry.w),
           h: size(entry.h),
           restore: savedPlace(entry.restore),
+          zone: ZONES.includes(entry.zone as Zone) && entry.restore ? (entry.zone as Zone) : null,
         };
       }
     }
@@ -168,6 +173,19 @@ function load(): Layouts {
 }
 
 let layouts: Layouts = load();
+/** The desk's size. A guess until the desk is drawn and reports it with `setArea`. */
+let area: Area = { w: window.innerWidth, h: window.innerHeight - BARS_HEIGHT };
+/** Whether `area` is the desk's real size yet. */
+let measured = false;
+
+/** `layout` moved and shrunk so it is wholly on the desk. */
+function fit(id: WindowId, layout: WindowLayout): WindowLayout {
+  // Only once the desk has been measured: a phone or tablet never draws the desk, and its screen must not shrink desk windows.
+  if (!measured) return layout;
+  const width = layout.w ?? WINDOW_DEFS[id].width;
+  const box = fitOnDesk({ x: layout.x, y: layout.y, w: width, h: layout.h }, area, MIN_HEIGHT);
+  return { ...layout, x: box.x, y: box.y, w: box.w < width ? box.w : layout.w, h: box.h };
+}
 const listeners = new Set<() => void>();
 
 function set(next: Layouts, persist: boolean): void {
@@ -186,13 +204,42 @@ const isShown = (id: WindowId) => layouts[id].open && !layouts[id].minimized;
 /** The highest window that is actually on screen. */
 const topShownZ = () => Math.max(0, ...WINDOW_IDS.filter(isShown).map((id) => layouts[id].z));
 export const widthOf = (id: WindowId) => layouts[id].w ?? WINDOW_DEFS[id].width;
+/** Changes one window, keeping it on the desk. */
 const patch = (id: WindowId, change: Partial<WindowLayout>): Layouts => ({
   ...layouts,
-  [id]: { ...layouts[id], ...change },
+  [id]: fit(id, { ...layouts[id], ...change }),
 });
 
 export const windows = {
   get: (): Layouts => layouts,
+  /** The desk's size, as last reported. */
+  area: (): Area => area,
+  /**
+   * The desk changed size (or was measured for the first time): every
+   * window is kept on it. One that fills a zone fills the same zone of the
+   * new desk; the others keep their distance from their nearer side and
+   * shrink if they no longer fit.
+   */
+  setArea(next: Area): void {
+    if (next.w <= 0 || next.h <= 0) return;
+    const before = measured ? area : next;
+    if (measured && before.w === next.w && before.h === next.h) return;
+    area = { w: next.w, h: next.h };
+    measured = true;
+    const fitted = { ...layouts };
+    for (const id of WINDOW_IDS) {
+      const layout = layouts[id];
+      if (layout.zone) {
+        const rect = zoneRect(layout.zone, area);
+        fitted[id] = { ...layout, ...rect };
+        continue;
+      }
+      const width = layout.w ?? WINDOW_DEFS[id].width;
+      const box = refit({ x: layout.x, y: layout.y, w: width, h: layout.h }, before, area, MIN_HEIGHT);
+      fitted[id] = { ...layout, x: box.x, y: box.y, w: box.w < width ? box.w : layout.w, h: box.h };
+    }
+    set(fitted, true);
+  },
   isOnTop: (id: WindowId) => isShown(id) && layouts[id].z === topShownZ(),
 
   /** Opens it if it is closed or minimized, and brings it to the front. */
@@ -213,17 +260,17 @@ export const windows = {
   },
   /** While dragging the corner. Call `settle` when the drag ends. */
   resize(id: WindowId, w: number, h: number): void {
-    set(patch(id, { w, h, restore: null }), false);
+    set(patch(id, { w, h, restore: null, zone: null }), false);
   },
   /** Back to its usual size. */
   resetSize(id: WindowId): void {
-    set(patch(id, { w: usualWidth(id), h: usualHeight(id), restore: null }), true);
+    set(patch(id, { w: usualWidth(id), h: usualHeight(id), restore: null, zone: null }), true);
   },
   /** Fills a snap zone, remembering where it was so it can go back. */
-  place(id: WindowId, rect: { x: number; y: number; w: number; h: number }): void {
+  place(id: WindowId, zone: Zone): void {
     const layout = layouts[id];
     const restore = layout.restore ?? { x: layout.x, y: layout.y, w: layout.w, h: layout.h };
-    set(patch(id, { x: rect.x, y: rect.y, w: rect.w, h: rect.h, restore }), true);
+    set(patch(id, { ...zoneRect(zone, area), restore, zone }), true);
   },
   /**
    * Leaves the zone it fills: back to the size it had before. Moves it back
@@ -233,7 +280,7 @@ export const windows = {
     const restore = layouts[id].restore;
     if (!restore) return;
     const where = keepPosition ? {} : { x: restore.x, y: restore.y };
-    set(patch(id, { ...where, w: restore.w, h: restore.h, restore: null }), !keepPosition);
+    set(patch(id, { ...where, w: restore.w, h: restore.h, restore: null, zone: null }), !keepPosition);
   },
   /** While dragging. Call `settle` when the drag ends. */
   move(id: WindowId, x: number, y: number): void {
@@ -243,31 +290,6 @@ export const windows = {
     set(layouts, true);
   },
 };
-
-/**
- * When the browser window changes size, windows keep their distance from
- * whichever side edge they were nearer to, and are pulled back in if they
- * would end up off screen.
- */
-let viewportWidth = window.innerWidth;
-window.addEventListener('resize', () => {
-  const before = viewportWidth;
-  viewportWidth = window.innerWidth;
-  const height = window.innerHeight - BARS_HEIGHT;
-  const next = { ...layouts };
-  for (const id of WINDOW_IDS) {
-    const layout = layouts[id];
-    const width = widthOf(id);
-    const rightGap = before - (layout.x + width);
-    const x = layout.x > rightGap ? viewportWidth - width - rightGap : layout.x;
-    next[id] = {
-      ...layout,
-      x: Math.max(Math.min(x, viewportWidth - KEEP_VISIBLE), Math.min(0, KEEP_VISIBLE - width)),
-      y: Math.max(0, Math.min(layout.y, height - KEEP_VISIBLE)),
-    };
-  }
-  set(next, true);
-});
 
 export function useWindows(): Layouts {
   const [value, setValue] = useState(layouts);
