@@ -753,11 +753,460 @@ button.grade:disabled {
   }
 }
 
+/* ---- Hardware: the gateway as a board ---- */
+
+.tone--empty {
+  --tone: 93, 138, 163;
+}
+
+.board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-areas:
+    'modem cpu storage rack'
+    'ports cpu cooling sensor';
+  grid-auto-rows: 1fr;
+  gap: 16px;
+  margin: 0 0 14px;
+  padding: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  /* A circuit board: a faint grid of drill holes on dark laminate. */
+  background:
+    radial-gradient(circle, rgba(95, 212, 255, 0.16) 1px, transparent 1.5px) 0 0 / 14px 14px,
+    linear-gradient(160deg, #071a2b, #04101c);
+  box-shadow:
+    inset 0 0 0 4px rgba(3, 8, 15, 0.7),
+    inset 0 0 40px rgba(95, 212, 255, 0.07);
+}
+
+/* Screws in the corners. */
+.board::before,
+.board::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: rgba(95, 212, 255, 0.12);
+  box-shadow: 0 calc(var(--board-h, 0px)) 0 transparent;
+}
+
+.board::before {
+  left: 6px;
+}
+
+.board::after {
+  right: 6px;
+}
+
+.board__traces {
+  position: absolute;
+  inset: 18px;
+  width: calc(100% - 36px);
+  height: calc(100% - 36px);
+  pointer-events: none;
+  overflow: visible;
+}
+
+.board__traces--tall {
+  display: none;
+}
+
+.board__trace,
+.board__pulse {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+}
+
+.board__trace {
+  stroke: rgba(95, 212, 255, 0.3);
+  stroke-width: 2;
+}
+
+/* Signals running out from the processor. */
+.board__pulse {
+  stroke: var(--cyan);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 10 150;
+  animation: board-pulse 3.2s linear infinite;
+  filter: drop-shadow(0 0 3px var(--cyan));
+}
+
+.board__pulse:nth-of-type(even) {
+  animation-delay: -1.6s;
+}
+
+@keyframes board-pulse {
+  from {
+    stroke-dashoffset: 160;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.slot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px 8px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #0a2032, #06131f);
+  text-align: center;
+  transition:
+    border-color 0.14s,
+    box-shadow 0.14s,
+    transform 0.14s;
+}
+
+.slot--cpu {
+  grid-area: cpu;
+}
+.slot--storage {
+  grid-area: storage;
+}
+.slot--modem {
+  grid-area: modem;
+}
+.slot--ports {
+  grid-area: ports;
+}
+.slot--rack {
+  grid-area: rack;
+}
+.slot--sensor {
+  grid-area: sensor;
+}
+.slot--cooling {
+  grid-area: cooling;
+}
+
+.slot:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 16px rgba(95, 212, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.slot.is-picked {
+  border-color: var(--cyan);
+  background: linear-gradient(180deg, #0e2d45, #082033);
+  box-shadow:
+    0 0 0 1px var(--cyan),
+    0 0 22px rgba(95, 212, 255, 0.3);
+}
+
+.slot.is-empty {
+  border-style: dashed;
+}
+
+.slot__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.slot.is-picked .slot__label {
+  color: var(--cyan);
+}
+
+.slot__name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-bright);
+  overflow-wrap: anywhere;
+}
+
+.slot.is-empty .slot__name {
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.slot .pips {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.slot__mark {
+  position: absolute;
+  top: -9px;
+  right: 8px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.slot__mark.is-good {
+  border-color: rgba(78, 230, 200, 0.6);
+  color: var(--mint);
+}
+
+.slot__mark.is-rare {
+  border-color: rgba(255, 196, 92, 0.7);
+  color: #ffc45c;
+  box-shadow: 0 0 10px rgba(255, 196, 92, 0.3);
+}
+
+.slot__mark.is-dim {
+  border-color: var(--line-soft);
+  color: var(--text-dim);
+}
+
+/* A part going in: the slot flashes mint and settles. */
+.slot.is-new {
+  animation: slot-fitted 1.3s ease-out;
+}
+
+@keyframes slot-fitted {
+  0% {
+    border-color: var(--mint);
+    box-shadow:
+      0 0 0 2px var(--mint),
+      0 0 40px rgba(78, 230, 200, 0.7);
+    transform: scale(1.04);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* The Gateway window's own board: one short row, a bus running behind the slots. */
+.board__bus {
+  display: none;
+}
+
+@container win (min-width: 561px) {
+  .board--strip {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-areas: 'cpu storage modem ports rack sensor cooling';
+    gap: 10px;
+    padding: 14px 12px 12px;
+  }
+
+  .board--strip .board__traces {
+    display: none;
+  }
+
+  .board--strip .board__bus {
+    display: block;
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    top: 50%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(95, 212, 255, 0.45) 8%, rgba(95, 212, 255, 0.45) 92%, transparent);
+  }
+
+  .board--strip .slot {
+    justify-content: flex-start;
+    padding: 7px 3px 8px;
+  }
+
+  .board--strip .slot__label {
+    display: flex;
+    align-items: center;
+    min-height: 24px;
+    font-size: 10px;
+    line-height: 1.15;
+    letter-spacing: 0.08em;
+  }
+
+  .board--strip .slot__name {
+    display: none;
+  }
+
+  .board--strip .icontile--lg {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+  }
+
+  .board--strip .pips i {
+    width: 5px;
+    height: 5px;
+    border-radius: 1.5px;
+  }
+
+  .board--strip .pips {
+    gap: 2px;
+  }
+}
+
+.board--strip {
+  margin-bottom: 10px;
+}
+
+/* The slot that is picked: what is fitted, and the parts for it. */
+.slotpanel {
+  animation: card-in 0.2s ease-out both;
+}
+
+.slotpanel__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--mint);
+  border-radius: 10px;
+  background: rgba(78, 230, 200, 0.04);
+}
+
+.slotpanel__head--own {
+  margin-bottom: 0;
+  animation: card-in 0.2s ease-out both;
+}
+
+.slotpanel__title {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.slotpanel__slot {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.slotpanel__title strong {
+  font-size: 17px;
+  line-height: 1.2;
+  color: var(--text-bright);
+}
+
+.slotpanel__blurb {
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+
+.slotpanel__now {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  text-align: right;
+}
+
+.slotpanel__now dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.slotpanel__now dd {
+  margin: 0;
+  font-size: 15px;
+  white-space: nowrap;
+  color: var(--mint-text);
+}
+
+.slotpanel__note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.card__stats--wide .stat {
+  grid-template-columns: 64px minmax(0, 1fr) 74px;
+}
+
 /* ---- narrow windows, tablet panes and phones ---- */
+
+/* A narrow window stands the board up: three slots across. */
+@container win (max-width: 560px) {
+  .board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      'modem cpu storage'
+      'ports cpu storage'
+      'sensor cooling rack';
+    gap: 12px 8px;
+    padding: 14px 8px 10px;
+  }
+
+  .board__traces--wide {
+    display: none;
+  }
+
+  .board__traces--tall {
+    display: block;
+  }
+}
 
 @container win (max-width: 430px) {
   .cards {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .slotpanel__head {
+    flex-wrap: wrap;
+  }
+
+  .slotpanel__now {
+    width: 100%;
+    text-align: left;
+  }
+
+  .board__traces {
+    inset: 14px 8px 10px;
+    width: calc(100% - 16px);
+    height: calc(100% - 24px);
+  }
+
+  .slot {
+    padding: 9px 4px 7px;
+  }
+
+  .slot__label {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  .slot__name {
+    font-size: 12.5px;
+  }
+
+  .slot__mark {
+    right: 50%;
+    transform: translateX(50%);
+    font-size: 10px;
+  }
+
+  .slot .icontile--lg {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
   }
 
   /* One line of counters that slides sideways, so the bar stays short. */
@@ -804,13 +1253,21 @@ button.grade:disabled {
 
 @media (prefers-reduced-motion: reduce) {
   .rareshelf::before,
+  .board__pulse,
+  .slot.is-new,
+  .slotpanel,
   .stat__fill,
   .shopgroup .card,
   .rareshelf .card {
     animation: none;
   }
 
-  .card:hover {
+  .card:hover,
+  .slot:hover {
     transform: none;
+  }
+
+  .board__pulse {
+    display: none;
   }
 }

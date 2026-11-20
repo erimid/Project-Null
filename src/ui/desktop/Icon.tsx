@@ -84,7 +84,7 @@ const ICONS = {
   shield: '<path d="M12 3l7.5 3v5.5c0 4.5-3 8-7.5 9.5-4.5-1.5-7.5-5-7.5-9.5V6z"/>',
   person: '<circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c.6-4.3 3.5-6.5 7.5-6.5s6.9 2.2 7.5 6.5"/>',
   play: '<path d="M7.5 4.5v15l12-7.5z"/>',
-  tools: '<path d="M14.5 6.5a4 4 0 0 0 5 5L11 20a2.1 2.1 0 0 1-3-3zM14.5 6.5l2.7-2.7M4 4l5 5M4 8.5L8.5 4"/>',
+  tools: '<path d="M15 5.5a4.5 4.5 0 0 0-5.6 5.6L3.6 17a2.1 2.1 0 0 0 3 3l5.9-5.9a4.5 4.5 0 0 0 5.6-5.6L15.4 11.2 12.8 8.6z"/>',
 } as const;
 
 export type IconName = keyof typeof ICONS;
