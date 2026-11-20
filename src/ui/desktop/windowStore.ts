@@ -33,8 +33,8 @@ const EDGE = 24;
 const GAP = 16;
 const TOP = 20;
 const MAP_WIDTH = 700;
-/** Room the gateway's readout needs under the map. */
-const GATEWAY_HEIGHT = 300;
+/** Room the gateway needs under the map for its tiles and its board. */
+const GATEWAY_HEIGHT = 424;
 
 export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
   // x: -24 means 24px in from the right edge of the screen. The gateway's y is worked out from the map's height.

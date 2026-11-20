@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import {
-  HARDWARE_SLOT_LABELS,
-  freeStorageGb,
   heldBy,
   holding,
-  installed,
-  rackStorageGb,
   activeContract,
   availableContracts,
   nextContractRating,
@@ -21,10 +17,7 @@ import {
   ringTolerance,
   partTaken,
   shopOf,
-  shopPrice,
   sellsOnly,
-  sellsHardware,
-  rareToday,
   type Action,
   type Connection,
   type EchoPuzzle,
@@ -46,9 +39,9 @@ import { viewer } from '../viewerStore';
 import { FileName } from '../FileName';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
+import { Hardware } from './HardwareSection';
 import { Market } from './MarketSection';
 import type { View } from './serverView';
-import { Price, ShopSign } from './Shop';
 
 const SECTION_LABELS: Record<Section, string> = {
   contracts: 'Contracts',
@@ -956,76 +949,6 @@ function Contracts({ game, connection, act }: View) {
           </li>
         ))}
       </ul>
-    </>
-  );
-}
-
-/** The Hardware shelf: for each slot, what is installed and the parts above it. Parts install as soon as they are paid for. */
-function Hardware({ game, server, connection, act }: View) {
-  const [fresh, setFresh] = useState<string | null>(null);
-  const free = freeStorageGb(game, content);
-  const shop = shopOf(server);
-  const rareIds = new Set(rareToday(game, server).filter((line) => line.kind === 'hardware').map((line) => line.id));
-  return (
-    <>
-      <ShopSign game={game} server={server} />
-      <p class="board__note">Parts install the moment you pay. Nothing is bought back.</p>
-      {HARDWARE_SLOT_LABELS.map(([slot, label]) => {
-        const tiers = content.hardware.filter((part) => part.slot === slot).sort((a, b) => a.tier - b.tier);
-        if (tiers.length === 0) return null;
-        const now = installed(game, content, slot);
-        const tier = game.player.hardware[slot];
-        const upgrades = tiers.filter((part) => part.tier > tier && sellsHardware(game, server, part));
-        // A specialist shop shows only the counters it keeps.
-        if (upgrades.length === 0 && shop.hardwareSlots && !shop.hardwareSlots.includes(slot)) return null;
-        return (
-          <section key={slot} class="section-gap">
-            <h3 class="map__heading">
-              {label}
-              <span class="part__pips" aria-label={`tier ${tier} of ${tiers.length}`}>
-                {tiers.map((part) => (
-                  <span key={part.id} class={`part__pip${part.tier <= tier ? ' is-on' : ''}`} />
-                ))}
-              </span>
-              <span class="heading__note">{now ? now.name : 'empty'}</span>
-            </h3>
-            {upgrades.length === 0 ? (
-              <p class="empty">Nothing better on the shelf.</p>
-            ) : (
-              <ul class="rows">
-                {upgrades.map((part) => {
-                  const extraGb = slot === 'rack' ? (part.sizeGb ?? 0) - rackStorageGb(game, content) : 0;
-                  const tooBig = extraGb > free;
-                  const price = shopPrice(shop, part.price);
-                  return (
-                    <li key={part.id} class={`row row--contract row--part${fresh === part.id ? ' is-new' : ''}${rareIds.has(part.id) ? ' is-rare' : ''}`}>
-                      <span class="row__main">
-                        <span>
-                          <strong>{part.name}</strong>
-                          {rareIds.has(part.id) && <span class="row__tag row__tag--rare">today only</span>}
-                        </span>
-                        <span class="contract__summary">{part.blurb}</span>
-                      </span>
-                      <Price base={part.price} price={price} />
-                      <button
-                        type="button"
-                        class="btn btn--go"
-                        disabled={game.player.balance < price || tooBig}
-                        title={tooBig ? 'Not enough room on your gateway for the model' : undefined}
-                        onClick={() => {
-                          if (act({ type: 'buyHardware', connectionId: connection.id, partId: part.id })) setFresh(part.id);
-                        }}
-                      >
-                        Install
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-        );
-      })}
     </>
   );
 }

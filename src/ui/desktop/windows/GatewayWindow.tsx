@@ -1,10 +1,11 @@
+import { useState } from 'preact/hooks';
 import {
   HARDWARE_SLOT_LABELS,
   effectiveSpeed,
+  findPart,
   gameDate,
   gatewayOf,
   hostedModel,
-  installed,
   isConnected,
   isLyingLow,
   maxConnections,
@@ -16,6 +17,10 @@ import {
 import { formatDay, formatGameTime, formatRating, formatTime, ratingStep } from '../../format';
 import { useGame } from '../../hooks';
 import { content } from '../../session';
+import type { HardwareSlot } from '../../../core/content';
+import { GatewayBoard, SLOT_BLURBS, partStats, slotLabel } from '../GatewayBoard';
+import { IconTile } from '../Gear';
+import { slotIcon } from '../Icon';
 import { Window } from '../Window';
 
 /** Status of the player's own machine. The build line shows which version of the game is running. */
@@ -50,10 +55,11 @@ export function GatewayWindow() {
       .filter(Boolean)
       .join(' · ');
   });
-  // Joined into one text so the list only redraws when a part changes.
-  const parts = useGame((game) =>
-    HARDWARE_SLOT_LABELS.map(([slot, label]) => `${label}\t${installed(game, content, slot)?.name ?? 'empty'}`).join('\n'),
-  );
+  // Joined into one text so the board only redraws when a part changes.
+  const tiers = useGame((game) => HARDWARE_SLOT_LABELS.map(([slot]) => game.player.hardware[slot]).join(','));
+  const hardware = Object.fromEntries(HARDWARE_SLOT_LABELS.map(([slot], index) => [slot, Number(tiers.split(',')[index])])) as Record<HardwareSlot, number>;
+  const [slot, setSlot] = useState<HardwareSlot | null>(null);
+  const fitted = slot ? findPart(content, slot, hardware[slot]) : undefined;
   const gateway = gatewayOf(content);
 
   const step = useGame((game) => {
@@ -114,17 +120,33 @@ export function GatewayWindow() {
           build {__APP_VERSION__} · {__APP_COMMIT__}
         </span>
       </h3>
-      <ul class="parts">
-        {parts.split('\n').map((line) => {
-          const [label, name] = line.split('\t');
-          return (
-            <li key={label} class={`parts__item${name === 'empty' ? ' is-empty' : ''}`}>
-              <span class="parts__slot">{label}</span>
-              <span class="parts__name">{name}</span>
-            </li>
-          );
-        })}
-      </ul>
+      <GatewayBoard hardware={hardware} selected={slot} onSelect={(next) => setSlot(next === slot ? null : next)} strip />
+      {slot && (
+        <div
+          class="slotpanel__head slotpanel__head--own"
+          key={slot}
+          ref={(el) => {
+            // A window with no room to spare: bring what was asked for into view.
+            const body = el?.closest('.window__body');
+            if (el && body && el.getBoundingClientRect().bottom > body.getBoundingClientRect().bottom) el.scrollIntoView({ block: 'end', behavior: 'smooth' });
+          }}
+        >
+          <IconTile icon={slotIcon(slot)} tone={fitted ? 'good' : 'empty'} />
+          <div class="slotpanel__title">
+            <span class="slotpanel__slot">{slotLabel(slot)}</span>
+            <strong>{fitted?.name ?? 'Nothing fitted'}</strong>
+            <span class="slotpanel__blurb">{fitted?.blurb ?? SLOT_BLURBS[slot]}</span>
+          </div>
+          <dl class="slotpanel__now">
+            {partStats(slot, fitted).map((stat) => (
+              <div key={stat.label}>
+                <dt>{stat.label}</dt>
+                <dd class="data">{stat.text}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
     </Window>
   );
 }
