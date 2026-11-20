@@ -427,4 +427,13 @@ describe('Act 1 and the written jobs', () => {
     const text = JSON.stringify([servers, contracts, mail, story, programs, sites]).replace(/PROJECT_N████\.dat/g, '').replace(/P R O J E C T +N/g, '');
     expect(text).not.toMatch(/project null/i);
   });
+
+  it('only use {handle} in story mail, since that is the only thing story beats fill in', () => {
+    for (const beat of story.beats) {
+      if (!beat.mail) continue;
+      for (const [, name] of `${beat.mail.from} ${beat.mail.subject} ${beat.mail.body}`.matchAll(/\{(\w+)\}/g)) {
+        expect(name).toBe('handle');
+      }
+    }
+  });
 });

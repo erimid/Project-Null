@@ -145,4 +145,14 @@ describe('Story director', () => {
     expect(storyComplete(h, content)).toBe(true);
     expect(currentBeat(h, content)).toBeUndefined();
   });
+
+  it('fills {handle} in story mail so no raw token reaches the inbox', () => {
+    const content = world([{ id: 'hello', mail: { from: 'Vesper', subject: 'Hi {handle}', body: '{handle}, welcome.' } }] as StoryDef['beats']);
+    const state = game(content);
+    state.player.handle = 'Ghost';
+    advanceStory(state, content);
+    expect(state.messages.length).toBeGreaterThan(0);
+    for (const m of state.messages) expect(`${m.from} ${m.subject} ${m.body}`).not.toMatch(/\{\w+\}/);
+    expect(state.messages.some((m) => m.body === 'Ghost, welcome.')).toBe(true);
+  });
 });
