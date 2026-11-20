@@ -8,6 +8,7 @@ import { useGame } from '../hooks';
 import type { Speed } from '../../core';
 import { content, session } from '../session';
 import { Alerts } from './Alerts';
+import { SnapPreview } from './snapStore';
 import { TouchTips } from './TouchTips';
 import { HoverTips } from './HoverTips';
 import { Tour } from './Tour';
@@ -100,6 +101,7 @@ export function Desktop() {
         <ViewerWindow />
         <SavesWindow />
         <DefenceWindow />
+        {layoutKind === 'desk' && <SnapPreview />}
         <Alerts />
         <TouchTips />
         <HoverTips />
