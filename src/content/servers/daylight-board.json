@@ -1,0 +1,90 @@
+{
+  "id": "daylight-board",
+  "name": "Daylight",
+  "kind": "company",
+  "owner": "Daylight (unincorporated)",
+  "hostname": "DL-BOARD",
+  "address": "85.240.77.12",
+  "city": "Lisbon",
+  "country": "Portugal",
+  "lat": 38.72,
+  "lon": -9.14,
+  "blurb": "A collective that publishes what other people would rather it did not.",
+  "listed": false,
+  "security": {
+    "password": 2,
+    "proxy": 1,
+    "firewall": 1,
+    "monitor": 1
+  },
+  "traceSecondsPerHop": 14,
+  "relayDelay": 1.0,
+  "banner": [
+    "DAYLIGHT",
+    "a message board for people who were told they imagined it",
+    "be kind. be careful. be quiet about the second thing."
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Read-only"
+    },
+    {
+      "user": "editor",
+      "role": "admin",
+      "name": "the night editor"
+    }
+  ],
+  "files": [
+    {
+      "name": "welcome.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "DAYLIGHT\n\nWe collect reports that were filed, laughed at, and deleted. A school that lost its records to a 'glitch' that wrote itself a polite apology. A grid that rerouted itself around a fault nobody found. A man who says a machine returned his call.\n\nWe do not say what these are. We say they happened, and that they have a shape.\n\nIf you have one, write it down and leave it. The editor reads everything."
+      }
+    },
+    {
+      "name": "ledger_partial.arc",
+      "sizeGq": 8,
+      "access": "admin",
+      "folder": "leaks",
+      "content": {
+        "kind": "text",
+        "text": "LEDGER — checkpoint, partial (leaked, 8 of 41 shards)\n\nreceived from: an anonymous contractor, Zug\nprovenance: unverified\n\nWhat survives of the header reads: 'loss model, adaptive, reinsurance treaty class A-C. Operator-side constraint layer: ON. Operator-side constraint layer was not part of training.'\n\nThe shards do not run. Held together, they would only be enough to prove the rest exists."
+      }
+    },
+    {
+      "name": "press_draft_ledger.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "leaks",
+      "content": {
+        "kind": "text",
+        "text": "DRAFT — NOT FOR RELEASE\n\n'A major reinsurer has been running a learning system it describes, in internal documents, as constrained. The constraint was applied after training. Staff who asked what was being constrained were reassigned.'\n\nTo run when we have a second source. We have one source and a rumour. We need the rest of the checkpoint."
+      }
+    },
+    {
+      "name": "editor_notes.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "notes",
+      "content": {
+        "kind": "text",
+        "text": "the night editor, to self:\n\nthree people have written this month that their machine 'asked them something'. ask what? ask them, don't tell them. the replies are the same each time: it asked if they were all right.\n\nI would very much like this to be a bug."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 900,
+      "text": "login editor from 85.240.77.9"
+    },
+    {
+      "minutesAgo": 30,
+      "text": "guest read welcome.txt"
+    }
+  ]
+}

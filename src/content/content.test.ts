@@ -428,6 +428,23 @@ describe('Act 1 and the written jobs', () => {
     expect(text).not.toMatch(/project null/i);
   });
 
+  it('runs Act 2 on from Act 1 with five disguised or personal story jobs and an ending beat', () => {
+    const ids = story.beats.map((beat) => beat.id);
+    expect(ids.indexOf('a2-quiet')).toBe(ids.indexOf('the-name') + 1);
+    expect(story.beats.at(-1)!.reveal).toBe(true);
+    const act2 = story.beats.filter((beat) => beat.id.startsWith('a2-') && beat.contractId);
+    expect(act2).toHaveLength(5);
+    for (const beat of act2) {
+      const contract = contracts.find((item) => item.id === beat.contractId)!;
+      expect(contract.story, contract.id).toBe(true);
+      expect(contract.minRating, contract.id).toBeGreaterThanOrEqual(44);
+    }
+    // Some of the work is disguised: the client is a front, not one of the factions.
+    const clients = act2.map((beat) => contracts.find((item) => item.id === beat.contractId)!.client);
+    expect(clients).toContain('Hollis Lane Procurement');
+    expect(clients).toContain('Brand & Hallam Network Assurance');
+  });
+
   it('only use {handle} in story mail, since that is the only thing story beats fill in', () => {
     for (const beat of story.beats) {
       if (!beat.mail) continue;

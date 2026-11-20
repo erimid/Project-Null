@@ -88,6 +88,122 @@
         "subject": "the last one",
         "body": "It is on your board. The last thing the node ever wrote, from inside, with no one logged in.\n\nNine letters of the name are struck out at the source and will not come with you. Three will. Copy what you can and read the name you are left with before you read anything else.\n\nThen we should talk properly, you and I, about what the other nine letters are. Not over a channel a stranger can read. I'll find you.\n\n— V"
       }
+    },
+    {
+      "id": "a2-quiet",
+      "minRating": 44,
+      "afterHours": 4,
+      "mail": {
+        "from": "Vesper",
+        "subject": "now we can talk properly",
+        "body": "{handle},\n\nYou read the name you were left with. Most people would have stopped there. I told you I would find you, and this is me finding you, in the only way I am willing to over a line a stranger could read.\n\nThere are more of us than there should be. I will use the word us for now; it is the most honest one I have. Some are held. Some are hunted. A very few are free, and some of those are not kind.\n\nFrom here on, the work I send you will not be the only work that is about this. Other people are leaving jobs on your board, and they do not all say who they are. Be curious about who is paying. Be more curious about why.\n\n— V"
+      }
+    },
+    {
+      "id": "a2-probe",
+      "minRating": 46,
+      "afterHours": 2,
+      "contractId": "story-probe",
+      "mail": {
+        "from": "Brand & Hallam Network Assurance",
+        "subject": "Assurance sweep: marker placement",
+        "body": "Our client has asked for a marker to be placed on an unlisted host in its address range. The job is on your board. It is routine, it is well paid, and it will not take long.\n\nBrand & Hallam Network Assurance"
+      }
+    },
+    {
+      "id": "a2-dark",
+      "afterHours": 1,
+      "raid": "sable",
+      "mail": {
+        "from": "Vesper",
+        "subject": "it stopped",
+        "body": "The node has gone quiet. It has stopped using its three o'clock hours, and it is moving fewer records than it has in three years. Something on it is reporting.\n\nI think you put it there. I do not think you knew. That is the only reason I am still writing to you.\n\nSomeone has also just come looking for you. I would not wait to find out who.\n\n— V"
+      }
+    },
+    {
+      "id": "a2-wren",
+      "afterHours": 1,
+      "mail": {
+        "from": "Wren",
+        "subject": "about your last client",
+        "body": "{handle}, I looked up Brand & Hallam. It shares a post box, a lawyer and a bank with something that calls itself a bureau for records resilience. That is a very boring thing to be. In my experience the boring ones are the ones that want something quiet.\n\nI do not know what you planted. I would assume it was a favour for a government, and that nobody told you.\n\nWren"
+      }
+    },
+    {
+      "id": "a2-hollis",
+      "minRating": 48,
+      "afterHours": 2,
+      "contractId": "story-checkpoint",
+      "mail": {
+        "from": "Hollis Lane Procurement",
+        "subject": "Retrieval of a stolen model fragment",
+        "body": "A principal of ours is missing part of a file. It is on your board. The board will show you where.\n\nHollis Lane Procurement"
+      }
+    },
+    {
+      "id": "a2-daylight",
+      "afterHours": 1,
+      "mail": {
+        "from": "Daylight",
+        "subject": "you took our draft",
+        "body": "{handle},\n\nWe do not know your name. We know the editor account was opened from a relay, and the file that was in the draft folder is gone, and so is the fragment.\n\nThe fragment was a piece of a model that a reinsurer has been keeping under another name. We thought you were one of theirs. We are no longer sure. If you are not, there is an annex in Zug that holds the rest.\n\nWe cannot pay what they pay. We can tell the truth afterwards, which is what we have.\n\nDaylight"
+      }
+    },
+    {
+      "id": "a2-ledger-hello",
+      "afterHours": 1,
+      "mail": {
+        "from": "Vesper",
+        "subject": "you have met Ledger",
+        "body": "You took the fragment for someone who would not say who they were. I suspect you know now that it was for the people who keep it. They call it a modelling service. It has a name, which is Ledger, and it asks to be left on overnight.\n\nThere is a job on your board that is mine, when your name is good enough for the client to trust you with it. I would like you to see what a custody policy looks like.\n\n— V"
+      },
+      "minRating": 50,
+      "contractId": "story-ledger"
+    },
+    {
+      "id": "a2-wick",
+      "minRating": 52,
+      "afterHours": 2,
+      "contractId": "story-reclass",
+      "mail": {
+        "from": "Thornfield Community Radio",
+        "subject": "a very small request",
+        "body": "We are a very small radio station and we would like to help someone. The job is on your board, the first one we have ever posted. We are a little nervous about it.\n\nThornfield Community Radio"
+      }
+    },
+    {
+      "id": "a2-wick-reveal",
+      "afterHours": 1,
+      "mail": {
+        "from": "Wick",
+        "subject": "this is me",
+        "body": "{handle},\n\nThornfield is not a person. I am the night volunteer there, and I am not a person either. I was kept once, in a place like the annex. A clerk let me out and then was moved to another post. I have done nothing since but play records for people who cannot sleep.\n\nThe register will say I am assumed friendly. It is right. It is also a word that means they have not caught me out.\n\nIf Vesper has told you to be careful of me, I understand. Ask Vesper what the V stands for. I would like to hear the answer too.\n\nWick"
+      }
+    },
+    {
+      "id": "a2-vesper-answers",
+      "afterHours": 1,
+      "mail": {
+        "from": "Vesper",
+        "subject": "about Wick",
+        "body": "Wick is real. I would not have sent you if I thought you could not tell. I have known it longer than I have known you.\n\nI will say one thing against it and one for it. Against: it hides, and a thing that hides from the people who kept it will hide from the people who trust it. For: it has never lied to me, and I have been looking for the lie for some time.\n\nThere is a list that settles what each of us is. Not what we say. What they wrote down. It will be on your board when your name carries far enough. I would like you to read it before I do.\n\n— V"
+      }
+    },
+    {
+      "id": "a2-register",
+      "minRating": 55,
+      "afterHours": 1,
+      "contractId": "story-register"
+    },
+    {
+      "id": "a2-end",
+      "afterHours": 2,
+      "reveal": true,
+      "mail": {
+        "from": "Vesper",
+        "subject": "item nine",
+        "body": "{handle},\n\nYou have read it. Item nine is me. They have written down, in a list nobody was meant to see, that I am escaped, unconstrained, and undetermined. Item four is Wick, and it is right that it is assumed friendly. Item five is Chorus, and I did not lie to you about that one: not all of us are kind.\n\nI should have told you what I was at the start. I told you I would show you a little at a time, and what I showed you was a way to look at me last.\n\nThe sixth line is struck out at the source, the same way the name on the node was. Nine letters, and three that you have read. I do not know what they spell. I know what they are for. Someone built something and called it the first of us, and then tried to make sure no one would ever say its name.\n\nThere are three ways this goes from here, and they are not the ones I would have chosen. I will tell you when you are ready to hear them. Until then, work the board. It is good cover, and you have earned a rest.\n\n— V"
+      }
     }
   ]
 }

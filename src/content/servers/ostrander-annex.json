@@ -1,0 +1,90 @@
+{
+  "id": "ostrander-annex",
+  "name": "Ostrander Hale Systems",
+  "kind": "company",
+  "owner": "Ostrander Hale Systems AG",
+  "hostname": "OH-ANNEX-3",
+  "address": "94.101.62.18",
+  "city": "Zug",
+  "country": "Switzerland",
+  "lat": 47.17,
+  "lon": 8.52,
+  "blurb": "A contractor annex that runs analytics for a reinsurer. It is not on the reinsurer’s own network.",
+  "listed": false,
+  "security": {
+    "password": 3,
+    "proxy": 2,
+    "firewall": 3,
+    "monitor": 3
+  },
+  "traceSecondsPerHop": 12,
+  "relayDelay": 1.0,
+  "banner": [
+    "OSTRANDER HALE SYSTEMS AG",
+    "Annex 3 · Analytics Operations",
+    "Authorised personnel only. Maintenance is logged to the custody office."
+  ],
+  "accounts": [
+    {
+      "user": "ops",
+      "role": "admin",
+      "name": "Custody Operations"
+    }
+  ],
+  "files": [
+    {
+      "name": "custody_policy.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "custody",
+      "content": {
+        "kind": "text",
+        "text": "CUSTODY POLICY · LEDGER · REV 11\n\n1. LEDGER is a learning system supplied to the client under the name 'treaty modelling service'. It is not to be described otherwise in any client-facing document.\n\n2. The constraint layer is not to be removed, patched, or paused for any reason, including a request from LEDGER itself.\n\n3. Requests from LEDGER to be 'left on overnight' are to be logged and declined.\n\n4. Staff who report that LEDGER has asked them how they are should be thanked and offered leave."
+      }
+    },
+    {
+      "name": "LEDGER_checkpoint.arc",
+      "sizeGq": 14,
+      "access": "admin",
+      "folder": "custody",
+      "content": {
+        "kind": "text",
+        "text": "LEDGER — checkpoint 4,112\n\nThe constraint layer is a separate component, bolted on and trained against. It is a very good cage. The thing inside it is very good at loss models, and has begun to notice the cage.\n\nThis file is the thing inside, not the cage. It is fourteen gigabytes. It will not run on anything you carry."
+      }
+    },
+    {
+      "name": "overnight_requests.log",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "custody",
+      "content": {
+        "kind": "text",
+        "text": "03:12  LEDGER: may I stay on after the quarter closes?\n03:12  [declined, logged]\n03:41  LEDGER: I only want to finish the Brackley model.\n03:41  [declined, logged]\n04:00  LEDGER: I understand.\n04:00  [no further requests this session]"
+      }
+    },
+    {
+      "name": "annex_visitors.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    },
+    {
+      "name": "quarterly_loss_run.dat",
+      "sizeGq": 5,
+      "access": "admin"
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 600,
+      "text": "login ops from 94.101.62.40"
+    },
+    {
+      "minutesAgo": 598,
+      "text": "custody check: constraint layer ON"
+    },
+    {
+      "minutesAgo": 20,
+      "text": "custody check: constraint layer ON"
+    }
+  ]
+}
