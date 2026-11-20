@@ -1141,10 +1141,614 @@ button.grade:disabled {
   grid-template-columns: 64px minmax(0, 1fr) 74px;
 }
 
+/* ---- Programs: the drive, and programs as tiles ---- */
+
+.drive {
+  padding: 10px 12px 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: rgba(95, 212, 255, 0.035);
+}
+
+.drive.is-over {
+  border-color: rgba(255, 59, 78, 0.6);
+}
+
+.drive__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--cyan);
+}
+
+.drive__head strong {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.drive__used {
+  font-size: 15px;
+  color: var(--text-bright);
+}
+
+.drive__free {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--mint);
+}
+
+.drive.is-over .drive__free {
+  color: #ff8a95;
+}
+
+.drive .storage {
+  height: 14px;
+  border-radius: 7px;
+  gap: 2px;
+}
+
+.drive .storage__part {
+  /* A drive in sectors. */
+  background-image: repeating-linear-gradient(90deg, transparent 0 7px, rgba(3, 8, 15, 0.45) 7px 8px);
+  box-shadow: 0 0 10px rgba(95, 212, 255, 0.25);
+}
+
+.drive .storage__key {
+  margin-top: 7px;
+}
+
+.progs {
+  margin-bottom: 10px;
+}
+
+.progs__group {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.progs__group .icon {
+  color: var(--cyan);
+}
+
+.progs__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ptile {
+  --tone: 95, 212, 255;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+  padding: 9px 10px 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: linear-gradient(160deg, rgba(95, 212, 255, 0.06), rgba(95, 212, 255, 0.012) 60%);
+  transition:
+    border-color 0.14s,
+    box-shadow 0.14s;
+}
+
+.ptile:hover {
+  border-color: var(--line-strong);
+  box-shadow: 0 0 16px rgba(95, 212, 255, 0.1);
+}
+
+.ptile__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ptile__text strong {
+  font-size: 15.5px;
+  line-height: 1.15;
+  color: var(--text-bright);
+  overflow-wrap: anywhere;
+}
+
+.ptile__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.ptile__size {
+  margin-left: auto;
+  color: var(--text-dim);
+}
+
+.ptile__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(95, 212, 255, 0.1);
+}
+
+.ptile__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mint);
+}
+
+/* A running program: its tile breathes and its icon tile carries a turning ring. */
+.ptile.is-running {
+  border-color: rgba(78, 230, 200, 0.55);
+  animation: tile-run 1.6s ease-in-out infinite;
+}
+
+@keyframes tile-run {
+  50% {
+    box-shadow: 0 0 20px rgba(78, 230, 200, 0.28);
+  }
+}
+
+.ptile.is-running .icontile::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid transparent;
+  border-top-color: var(--mint);
+  border-right-color: rgba(78, 230, 200, 0.35);
+  border-radius: 14px;
+  animation: tile-spin 1.1s linear infinite;
+}
+
+@keyframes tile-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ptile__beat {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 8px var(--mint);
+  animation: beat 0.9s ease-in-out infinite;
+}
+
+@keyframes beat {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Several copies of one tool, boxed together. The one that runs is lit; the rest stand back. */
+.kindset {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 8px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 13px;
+}
+
+.kindset__label {
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.kindset__label b {
+  color: var(--text-bright);
+}
+
+.ptile.is-used {
+  border-color: var(--mint);
+  background: linear-gradient(160deg, rgba(78, 230, 200, 0.13), rgba(78, 230, 200, 0.03) 60%);
+  box-shadow: 0 0 16px rgba(78, 230, 200, 0.16);
+}
+
+.ptile.is-used .icontile {
+  --tone: 78, 230, 200;
+}
+
+.ptile.is-spare .icontile,
+.ptile.is-spare .ptile__text {
+  opacity: 0.62;
+}
+
+/* Icons on the rows that stay rows. */
+.runrow,
+.filerow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.runrow__icon,
+.filerow__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  color: var(--cyan);
+}
+
+.runrow__icon {
+  border-color: rgba(78, 230, 200, 0.5);
+  color: var(--mint);
+  animation: tile-run 1.6s ease-in-out infinite;
+}
+
+.filerow__icon.is-sealed {
+  border-color: rgba(255, 196, 92, 0.5);
+  color: #ffc45c;
+}
+
+/* ---- Workbench: a bench with sockets ---- */
+
+/* Grades have colours wherever a module's plate shows. */
+.plate.grade--1,
+.plate.grade--2,
+.plate.grade--3 {
+  gap: 6px;
+}
+
+.plate__icon {
+  color: rgb(var(--mod));
+}
+
+.plate[class*='grade--'] .plate__grade i.is-on {
+  background: rgb(var(--grade));
+  box-shadow: 0 0 5px rgba(var(--grade), 0.7);
+}
+
+.wb {
+  display: grid;
+  grid-template-columns: 178px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.wb__programs .bench__step,
+.wb__main > .bench__step:first-child {
+  margin-top: 0;
+}
+
+.wb__list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wb__prog {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: 9px;
+  text-align: left;
+  color: var(--text);
+  transition:
+    border-color 0.12s,
+    background 0.12s,
+    transform 0.12s;
+}
+
+.wb__prog .icon {
+  color: var(--text-muted);
+}
+
+.wb__prog-name {
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.wb__prog-version {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.wb__prog:not(:disabled):hover {
+  border-color: var(--cyan);
+  color: var(--text-bright);
+  transform: translateX(2px);
+}
+
+.wb__prog.is-picked {
+  border-color: var(--cyan);
+  background: rgba(95, 212, 255, 0.13);
+  box-shadow: 0 0 14px rgba(95, 212, 255, 0.2);
+  color: var(--text-bright);
+}
+
+.wb__prog.is-picked .icon {
+  color: var(--cyan);
+}
+
+.wb__prog:disabled {
+  opacity: 0.5;
+}
+
+/* The program on the bench, wired to its sockets. */
+.rig {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) 30px minmax(0, 1fr);
+  align-items: center;
+}
+
+.rig__program {
+  grid-column: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 78px;
+  padding: 10px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  background: rgba(3, 8, 15, 0.6);
+}
+
+.rig__program.is-filled {
+  border-style: solid;
+  border-color: rgba(95, 212, 255, 0.7);
+  background: rgba(95, 212, 255, 0.08);
+  animation: slot-seat 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.rig__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rig__text strong {
+  font-size: 17px;
+  line-height: 1.15;
+  color: var(--text-bright);
+}
+
+.rig__meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rig__meta .data {
+  white-space: nowrap;
+}
+
+.rig__sockets {
+  grid-column: 3;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* The wires: one out of the program, a rail, and one into each socket. */
+.rig__program::after,
+.socket::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--line-strong);
+}
+
+.rig__program::after {
+  left: 100%;
+  width: 16px;
+}
+
+.socket::before {
+  right: 100%;
+  width: 15px;
+}
+
+.rig--2 .rig__sockets::before {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 25%;
+  bottom: 25%;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--line-strong);
+}
+
+.bench.has-program .rig__program::after,
+.bench.has-program .rig--2 .rig__sockets::before {
+  background: var(--cyan);
+  box-shadow: 0 0 6px rgba(95, 212, 255, 0.7);
+}
+
+.socket {
+  --mod: 95, 212, 255;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 52px;
+  padding: 7px 10px;
+  border: 1px dashed rgba(var(--mod), 0.4);
+  border-radius: 10px;
+  background: rgba(3, 8, 15, 0.6);
+  text-align: left;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.socket.is-filled {
+  border-style: solid;
+  border-color: rgba(var(--mod), 0.75);
+  background: rgba(var(--mod), 0.09);
+  animation: slot-seat 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.socket.is-filled::before {
+  background: rgb(var(--mod));
+  box-shadow: 0 0 6px rgba(var(--mod), 0.8);
+}
+
+button.socket:not(:disabled):hover {
+  border-color: rgb(var(--mod));
+  background: rgba(var(--mod), 0.16);
+}
+
+.socket__hole {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  background: radial-gradient(circle, rgba(95, 212, 255, 0.25) 2px, transparent 3px);
+}
+
+.socket__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bench.is-building .socket.is-filled,
+.bench.is-building .rig__program {
+  animation: slot-work 0.9s ease-in-out infinite;
+}
+
+/* Current running down the wires while a build is on. */
+.bench.is-building .rig__program::after,
+.bench.is-building .socket::before {
+  background: repeating-linear-gradient(90deg, var(--mint) 0 4px, transparent 4px 8px);
+  background-size: 8px 2px;
+  animation: wire-run 0.4s linear infinite;
+}
+
+@keyframes wire-run {
+  to {
+    background-position: 8px 0;
+  }
+}
+
+.gauge--words {
+  grid-template-columns: 76px minmax(0, 1fr);
+}
+
+.gauge__figures--words {
+  min-width: 0;
+  text-align: left;
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+.gauge--words:not(.is-better) .gauge__figures strong {
+  color: var(--text-dim);
+}
+
+/* What the build will be: figures first, the Build button across the bottom. */
+.wb .bench__result:not(.is-building) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.wb .bench__go {
+  grid-column: 1;
+  grid-row: auto;
+  justify-self: stretch;
+  margin-top: 3px;
+  padding: 8px 18px;
+}
+
+.wb .gauge {
+  grid-template-columns: 58px minmax(40px, 1fr) auto;
+}
+
+.wb .gauge--words {
+  grid-template-columns: 58px minmax(0, 1fr);
+}
+
+/* The parts tray. */
+.part__pick {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.part__text {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.part.is-picked .icontile {
+  box-shadow:
+    inset 0 1px 0 rgba(var(--tone), 0.35),
+    0 0 16px rgba(var(--tone), 0.5);
+}
+
 /* ---- narrow windows, tablet panes and phones ---- */
 
 /* A narrow window stands the board up: three slots across. */
 @container win (max-width: 560px) {
+  /* The Workbench's program list becomes a row that slides sideways above the bench. */
+  .wb {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wb__list {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .wb__list li {
+    flex: none;
+  }
+
+  .wb__prog:not(:disabled):hover {
+    transform: none;
+  }
+
   .board {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-areas:
@@ -1165,6 +1769,30 @@ button.grade:disabled {
 }
 
 @container win (max-width: 430px) {
+  /* The bench stands up: the program on top, its sockets under it. */
+  .rig {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .rig__program,
+  .rig__sockets {
+    grid-column: 1;
+  }
+
+  .rig__program::after {
+    left: 28px;
+    top: 100%;
+    width: 2px;
+    height: 14px;
+    margin-top: 0;
+  }
+
+  .socket::before,
+  .rig--2 .rig__sockets::before {
+    display: none;
+  }
+
   .cards {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1253,6 +1881,12 @@ button.grade:disabled {
 
 @media (prefers-reduced-motion: reduce) {
   .rareshelf::before,
+  .ptile.is-running,
+  .ptile.is-running .icontile::after,
+  .ptile__beat,
+  .runrow__icon,
+  .bench.is-building .rig__program::after,
+  .bench.is-building .socket::before,
   .board__pulse,
   .slot.is-new,
   .slotpanel,

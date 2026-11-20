@@ -18,7 +18,7 @@ import type { ModuleDef, ProgramDef } from '../../../core/content';
 import { formatGameTime, formatMoney, formatSeconds, sizeChange, speedWord } from '../../format';
 import { content } from '../../session';
 import { deskStore } from '../deskStore';
-import { IconTile, Pips, StatBar } from '../Gear';
+import { IconTile, Pips, StatBar, TRAIT_WORDS } from '../Gear';
 import { Icon, PROGRAM_GROUPS, groupOf, kindLabel, moduleIcon, programIcon, type IconName } from '../Icon';
 import type { View } from './serverView';
 import { Price, ShopSign, hoursLeftToday } from './Shop';
@@ -36,15 +36,8 @@ const MODEL_SKILLS: Record<string, string> = {
   watch: 'Watches traces',
 };
 
-/** What a trait does, in the fewest words. */
-const TRAIT_WORDS: Record<string, string> = {
-  quiet: 'Monitors do not notice it',
-  tidy: 'Leaves no line in the log',
-  parallel: 'Does not use up a program slot',
-};
-
 /** What fitting one grade of a module does to a program, in words. */
-function gradeEffect(grade: { speed: number; size: number }): string {
+export function gradeEffect(grade: { speed: number; size: number }): string {
   const parts: string[] = [];
   if (Math.abs(grade.speed - 1) > 0.001) parts.push(speedWord(grade.speed));
   if (Math.abs(grade.size - 1) > 0.001) parts.push(`${Math.round(Math.abs(grade.size - 1) * 100)}% ${grade.size > 1 ? 'bigger' : 'smaller'}`);
