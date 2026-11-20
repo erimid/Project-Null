@@ -45,11 +45,13 @@ function beatDone(state: GameState, beat: StoryBeat): boolean {
 /** Sends a beat's message, posts its contract, and sets its attacker going. */
 function arriveBeat(state: GameState, content: Content, beat: StoryBeat): void {
   if (beat.mail) {
+    // Same {handle} fill that letters sent through sendMail get.
+    const write = (text: string) => text.replace(/\{(\w+)\}/g, (whole, name: string) => (name === 'handle' ? state.player.handle : whole));
     state.messages.push({
       id: `m${state.nextId++}`,
-      from: beat.mail.from,
-      subject: beat.mail.subject,
-      body: beat.mail.body,
+      from: write(beat.mail.from),
+      subject: write(beat.mail.subject),
+      body: write(beat.mail.body),
       timeMs: state.clock.gameTimeMs,
       read: false,
     });

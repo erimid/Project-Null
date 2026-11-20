@@ -113,6 +113,7 @@ const SORTS = [
   { id: 'name', label: 'Name', tip: 'Sort by name, A to Z' },
   { id: 'place', label: 'Place', tip: 'Sort by country, then city' },
   { id: 'kind', label: 'Type', tip: 'Group boards, directories, relays and companies' },
+  { id: 'heat', label: 'Heat', tip: 'Coolest relays first. Press again for the hottest first.' },
 ] as const;
 type SortId = (typeof SORTS)[number]['id'];
 const SORT_KEY = 'project-null.book-sort.v1';
@@ -127,12 +128,13 @@ function savedSort(): SortId {
   }
 }
 
-function sortServers(servers: readonly ServerDef[], sort: SortId): ServerDef[] {
+function sortServers(servers: readonly ServerDef[], sort: SortId, heatOf: (id: string) => number, hottestFirst: boolean): ServerDef[] {
   const name = (a: ServerDef, b: ServerDef) => a.name.localeCompare(b.name);
   const home = (server: ServerDef) => (server.kind === 'gateway' ? 0 : 1);
   return [...servers].sort((a, b) => {
     if (home(a) !== home(b)) return home(a) - home(b);
     if (sort === 'place') return a.country.localeCompare(b.country) || a.city.localeCompare(b.city) || name(a, b);
+    if (sort === 'heat') return (hottestFirst ? heatOf(b.id) - heatOf(a.id) : heatOf(a.id) - heatOf(b.id)) || name(a, b);
     if (sort === 'kind') return KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || name(a, b);
     return name(a, b);
   });
@@ -160,7 +162,11 @@ export function MapWindow() {
   const [notice, setNotice] = useState('');
   const [starredOnly, setStarredOnly] = useState(false);
   const [sort, setSort] = useState<SortId>(savedSort);
+  // Heat sort starts coolest first; pressing Heat again flips it.
+  const [hottestFirst, setHottestFirst] = useState(false);
   const chooseSort = (id: SortId) => {
+    if (id === 'heat' && sort === 'heat') setHottestFirst((on) => !on);
+    else setHottestFirst(false);
     setSort(id);
     try {
       localStorage.setItem(SORT_KEY, id);
@@ -176,9 +182,10 @@ export function MapWindow() {
   const known = game.knownServers.map(byId).filter((server): server is ServerDef => server !== undefined);
   // Starred servers come first. Both groups are in the order the player chose.
   const starred = (id: string) => game.bookmarks.includes(id);
+  const heatOf = (id: string) => relayHeat(game, content, id);
   const listed = [
-    ...sortServers(known.filter((server) => starred(server.id)), sort),
-    ...(starredOnly ? [] : sortServers(known.filter((server) => !starred(server.id)), sort)),
+    ...sortServers(known.filter((server) => starred(server.id)), sort, heatOf, hottestFirst),
+    ...(starredOnly ? [] : sortServers(known.filter((server) => !starred(server.id)), sort, heatOf, hottestFirst)),
   ];
   const selected = desk.selectedServerId ? byId(desk.selectedServerId) : undefined;
   const live = activeConnection(game, desk);
@@ -321,10 +328,11 @@ export function MapWindow() {
                   type="button"
                   class={`map__sort-btn${sort === option.id ? ' is-on' : ''}`}
                   aria-pressed={sort === option.id}
-                  data-tip={option.tip}
+                  data-tip={option.id === 'heat' && sort === 'heat' ? (hottestFirst ? 'Hottest first. Press for coolest first.' : 'Coolest first. Press for hottest first.') : option.tip}
                   onClick={() => chooseSort(option.id)}
                 >
                   {option.label}
+                  {option.id === 'heat' && sort === 'heat' && <span aria-hidden="true"> {hottestFirst ? '▼' : '▲'}</span>}
                 </button>
               ))}
             </div>
@@ -363,6 +371,13 @@ export function MapWindow() {
                     onClick={() => pick(server.id)}
                   >
                     <span class="address__name">{server.name}</span>
+                    {server.id !== gateway.id && heatOf(server.id) >= 0.05 && (
+                      <span
+                        class={`address__heat${heatOf(server.id) >= 1.5 ? ' is-hot' : ''}`}
+                        aria-hidden="true"
+                        style={{ '--heat': Math.min(1, heatOf(server.id) / 2).toFixed(2) }}
+                      />
+                    )}
                     {server.id !== gateway.id && <RelayMarks {...relayMarks(server)} />}
                     <span class="address__tag">
                       {server.id === gateway.id
@@ -454,6 +469,34 @@ export function MapWindow() {
               })()}
               {selected.id !== gateway.id && <RelayNote server={selected} cover={relayCover(game, selected)} {...relayMarks(selected)} target={target} />}
               {selected.id !== gateway.id && (
+                connectedTo ? (
+                  <button type="button" class="btn btn--go map__connect" onClick={() => windows.focus('server')}>
+                    <span class="map__connect-main">Show server</span>
+                    <span class="map__connect-sub data">connected</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    class={`btn btn--go map__connect${!live && game.route.length > 0 ? ' is-ready' : ''}`}
+                    data-tip={
+                      inRoute
+                        ? 'Connect to this server through the other relays in your route. It comes out of the route.'
+                        : 'Connect to this server through the relays in your route'
+                    }
+                    onClick={() => connect(selected)}
+                  >
+                    <span class="map__connect-main">Connect</span>
+                    <span class="map__connect-sub data">
+                      {(() => {
+                        const hops = routeIds.filter((id) => id !== selected.id).length;
+                        const base = hops === 0 ? 'direct' : `${hops} ${hops === 1 ? 'hop' : 'hops'}`;
+                        return tracker && traceTotal > 0 && !live ? `${base} · trace ${seconds(traceTotal)}` : base;
+                      })()}
+                    </span>
+                  </button>
+                )
+              )}
+              {selected.id !== gateway.id && (
                 <div class="map__actions">
                   {canReroute && live ? (
                     <button
@@ -483,24 +526,6 @@ export function MapWindow() {
                       onClick={() => run({ type: 'addHop', serverId: selected.id })}
                     >
                       Add as relay
-                    </button>
-                  )}
-                  {connectedTo ? (
-                    <button type="button" class="btn btn--go" onClick={() => windows.focus('server')}>
-                      Show server
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      class="btn btn--go"
-                      data-tip={
-                        inRoute
-                          ? 'Connect to this server through the other relays in your route. It comes out of the route.'
-                          : 'Connect to this server through the relays in your route'
-                      }
-                      onClick={() => connect(selected)}
-                    >
-                      Connect
                     </button>
                   )}
                 </div>
