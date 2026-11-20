@@ -1725,6 +1725,350 @@ button.socket:not(:disabled):hover {
     0 0 16px rgba(var(--tone), 0.5);
 }
 
+/* ---- Contracts: the board as job cards ---- */
+
+.jobboard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.jobboard > p {
+  margin: 0;
+}
+
+.jobboard__active {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jobboard__active > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.jobboard__active .icon {
+  color: var(--mint);
+}
+
+.jobboard__sortlabel {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.toggle--sort {
+  padding: 2px 12px;
+}
+
+.toggle__dir {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.cards--jobs {
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+}
+
+.jobcard {
+  position: relative;
+  animation: card-in 0.22s ease-out backwards;
+}
+
+.jobcard:nth-child(2) {
+  animation-delay: 0.03s;
+}
+.jobcard:nth-child(3) {
+  animation-delay: 0.06s;
+}
+.jobcard:nth-child(4) {
+  animation-delay: 0.09s;
+}
+.jobcard:nth-child(n + 5) {
+  animation-delay: 0.12s;
+}
+
+.jobcard.is-standing {
+  --tone: 78, 230, 200;
+}
+
+/* A story job: gold edge, a slow glow, and a ribbon of light down its side. */
+.jobcard.is-story {
+  --tone: 255, 196, 92;
+  border-color: rgba(255, 196, 92, 0.55);
+  background:
+    linear-gradient(160deg, rgba(255, 196, 92, 0.13), rgba(255, 196, 92, 0.02) 60%),
+    repeating-linear-gradient(135deg, rgba(255, 196, 92, 0.035) 0 2px, transparent 2px 9px);
+  box-shadow: 0 0 22px rgba(255, 196, 92, 0.12);
+  animation:
+    card-in 0.22s ease-out backwards,
+    story-glow 3.6s ease-in-out 0.3s infinite;
+}
+
+.jobcard.is-story::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: -1px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, transparent, rgb(255, 196, 92), transparent);
+}
+
+.jobcard.is-story .card__title strong {
+  color: #ffe2a8;
+}
+
+@keyframes story-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 16px rgba(255, 196, 92, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(255, 196, 92, 0.26);
+  }
+}
+
+.jobcard__client,
+.jobcard__kind,
+.jobcard__where,
+.jobcard__fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.jobcard__kind,
+.jobcard__where,
+.jobcard__steps {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.jobcard__kind .icon,
+.jobcard__where .icon {
+  color: rgb(var(--tone));
+}
+
+.jobcard__where {
+  align-items: flex-start;
+}
+
+.jobcard__where .icon {
+  margin-top: 2px;
+}
+
+.jobcard__city {
+  color: var(--text-dim);
+}
+
+.jobcard__steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 0;
+}
+
+.jobcard__steps .card__fits-label {
+  margin-right: 8px;
+}
+
+.jobcard__step {
+  display: inline-flex;
+  align-items: center;
+}
+
+.jobcard__then {
+  width: 14px;
+  height: 1px;
+  background: rgba(var(--tone), 0.5);
+}
+
+.jobcard__facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.jobcard__fact.is-warn {
+  color: var(--amber, #ffc46b);
+}
+
+.jobcard__reward {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  min-width: 0;
+}
+
+.jobcard__pay,
+.jobhead__pay {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+/* Risk: five pips that fill and change colour as the target gets harder. */
+.risk {
+  --risk: 78, 230, 200;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.risk--3 {
+  --risk: 255, 196, 107;
+}
+.risk--4 {
+  --risk: 255, 140, 90;
+}
+.risk--5 {
+  --risk: 255, 100, 116;
+}
+
+.risk__label {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.risk__pips {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.risk__pips i {
+  width: 9px;
+  height: 12px;
+  border: 1px solid rgba(var(--risk), 0.35);
+  border-radius: 2px;
+  transform: skewX(-12deg);
+}
+
+.risk__pips i.is-on {
+  border-color: rgb(var(--risk));
+  background: rgb(var(--risk));
+  box-shadow: 0 0 7px rgba(var(--risk), 0.55);
+}
+
+.risk__word {
+  font-weight: 600;
+  color: rgb(var(--risk));
+}
+
+/* ---- the Contract window's header card ---- */
+
+.jobhead {
+  --tone: 95, 212, 255;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid rgba(var(--tone), 0.35);
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(var(--tone), 0.1), rgba(var(--tone), 0.015) 65%);
+}
+
+.jobhead.is-story {
+  --tone: 255, 196, 92;
+  box-shadow: 0 0 22px rgba(255, 196, 92, 0.12);
+}
+
+.jobhead__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.jobhead__main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.jobhead .contract__title {
+  margin: 0;
+}
+
+.jobhead__client,
+.jobhead__kind {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.jobhead__kind {
+  margin-left: 10px;
+  color: rgb(var(--tone));
+}
+
+.jobhead__reward {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.jobhead__target {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(var(--tone), 0.18);
+}
+
+.jobhead__target > .icon {
+  color: rgb(var(--tone));
+}
+
+.jobhead__place {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 140px;
+  line-height: 1.2;
+}
+
+.jobhead__label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.jobhead__place strong {
+  font-size: 16px;
+}
+
+.jobhead__where {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.jobhead__map {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* ---- narrow windows, tablet panes and phones ---- */
 
 /* A narrow window stands the board up: three slots across. */

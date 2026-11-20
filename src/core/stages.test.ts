@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, createGame, currentStage, stageIndex, syncWithContent, tick, type Action } from './index';
+import { applyAction, contractRisk, createGame, currentStage, stageIndex, syncWithContent, tick, type Action } from './index';
 import type { ContractDef } from '../content/schema';
 import { content as baseContent } from './testWorld';
 import type { Content } from './world';
@@ -180,5 +180,40 @@ describe('contracts with stages', () => {
     expect(state.player.balance).toBe(before + 1500);
     // Kept: still on the gateway.
     expect(state.player.files.some((file) => file.name === 'secret.dat')).toBe(true);
+  });
+});
+
+describe('the risk a job card shows', () => {
+  const job = (targetId: string, stages: ContractDef['stages'] = []): ContractDef => ({
+    id: `risk-${targetId}`,
+    title: 'Risk',
+    client: 'Client',
+    targetId,
+    pay: 100,
+    rating: 1,
+    minRating: 0,
+    summary: 's',
+    brief: 'b',
+    objective: { kind: 'steal', file: 'x' },
+    ...(stages.length > 0 ? { stages } : {}),
+  });
+
+  it('is the strongest layer on the target', () => {
+    const { state, content } = harness([]);
+    expect(contractRisk(state, content, job('directory'))).toBe(0);
+    expect(contractRisk(state, content, job('corp'))).toBe(1);
+    expect(contractRisk(state, content, job('vault'))).toBe(3);
+    expect(contractRisk(state, content, job('fort'))).toBe(5);
+  });
+
+  it('takes the worst server of a job with several steps', () => {
+    const { state, content } = harness([]);
+    const staged = job('corp', [{ targetId: 'fort', objective: { kind: 'read', file: 'x' } }]);
+    expect(contractRisk(state, content, staged)).toBe(5);
+  });
+
+  it('ignores a target that is not in the world', () => {
+    const { state, content } = harness([]);
+    expect(contractRisk(state, content, job('nowhere'))).toBe(0);
   });
 });

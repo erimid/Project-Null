@@ -3,12 +3,9 @@ import {
   heldBy,
   holding,
   activeContract,
-  availableContracts,
-  nextContractRating,
   canLogIn,
   isEvidence,
   modelWith,
-  isLyingLow,
   ownedProgram,
   folderOf,
   securityOf,
@@ -24,13 +21,11 @@ import {
   type GameState,
   type TaskTarget,
   REGIONS,
-  isJob,
-  stagesOf,
   regionOf,
   type Region,
 } from '../../../core';
 import { findServer, type ServerDef } from '../../../core/content';
-import { formatGameTime, formatMoney, formatRating } from '../../format';
+import { formatGameTime } from '../../format';
 import { useGame, useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { activeConnection, deskStore, useDesk, type Section } from '../deskStore';
@@ -38,7 +33,7 @@ import { TaskProgress, findTask } from '../TaskProgress';
 import { viewer } from '../viewerStore';
 import { FileName } from '../FileName';
 import { Window } from '../Window';
-import { windows } from '../windowStore';
+import { Contracts } from './ContractsSection';
 import { Hardware } from './HardwareSection';
 import { Market } from './MarketSection';
 import type { View } from './serverView';
@@ -878,77 +873,6 @@ function Directory({ game, connection }: View) {
           </button>
         </div>
       )}
-    </>
-  );
-}
-
-function Contracts({ game, connection, act }: View) {
-  const active = activeContract(game, content);
-  const offers = availableContracts(game, content);
-  const lyingLow = isLyingLow(game);
-  const nextAt = nextContractRating(game, content);
-  return (
-    <>
-      {lyingLow && (
-        <p class="board__warning">
-          No work for you until <span class="data">{formatGameTime(game.player.lieLowUntilMs)}</span>. You were traced. Lie low and let
-          the clock run.
-        </p>
-      )}
-      {active && (
-        <p class="board__note">
-          You are working on <strong>{active.title}</strong>. Deliver it or give it up before taking another.
-        </p>
-      )}
-      {nextAt !== undefined && (
-        <p class="board__note">
-          Your rating is <strong>{formatRating(game.player.rating)}</strong>. The next contract is held back until rating{' '}
-          <strong>{nextAt}</strong>. Standing work raises it.
-        </p>
-      )}
-      {offers.length === 0 && <p class="empty">Nothing on the board right now.</p>}
-      <ul class="rows">
-        {offers.map((contract) => (
-          <li key={contract.id} class="row row--contract">
-            <span class="row__main">
-              <span>
-                <strong>{contract.title}</strong>
-                {isJob(contract) && <span class="row__tag">standing work</span>}
-                {!isJob(contract) && stagesOf(contract).length > 1 && (
-                  <span class="row__tag row__tag--steps" title="A longer job. Each step comes once the one before is done.">
-                    {stagesOf(contract).length} steps
-                  </span>
-                )}
-              </span>
-              <span class="contract__summary">{contract.summary}</span>
-              <span class="row__dim">
-                {contract.client} · target {findServer(content, contract.targetId)?.name}
-                {isJob(contract) && <> · off the board {formatGameTime(contract.expiresMs)}</>}
-              </span>
-            </span>
-            <span class="contract__reward">
-              <span class="data contract__pay">{formatMoney(contract.pay)}</span>
-              {contract.rating > 0 && (
-                <span class="contract__rating" title="What delivering it adds to your rating">
-                  +<span class="data">{contract.rating}</span> rating
-                </span>
-              )}
-            </span>
-            <button
-              type="button"
-              class="btn btn--go"
-              disabled={!!active || lyingLow}
-              title={active ? 'Finish or give up the contract you have first' : lyingLow ? 'The Backroom will not give you work while you lie low' : undefined}
-              data-tip="Take this job. It shows in your Contract window."
-              onClick={() => {
-                if (act({ type: 'acceptContract', connectionId: connection.id, contractId: contract.id })) windows.focus('contract');
-              }}
-            >
-              Accept
-            </button>
-          </li>
-        ))}
-      </ul>
     </>
   );
 }
