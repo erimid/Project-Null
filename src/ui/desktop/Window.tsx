@@ -4,6 +4,8 @@ import { WINDOW_HELP } from './help';
 import { hintStore, useHints } from './hintStore';
 import { useLayout } from './layout';
 import { usePanes } from './panes';
+import { grabOffset, snapMove, snapSize, zoneAt, zoneRect, type Area, type Rect, type Zone } from './snap';
+import { snapping } from './snapStore';
 import { KEEP_VISIBLE, MIN_HEIGHT, MIN_WIDTH, WINDOW_DEFS, windows, useWindows, type WindowId } from './windowStore';
 
 const TITLE_HEIGHT = 40;
@@ -22,18 +24,43 @@ interface Props {
 }
 
 type Drag = { pointerId: number; dx: number; dy: number };
+/** A title-bar drag: also where it started, and the zone being offered. */
+type Move = Drag & { startX: number; startY: number; moved: boolean; zone: Zone | null };
+
+/** How far the pointer has to travel before a press on the title bar counts as a drag. */
+const DRAG_START = 4;
+
+/** Where the other windows on the desk are, for edges to stick to. */
+function otherWindows(self: HTMLElement): Rect[] {
+  const area = self.parentElement;
+  if (!area) return [];
+  return [...area.querySelectorAll<HTMLElement>(':scope > section.window')]
+    .filter((el) => el !== self && !el.hidden)
+    .map((el) => ({ x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight }));
+}
+
+const areaOf = (self: HTMLElement): Area | null => {
+  const area = self.parentElement;
+  return area ? { w: area.clientWidth, h: area.clientHeight } : null;
+};
 
 /**
  * A floating window. Drag it by its title bar; drag its bottom-right
  * corner to resize it (double-click the corner for its usual size);
  * click anywhere on it to bring it to the front. The dash minimizes it
  * to its bottom-bar tab, × closes it.
+ *
+ * With snapping on, its edges stick to the desk's edges and to other
+ * windows; pushing the pointer against a side of the desk fills half of
+ * it, a corner a quarter, the top edge all of it. Double-clicking the
+ * title bar fills the desk, or puts it back. Shift while dragging turns
+ * snapping off for that drag.
  */
 export function Window({ id, title, note, actions, tabs, children }: Props) {
   const layout = useWindows()[id];
   const def = WINDOW_DEFS[id];
   const frame = useRef<HTMLElement>(null);
-  const drag = useRef<Drag | null>(null);
+  const drag = useRef<Move | null>(null);
   const sizing = useRef<Drag | null>(null);
   const layoutKind = useLayout();
   const panes = usePanes();
@@ -112,18 +139,65 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
 
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== 0 || (event.target as HTMLElement).closest('button')) return;
-    drag.current = { pointerId: event.pointerId, dx: event.clientX - x, dy: event.clientY - y };
+    drag.current = {
+      pointerId: event.pointerId,
+      dx: event.clientX - x,
+      dy: event.clientY - y,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
+      zone: null,
+    };
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   };
   const onPointerMove = (event: PointerEvent) => {
     const active = drag.current;
-    if (!active || active.pointerId !== event.pointerId) return;
-    windows.move(id, ...clamp(event.clientX - active.dx, event.clientY - active.dy));
+    const self = frame.current;
+    if (!active || active.pointerId !== event.pointerId || !self) return;
+    if (!active.moved) {
+      if (Math.hypot(event.clientX - active.startX, event.clientY - active.startY) < DRAG_START) return;
+      active.moved = true;
+      // A window filling a zone goes back to its own size as soon as it is pulled away.
+      if (layout.restore) {
+        active.dx = grabOffset(active.dx, width, layout.restore.w ?? def.width);
+        windows.unplace(id, true);
+      }
+    }
+    const rawX = event.clientX - active.dx;
+    const rawY = event.clientY - active.dy;
+    const area = areaOf(self);
+    const box = self.parentElement?.getBoundingClientRect();
+    if (!snapping.isOn() || event.shiftKey || !area || !box) {
+      active.zone = null;
+      snapping.setPreview(null);
+      windows.move(id, ...clamp(rawX, rawY));
+      return;
+    }
+    active.zone = zoneAt(event.clientX - box.left, event.clientY - box.top, area);
+    snapping.setPreview(active.zone ? zoneRect(active.zone, area) : null);
+    if (active.zone) {
+      windows.move(id, ...clamp(rawX, rawY));
+      return;
+    }
+    const w = layout.restore?.w ?? self.offsetWidth;
+    const snapped = snapMove({ x: rawX, y: rawY, w, h: self.offsetHeight }, area, otherWindows(self));
+    windows.move(id, ...clamp(snapped.x, snapped.y));
   };
   const endDrag = (event: PointerEvent) => {
-    if (drag.current?.pointerId !== event.pointerId) return;
+    const active = drag.current;
+    if (active?.pointerId !== event.pointerId) return;
     drag.current = null;
-    windows.settle();
+    snapping.setPreview(null);
+    const area = frame.current && areaOf(frame.current);
+    if (active.zone && area && event.type === 'pointerup') windows.place(id, zoneRect(active.zone, area));
+    else windows.settle();
+  };
+  // Double-click the title bar: fill the desk, or go back to how it was.
+  const onTitleDblClick = (event: MouseEvent) => {
+    if ((event.target as HTMLElement).closest('button')) return;
+    const area = frame.current && areaOf(frame.current);
+    if (layout.restore) windows.unplace(id);
+    else if (area) windows.place(id, zoneRect('full', area));
   };
 
   // The corner grip: dx and dy are how far the pointer is from the window's bottom-right corner.
@@ -140,7 +214,17 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
     if (!active || active.pointerId !== event.pointerId || !box || !area) return;
     const w = Math.min(Math.max(event.clientX + active.dx - box.left, def.minWidth ?? MIN_WIDTH), area.right - box.left);
     const h = Math.min(Math.max(event.clientY + active.dy - box.top, MIN_HEIGHT), area.bottom - box.top);
-    windows.resize(id, Math.round(w), Math.round(h));
+    const self = frame.current!;
+    const desk = areaOf(self);
+    const fit =
+      snapping.isOn() && !event.shiftKey && desk
+        ? snapSize({ x: self.offsetLeft, y: self.offsetTop, w, h }, desk, otherWindows(self))
+        : { w, h };
+    windows.resize(
+      id,
+      Math.round(Math.max(fit.w, def.minWidth ?? MIN_WIDTH)),
+      Math.round(Math.max(fit.h, MIN_HEIGHT)),
+    );
   };
   const endGrip = (event: PointerEvent) => {
     if (sizing.current?.pointerId !== event.pointerId) return;
@@ -151,7 +235,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
   return (
     <section
       ref={frame}
-      class={`window${windows.isOnTop(id) ? ' window--front' : ''}`}
+      class={`window${windows.isOnTop(id) ? ' window--front' : ''}${layout.restore ? ' window--placed' : ''}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -171,6 +255,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
+        onDblClick={onTitleDblClick}
       >
         <span class="window__title-text">{name}</span>
         {note && <span class="window__title-note">{note}</span>}

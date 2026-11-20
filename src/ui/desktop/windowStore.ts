@@ -71,12 +71,26 @@ export interface WindowLayout {
   /** Size the player dragged it to. Null = the window's usual width, or as tall as its contents. */
   readonly w: number | null;
   readonly h: number | null;
+  /**
+   * Set while it fills a snap zone (half, quarter or the whole desk): where
+   * it was and how big, so double-clicking the title or dragging it away
+   * puts it back. Null when it is just where it was left.
+   */
+  readonly restore: SavedPlace | null;
+}
+
+export interface SavedPlace {
+  readonly x: number;
+  readonly y: number;
+  readonly w: number | null;
+  readonly h: number | null;
 }
 
 type Layouts = Readonly<Record<WindowId, WindowLayout>>;
 
 // Bumped whenever the default layout changes, so everyone gets the new one once.
 const STORAGE_KEY = 'project-null.windows.v10';
+// (v10 layouts load as they are: `restore` is new and simply starts empty.)
 
 /**
  * On a screen narrower than the usual desk (a tablet held wide, a small
@@ -103,7 +117,7 @@ function defaults(): Layouts {
     const x = def.x >= 0 ? def.x : Math.max(EDGE, window.innerWidth + def.x - width);
     const y = id === 'gateway' ? TOP + mapHeight + GAP : def.y;
     const h = id === 'map' ? mapHeight : (def.height ?? null);
-    return [id, { x, y, open: def.open, z: index + 1, minimized: false, w: fitted[id] ?? null, h }] as const;
+    return [id, { x, y, open: def.open, z: index + 1, minimized: false, w: fitted[id] ?? null, h, restore: null }] as const;
   });
   return Object.fromEntries(entries) as Layouts;
 }
@@ -111,6 +125,14 @@ function defaults(): Layouts {
 /** The height a window goes back to when its corner is double-clicked. */
 const usualWidth = (id: WindowId): number | null => defaults()[id].w;
 const usualHeight = (id: WindowId): number | null => defaults()[id].h;
+
+function savedPlace(value: unknown): SavedPlace | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const { x, y, w, h } = value as Partial<Record<keyof SavedPlace, unknown>>;
+  if (typeof x !== 'number' || !Number.isFinite(x) || typeof y !== 'number' || !Number.isFinite(y)) return null;
+  const size = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null);
+  return { x, y, w: size(w), h: size(h) };
+}
 
 function load(): Layouts {
   const layouts: Record<WindowId, WindowLayout> = { ...defaults() };
@@ -135,6 +157,7 @@ function load(): Layouts {
           minimized: entry.minimized === true,
           w: size(entry.w),
           h: size(entry.h),
+          restore: savedPlace(entry.restore),
         };
       }
     }
@@ -190,11 +213,27 @@ export const windows = {
   },
   /** While dragging the corner. Call `settle` when the drag ends. */
   resize(id: WindowId, w: number, h: number): void {
-    set(patch(id, { w, h }), false);
+    set(patch(id, { w, h, restore: null }), false);
   },
   /** Back to its usual size. */
   resetSize(id: WindowId): void {
-    set(patch(id, { w: usualWidth(id), h: usualHeight(id) }), true);
+    set(patch(id, { w: usualWidth(id), h: usualHeight(id), restore: null }), true);
+  },
+  /** Fills a snap zone, remembering where it was so it can go back. */
+  place(id: WindowId, rect: { x: number; y: number; w: number; h: number }): void {
+    const layout = layouts[id];
+    const restore = layout.restore ?? { x: layout.x, y: layout.y, w: layout.w, h: layout.h };
+    set(patch(id, { x: rect.x, y: rect.y, w: rect.w, h: rect.h, restore }), true);
+  },
+  /**
+   * Leaves the zone it fills: back to the size it had before. Moves it back
+   * too unless it is being dragged, in which case the drag decides where.
+   */
+  unplace(id: WindowId, keepPosition = false): void {
+    const restore = layouts[id].restore;
+    if (!restore) return;
+    const where = keepPosition ? {} : { x: restore.x, y: restore.y };
+    set(patch(id, { ...where, w: restore.w, h: restore.h, restore: null }), !keepPosition);
   },
   /** While dragging. Call `settle` when the drag ends. */
   move(id: WindowId, x: number, y: number): void {

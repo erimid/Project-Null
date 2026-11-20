@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { sound, useSound } from '../audio';
 import { useGame } from '../hooks';
 import { hintStore, useHints } from './hintStore';
+import { useLayout } from './layout';
+import { snapping, useSnapping } from './snapStore';
 import { windows } from './windowStore';
 
 const SHORTCUTS: readonly (readonly [string, string])[] = [
   ['Space', 'Pause or resume'],
   ['1  2  3', 'Speed 1×, 2×, 4×'],
   ['Shift + Esc', 'Drop every connection'],
+  ['Double-click title', 'Fill the screen, or put it back'],
 ];
 
 /** The game menu: opens from the player's handle at the left of the bottom bar. */
@@ -16,6 +19,8 @@ export function GameMenu() {
   const [open, setOpen] = useState(false);
   const soundSettings = useSound();
   const hints = useHints();
+  const snap = useSnapping();
+  const desk = useLayout() === 'desk';
   const root = useRef<HTMLDivElement>(null);
 
   // Clicking anywhere else, or Esc, closes it.
@@ -87,6 +92,22 @@ export function GameMenu() {
             </button>
             <span class="menu__item-note">Labels on hover, and a help card the first time each window opens</span>
           </div>
+          {desk && (
+            <>
+              <h3 class="menu__heading">Window snapping</h3>
+              <div class="menu__sound">
+                <button
+                  type="button"
+                  class={`btn${snap.on ? ' btn--go' : ''}`}
+                  aria-pressed={snap.on}
+                  onClick={() => snapping.setOn(!snap.on)}
+                >
+                  {snap.on ? 'On' : 'Off'}
+                </button>
+                <span class="menu__item-note">Edges stick together. Drag to a side for half the screen, a corner for a quarter. Hold Shift to drag freely.</span>
+              </div>
+            </>
+          )}
           <h3 class="menu__heading">Sound</h3>
           <div class="menu__sound">
             <button
