@@ -101,7 +101,8 @@ export type { HardwareDef, HardwareSlot } from './hardware';
 export type { SkillBranch, SkillDef, SkillEffect } from './skills';
 export type { ModuleDef, ModuleGrade, ModuleTrait } from './modules';
 export type { RivalDef, RivalStyle } from './rivals';
-export type { StoryBeat, StoryDef, StoryMail } from './story';
+export type { StoryBeat, StoryDef, StoryLapse, StoryLine, StoryMail } from './story';
+export { MAIN_LINE, beatFlag, linesOf, storyOf } from './story';
 export type { CompanyPools } from './companies';
 export type { NewsDef, NewsEventDef, NewsTemplate } from './news';
 export type { Favour, PatronDef } from './patrons';
@@ -133,13 +134,13 @@ export const story = parseStory(storyJson);
 checkParts(modules, servers, contracts, programs, companies.sectors);
 checkPeople(people, servers, tuning.phishMaxDetails);
 checkRivals(rivals, servers);
-checkStory(story, servers, contracts, rivals);
 export const news = parseNews(newsJson);
 export const patrons = parsePatrons(patronsJson);
 export const ladder = parseLadder(ladderJson, rivals);
 export const data = parseData(dataJson);
 export const assets = parseAssets(assetsJson, servers.map((server) => server.id));
 checkPatrons(patrons, servers, companies.sectors.map((sector) => sector.id), contracts);
+checkStory(story, servers, contracts, rivals, patrons.map((patron) => patron.id));
 checkNews(news, story.beats.map((beat) => beat.id), companies.sectors.map((sector) => sector.id));
 
 /**

@@ -25,7 +25,7 @@ import { createGame, isConnected, MAX_HOPS, type Connection, type Fitted, type G
 import { checkTask, freeStorageGb, layerSeconds, MAX_LEVEL_GAP, ringAngle, ringTolerance } from './tasks';
 import { intruding, relayHeat, relayWorth, totalTraceMs } from './trace';
 import { raidPortAngle } from './raid';
-import { storyComplete } from './story';
+import { beatsSeen, storyComplete } from './story';
 import { goalMet, readFlag, stagesOf, stageView } from './stages';
 import { fileDef, findProgram, findServer, installedOfKind, linkOf, ownedProgram, securityOf, syncWithContent, type Content } from './world';
 import { FIELD_KINDS, loadedPrograms, memoryGb } from './loadout';
@@ -379,10 +379,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
 
   /** Notes each story beat as it arrives. */
   const follow = (): void => {
-    const seen = state.story.beat + (state.story.arrived ? 1 : 0);
-    while (storyLines.length < seen) {
-      const beat = content.story.beats[storyLines.length];
-      storyLines.push({ id: beat?.id ?? '?', atMinutes: minutes(), rating: state.player.rating });
+    for (const id of beatsSeen(state, content)) {
+      if (!storyLines.some((line) => line.id === id)) storyLines.push({ id, atMinutes: minutes(), rating: state.player.rating });
     }
     if (state.player.balance > richest.balance) richest = { balance: state.player.balance, atMinutes: minutes() };
   };

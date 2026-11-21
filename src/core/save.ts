@@ -202,6 +202,18 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
       above: [],
     },
   }),
+  // 27 -> 28: the story runs on lines. Acts 1 and 2 are the line "main", which carries on exactly where the save was.
+  // The flags for beats already passed are filled in on load (see syncWithContent), since only the content knows their ids.
+  27: (old) => {
+    const story = (old.story ?? {}) as { beat?: number; arrived?: boolean; lastMs?: number; offered?: unknown };
+    return {
+      ...old,
+      story: {
+        lines: { main: { beat: story.beat ?? 0, arrived: story.arrived ?? false, lastMs: story.lastMs ?? 0 } },
+        offered: Array.isArray(story.offered) ? story.offered : [],
+      },
+    };
+  },
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -460,7 +472,12 @@ function checkState(raw: Obj): GameState {
     throw damaged;
   }
   const story = raw.story;
-  if (!isObj(story) || !isNum(story.beat) || typeof story.arrived !== 'boolean' || !isNum(story.lastMs) || !isList(story.offered, isText)) {
+  if (
+    !isObj(story) ||
+    !isObj(story.lines) ||
+    !Object.values(story.lines).every((line) => isObj(line) && isNum(line.beat) && typeof line.arrived === 'boolean' && isNum(line.lastMs) && (line.lapsed === undefined || typeof line.lapsed === 'boolean')) ||
+    !isList(story.offered, isText)
+  ) {
     throw damaged;
   }
   if (!isList(raw.flags, isText)) throw damaged;

@@ -21,6 +21,7 @@ import type { DataMarketDef } from '../content/data';
 import type { AssetDef } from '../content/assets';
 import { twistOn } from './legend';
 import { backfillChoices } from './patrons';
+import { backfillStoryFlags } from './story';
 import { builtProgram } from './builds';
 import { autoPack, dropFromMemory, loadedOfKind, memoryGb, needsMemory, trimLoadout } from './loadout';
 import type { Connection, GameState, ServerState } from './state';
@@ -487,6 +488,7 @@ export function syncWithContent(state: GameState, content: Content): GameState {
 
   // Choices made before they were recorded: worked out once from what is on the gateway.
   once(state, 'choices-recorded', () => backfillChoices(state, content));
+  backfillStoryFlags(state, content);
 
   once(state, 'welcome', () => sendMail(state, content, 'welcome'));
   noteProgress(state, content);

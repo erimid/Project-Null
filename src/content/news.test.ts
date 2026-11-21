@@ -141,8 +141,8 @@ describe('the daily news', () => {
 
   it('echoes a story beat once it has passed', () => {
     const state = newGame();
-    const index = story.beats.findIndex((beat) => beat.id === news.story[0]!.after);
-    state.story.beat = index + 1;
+    expect(story.beats.some((beat) => beat.id === news.story[0]!.after)).toBe(true);
+    state.flags.push(`story:${news.story[0]!.after}`);
     nextMorning(state);
     expect(latestEdition(state)!.items.some((item) => item.kind === 'story' && item.headline === news.story[0]!.headline)).toBe(true);
     nextMorning(state);

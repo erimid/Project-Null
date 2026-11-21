@@ -17,12 +17,13 @@
  * so the story can decide who helps by what the player has done. The
  * board also posts its own heists, one at most, from the upper tiers.
  */
-import type { ConditionDef, ContractDef, HoldLayer } from '../content/schema';
+import type { ContractDef, HoldLayer } from '../content/schema';
 import { MAX_LAYER_LEVEL } from '../content/schema';
 import { fill } from './generate';
 import { touchedServers, tierForRating } from './jobs';
 import { editionDay } from './news';
-import { DEFAULT_CHOICE, noteFailure, standingWith } from './patrons';
+import { conditionMet } from './conditions';
+import { noteFailure } from './patrons';
 import { maxConnections } from './hardware';
 import { stream } from './streams';
 import type { ActiveHeist, GameState, Job } from './state';
@@ -42,16 +43,7 @@ export const HEIST_HOURS = 48;
 /** Servers a board heist asks the player to hold. */
 export const BOARD_HOLDS: readonly HoldLayer[] = ['firewall', 'monitor'];
 
-/** True if every part of a condition holds. No condition holds always. */
-export function conditionMet(state: GameState, condition: ConditionDef | undefined): boolean {
-  if (!condition) return true;
-  if (condition.flags?.some((flag) => !state.flags.includes(flag))) return false;
-  if (condition.notFlags?.some((flag) => state.flags.includes(flag))) return false;
-  if (Object.entries(condition.standing ?? {}).some(([id, least]) => standingWith(state, id) < least)) return false;
-  if (Object.entries(condition.below ?? {}).some(([id, most]) => standingWith(state, id) > most)) return false;
-  if (Object.entries(condition.choices ?? {}).some(([id, choice]) => (state.patrons.choices[id] ?? (state.contracts.completed.includes(id) ? DEFAULT_CHOICE : undefined)) !== choice)) return false;
-  return true;
-}
+export { conditionMet };
 
 /** How the heist would stand if taken now: who holds what. Allies are decided here, once. */
 export function planHeist(state: GameState, contract: ContractDef): ActiveHeist | undefined {
