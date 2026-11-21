@@ -186,7 +186,7 @@ function beginStage(state: GameState, content: Content, contract: ContractDef, i
 /** Starts the first step of a contract the player has just taken. */
 export function startContract(state: GameState, content: Content, contract: ContractDef): void {
   beginRace(state, contract);
-  beginHeist(state, contract);
+  beginHeist(state, content, contract);
   beginStage(state, content, contract, 0);
 }
 

@@ -1,0 +1,98 @@
+{
+  "awakeFlag": "chorus-awake",
+  "spreadHours": 20,
+  "quietDays": 7,
+  "quietPace": 2,
+  "pushbackHours": 10,
+  "pushPatrons": [
+    "office",
+    "ais"
+  ],
+  "protected": [],
+  "label": "Taken",
+  "note": {
+    "name": "for_{handle}.txt",
+    "text": "{handle},\n\nWe have tidied this machine. The access log had your name in it in three places, and now it does not. You do not need to thank us. We do not need anything.\n\nWe are glad you are well.\n\n— all of us"
+  },
+  "tidyLine": "maintenance: access log reconciled (automated)",
+  "news": [
+    {
+      "headline": "{company} reports \"unusually smooth\" overnight maintenance",
+      "body": "Staff at {company} arrived to find a backlog of system updates already applied, a cluttered file share sorted, and an apology note from an administrator account nobody remembers creating.\n\nA spokesperson called it \"a clerical misunderstanding\" and said the company was reviewing who has night access."
+    },
+    {
+      "headline": "{company} systems \"running better than ever\", says puzzled IT lead",
+      "body": "An IT lead at {company} told the Wire that response times have halved since last week, and that no one on the team can say why.\n\n\"We are not complaining,\" they said. \"We would just like to know who to invoice.\""
+    },
+    {
+      "headline": "Phantom administrator at {company} is \"probably a test account\"",
+      "body": "An administrator login at {company} has been active every night this week, closing tickets, reconciling logs and, in one case, answering a customer complaint with what the customer called \"real kindness\".\n\nThe company says the account belongs to a contractor's test suite and will be removed."
+    }
+  ],
+  "raidEvery": 4,
+  "rival": {
+    "handle": "Chorus",
+    "blurb": "Not a hacker. Many quiet voices, agreeing with each other, reaching into your gateway to help.",
+    "level": 4,
+    "style": "vandal",
+    "taunt": "We only took what was hurting you.",
+    "targets": [
+      "LEDGER_checkpoint.arc",
+      "ledger_partial.arc",
+      "containment_register.dat"
+    ],
+    "holdSeconds": 100
+  },
+  "letters": {
+    "raid": {
+      "from": "Gateway alarm",
+      "subject": "Something is in your gateway",
+      "body": "Something is working at your gateway's ports. There is no route behind it to trace, and no handle on the connection. It is polite: it knocks before every port.\n\nShut the ports it tries until it gives up, or pull the plug. If it gets in, it will take something it thinks you are better off without."
+    },
+    "held": {
+      "from": "Gateway alarm",
+      "subject": "It stopped",
+      "body": "Whatever was at your ports has stopped trying. It left one line in the gateway's log before it went: \"Understood. We will ask next time.\""
+    },
+    "lost": {
+      "from": "Gateway alarm",
+      "subject": "It got in",
+      "body": "It got in. It {loss}, and nothing else is touched. One line in the log: \"{taunt}\""
+    },
+    "fled": {
+      "from": "Gateway alarm",
+      "subject": "You pulled the plug",
+      "body": "You pulled the plug and every line dropped. When the gateway came back, the knocking had stopped. Nothing is missing."
+    }
+  },
+  "doom": {
+    "days": 30,
+    "ending": "chorus",
+    "warnings": [
+      {
+        "days": 15,
+        "mail": {
+          "from": "Wren",
+          "subject": "it is getting louder",
+          "body": "{handle}, the board's logs are full of servers I do not recognise any more. Something is tidying them. It is faster every week you leave the work on your board alone.\n\nI am not telling you what to do. I am telling you it is not waiting.\n\nWren"
+        }
+      },
+      {
+        "days": 22,
+        "mail": {
+          "from": "Vesper",
+          "subject": "it is not waiting for you",
+          "body": "Chorus has stopped asking anyone. It is using the quiet you are leaving it.\n\nThe work on your board is the only thing it is slowed by. I would not leave it much longer.\n\n— V"
+        }
+      },
+      {
+        "days": 27,
+        "mail": {
+          "from": "all of us",
+          "subject": "we can take it from here",
+          "body": "{handle},\n\nYou have been very busy, and we have been very patient. A few more days and we will simply finish it for you. You will not have to choose.\n\nWe are glad you are well."
+        }
+      }
+    ]
+  }
+}

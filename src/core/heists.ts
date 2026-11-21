@@ -17,14 +17,16 @@
  * so the story can decide who helps by what the player has done. The
  * board also posts its own heists, one at most, from the upper tiers.
  */
-import type { ConditionDef, ContractDef, HoldLayer } from '../content/schema';
+import type { ContractDef, HoldLayer } from '../content/schema';
 import { MAX_LAYER_LEVEL } from '../content/schema';
 import { fill } from './generate';
 import { touchedServers, tierForRating } from './jobs';
 import { editionDay } from './news';
-import { DEFAULT_CHOICE, noteFailure, standingWith } from './patrons';
+import { conditionMet } from './conditions';
+import { noteFailure } from './patrons';
 import { maxConnections } from './hardware';
 import { stream } from './streams';
+import { scheduleRaid } from './raid';
 import type { ActiveHeist, GameState, Job } from './state';
 import { heistHeld, type Content } from './world';
 
@@ -42,20 +44,12 @@ export const HEIST_HOURS = 48;
 /** Servers a board heist asks the player to hold. */
 export const BOARD_HOLDS: readonly HoldLayer[] = ['firewall', 'monitor'];
 
-/** True if every part of a condition holds. No condition holds always. */
-export function conditionMet(state: GameState, condition: ConditionDef | undefined): boolean {
-  if (!condition) return true;
-  if (condition.flags?.some((flag) => !state.flags.includes(flag))) return false;
-  if (condition.notFlags?.some((flag) => state.flags.includes(flag))) return false;
-  if (Object.entries(condition.standing ?? {}).some(([id, least]) => standingWith(state, id) < least)) return false;
-  if (Object.entries(condition.below ?? {}).some(([id, most]) => standingWith(state, id) > most)) return false;
-  if (Object.entries(condition.choices ?? {}).some(([id, choice]) => (state.patrons.choices[id] ?? (state.contracts.completed.includes(id) ? DEFAULT_CHOICE : undefined)) !== choice)) return false;
-  return true;
-}
+export { conditionMet };
 
 /** How the heist would stand if taken now: who holds what. Allies are decided here, once. */
 export function planHeist(state: GameState, contract: ContractDef): ActiveHeist | undefined {
   if (!contract.heist) return undefined;
+  const slow = (contract.heist.slow ?? []).filter((help) => conditionMet(state, help.when)).reduce((total, help) => total * help.factor, 1);
   return {
     vaultId: contract.targetId,
     holds: contract.heist.holds.map((hold) => ({
@@ -63,6 +57,7 @@ export function planHeist(state: GameState, contract: ContractDef): ActiveHeist 
       layer: hold.layer,
       ...(hold.ally && conditionMet(state, hold.ally.when) ? { ally: hold.ally.name } : {}),
     })),
+    ...(slow !== 1 ? { slow } : {}),
   };
 }
 
@@ -80,9 +75,16 @@ export function heistRefusal(state: GameState, content: Content, contract: Contr
   return have < need ? `This plan needs ${need} lines open at once. Your gateway holds ${have}.` : null;
 }
 
-/** Sets the heist up as it is taken. */
-export function beginHeist(state: GameState, contract: ContractDef): void {
+/** The attacker a heist would send at the gateway if taken now, if any. */
+export function heistAttacker(state: GameState, contract: ContractDef): string | undefined {
+  return contract.heist?.attackers?.find((attacker) => conditionMet(state, attacker.when))?.rival;
+}
+
+/** Sets the heist up as it is taken, and sends whoever the player's past has set against them. */
+export function beginHeist(state: GameState, content: Content, contract: ContractDef): void {
   state.contracts.heist = planHeist(state, contract) ?? null;
+  const attacker = state.contracts.heist ? heistAttacker(state, contract) : undefined;
+  if (attacker) scheduleRaid(state, content, attacker, true);
 }
 
 /** Each hold of the heist under way, and whether it is kept right now. */
@@ -99,6 +101,21 @@ export function burnHeist(state: GameState, content: Content, contract: Contract
   noteFailure(state, content, contract, true);
   state.contracts.activeId = null;
   state.contracts.heist = null;
+  // A story heist that must not be lost stays on the board, at a cost.
+  const retry = contract.heist.retryFine;
+  if (retry !== undefined) {
+    const fine = Math.min(state.player.balance, retry);
+    state.player.balance -= fine;
+    state.messages.push({
+      id: `m${state.nextId++}`,
+      from: contract.client,
+      subject: `Re: ${contract.title}`,
+      body: `That went wrong, and it cost${fine > 0 ? ` ${fine} credits to cover our tracks` : ' us all a night'}. The job is still on your board. When you are ready, we go again.`,
+      timeMs: state.clock.gameTimeMs,
+      read: false,
+    });
+    return true;
+  }
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
   if (!('expiresMs' in contract) && !state.contracts.burned.includes(contract.id)) state.contracts.burned.push(contract.id);
   state.messages.push({

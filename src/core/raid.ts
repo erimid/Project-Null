@@ -11,6 +11,9 @@
  * can send one straight away, even mid-connection.
  */
 import type { RivalDef } from '../content/rivals';
+import { CHORUS_ID } from '../content/chorus';
+import type { StoryMail } from '../content/story';
+import { fill } from './generate';
 import { scheduleReview } from './forensics';
 import { stream } from './streams';
 import { gatewayOf, findServer, sendMail, type Content } from './world';
@@ -23,9 +26,30 @@ import { wanted } from './wanted';
 import { totalTraceMs, traceReport } from './trace';
 import type { GameState, RaidPort, RaidState, TraceState } from './state';
 
-/** The rival hacker behind an attack, by id. */
+/** The rival hacker behind an attack, by id. Chorus (CHORUS_ID) stands in as a rival with no home and no route. */
 export function findRival(content: Content, id: string): RivalDef | undefined {
+  if (id === CHORUS_ID && content.chorus) {
+    const c = content.chorus.rival;
+    return { id: CHORUS_ID, handle: c.handle, blurb: c.blurb, homeId: '', relays: [], level: c.level, minRating: 0, style: c.style, taunt: c.taunt };
+  }
   return content.rivals.find((rival) => rival.id === id);
+}
+
+/** True for an attack with nobody behind it to trace: Chorus. It is held off or unplugged, never traced. */
+export function untraceable(raid: { readonly attackerId: string }): boolean {
+  return raid.attackerId === CHORUS_ID;
+}
+
+/** Game ms the player must hold Chorus off for before it gives up, or undefined for an ordinary attack. */
+export function holdOffMs(state: GameState, content: Content): number | undefined {
+  const raid = state.raid;
+  if (!raid || !untraceable(raid) || !content.chorus) return undefined;
+  return Math.max(0, content.chorus.rival.holdSeconds * 1000 - (raid.ranMs ?? 0));
+}
+
+function chorusLetter(state: GameState, mail: StoryMail, values: Record<string, string> = {}): void {
+  const all: Record<string, string> = { handle: state.player.handle, ...values };
+  state.messages.push({ id: `m${state.nextId++}`, from: fill(mail.from, all), subject: fill(mail.subject, all), body: fill(mail.body, all), timeMs: state.clock.gameTimeMs, read: false });
 }
 
 /** The rival behind the attack under way, if any. */
@@ -86,7 +110,8 @@ export function beginRaid(state: GameState, content: Content, attackerId: string
     story,
   };
   state.raidPending = null;
-  sendMail(state, content, 'raid', { who: rival.handle, style: styleLine(rival) });
+  if (attackerId === CHORUS_ID && content.chorus) chorusLetter(state, content.chorus.letters.raid);
+  else sendMail(state, content, 'raid', { who: rival.handle, style: styleLine(rival) });
   return true;
 }
 
@@ -115,7 +140,7 @@ export function maybeScheduleRaid(state: GameState, content: Content, pay: numbe
   const bounty = wanted(state).raids;
   if (!rng.chance(Math.min(1, rules.raidChance * bounty))) return;
   // A raider whose address was sold, or who has a truce with the player, stays away.
-  const able = content.rivals.filter((rival) => rival.minRating <= state.player.rating && !outOfRaids(state, rival.id));
+  const able = content.rivals.filter((rival) => !rival.storyOnly && rival.minRating <= state.player.rating && !outOfRaids(state, rival.id));
   if (able.length === 0) return;
   const rival = rng.pick(able);
   state.raidPending = { attackerId: rival.id, story: false };
@@ -147,7 +172,13 @@ export function advanceRaid(state: GameState, content: Content, simMs: number): 
     if (raid.traceBack.elapsedMs >= totalTraceMs(raid.traceBack)) return winRaid(state, content);
   }
   raid.breachMs += simMs;
-  if (raid.breachMs >= raid.breachTotalMs) loseRaid(state, content);
+  if (raid.breachMs >= raid.breachTotalMs) return loseRaid(state, content);
+  if (untraceable(raid)) raid.ranMs = (raid.ranMs ?? 0) + simMs;
+  // Nobody behind it to trace: kept out long enough, it gives up.
+  if (holdOffMs(state, content) === 0) {
+    state.raid = null;
+    if (content.chorus) chorusLetter(state, content.chorus.letters.held);
+  }
 }
 
 /** Which barrier the intruder is on now, 0-based. */
@@ -224,7 +255,7 @@ export function startRaidTrace(state: GameState, content: Content): string | nul
   if (!raid || raid.result !== 'open') return 'There is no attack to trace.';
   if (raid.traceBack) return 'You are already tracing them.';
   const rival = findRival(content, raid.attackerId);
-  if (!rival) return 'There is nobody to trace.';
+  if (!rival || untraceable(raid)) return 'There is nobody at the other end to trace.';
   raid.traceBack = counterTrace(content, rival);
   return null;
 }
@@ -249,7 +280,8 @@ export function pullPlug(state: GameState, content: Content): string | null {
   state.connections = [];
   state.tasks = [];
   state.raid = null;
-  sendMail(state, content, 'raidFled', { who: rival?.handle ?? 'The intruder' });
+  if (untraceable(raid) && content.chorus) chorusLetter(state, content.chorus.letters.fled);
+  else sendMail(state, content, 'raidFled', { who: rival?.handle ?? 'The intruder' });
   return null;
 }
 
@@ -289,7 +321,14 @@ function loseRaid(state: GameState, content: Content): void {
   }
   const locked = new Set(raid.locked);
   let loss = '';
-  if (rival.style === 'vandal') {
+  // Chorus goes first for what it thinks the player is better off without.
+  // Once it is awake, so does anyone else who comes: what the player is holding is what everyone wants.
+  const awake = content.chorus !== undefined && state.flags.includes(content.chorus.awakeFlag);
+  const target = untraceable(raid) || awake ? state.player.files.find((item) => !locked.has(item.name) && content.chorus!.rival.targets.includes(item.name)) : undefined;
+  if (target) {
+    state.player.files = state.player.files.filter((item) => item !== target);
+    loss = `took ${target.name} from your gateway`;
+  } else if (rival.style === 'vandal') {
     const file = state.player.files.find((item) => !locked.has(item.name));
     const program = state.player.programs.find((id) => !locked.has(id) && !content.startingPrograms.includes(id));
     if (file) {
@@ -309,7 +348,8 @@ function loseRaid(state: GameState, content: Content): void {
     loss = takeCredits(state, content) ? 'drained credits from your account' : 'found nothing worth taking';
   }
   state.raid = null;
-  sendMail(state, content, 'raidLost', { who: rival.handle, loss, taunt: rival.taunt });
+  if (untraceable(raid) && content.chorus) chorusLetter(state, content.chorus.letters.lost, { loss, taunt: rival.taunt });
+  else sendMail(state, content, 'raidLost', { who: rival.handle, loss, taunt: rival.taunt });
 }
 
 /** Thief's loss: a slice of the balance. Returns false if there was nothing to take. */

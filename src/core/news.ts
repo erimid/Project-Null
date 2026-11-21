@@ -19,6 +19,8 @@ import { postNewsJob } from './jobs';
 import { fill } from './generate';
 import { stagesOf } from './stages';
 import type { GameState, NewsItem } from './state';
+import { beatPassed } from './story';
+import { endingPaper } from './endings';
 import { stream } from './streams';
 import { findServer, once, sendMail, type Content } from './world';
 
@@ -201,14 +203,16 @@ export function printEditions(state: GameState, content: Content): void {
   state.news.pending = [];
 
   // Story items follow their beat once it has passed.
-  const beats = content.story.beats;
   for (const story of news.story) {
-    const index = beats.findIndex((beat) => beat.id === story.after);
     const flag = `news:${story.after}`;
-    if (index < 0 || state.story.beat <= index || state.flags.includes(flag)) continue;
+    if (!beatPassed(state, story.after) || state.flags.includes(flag)) continue;
     state.flags.push(flag);
     items.push({ id: `n${state.nextId++}`, kind: 'story', headline: story.headline, body: story.body });
   }
+
+  // After the ending, the world has moved on, and the paper says so.
+  const after = endingPaper(state, content, rng);
+  if (after) items.push(after);
 
   const used = new Set(items.flatMap((entry) => (entry.serverId ? [entry.serverId] : [])));
   for (let i = 0; i < EVENTS_PER_EDITION; i++) {

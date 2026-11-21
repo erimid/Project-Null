@@ -25,6 +25,11 @@
   color: #ffc45c;
 }
 
+.address__mark--taken {
+  border-color: rgba(196, 139, 255, 0.55);
+  color: #c48bff;
+}
+
 .map__mark {
   margin: 8px 0 4px;
   padding: 6px 10px;

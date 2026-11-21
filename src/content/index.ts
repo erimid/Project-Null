@@ -40,7 +40,15 @@ import stillPoint from './servers/still-point.json';
 import daylightBoard from './servers/daylight-board.json';
 import ostranderAnnex from './servers/ostrander-annex.json';
 import continuityOffice from './servers/continuity-office.json';
+import halvorsenCore from './servers/halvorsen-core.json';
 import wickNode from './servers/wick-node.json';
+import officeDirector from './servers/office-director.json';
+import takenGrid from './servers/taken-grid.json';
+import takenRelay from './servers/taken-relay.json';
+import orreryMinistry from './servers/orrery-ministry.json';
+import orreryVault from './servers/orrery-vault.json';
+import wrenRelay from './servers/wren-relay.json';
+import wrenDesk from './servers/wren-desk.json';
 import harbourRelay from './servers/harbour-relay.json';
 import assetsJson from './assets.json';
 import { parseAssets } from './assets';
@@ -59,6 +67,10 @@ import { checkParts, parseModules } from './modules';
 import rivalsJson from './rivals.json';
 import { checkRivals, parseRivals } from './rivals';
 import storyJson from './story.json';
+import chorusJson from './chorus.json';
+import endingsJson from './endings.json';
+import { checkEndings, parseEndings } from './endings';
+import { checkChorus, parseChorus } from './chorus';
 import newsJson from './news.json';
 import patronsJson from './patrons.json';
 import ladderJson from './ladder.json';
@@ -101,7 +113,12 @@ export type { HardwareDef, HardwareSlot } from './hardware';
 export type { SkillBranch, SkillDef, SkillEffect } from './skills';
 export type { ModuleDef, ModuleGrade, ModuleTrait } from './modules';
 export type { RivalDef, RivalStyle } from './rivals';
-export type { StoryBeat, StoryDef, StoryMail } from './story';
+export type { StoryBeat, StoryDef, StoryLapse, StoryLine, StoryMail } from './story';
+export { MAIN_LINE, beatFlag, linesOf, storyOf } from './story';
+export type { ChorusDef } from './chorus';
+export type { EndingDef } from './endings';
+export { endingFlag } from './endings';
+export { CHORUS_ID } from './chorus';
 export type { CompanyPools } from './companies';
 export type { NewsDef, NewsEventDef, NewsTemplate } from './news';
 export type { Favour, PatronDef } from './patrons';
@@ -115,7 +132,7 @@ export const gameInfo = parseGameInfo(gameJson);
 export const sites = parseSites(sitesJson);
 export const tuning = parseTuning(tuningJson);
 export const servers = parseServers(
-  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint, daylightBoard, ostranderAnnex, continuityOffice, wickNode, harbourRelay, tinShed, vargaSurplus, lowtideExchange],
+  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint, daylightBoard, ostranderAnnex, continuityOffice, officeDirector, takenGrid, takenRelay, orreryMinistry, orreryVault, wrenRelay, wrenDesk, halvorsenCore, wickNode, harbourRelay, tinShed, vargaSurplus, lowtideExchange],
   'servers/',
 );
 export const programs = parsePrograms(programsJson);
@@ -133,13 +150,17 @@ export const story = parseStory(storyJson);
 checkParts(modules, servers, contracts, programs, companies.sectors);
 checkPeople(people, servers, tuning.phishMaxDetails);
 checkRivals(rivals, servers);
-checkStory(story, servers, contracts, rivals);
 export const news = parseNews(newsJson);
 export const patrons = parsePatrons(patronsJson);
 export const ladder = parseLadder(ladderJson, rivals);
 export const data = parseData(dataJson);
 export const assets = parseAssets(assetsJson, servers.map((server) => server.id));
 checkPatrons(patrons, servers, companies.sectors.map((sector) => sector.id), contracts);
+checkStory(story, servers, contracts, rivals, patrons.map((patron) => patron.id));
+export const chorus = parseChorus(chorusJson);
+checkChorus(chorus, servers, patrons.map((patron) => patron.id));
+export const endings = parseEndings(endingsJson);
+checkEndings(endings, contracts, patrons.map((patron) => patron.id), chorus.doom?.ending);
 checkNews(news, story.beats.map((beat) => beat.id), companies.sectors.map((sector) => sector.id));
 
 /**

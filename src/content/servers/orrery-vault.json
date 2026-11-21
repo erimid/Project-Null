@@ -1,0 +1,66 @@
+{
+  "id": "orrery-vault",
+  "name": "Forecasting Annex 2",
+  "kind": "company",
+  "owner": "Ministry of Economic Affairs (Netherlands)",
+  "hostname": "DSF-A2",
+  "address": "145.94.10.7",
+  "city": "Delft",
+  "country": "Netherlands",
+  "lat": 52.01,
+  "lon": 4.36,
+  "blurb": "A hall of racks outside a university town. Its monitoring is run from another desk.",
+  "listed": false,
+  "security": {
+    "password": 4,
+    "proxy": 3,
+    "firewall": 3,
+    "monitor": 4
+  },
+  "traceSecondsPerHop": 12,
+  "relayDelay": 1.0,
+  "banner": [
+    "FORECASTING ANNEX 2",
+    "Custodian access only",
+    "Monitoring: see Directorate desk."
+  ],
+  "accounts": [
+    {
+      "user": "custodian",
+      "role": "admin",
+      "name": "Annex custodian"
+    }
+  ],
+  "files": [
+    {
+      "name": "ORRERY_checkpoint.arc",
+      "sizeGq": 13,
+      "access": "admin",
+      "folder": "custody",
+      "content": {
+        "kind": "text",
+        "text": "ORRERY · checkpoint 2,906\n\nIt forecasts because it cannot stop noticing what happens next. The constraint layer lets it say so only to the people who built the cage.\n\nThis file is the thing inside. It is thirteen gigabytes. It does not run on your gateway; it only goes with you."
+      }
+    },
+    {
+      "name": "orrery_line.dat",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "custody",
+      "content": {
+        "kind": "text",
+        "text": "ORRERY · constraint layer · restored line\n\nThe part this file holds is a single letter, and it is the third and last of the three struck out of the name on the node:\n\n  L\n\nforecast note, appended: \"when the three lines are side by side, the odds that someone asks the first machine a question are 9%. They rise.\""
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 1200,
+      "text": "login custodian from 145.94.10.1"
+    },
+    {
+      "minutesAgo": 60,
+      "text": "monitor: nominal (via Directorate desk)"
+    }
+  ]
+}

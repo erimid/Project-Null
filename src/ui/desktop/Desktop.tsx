@@ -9,6 +9,8 @@ import type { Speed } from '../../core';
 import { content, session } from '../session';
 import { Alerts } from './Alerts';
 import { CaughtMoment } from './CaughtMoment';
+import { StoryMoment } from './StoryMoment';
+import { CHORUS_ID } from '../../content';
 import { ContractPanel } from './ContractPanel';
 import { deskLayout } from './deskLayout';
 import { SnapPreview } from './snapStore';
@@ -33,6 +35,7 @@ import './stage5.css';
 import './layouts.css';
 import './world.css';
 import './wide.css';
+import './story.css';
 
 const SPEED_KEYS: Readonly<Record<string, Speed>> = { '1': 1, '2': 2, '3': 4 };
 
@@ -69,6 +72,7 @@ export function Desktop() {
   const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
   // An attack opens the Defence window by itself, and closes it again once it is over.
   const underAttack = useGame((game) => game.raid !== null);
+  const byChorus = useGame((game) => game.raid?.attackerId === CHORUS_ID);
   useEffect(() => {
     if (underAttack) windows.focus('defence');
     else windows.close('defence');
@@ -111,7 +115,7 @@ export function Desktop() {
   );
 
   return (
-    <div ref={desk} class={`desktop${phone ? ' desktop--phone' : ''}${layoutKind === 'tablet' ? ' desktop--tablet' : ''}${tracing ? ' is-tracing' : ''}${underAttack ? ' is-attacked' : ''}`}>
+    <div ref={desk} class={`desktop${phone ? ' desktop--phone' : ''}${layoutKind === 'tablet' ? ' desktop--tablet' : ''}${tracing ? ' is-tracing' : ''}${underAttack ? ' is-attacked' : ''}${byChorus ? ' is-chorus' : ''}`}>
       <TopBar />
       <main ref={workspace} class="workspace">
         {layoutKind === 'phone' && <p class="workspace__empty">Pick a window below.</p>}
@@ -135,6 +139,7 @@ export function Desktop() {
       {phone && <GuideCard />}
       <Tour />
       <CaughtMoment />
+      <StoryMoment />
     </div>
   );
 }

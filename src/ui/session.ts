@@ -23,7 +23,7 @@ import {
   type GameState,
   type SaveSummary,
 } from '../core';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, data, assets } from '../content';
+import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, data, assets, chorus, endings } from '../content';
 import { diff, snapshot, type GameEvent, type Snapshot } from './events';
 import { createMemoryStore, openSaveStore, type SaveStore } from './storage/saveStore';
 
@@ -43,6 +43,8 @@ const baseContent: Content = {
   modules,
   rivals,
   story,
+  chorus,
+  endings,
   news,
   patrons,
   ladder,
@@ -235,7 +237,7 @@ function shape(): string {
   const raid = state.raid
     ? `${state.raid.attackerId}|${Math.floor(state.raid.breachMs / 500)}|${state.raid.port?.locked.join('') ?? ''}|${state.raid.traceBack ? Math.floor(state.raid.traceBack.elapsedMs / 500) : ''}`
     : `${state.raidPending?.attackerId ?? ''}`;
-  return `${state.tasks.length}|${state.connections.length}|${state.messages.length}|${traces}|${monitors}|${sealed}|${phish}|${raid}`;
+  return `${state.tasks.length}|${state.connections.length}|${state.messages.length}|${traces}|${monitors}|${sealed}|${phish}|${raid}|${state.chorus.taken.length}${state.ending?.id ?? ''}`;
 }
 
 function startLoop(): void {

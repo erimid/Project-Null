@@ -20,6 +20,7 @@ import {
   relayHeat,
   securityOf,
   serverMark,
+  isTaken,
   stepFade,
   traceLegs,
   traceReport,
@@ -176,6 +177,24 @@ export function MapWindow() {
   const game = useWorld((state) => state);
   const guide = useGuide();
   const [notice, setNotice] = useState('');
+  // Servers Chorus has only just taken, and where it reached each from: the globe shows it happen.
+  const [fresh, setFresh] = useState<readonly { id: string; from?: string }[]>([]);
+  useEffect(() => {
+    const timers = new Set<ReturnType<typeof setTimeout>>();
+    const stop = session.subscribeEvents((event) => {
+      if (event.type !== 'serverTaken') return;
+      setFresh((list) => [...list, { id: event.id, from: event.from }]);
+      const timer = setTimeout(() => {
+        timers.delete(timer);
+        setFresh((list) => list.filter((item) => item.id !== event.id));
+      }, 6000);
+      timers.add(timer);
+    });
+    return () => {
+      stop();
+      timers.forEach(clearTimeout);
+    };
+  }, []);
   const [starredOnly, setStarredOnly] = useState(false);
   const [sort, setSort] = useState<SortId>(savedSort);
   // Heat sort starts coolest first; pressing Heat again flips it.
@@ -301,11 +320,18 @@ export function MapWindow() {
       name: server.name,
       lat: server.lat,
       lon: server.lon,
-      tone: isTraced(server.id) ? 'red' : onRoute ? 'mint' : 'cyan',
+      tone: isTraced(server.id) ? 'red' : onRoute ? 'mint' : isTaken(game, server.id) ? 'violet' : 'cyan',
       label: server.id === gateway.id ? 'YOU' : hop >= 0 ? String(hop + 1) : live?.serverId === server.id ? server.hostname : undefined,
       selected: server.id === selected?.id,
+      ripple: fresh.some((item) => item.id === server.id),
     };
   });
+  for (const item of fresh) {
+    const to = known.find((server) => server.id === item.id);
+    // It reaches from the last place it took, or the nearest one the player knows of.
+    const from = known.find((server) => server.id === item.from) ?? known.find((server) => server.id !== item.id && isTaken(game, server.id));
+    if (to && from) arcs.push({ from, to, tone: 'violet', reach: true });
+  }
 
   const run = (action: Parameters<typeof session.dispatch>[0]) => {
     const result = session.dispatch(action);
@@ -425,7 +451,10 @@ export function MapWindow() {
                     )}
                     {server.id !== gateway.id && <RelayMarks {...relayMarks(server)} />}
                     {server.id !== gateway.id && serverMark(game, server.id) && (
-                      <span class="address__mark" data-tip="From the news: this company has tightened its security">
+                      <span
+                        class={`address__mark${isTaken(game, server.id) ? ' address__mark--taken' : ''}`}
+                        data-tip={isTaken(game, server.id) ? 'Something has taken this machine. It tidies logs and leaves notes.' : 'From the news: this company has tightened its security'}
+                      >
                         {serverMark(game, server.id)}
                       </span>
                     )}
@@ -491,7 +520,7 @@ export function MapWindow() {
                 const mark = serverMark(game, selected.id);
                 const markLine = mark && (
                   <p class="map__mark" data-tip="Companies react to break-ins. Read the Wire to see who is on their guard.">
-                    {mark === 'On guard' ? 'On guard after a recent break-in: one layer is a level higher for a few days.' : mark === 'Security firm' ? 'Has hired a security firm: its firewall and monitor are a level higher for good.' : mark}
+                    {isTaken(game, selected.id) ? 'Taken. Something else runs this machine now: it tidies its own logs, and it has left you a note.' : mark === 'On guard' ? 'On guard after a recent break-in: one layer is a level higher for a few days.' : mark === 'Security firm' ? 'Has hired a security firm: its firewall and monitor are a level higher for good.' : mark}
                   </p>
                 );
                 if (scanned || connected) {

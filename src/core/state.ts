@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 27;
+export const STATE_VERSION = 29;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -145,6 +145,8 @@ export interface ContractsState {
 export interface ActiveHeist {
   vaultId: string;
   holds: { targetId: string; layer: 'firewall' | 'monitor' | 'proxy'; ally?: string }[];
+  /** Traces run this many times slower while it is under way, from help the player earned. Missing = 1. */
+  slow?: number;
 }
 
 /** A rival breaking into a server the player is guarding: the gateway defence, from the other side. */
@@ -159,14 +161,24 @@ export interface GuardState {
   shut: number;
 }
 
-/** How far the player has got through the story, and which story contracts are on the board (see core/story.ts). */
-export interface StoryState {
-  /** Index of the beat the story is waiting on. Equal to the number of beats once the act is over. */
+/** Where one story line has got to (see core/story.ts). */
+export interface StoryLineState {
+  /** Index of the beat the line is waiting on. Equal to the number of its beats once the line is over. */
   beat: number;
   /** Whether the current beat has already arrived (its message sent, its contract posted). */
   arrived: boolean;
-  /** Game time the current beat arrived, or the last one was finished: the clock the next beat's spacing counts from. */
+  /** Game time the current beat arrived, or the last one passed, or the line opened: the clock the next beat's spacing counts from. */
   lastMs: number;
+  /** True once the current beat's timed turn has fired. */
+  lapsed?: boolean;
+  /** True once the current beat's timed turn has said it is coming. */
+  warned?: boolean;
+}
+
+/** How far the player has got through the story, and which story contracts are on the board (see core/story.ts). */
+export interface StoryState {
+  /** Each line that has opened, by line id. A line missing here has not opened yet. */
+  lines: Record<string, StoryLineState>;
   /** Ids of story contracts the director has put on the board and are not yet delivered. */
   offered: string[];
 }
@@ -320,6 +332,8 @@ export interface RaidState {
   readonly barriers: number;
   /** The port line-up the player has open to shut the intruder out, or null. */
   port: RaidPort | null;
+  /** How long the attack has run, in the same time the break-in counts in. Missing = not counted (an ordinary attack). */
+  ranMs?: number;
   /** Ports shut so far in this attack. Each one sets the intruder back less than the last. Missing = none. */
   shut?: number;
   /** The counter-trace back along the attacker's route, or null until it is started. */
@@ -573,7 +587,7 @@ export interface GameState {
   /** The player's inbox, oldest first. */
   messages: Message[];
   contracts: ContractsState;
-  /** How far the player has got through Act 1 (see core/story.ts). */
+  /** How far the player has got through the story (see core/story.ts). */
   story: StoryState;
   phish: PhishState;
   /** Log reviews still to come, in no particular order. */
@@ -596,6 +610,36 @@ export interface GameState {
   data: { sold: string[] };
   /** How badly the player is wanted (see core/wanted.ts). */
   wanted: WantedState;
+  /** Chorus spreading through the world (see core/chorus.ts). */
+  chorus: ChorusState;
+  /** The ending the story reached, or null. */
+  ending: EndingState | null;
+}
+
+export interface ChorusState {
+  /** Servers it has taken, in the order taken. */
+  taken: string[];
+  /** Game time it takes the next one. 0 = its clock has not started. */
+  nextMs: number;
+  /** Servers taken so far, freed ones included. */
+  takes: number;
+  /**
+   * Game time the story has been left waiting since the player last
+   * delivered a story job: time with a story job on the board and not being
+   * worked on. A player who is only slow, with no story job offered, is not
+   * counted as ignoring it.
+   */
+  ignoredMs: number;
+  /** Game time ignoredMs was last brought up to date. */
+  checkedMs: number;
+  /** Warnings sent so far about the long silence (see chorus.json doom). */
+  warned: number;
+}
+
+/** The ending the story reached, once it has (see core/endings.ts). Play continues after. */
+export interface EndingState {
+  id: string;
+  atMs: number;
 }
 
 /** How much attention the player has drawn. Being traced and leaving logs behind raise it; clean work and time bring it down. */
@@ -661,7 +705,7 @@ export function createGame(options: NewGameOptions): GameState {
     tasks: [],
     messages: [],
     contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0, heldMs: 0, guard: null, raceUntilMs: 0, heist: null, burned: [], heistDay: -1, legendDay: -1 },
-    story: { beat: 0, arrived: false, lastMs: 0, offered: [] },
+    story: { lines: {}, offered: [] },
     phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
     reviews: [],
     flags: [],
@@ -674,6 +718,8 @@ export function createGame(options: NewGameOptions): GameState {
     ladder: { day: -1, scores: {}, moves: [], outcomes: {}, beaten: [], above: [] },
     data: { sold: [] },
     wanted: { heat: 0, level: 0, day: 0 },
+    chorus: { taken: [], nextMs: 0, takes: 0, ignoredMs: 0, checkedMs: 0, warned: 0 },
+    ending: null,
   };
 }
 

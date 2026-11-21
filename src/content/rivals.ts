@@ -34,6 +34,8 @@ export interface RivalDef {
   readonly style: RivalStyle;
   /** The line they leave behind when the attack ends. */
   readonly taunt: string;
+  /** True for one only the story sends (such as Warden in the final job): never in a random attack. */
+  readonly storyOnly?: boolean;
 }
 
 export function parseRivals(data: unknown, file = 'rivals.json'): RivalDef[] {
@@ -76,6 +78,7 @@ export function parseRivals(data: unknown, file = 'rivals.json'): RivalDef[] {
       minRating: whole('minRating', 0, 100000),
       style: style as RivalStyle,
       taunt: text('taunt'),
+      ...(item['storyOnly'] === true ? { storyOnly: true } : {}),
     };
   });
 }

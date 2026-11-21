@@ -239,7 +239,7 @@ describe('save and load', () => {
     };
     const loaded = syncWithContent(deserializeGame(JSON.stringify(v1)).state, content);
     expect(loaded.version).toBe(STATE_VERSION);
-    expect(loaded.story).toEqual({ beat: 0, arrived: false, lastMs: 0, offered: [] });
+    expect(loaded.story).toEqual({ lines: { main: { beat: 0, arrived: false, lastMs: 0 } }, offered: [] });
     expect(loaded.raid).toBeNull();
     expect(loaded.raidPending).toBeNull();
     expect(loaded.savedRoutes).toEqual([[], [], []]);
