@@ -1059,7 +1059,8 @@
         "titles": [
           "Wrong address",
           "Somebody else's fault",
-          "A name in the log"
+          "A name in the log",
+          "Put it on someone else"
         ],
         "summaries": [
           "Make {company}'s log point at {who}."
@@ -1073,21 +1074,24 @@
         "titles": [
           "Night watch",
           "Hold the door",
-          "Minding the shop"
+          "Minding the shop",
+          "Hold the line"
         ],
         "summaries": [
           "Guard {company} for {seconds} seconds against {rival}."
         ],
         "briefs": [
           "{rival} is about to go through {company}'s network and I cannot stop them from here. I can give you the administrator's login. Sit on the server and shut every port they try for {seconds} seconds.\n\nThat is all. You are the lock tonight.",
-          "My people at {company} in {city} have had a tip that {rival} is coming for them. Log in with the details I am sending and keep them out for {seconds} seconds. If they get in, do not bother sending a bill."
+          "My people at {company} in {city} have had a tip that {rival} is coming for them. Log in with the details I am sending and keep them out for {seconds} seconds. If they get in, do not bother sending a bill.",
+          "A friend of mine runs {company}'s network, and tonight someone will come for it. Be there before they arrive and stand in the doorway. Keep them out for {seconds} seconds and I will call it even."
         ]
       },
       "hold": {
         "titles": [
           "Keep it open",
           "A foot in the door",
-          "Waiting room"
+          "Waiting room",
+          "Keep it open"
         ],
         "summaries": [
           "Stay logged in on {company} for {seconds} seconds."
@@ -1101,7 +1105,8 @@
         "titles": [
           "Who did this",
           "Follow the breadcrumbs",
-          "Find them"
+          "Find them",
+          "Back to the source"
         ],
         "summaries": [
           "Follow a hacker's trail from {company} to their machine."
@@ -1115,7 +1120,8 @@
         "titles": [
           "Second draft",
           "Like for like",
-          "Nobody will notice"
+          "Nobody will notice",
+          "Same name, new content"
         ],
         "summaries": [
           "Replace {file} at {company} with a doctored copy."
@@ -1130,20 +1136,36 @@
       "titles": [
         "The {company} vault",
         "Three lines into {company}",
-        "One night at {company}"
+        "One night at {company}",
+        "{company}: the long night",
+        "Every door at once"
       ],
       "summaries": [
         "A heist: lift {file} from {company} while others hold its doors.",
-        "Several connections at once against {company}, {city}. Pays like it."
+        "Several connections at once against {company}, {city}. Pays like it.",
+        "A coordinated job against {company}: hold the doors, then take {file}."
       ],
       "briefs": [
         "{company} keeps {file} behind everything it owns, and tonight we want it.\n\nThe vault is locked down. Its doors are run from other places: {holds}. Hold each of those desks as administrator and the door it runs swings open. Then take the file.\n\nAll at once, several lines open, several traces running. If any of them catches you, the plan is burned and so is the job.",
-        "You will need more than one line for this.\n\n{company} in {city} has {file} on a server that answers to other servers: {holds}. Sit on those as their administrator and the vault forgets to watch. Lift the file and get out.\n\nGet caught anywhere along the way and we never spoke."
+        "You will need more than one line for this.\n\n{company} in {city} has {file} on a server that answers to other servers: {holds}. Sit on those as their administrator and the vault forgets to watch. Lift the file and get out.\n\nGet caught anywhere along the way and we never spoke.",
+        "Nobody breaks into {company} through the front. Its {file} sits behind systems run from elsewhere: {holds}.\n\nSit on each of those as its administrator and the vault goes quiet. Then lift the file. Lines open, traces ticking. If one catches you, the whole plan is burned, and I never heard of you."
       ],
       "notes": {
-        "firewall": ["runs the vault's firewall", "the security desk that keeps the vault's firewall"],
-        "monitor": ["watches the vault's traffic", "the monitoring desk that reports on the vault"],
-        "proxy": ["keeps the vault's records gateway", "the proxy that guards the vault's logs"]
+        "firewall": [
+          "runs the vault's firewall",
+          "the security desk that keeps the vault's firewall",
+          "is the vault's firewall, and the vault knows nothing without it"
+        ],
+        "monitor": [
+          "watches the vault's traffic",
+          "the monitoring desk that reports on the vault",
+          "is the eyes of the vault, and it is where the alarm starts"
+        ],
+        "proxy": [
+          "keeps the vault's records gateway",
+          "the proxy that guards the vault's logs",
+          "is the gate through which the vault's logs pass"
+        ]
       }
     },
     "racers": [
@@ -1152,7 +1174,10 @@
       "Pilot Whale",
       "Ninefold",
       "Tamsin Grey",
-      "Oxbow"
+      "Oxbow",
+      "Cormorant",
+      "Drover",
+      "Hush"
     ]
   }
 }
