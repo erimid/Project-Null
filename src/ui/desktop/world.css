@@ -98,3 +98,59 @@
 .ladder__moves { margin: 0; padding: 0; list-style: none; font-size: 14px; color: var(--text); }
 .ladder__moves li { padding: 3px 0; }
 .ladder__when { color: var(--text-dim); font-size: 12px; margin-right: 6px; }
+
+/* Job watch: the newer kinds of job, under the server's security line. */
+.watch {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(78, 230, 200, 0.22);
+  border-radius: 8px;
+  background: rgba(78, 230, 200, 0.05);
+}
+
+.watch__label {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.watch__count {
+  font-size: 13px;
+}
+
+.watch__gauge.is-urgent .watch__label,
+.watch__gauge.is-urgent .watch__count {
+  color: var(--red);
+}
+
+.watch__hint {
+  margin: 0;
+  font-size: 14px;
+}
+
+.watch.watch__hint {
+  margin-bottom: 12px;
+}
+
+li:has(> .logline__follow) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logline__follow {
+  flex: none;
+}
+
+/* A race: the rival's progress on the contract panel. */
+.race {
+  margin-top: 8px;
+}
+
+.race__label {
+  font-size: 13px;
+  color: var(--text-dim);
+}

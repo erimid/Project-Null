@@ -154,6 +154,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   19: (old) => ({ ...old, news: { editions: [], pending: [], hits: {}, firms: [], marks: {} } }),
   // 20 -> 21: patrons and the record of choices. The choices already made are filled in on load (see backfillChoices).
   20: (old) => ({ ...old, patrons: { standing: {}, met: [], choices: {} } }),
+  // 22 -> 23: new kinds of job. Nothing was being held, guarded or raced.
+  22: (old) => ({ ...old, contracts: { ...(old.contracts as object), heldMs: 0, guard: null, raceUntilMs: 0 } }),
   // 21 -> 22: the rivals ladder. It sets itself up on the next clock check; raiders already beaten wait for a decision.
   21: (old) => ({
     ...old,
@@ -404,7 +406,10 @@ function checkState(raw: Obj): GameState {
     !isList(contracts.completed, isText) ||
     !isList(contracts.jobs, isJob) ||
     !isNum(contracts.stage) ||
-    !isNum(contracts.stageStartMs)
+    !isNum(contracts.stageStartMs) ||
+    !isNum(contracts.heldMs) ||
+    !isNum(contracts.raceUntilMs) ||
+    !(contracts.guard === null || (isObj(contracts.guard) && isNum(contracts.guard.breachMs) && isNum(contracts.guard.totalMs) && isNum(contracts.guard.shut) && (contracts.guard.port === null || isPort(contracts.guard.port))))
   ) {
     throw damaged;
   }

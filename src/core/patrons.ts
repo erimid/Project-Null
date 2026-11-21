@@ -153,7 +153,7 @@ export function noteDelivery(state: GameState, content: Content, contract: Contr
   const hurt = new Set<string>();
   for (const stage of stagesOf(contract)) {
     const sector = findServer(content, stage.targetId)?.generated?.sector;
-    if (!sector || hurt.has(stage.targetId) || stage.objective.kind === 'read') continue;
+    if (!sector || hurt.has(stage.targetId) || ['read', 'guard', 'hold', 'hunt'].includes(stage.objective.kind)) continue;
     hurt.add(stage.targetId);
     for (const other of patronsOf(content)) {
       if (other.id !== contract.patron && other.protects.includes(sector)) shiftStanding(state, content, other.id, -1);

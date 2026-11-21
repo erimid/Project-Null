@@ -38,6 +38,7 @@ import { Contracts } from './ContractsSection';
 import { Hardware } from './HardwareSection';
 import { Market } from './MarketSection';
 import { LADDER_BOARD, Ladder } from './LadderSection';
+import { JobWatch } from './JobWatch';
 import type { View } from './serverView';
 
 const SECTION_LABELS: Record<Section, string> = {
@@ -757,6 +758,16 @@ function Logs({ game, state, connection, run, act }: View) {
                 <span class="row__dim">{formatGameTime(entry.timeMs)}</span>
                 <span class="row__main">{entry.text}</span>
               </button>
+              {entry.points && !game.knownServers.includes(entry.points) && (
+                <button
+                  type="button"
+                  class="btn btn--small btn--go logline__follow"
+                  data-tip="This line points at another server. Put it in your address book."
+                  onClick={() => act({ type: 'followTrail', connectionId: connection.id, logId: entry.id })}
+                >
+                  Follow
+                </button>
+              )}
             </li>
           );
         })}
@@ -946,6 +957,7 @@ export function ServerWindow() {
       }
     >
       <Security {...view} />
+      <JobWatch {...view} />
       {!loggedIn && <LoginScreen {...view} />}
       {section === 'contracts' && <Contracts {...view} />}
       {section === 'ladder' && <Ladder {...view} />}

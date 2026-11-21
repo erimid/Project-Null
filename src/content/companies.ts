@@ -70,6 +70,10 @@ export interface SectorDef {
   readonly records?: RecordsTemplate;
 }
 
+/** The newer kinds of job the board can post. */
+export const NEW_KINDS = ['frame', 'guard', 'hold', 'hunt', 'swap'] as const;
+export type NewKind = (typeof NEW_KINDS)[number];
+
 export interface JobWording {
   readonly titles: readonly string[];
   readonly summaries: readonly string[];
@@ -101,6 +105,14 @@ export interface JobPools {
   readonly record: JobWording;
   /** Missing = the board posts only one-step jobs. */
   readonly staged?: StagedWording;
+  /**
+   * Wording for the newer kinds of job (see core/kinds.ts), by kind. A kind
+   * left out is never posted. Briefs may use {who} and {address} (frame),
+   * {seconds} (guard, hold) and {rival} (guard).
+   */
+  readonly kinds?: Readonly<Partial<Record<NewKind, JobWording>>>;
+  /** Handles of hackers who race the player for a job, or attack a server they guard. */
+  readonly racers?: readonly string[];
   /** Words for how strong a company's security is, by tier (1 first). */
   readonly tiers: readonly string[];
 }
@@ -251,6 +263,18 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
             return { staged };
           })()),
       tiers: texts(jobs.tiers, 'jobs tiers', 5),
+      ...(jobs.kinds === undefined
+        ? {}
+        : {
+            kinds: Object.fromEntries(
+              Object.keys(obj(jobs.kinds, 'jobs kinds')).map((kind) => {
+                if (!(NEW_KINDS as readonly string[]).includes(kind)) fail(`jobs kinds: "${kind}" is not one of ${NEW_KINDS.join(', ')}`);
+                const w = obj((jobs.kinds as Record<string, unknown>)[kind], `jobs kinds ${kind}`);
+                return [kind, { titles: texts(w.titles, `jobs kinds ${kind} titles`), summaries: texts(w.summaries, `jobs kinds ${kind} summaries`), briefs: texts(w.briefs, `jobs kinds ${kind} briefs`) }];
+              }),
+            ),
+          }),
+      ...(jobs.racers === undefined ? {} : { racers: texts(jobs.racers, 'jobs racers') }),
     },
   };
   if (pools.count > pools.stems.length) fail(`count is ${pools.count} but there are only ${pools.stems.length} stems; each company needs its own`);

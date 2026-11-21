@@ -40,7 +40,7 @@ const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frida
 const OCEANS = ['Atlantic', 'Pacific', 'Indian Ocean'];
 const LAYER_WORDS: Readonly<Record<LayerName, string>> = { password: 'passwords', proxy: 'proxy', firewall: 'firewall', monitor: 'network monitoring' };
 const EMPTY: NewsDef = {
-  jobs: { steal: [], destroy: [], record: [], read: [], plant: [], frame: [], caught: [] },
+  jobs: { steal: [], destroy: [], record: [], read: [], plant: [], frame: [], guard: [], hold: [], hunt: [], swap: [], caught: [] },
   reactions: { guard: [], firm: [] },
   events: [],
   story: [],
@@ -141,7 +141,8 @@ export function reportContract(state: GameState, content: Content, contract: Con
     const server = findServer(content, stage.targetId);
     if (!server || server.kind !== 'company') continue;
     report(state, content, server, stage.objective.kind);
-    react(state, content, server);
+    // A company the player guarded, sat in or only passed through has nothing to put its guard up about.
+    if (!['guard', 'hold', 'hunt'].includes(stage.objective.kind)) react(state, content, server);
   }
 }
 

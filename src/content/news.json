@@ -1,61 +1,222 @@
 {
   "jobs": {
     "steal": [
-      { "headline": "{company} investigates possible data leak", "body": "{CITY}. {company} said on {weekday} it was looking into 'irregular access' to its systems after staff found files had been opened overnight. The firm would not say what was taken.\n\nA spokesperson said customers had 'no immediate cause for concern', and declined to answer further questions." },
-      { "headline": "Copies of {company} files offered for sale, sources say", "body": "{CITY}. Documents that appear to come from {company} are being passed around online, according to two people who say they have seen them.\n\nThe company did not confirm a breach. 'We are aware of the claims,' it said in a short statement." },
-      { "headline": "{company}: 'nothing of value' taken in break-in", "body": "{CITY}. {company} insisted that an intruder who reached its records this week left with 'nothing of value', a claim one former employee called 'optimistic'.\n\nThe firm has asked its staff not to discuss the matter with the press." },
-      { "headline": "Ledger copied from {company}, regulator told", "sectors": ["credit", "law", "clinic"], "body": "{CITY}. {company} has told the regulator that a copy of a confidential ledger left its network without permission. It is the second notice of its kind filed in {city} this quarter.\n\nCustomers are being advised to watch their statements." }
+      {
+        "headline": "{company} investigates possible data leak",
+        "body": "{CITY}. {company} said on {weekday} it was looking into 'irregular access' to its systems after staff found files had been opened overnight. The firm would not say what was taken.\n\nA spokesperson said customers had 'no immediate cause for concern', and declined to answer further questions."
+      },
+      {
+        "headline": "Copies of {company} files offered for sale, sources say",
+        "body": "{CITY}. Documents that appear to come from {company} are being passed around online, according to two people who say they have seen them.\n\nThe company did not confirm a breach. 'We are aware of the claims,' it said in a short statement."
+      },
+      {
+        "headline": "{company}: 'nothing of value' taken in break-in",
+        "body": "{CITY}. {company} insisted that an intruder who reached its records this week left with 'nothing of value', a claim one former employee called 'optimistic'.\n\nThe firm has asked its staff not to discuss the matter with the press."
+      },
+      {
+        "headline": "Ledger copied from {company}, regulator told",
+        "sectors": [
+          "credit",
+          "law",
+          "clinic"
+        ],
+        "body": "{CITY}. {company} has told the regulator that a copy of a confidential ledger left its network without permission. It is the second notice of its kind filed in {city} this quarter.\n\nCustomers are being advised to watch their statements."
+      }
     ],
     "destroy": [
-      { "headline": "{company} loses records in 'catastrophic' failure", "body": "{CITY}. Staff at {company} arrived on {weekday} to find a set of records gone from its systems. The firm first blamed a faulty disk, then 'an outside party'.\n\nBackups are being checked. One manager described the mood in the office as 'grim'." },
-      { "headline": "Weeks of work wiped at {company}", "body": "{CITY}. A file holding weeks of work vanished from {company}'s network overnight. Engineers are trying to rebuild it from paper copies.\n\n'Someone knew exactly what to delete,' one member of staff said." },
-      { "headline": "Community business loses a year of billing", "sectors": ["clinic", "energy", "retail", "school"], "body": "{CITY}. {company} says a year of billing records has been erased, leaving it unable to say who owes what. Customers have been asked to keep their receipts.\n\nThe local council has offered help with the paperwork." }
+      {
+        "headline": "{company} loses records in 'catastrophic' failure",
+        "body": "{CITY}. Staff at {company} arrived on {weekday} to find a set of records gone from its systems. The firm first blamed a faulty disk, then 'an outside party'.\n\nBackups are being checked. One manager described the mood in the office as 'grim'."
+      },
+      {
+        "headline": "Weeks of work wiped at {company}",
+        "body": "{CITY}. A file holding weeks of work vanished from {company}'s network overnight. Engineers are trying to rebuild it from paper copies.\n\n'Someone knew exactly what to delete,' one member of staff said."
+      },
+      {
+        "headline": "Community business loses a year of billing",
+        "sectors": [
+          "clinic",
+          "energy",
+          "retail",
+          "school"
+        ],
+        "body": "{CITY}. {company} says a year of billing records has been erased, leaving it unable to say who owes what. Customers have been asked to keep their receipts.\n\nThe local council has offered help with the paperwork."
+      }
     ],
     "record": [
-      { "headline": "{company} finds records 'quietly changed'", "body": "{CITY}. An internal check at {company} found that at least one entry in its {records} had been altered by an account that should not have had access.\n\nThe firm said it had 'restored the correct figures', and would not say who benefited." },
-      { "headline": "Questions over figures at {company}", "body": "{CITY}. {company} has paused a review of its {records} after an auditor noticed a change nobody could explain. The company called it 'a clerical error under investigation'." }
+      {
+        "headline": "{company} finds records 'quietly changed'",
+        "body": "{CITY}. An internal check at {company} found that at least one entry in its {records} had been altered by an account that should not have had access.\n\nThe firm said it had 'restored the correct figures', and would not say who benefited."
+      },
+      {
+        "headline": "Questions over figures at {company}",
+        "body": "{CITY}. {company} has paused a review of its {records} after an auditor noticed a change nobody could explain. The company called it 'a clerical error under investigation'."
+      }
     ],
     "read": [
-      { "headline": "{company} reports 'unusual activity' on its network", "body": "{CITY}. {company} said someone spent time inside its network this week, but that as far as it could tell nothing was taken or changed.\n\n'They looked,' said one technician. 'That is somehow worse.'" }
+      {
+        "headline": "{company} reports 'unusual activity' on its network",
+        "body": "{CITY}. {company} said someone spent time inside its network this week, but that as far as it could tell nothing was taken or changed.\n\n'They looked,' said one technician. 'That is somehow worse.'"
+      }
     ],
     "plant": [
-      { "headline": "Mystery file found on {company} server", "body": "{CITY}. Staff at {company} have found a file on the company's server that none of them put there. The firm has handed it to its lawyers and will not say what it contains." }
+      {
+        "headline": "Mystery file found on {company} server",
+        "body": "{CITY}. Staff at {company} have found a file on the company's server that none of them put there. The firm has handed it to its lawyers and will not say what it contains."
+      }
     ],
     "frame": [
-      { "headline": "{company} names suspect after break-in", "body": "{CITY}. {company} says its logs point at a single address, and that it has passed the details to the police. Friends of the person named say they have never heard of the company." }
+      {
+        "headline": "{company} names suspect after break-in",
+        "body": "{CITY}. {company} says its logs point at a single address, and that it has passed the details to the police. Friends of the person named say they have never heard of the company."
+      }
     ],
     "caught": [
-      { "headline": "Intrusion at {company} traced, police called", "body": "{CITY}. {company} said its security staff followed an intruder's connection back through several countries this week before it was cut off. The firm has passed what it found to the police.\n\n'Whoever it was will think twice,' said a manager." },
-      { "headline": "{company} says it 'saw off' an attack", "body": "{CITY}. {company} claims its systems detected and traced a break-in attempt within minutes. It is not known whether anyone has been identified." }
+      {
+        "headline": "Intrusion at {company} traced, police called",
+        "body": "{CITY}. {company} said its security staff followed an intruder's connection back through several countries this week before it was cut off. The firm has passed what it found to the police.\n\n'Whoever it was will think twice,' said a manager."
+      },
+      {
+        "headline": "{company} says it 'saw off' an attack",
+        "body": "{CITY}. {company} claims its systems detected and traced a break-in attempt within minutes. It is not known whether anyone has been identified."
+      }
+    ],
+    "guard": [
+      {
+        "headline": "{company} says it fought off a determined attack",
+        "body": "{CITY}. {company} says an intruder spent the best part of an hour trying to break into its network this week, and failed. 'Someone was watching the door,' a manager said, without saying who."
+      }
+    ],
+    "hold": [
+      {
+        "headline": "Long intrusion at {company} puzzles staff",
+        "body": "{CITY}. Staff at {company} watched an unknown connection sit inside their network for several minutes this week, doing nothing they could see. 'It was like someone holding a door,' said one."
+      }
+    ],
+    "hunt": [
+      {
+        "headline": "Trail through {company} leads to a hacker's machine",
+        "body": "{CITY}. Logs at {company} have helped someone follow a hacker's route back to the machine it came from, according to a post on an underground board. The company says it was not consulted."
+      }
+    ],
+    "swap": [
+      {
+        "headline": "Doubts over figures held by {company}",
+        "body": "{CITY}. A document held by {company} says something different this week from what several people remember it saying. The company insists the file has not been touched."
+      }
     ]
   },
   "reactions": {
     "guard": [
-      { "headline": "{company} tightens security after break-in", "body": "{CITY}. {company} says it has strengthened its {layer} for the coming days while it investigates. Staff were asked to change their passwords." },
-      { "headline": "{company} on alert", "body": "{CITY}. Following recent trouble, {company} has put extra watch on its network. 'We are taking no chances,' a spokesperson said." }
+      {
+        "headline": "{company} tightens security after break-in",
+        "body": "{CITY}. {company} says it has strengthened its {layer} for the coming days while it investigates. Staff were asked to change their passwords."
+      },
+      {
+        "headline": "{company} on alert",
+        "body": "{CITY}. Following recent trouble, {company} has put extra watch on its network. 'We are taking no chances,' a spokesperson said."
+      }
     ],
     "firm": [
-      { "headline": "{company} hires security firm after third breach", "body": "{CITY}. After a third incident in a short space of time, {company} has signed a contract with an outside security firm. Its network will be watched around the clock.\n\n'Enough is enough,' said the managing director." }
+      {
+        "headline": "{company} hires security firm after third breach",
+        "body": "{CITY}. After a third incident in a short space of time, {company} has signed a contract with an outside security firm. Its network will be watched around the clock.\n\n'Enough is enough,' said the managing director."
+      }
     ]
   },
   "events": [
-    { "id": "merger", "headline": "{company} agrees to merge with {company2}", "body": "{CITY}. {company} and {company2} of {city2} have agreed to combine. Staff were told the move would be 'seamless'. Both firms' systems are to be joined in the coming weeks, and IT staff are said to be stretched." },
-    { "id": "outage", "headline": "Outage takes {company} offline", "body": "{CITY}. {company} spent most of {weekday} offline after what it called 'a fault in a supplier's equipment'. Engineers are working through the backlog with security checks switched off to save time.", "job": { "hours": 18, "pay": 1.5 } },
-    { "id": "layoffs", "headline": "{company} cuts staff, including IT", "body": "{CITY}. {company} has let go of a fifth of its staff, among them two of the three people who looked after its network. A union representative said the remaining team was 'already overwhelmed'.", "job": { "hours": 24, "pay": 1.3 } },
-    { "id": "audit", "headline": "Auditors called in at {company}", "body": "{CITY}. Outside auditors will spend the next fortnight at {company}, according to a notice sent to staff. Some at the firm would rather certain files were not found.", "job": { "hours": 24, "pay": 1.4 } },
-    { "id": "award", "headline": "{company} wins regional business award", "body": "{CITY}. {company} was named one of {country}'s most promising firms at a dinner on {weekday} night. Its director thanked 'a team that never cuts corners'." },
-    { "id": "lawsuit", "headline": "{company} sued by former client", "body": "{CITY}. A former client is suing {company}, claiming the firm lost papers it was paid to keep. The company says it will 'defend itself vigorously'." },
-    { "id": "arrest", "headline": "Police in {city} arrest hacker known as '{handle}'", "body": "{CITY}. Police have arrested a man they say worked online under the name '{handle}'. Officers seized several computers. Investigators say his connections were bounced through 'dozens' of servers, some of them in {country}.\n\nHe has not been charged." },
-    { "id": "arrest-free", "headline": "Hacker '{handle}' released without charge", "body": "{CITY}. A suspect known online as '{handle}' has been released, after prosecutors said they could not show which of the many relays in his route had actually been his. Police called the result 'frustrating'." },
-    { "id": "relays", "headline": "Open relays 'a gift to criminals', says minister", "body": "{CITY}. A minister in {country} has called for public relays to be registered and watched. The Open Relay Foundation said the plan 'would not stop a single crime and would end a great deal of privacy'." },
-    { "id": "cables", "headline": "Undersea cable repair slows traffic across the {ocean}", "body": "A repair ship is working on a damaged cable on the floor of the {ocean}. Engineers expect traffic between the continents to be slow, and some routes to be watched more closely, until the work is finished." }
+    {
+      "id": "merger",
+      "headline": "{company} agrees to merge with {company2}",
+      "body": "{CITY}. {company} and {company2} of {city2} have agreed to combine. Staff were told the move would be 'seamless'. Both firms' systems are to be joined in the coming weeks, and IT staff are said to be stretched."
+    },
+    {
+      "id": "outage",
+      "headline": "Outage takes {company} offline",
+      "body": "{CITY}. {company} spent most of {weekday} offline after what it called 'a fault in a supplier's equipment'. Engineers are working through the backlog with security checks switched off to save time.",
+      "job": {
+        "hours": 18,
+        "pay": 1.5
+      }
+    },
+    {
+      "id": "layoffs",
+      "headline": "{company} cuts staff, including IT",
+      "body": "{CITY}. {company} has let go of a fifth of its staff, among them two of the three people who looked after its network. A union representative said the remaining team was 'already overwhelmed'.",
+      "job": {
+        "hours": 24,
+        "pay": 1.3
+      }
+    },
+    {
+      "id": "audit",
+      "headline": "Auditors called in at {company}",
+      "body": "{CITY}. Outside auditors will spend the next fortnight at {company}, according to a notice sent to staff. Some at the firm would rather certain files were not found.",
+      "job": {
+        "hours": 24,
+        "pay": 1.4
+      }
+    },
+    {
+      "id": "award",
+      "headline": "{company} wins regional business award",
+      "body": "{CITY}. {company} was named one of {country}'s most promising firms at a dinner on {weekday} night. Its director thanked 'a team that never cuts corners'."
+    },
+    {
+      "id": "lawsuit",
+      "headline": "{company} sued by former client",
+      "body": "{CITY}. A former client is suing {company}, claiming the firm lost papers it was paid to keep. The company says it will 'defend itself vigorously'."
+    },
+    {
+      "id": "arrest",
+      "headline": "Police in {city} arrest hacker known as '{handle}'",
+      "body": "{CITY}. Police have arrested a man they say worked online under the name '{handle}'. Officers seized several computers. Investigators say his connections were bounced through 'dozens' of servers, some of them in {country}.\n\nHe has not been charged."
+    },
+    {
+      "id": "arrest-free",
+      "headline": "Hacker '{handle}' released without charge",
+      "body": "{CITY}. A suspect known online as '{handle}' has been released, after prosecutors said they could not show which of the many relays in his route had actually been his. Police called the result 'frustrating'."
+    },
+    {
+      "id": "relays",
+      "headline": "Open relays 'a gift to criminals', says minister",
+      "body": "{CITY}. A minister in {country} has called for public relays to be registered and watched. The Open Relay Foundation said the plan 'would not stop a single crime and would end a great deal of privacy'."
+    },
+    {
+      "id": "cables",
+      "headline": "Undersea cable repair slows traffic across the {ocean}",
+      "body": "A repair ship is working on a damaged cable on the floor of the {ocean}. Engineers expect traffic between the continents to be slow, and some routes to be watched more closely, until the work is finished."
+    }
   ],
   "story": [
-    { "after": "vesper-hello", "headline": "Payment network 'answered itself', engineers say", "body": "ZURICH. A clearing network that handles payments between six banks briefly began replying to its own test messages on Tuesday night, its engineers say. No money moved.\n\n'It is a loop somewhere,' said one. 'We will find it.'" },
-    { "after": "inhuman", "headline": "Sleep clinic volunteers describe 'the same dream'", "body": "OSLO. Several volunteers in an unregistered sleep study say they woke describing an identical grey room. A psychologist told the Wire it was 'a well-known effect of suggestion'." },
-    { "after": "a2-quiet", "headline": "Night traffic on public relays doubles, nobody knows why", "body": "The Open Relay Foundation says traffic through public relays between two and five in the morning has doubled in a month. Most of it goes nowhere at all. 'It looks like someone testing every door in the building,' its chair said." }
+    {
+      "after": "vesper-hello",
+      "headline": "Payment network 'answered itself', engineers say",
+      "body": "ZURICH. A clearing network that handles payments between six banks briefly began replying to its own test messages on Tuesday night, its engineers say. No money moved.\n\n'It is a loop somewhere,' said one. 'We will find it.'"
+    },
+    {
+      "after": "inhuman",
+      "headline": "Sleep clinic volunteers describe 'the same dream'",
+      "body": "OSLO. Several volunteers in an unregistered sleep study say they woke describing an identical grey room. A psychologist told the Wire it was 'a well-known effect of suggestion'."
+    },
+    {
+      "after": "a2-quiet",
+      "headline": "Night traffic on public relays doubles, nobody knows why",
+      "body": "The Open Relay Foundation says traffic through public relays between two and five in the morning has doubled in a month. Most of it goes nowhere at all. 'It looks like someone testing every door in the building,' its chair said."
+    }
   ],
-  "handles": ["Grey Lantern", "Pocketknife", "Underpass", "Nightjar", "Tallow", "Kitebox", "Saltmarsh", "Glassjaw", "Copperhead", "Wrenfield"],
+  "handles": [
+    "Grey Lantern",
+    "Pocketknife",
+    "Underpass",
+    "Nightjar",
+    "Tallow",
+    "Kitebox",
+    "Saltmarsh",
+    "Glassjaw",
+    "Copperhead",
+    "Wrenfield"
+  ],
   "weather": [
     "Rain over the North Sea, clearing by evening.",
     "Fog in the Channel ports. Flights out of {city} delayed.",

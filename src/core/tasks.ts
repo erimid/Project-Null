@@ -348,6 +348,7 @@ function finish(state: GameState, content: Content, connection: Connection, task
         access: 'admin',
         ...(file.encrypted ? { encrypted: file.encrypted } : {}),
         ...(file.text ? { text: file.text } : {}),
+        ...(file.doctored ? { doctored: true } : {}),
       });
       if (!tidy) serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file uploaded: ${file.name}`, byPlayer: true });
       return;

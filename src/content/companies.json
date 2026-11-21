@@ -1053,6 +1053,86 @@
         "I hear you are carrying something from {company}. I will pay more than whoever sent you. Think about it before you deliver.",
         "Name your price for what you took from {company}. I outbid your client, whatever they offered."
       ]
-    }
+    },
+    "kinds": {
+      "frame": {
+        "titles": [
+          "Wrong address",
+          "Somebody else's fault",
+          "A name in the log"
+        ],
+        "summaries": [
+          "Make {company}'s log point at {who}."
+        ],
+        "briefs": [
+          "{company} in {city} is going to find out it was broken into. When it does, I want its log to name {who}, at {address}, and nobody else.\n\nWrite the line in, take yours out. Their security is {tier}.",
+          "There is a person called {who} who deserves the attention of {company}'s lawyers more than I do. Make their access log say so: a login from {address}, slipped in before you arrived.\n\nLeave nothing of your own behind."
+        ]
+      },
+      "guard": {
+        "titles": [
+          "Night watch",
+          "Hold the door",
+          "Minding the shop"
+        ],
+        "summaries": [
+          "Guard {company} for {seconds} seconds against {rival}."
+        ],
+        "briefs": [
+          "{rival} is about to go through {company}'s network and I cannot stop them from here. I can give you the administrator's login. Sit on the server and shut every port they try for {seconds} seconds.\n\nThat is all. You are the lock tonight.",
+          "My people at {company} in {city} have had a tip that {rival} is coming for them. Log in with the details I am sending and keep them out for {seconds} seconds. If they get in, do not bother sending a bill."
+        ]
+      },
+      "hold": {
+        "titles": [
+          "Keep it open",
+          "A foot in the door",
+          "Waiting room"
+        ],
+        "summaries": [
+          "Stay logged in on {company} for {seconds} seconds."
+        ],
+        "briefs": [
+          "I need a door held open at {company} while a friend does their part. Get in, log in, and stay there for {seconds} seconds. Their trace will come for you. Be gone before it arrives, not before.",
+          "Get into {company} in {city} and sit there for {seconds} seconds. Do nothing. Touch nothing. Just keep the session alive. Their security is {tier}."
+        ]
+      },
+      "hunt": {
+        "titles": [
+          "Who did this",
+          "Follow the breadcrumbs",
+          "Find them"
+        ],
+        "summaries": [
+          "Follow a hacker's trail from {company} to their machine."
+        ],
+        "briefs": [
+          "Somebody went through {company} last night and I want to know who. Their route is in the access log. Follow it, server by server, until you reach the machine it started from.\n\nConnect to it and I will know where to send the lawyers.",
+          "{company} in {city} was hit. The hacker bounced through several servers, and every one of them wrote a line about it. Read the logs, follow the trail, and find their machine."
+        ]
+      },
+      "swap": {
+        "titles": [
+          "Second draft",
+          "Like for like",
+          "Nobody will notice"
+        ],
+        "summaries": [
+          "Replace {file} at {company} with a doctored copy."
+        ],
+        "briefs": [
+          "I am sending you a copy of {file}. It is the same size as the one on {company}'s server, and almost the same. Delete theirs and put mine in its place.\n\nIf anyone ever opens it, they will read what I want them to read.",
+          "{company} in {city} keeps {file}. I have improved it. Swap their copy for mine, same name, same size, and leave no sign it was ever different."
+        ]
+      }
+    },
+    "racers": [
+      "Latchkey",
+      "Kettle",
+      "Pilot Whale",
+      "Ninefold",
+      "Tamsin Grey",
+      "Oxbow"
+    ]
   }
 }

@@ -19,7 +19,7 @@ export interface NewsTemplate {
 }
 
 /** Kinds of the player's work that make the news, one list of templates each. */
-export const NEWS_JOB_KINDS = ['steal', 'destroy', 'record', 'read', 'plant', 'frame', 'caught'] as const;
+export const NEWS_JOB_KINDS = ['steal', 'destroy', 'record', 'read', 'plant', 'frame', 'guard', 'hold', 'hunt', 'swap', 'caught'] as const;
 export type NewsJobKind = (typeof NEWS_JOB_KINDS)[number];
 
 /** Something that happens in the world on its own. */
@@ -47,7 +47,7 @@ export interface NewsDef {
 
 /** A paper with nothing to print. Tests and old content use it. */
 export const NO_NEWS: NewsDef = {
-  jobs: { steal: [], destroy: [], record: [], read: [], plant: [], frame: [], caught: [] },
+  jobs: { steal: [], destroy: [], record: [], read: [], plant: [], frame: [], guard: [], hold: [], hunt: [], swap: [], caught: [] },
   reactions: { guard: [], firm: [] },
   events: [],
   story: [],

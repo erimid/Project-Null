@@ -581,6 +581,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       run(connection, { kind: 'uploadFile', file: goal.file });
       return;
     }
+    if (goal.kind !== 'steal' && goal.kind !== 'destroy') return;
     if (goal.kind === 'steal' && state.player.files.some((file) => file.name === goal.file && file.from === server.id)) return;
     if (fileBlocked(server, connection)) run(connection, { kind: 'firewall' });
     run(connection, { kind: goal.kind === 'steal' ? 'copyFile' : 'deleteFile', file: goal.file });
@@ -757,6 +758,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       list.push(id);
       return true;
     };
+    // The scripted player keeps to the kinds of job it knows, and never races.
+    if (contract.race || stagesOf(contract).some((stage) => ['guard', 'hold', 'hunt', 'swap'].includes(stage.objective.kind))) return null;
     // Every step must be doable, so gear for the hardest layer each one presents.
     for (const stage of stagesOf(contract)) {
       const server = findServer(content, stage.targetId);
@@ -785,7 +788,9 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       if (goal.kind === 'steal') {
         const file = state.servers[server.id]?.files.find((item) => item.name === goal.file);
         if (file?.encrypted && !want('decrypt', file.encrypted)) return null;
-        if (file && file.sizeGq > freeStorageGb(state, content)) {
+        // Room for the file once whatever it is about to buy is installed.
+        const installing = list.reduce((sum, id) => sum + (content.programs.find((program) => program.id === id)?.sizeGq ?? 0), 0);
+        if (file && file.sizeGq > freeStorageGb(state, content) - installing) {
           const next = content.hardware.find((part) => part.slot === 'storage' && part.tier === state.player.hardware.storage + 1);
           if (!next) return null;
           list.push(next.id);

@@ -175,9 +175,25 @@ export type ObjectiveDef =
    * Make the target's access log point at someone else: write a false line
    * naming `who` (from `address`), and leave none of your own lines behind.
    */
-  | { readonly kind: 'frame'; readonly who: string; readonly address: string };
+  | { readonly kind: 'frame'; readonly who: string; readonly address: string }
+  /**
+   * Guard the target: log in as its administrator (the client hands over
+   * the login) and hold off a rival who is breaking in, by shutting the
+   * ports they probe, until `seconds` have passed.
+   */
+  | { readonly kind: 'guard'; readonly seconds: number; readonly rival?: string }
+  /** Stay in: hold a login on the target for `seconds` while its trace runs, to keep a door open for someone else. */
+  | { readonly kind: 'hold'; readonly seconds: number }
+  /**
+   * Find the hacker: their trail starts in the target's access log and runs
+   * through `trail` (server ids, in order). Each log points at the next;
+   * the last is their own machine. Connecting to it finishes the job.
+   */
+  | { readonly kind: 'hunt'; readonly trail: readonly string[] }
+  /** Swap a file: delete `file` on the target and put the doctored copy the client sends, same name and size, in its place. */
+  | { readonly kind: 'swap'; readonly file: string };
 
-export const OBJECTIVE_KINDS = ['steal', 'destroy', 'record', 'read', 'plant', 'frame'] as const;
+export const OBJECTIVE_KINDS = ['steal', 'destroy', 'record', 'read', 'plant', 'frame', 'guard', 'hold', 'hunt', 'swap'] as const;
 
 /** A security layer by name. */
 export type LayerName = keyof SecurityDef;
@@ -257,6 +273,11 @@ export interface ContractDef {
   readonly part?: PartDef;
   /** True for a story mission. The board never offers it on its own; the story director does (see core/story.ts). */
   readonly story?: boolean;
+  /**
+   * Another hacker has the same job. `rival` is their handle; if they get
+   * there `minutes` of game time after the job is taken, the job is lost.
+   */
+  readonly race?: { readonly rival: string; readonly minutes: number };
   /**
    * Id of the patron behind it (see patrons.json). Delivering it raises
    * standing with them. When `client` is not the patron's own name the
@@ -651,6 +672,17 @@ export function parseObjective(file: string, where: string, value: unknown): Obj
       return { kind, file: text(file, at, goal, 'file'), sizeGq: num(file, at, goal, 'sizeGq', 1, 1000) };
     case 'frame':
       return { kind, who: text(file, at, goal, 'who'), address: text(file, at, goal, 'address') };
+    case 'guard':
+      return { kind, seconds: num(file, at, goal, 'seconds', 10, 600), ...(goal['rival'] === undefined ? {} : { rival: text(file, at, goal, 'rival') }) };
+    case 'hold':
+      return { kind, seconds: num(file, at, goal, 'seconds', 10, 600) };
+    case 'hunt': {
+      const trail = list(file, at, goal, 'trail');
+      if (trail.length === 0 || trail.some((id) => typeof id !== 'string')) throw new ContentError(file, `${at}: trail must be a list of server ids`);
+      return { kind, trail: trail as string[] };
+    }
+    case 'swap':
+      return { kind, file: text(file, at, goal, 'file') };
   }
   throw new ContentError(file, `${where}: objective kind "${kind}" is not one of ${OBJECTIVE_KINDS.join(', ')}`);
 }
@@ -753,6 +785,12 @@ export function parseContracts(data: unknown, file = 'contracts.json'): Contract
       ...(raw['part'] === undefined ? {} : { part: parsePart(file, where, raw['part']) }),
       ...(raw['story'] === undefined ? {} : { story: flag(file, where, raw, 'story') }),
       ...(raw['patron'] === undefined ? {} : { patron: text(file, where, raw, 'patron') }),
+      ...(raw['race'] === undefined
+        ? {}
+        : (() => {
+            const race = entry(file, `${where} race`, raw['race']);
+            return { race: { rival: text(file, `${where} race`, race, 'rival'), minutes: num(file, `${where} race`, race, 'minutes', 10, 100_000) } };
+          })()),
     };
   });
   unique(file, 'contracts', 'id', contracts.map((contract) => contract.id));
@@ -1022,12 +1060,16 @@ function checkStage(servers: readonly ServerDef[], where: string, stage: StageDe
   if (goal.kind === 'record') {
     if (!target!.records?.columns.includes(goal.column) || goal.column === target!.records.columns[0]) fail(`${target!.id} has no changeable records column "${goal.column}"`);
     if (!target!.records!.rows.some((row) => row[0] === goal.key)) fail(`${target!.id} has no record "${goal.key}"`);
-  } else if (goal.kind === 'steal' || goal.kind === 'destroy' || goal.kind === 'read') {
+  } else if (goal.kind === 'steal' || goal.kind === 'destroy' || goal.kind === 'read' || goal.kind === 'swap') {
     if (!target!.files.some((item) => item.name === goal.file) && !arrives(goal.file)) fail(`${target!.id} has no file "${goal.file}"`);
     if (goal.kind === 'read' && goal.reveals) {
       const other = servers.find((server) => server.id === goal.reveals!.serverId);
       if (!other?.accounts.some((account) => account.user === goal.reveals!.user)) fail(`reveals "${goal.reveals.user}" on "${goal.reveals.serverId}", which has no such account`);
     }
+  } else if (goal.kind === 'hunt') {
+    for (const id of goal.trail) if (!servers.some((server) => server.id === id)) fail(`trail names "${id}", which is not a server`);
+  } else if (goal.kind === 'guard' || goal.kind === 'hold') {
+    if (goal.kind === 'guard' && !target!.accounts.some((account) => account.role === 'admin')) fail(`${target!.id} has no administrator to guard as`);
   } else if (goal.kind === 'frame') {
     if (target!.security.proxy === 0 && !target!.accounts.some((account) => account.role === 'admin')) fail(`${target!.id} has nobody to log in as`);
   }

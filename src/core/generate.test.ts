@@ -25,9 +25,11 @@ import { content as testContent } from './testWorld';
 
 /** The test world, with the real company pools. */
 const base: Content = { ...testContent, companies };
+/** The same, with only the three oldest kinds of job and no races. */
+const plainBase: Content = { ...base, companies: { ...companies, jobs: { ...companies.jobs, kinds: undefined, racers: undefined } } };
 
-function game(seed = 11) {
-  const world = worldFor(base, seed);
+function game(seed = 11, from = base) {
+  const world = worldFor(from, seed);
   const state: GameState = syncWithContent(
     createGame({ seed, handle: 'T', startDate: '2034-03-14T08:00:00Z', startingBalance: 1000 }),
     world,
@@ -185,7 +187,7 @@ describe('repeatable jobs', () => {
   });
 
   it('can be taken, done and delivered like any contract, and are replaced', () => {
-    const h = game();
+    const h = game(11, plainBase);
     postJobs(h.state, h.world);
     const job = h.state.contracts.jobs.find((item) => item.objective.kind === 'destroy') ?? h.state.contracts.jobs[0]!;
     h.ok({ type: 'connect', serverId: 'hidden' });

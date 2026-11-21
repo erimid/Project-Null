@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 22;
+export const STATE_VERSION = 23;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -117,6 +117,24 @@ export interface ContractsState {
   stage: number;
   /** Game time the current stage began. */
   stageStartMs: number;
+  /** How long the player has held the current stage's target, for a guard or stay-in job (see kinds.ts). */
+  heldMs: number;
+  /** The attack on a server the player is guarding, once it has begun. */
+  guard: GuardState | null;
+  /** Game time a rival on the same job gets there first, for a race. 0 = no race. */
+  raceUntilMs: number;
+}
+
+/** A rival breaking into a server the player is guarding: the gateway defence, from the other side. */
+export interface GuardState {
+  /** How far the intruder has got, in ms. */
+  breachMs: number;
+  /** Time they need to break all the way in. */
+  totalMs: number;
+  /** The port line-up the player has open to shut them out, or null. */
+  port: RaidPort | null;
+  /** Ports shut so far. Each sets them back less than the last. */
+  shut: number;
 }
 
 /** How far the player has got through the story, and which story contracts are on the board (see core/story.ts). */
@@ -150,6 +168,8 @@ export interface StoredFile {
   text?: string;
   /** The folder it sat in on the server it came from. */
   folder?: string;
+  /** True for a doctored copy a client sent for a swap job. */
+  doctored?: boolean;
 }
 
 /** `from` of a file a client sent to the gateway to be planted somewhere. */
@@ -374,6 +394,8 @@ export interface FileState {
   folder?: string;
   /** What it says, for a file made during the game (a note left for a job, a planted file). Written files keep theirs in content/. */
   text?: string;
+  /** True once a client's doctored copy has replaced the real file. */
+  doctored?: boolean;
 }
 
 export interface LogEntry {
@@ -386,6 +408,8 @@ export interface LogEntry {
   byPlayer: boolean;
   /** Set on a false line the player wrote to point at someone else: who it names. */
   framed?: string;
+  /** Set on a line in a hacker's trail: the server it leads to (see kinds.ts). */
+  points?: string;
 }
 
 /**
@@ -580,7 +604,7 @@ export function createGame(options: NewGameOptions): GameState {
     connections: [],
     tasks: [],
     messages: [],
-    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0 },
+    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0, heldMs: 0, guard: null, raceUntilMs: 0 },
     story: { beat: 0, arrived: false, lastMs: 0, offered: [] },
     phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
     reviews: [],
