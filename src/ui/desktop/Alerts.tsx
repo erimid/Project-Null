@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { session } from '../session';
+import { deskStore } from './deskStore';
 import { windows, type WindowId } from './windowStore';
 
 interface Alert {
@@ -11,7 +12,8 @@ interface Alert {
   /** Good news, shown in green. */
   readonly good?: boolean;
   /** The window a click opens, for news that wants acting on. */
-  readonly opens?: WindowId;
+  /** A window to open when it is pressed, or the contract drop-down, or the Workbench side of Programs. */
+  readonly opens?: WindowId | 'contract' | 'workbench';
 }
 
 const SHOW_MS = 4000;
@@ -41,13 +43,13 @@ export function Alerts() {
           ? { id: nextId++, severe: true, opens: 'messages', title: 'They got in', text: `${event.who} broke through. See Messages for what it cost.` }
           : { id: nextId++, severe: false, title: 'Plug pulled', text: `${event.who} got nothing, and nor did you.` }
         : event.type === 'stepDone'
-        ? { id: nextId++, severe: false, good: true, opens: 'contract', title: `Step ${event.step} of ${event.of} done`, text: 'The client has sent the next step.' }
+        ? { id: nextId++, severe: false, good: true, opens: 'contract' as const, title: `Step ${event.step} of ${event.of} done`, text: 'The client has sent the next step.' }
         : event.type === 'promoted'
         ? { id: nextId++, severe: false, good: true, title: 'New standing', text: `The board now knows you as ${event.title}.` }
         : event.type === 'pointEarned'
         ? { id: nextId++, severe: false, good: true, opens: 'skills', title: 'Skill point', text: event.free === 1 ? 'You have a point to spend. Open Skills.' : `You have ${event.free} points to spend. Open Skills.` }
         : event.type === 'moduleGained'
-        ? { id: nextId++, severe: false, good: true, opens: 'workbench', title: 'New module', text: `${event.name} is on your Workbench shelf.` }
+        ? { id: nextId++, severe: false, good: true, opens: 'workbench' as const, title: 'New module', text: `${event.name} is on your Workbench shelf.` }
         : event.type !== 'disconnected'
         ? { id: nextId++, severe: false, title: '', text: '' }
         : event.traced
@@ -80,7 +82,11 @@ export function Alerts() {
           class={`alert${alert.severe ? ' alert--severe' : ''}${alert.good ? ' alert--good' : ''}`}
           title={alert.opens ? 'Open it' : 'Dismiss'}
           onClick={() => {
-            if (alert.opens) windows.focus(alert.opens);
+            if (alert.opens === 'contract') deskStore.showContract(true);
+            else if (alert.opens === 'workbench') {
+              deskStore.showPrograms('workbench');
+              windows.focus('programs');
+            } else if (alert.opens) windows.focus(alert.opens);
             setAlerts((list) => list.filter((item) => item.id !== alert.id));
           }}
         >

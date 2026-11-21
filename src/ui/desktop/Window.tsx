@@ -268,6 +268,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
       }}
       aria-label={name}
       data-tour={id}
+      data-desk={layout.desk ?? undefined}
       onPointerDownCapture={() => windows.focus(id)}
     >
       <div

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { sound, useSound } from '../audio';
 import { useGame } from '../hooks';
+import { deskLayout, useDeskLayout } from './deskLayout';
 import { hintStore, useHints } from './hintStore';
 import { useLayout } from './layout';
 import { snapping, useSnapping } from './snapStore';
@@ -20,6 +21,7 @@ export function GameMenu() {
   const soundSettings = useSound();
   const hints = useHints();
   const snap = useSnapping();
+  const layout = useDeskLayout();
   const desk = useLayout() === 'desk';
   const root = useRef<HTMLDivElement>(null);
 
@@ -94,6 +96,18 @@ export function GameMenu() {
           </div>
           {desk && (
             <>
+              <h3 class="menu__heading">Desk layouts</h3>
+              <div class="menu__sound">
+                <button
+                  type="button"
+                  class={`btn${layout.auto ? ' btn--go' : ''}`}
+                  aria-pressed={layout.auto}
+                  onClick={() => deskLayout.setAuto(!layout.auto)}
+                >
+                  {layout.auto ? 'On' : 'Off'}
+                </button>
+                <span class="menu__item-note">Switch to Run by itself when you connect, and back when you disconnect. Plan, Run and Home are on the bar either way.</span>
+              </div>
               <h3 class="menu__heading">Window snapping</h3>
               <div class="menu__sound">
                 <button

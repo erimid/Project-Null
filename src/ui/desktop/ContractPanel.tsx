@@ -1,16 +1,19 @@
-import { activeContract, contractRisk, findModule, objectiveMet, objectivePossible, stageDeadline, stageIndex, stagesOf, stageView } from '../../../core';
-import { findServer, type ContractDef } from '../../../core/content';
-import { formatMoney } from '../../format';
-import { useWorld } from '../../hooks';
+import { activeContract, contractRisk, findModule, objectiveMet, objectivePossible, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
+import { findServer, type ContractDef } from '../../core/content';
+import { formatMoney } from '../format';
+import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
+import { useWorld } from '../hooks';
 import type { ComponentChildren } from 'preact';
-import { content, session } from '../../session';
-import { ConfirmButton } from '../ConfirmButton';
-import { IconTile, ModulePlate } from '../Gear';
-import { Icon, objectiveIcon } from '../Icon';
-import { lit, useGuide } from '../guide';
-import { Window } from '../Window';
-import { windows } from '../windowStore';
-import { OBJECTIVE_WORDS, Place, RiskMeter, showOnMap } from './Place';
+import { content, session } from '../session';
+import { ConfirmButton } from './ConfirmButton';
+import { IconTile, ModulePlate } from './Gear';
+import { Icon, objectiveIcon } from './Icon';
+import { lit, useGuide } from './guide';
+import { deskStore, useDesk } from './deskStore';
+import { sideWidth } from './desks';
+import { useLayout } from './layout';
+import { useWindows, windows } from './windowStore';
+import { OBJECTIVE_WORDS, Place, RiskMeter, showOnMap } from './windows/Place';
 
 /** What has to happen, in one line. */
 function objectiveText(contract: ContractDef): string {
@@ -61,23 +64,50 @@ function WithPlaces({ text, known }: { text: string; known: readonly string[] })
   return <>{parts}</>;
 }
 
-/** The contract being worked on: the brief, whether it is done, and the Deliver button. */
-export function ContractWindow() {
+/**
+ * The contract being worked on: the brief, whether it is done, and the
+ * Deliver button. It drops down from the contract's name in the top bar
+ * and sits above every window, so it can never be buried under one.
+ */
+export function ContractPanel() {
   const guide = useGuide();
+  const open = useDesk().contractOpen;
   const game = useWorld((state) => state);
   const contract = activeContract(game, content);
+  const desk = useLayout() === 'desk';
+  // Redrawn with the windows, so it keeps the width of Plan's side column as the desk changes size.
+  useWindows();
+  const shown = open && contract !== undefined;
+  // Esc puts it away.
+  useEffect(() => {
+    if (!shown) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !event.shiftKey) deskStore.showContract(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [shown]);
 
-  if (!contract) {
-    return (
-      <Window id="contract" note="none">
-        <p class="empty">You have no contract. Connect to The Backroom and look at Contracts.</p>
-      </Window>
-    );
-  }
+  // The desk makes room for it: it reports how far down it hangs, and that it has gone.
+  const panel = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const el = panel.current;
+    if (!shown || !desk || !el) return;
+    const report = () => windows.setContractDrop(el.offsetHeight);
+    report();
+    const watch = new ResizeObserver(report);
+    watch.observe(el);
+    return () => {
+      watch.disconnect();
+      windows.setContractDrop(0);
+    };
+  }, [shown, desk]);
+
+  if (!open || !contract) return null;
 
   // Once the contract is handed in or given up there is nothing left to show.
   const finish = (action: { type: 'abandonContract' } | { type: 'deliverContract'; choiceId?: string }) => {
-    if (session.dispatch(action).ok) windows.close('contract');
+    if (session.dispatch(action).ok) deskStore.showContract(false);
   };
   const steps = stagesOf(contract);
   const current = stageIndex(game, contract);
@@ -95,8 +125,25 @@ export function ContractWindow() {
   // The brief for the step being worked on: the stage's own, or the contract's for the first.
   const brief = current === 0 ? contract.brief : steps[current]!.brief ?? contract.brief;
 
+  const note = done ? 'ready to deliver' : steps.length > 1 ? `step ${current + 1} of ${steps.length}` : 'in progress';
+
   return (
-    <Window id="contract" note={done ? 'ready to deliver' : steps.length > 1 ? `step ${current + 1} of ${steps.length}` : 'in progress'}>
+    <aside
+      ref={panel}
+      class={`contractpanel${done ? ' is-done' : ''}`}
+      aria-label="Your contract"
+      data-tour="contractpanel"
+      style={desk ? { width: `${sideWidth(windows.area())}px` } : undefined}
+    >
+      <div class="contractpanel__title">
+        <span class="window__title-text">Contract</span>
+        <span class="window__title-note">{note}</span>
+        <span class="window__title-gap" />
+        <button class="window__close" type="button" aria-label="Put the contract away" data-tip="Put it away. The contract's name in the top bar brings it back." onClick={() => deskStore.showContract(false)}>
+          ×
+        </button>
+      </div>
+      <div class="contractpanel__body">
       <header class={`jobhead${contract.story ? ' is-story' : ''}`}>
         <div class="jobhead__top">
           <IconTile icon={contract.story ? 'star' : objectiveIcon(goal.kind)} size="lg" tone={contract.story ? 'rare' : undefined} />
@@ -206,6 +253,7 @@ export function ContractWindow() {
             </button>
           ))}
       </div>
-    </Window>
+      </div>
+    </aside>
   );
 }

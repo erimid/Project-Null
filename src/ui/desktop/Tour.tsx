@@ -125,7 +125,9 @@ export function Tour() {
     windows.focus('messages');
   };
   function go(delta: number) {
-    const next = step! + delta;
+    let next = step! + delta;
+    // A phone has no desk layouts to point at.
+    while (TOUR[next]?.deskOnly && layout !== 'desk') next += delta;
     if (next < 0) return;
     if (next >= TOUR.length) {
       finish();
@@ -135,6 +137,7 @@ export function Tour() {
     hintStore.goToStep(next);
   }
 
+  const shownSteps = TOUR.filter((item) => layout === 'desk' || !item.deskOnly);
   const place = cardPlace(box, cardH);
   const body = last && touch() ? TOUCH_LAST_STEP : current.body;
 
@@ -156,7 +159,7 @@ export function Tour() {
         style={place ? { left: `${place.left}px`, top: `${place.top}px` } : undefined}
       >
         <p class="tour__count data">
-          {step + 1} / {TOUR.length}
+          {shownSteps.indexOf(current) + 1} / {shownSteps.length}
         </p>
         <h2 class="tour__title">{current.title}</h2>
         <p class="tour__body">{body}</p>

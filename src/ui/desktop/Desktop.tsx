@@ -8,6 +8,8 @@ import { useGame } from '../hooks';
 import type { Speed } from '../../core';
 import { content, session } from '../session';
 import { Alerts } from './Alerts';
+import { ContractPanel } from './ContractPanel';
+import { deskLayout } from './deskLayout';
 import { SnapPreview } from './snapStore';
 import { TouchTips } from './TouchTips';
 import { HoverTips } from './HoverTips';
@@ -15,13 +17,11 @@ import { GuideCard } from './GuideCard';
 import { Tour } from './Tour';
 import { windows } from './windowStore';
 import { BrowserWindow } from './windows/BrowserWindow';
-import { ContractWindow } from './windows/ContractWindow';
 import { GatewayWindow } from './windows/GatewayWindow';
 import { MapWindow } from './windows/MapWindow';
 import { MessagesWindow } from './windows/MessagesWindow';
 import { ProgramsWindow } from './windows/ProgramsWindow';
 import { SkillsWindow } from './windows/SkillsWindow';
-import { WorkbenchWindow } from './windows/WorkbenchWindow';
 import { ViewerWindow } from './windows/ViewerWindow';
 import { SavesWindow } from './windows/SavesWindow';
 import { ServerWindow } from './windows/ServerWindow';
@@ -29,6 +29,7 @@ import { DefenceWindow } from './windows/DefenceWindow';
 import './desktop.css';
 import './tutorial.css';
 import './stage5.css';
+import './layouts.css';
 
 const SPEED_KEYS: Readonly<Record<string, Speed>> = { '1': 1, '2': 2, '3': 4 };
 
@@ -80,6 +81,16 @@ export function Desktop() {
     watch.observe(area);
     return () => watch.disconnect();
   }, [phone]);
+  // The desk follows the work: Run when the first connection opens, and back when the last one closes.
+  const connections = useGame((game) => game.connections.length);
+  const lastConnections = useRef(connections);
+  useEffect(() => {
+    const before = lastConnections.current;
+    lastConnections.current = connections;
+    if (phone) return;
+    if (before === 0 && connections > 0) deskLayout.connected();
+    else if (before > 0 && connections === 0) deskLayout.disconnected();
+  }, [connections, phone]);
   // The whole desk jolts when a trace cuts the line.
   const desk = useRef<HTMLDivElement>(null);
   useEffect(
@@ -106,21 +117,19 @@ export function Desktop() {
         <ServerWindow />
         <ProgramsWindow />
         <MessagesWindow />
-        <ContractWindow />
         <SkillsWindow />
-        <WorkbenchWindow />
-        <BrowserWindow net="web" />
-        <BrowserWindow net="dark" />
+        <BrowserWindow />
         <ViewerWindow />
         <SavesWindow />
         <DefenceWindow />
+        <ContractPanel />
         {layoutKind === 'desk' && <SnapPreview />}
         <Alerts />
         <TouchTips />
         <HoverTips />
       </main>
       {phone ? <PhoneDock /> : <BottomBar />}
-      <GuideCard />
+      {phone && <GuideCard />}
       <Tour />
     </div>
   );

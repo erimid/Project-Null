@@ -1,22 +1,27 @@
-import { activeContract, objectiveMet } from '../../core';
+import { activeContract, objectiveMet, stageIndex, stagesOf } from '../../core';
 import { findServer } from '../../core/content';
 import { useWorld } from '../hooks';
 import { content, session } from '../session';
 import { activeConnection, deskStore, useDesk } from './deskStore';
 import { lit, useGuide } from './guide';
+import { GuideCard } from './GuideCard';
+import { useLayout } from './layout';
 import { windows } from './windowStore';
 
 /**
  * Top bar: one tab per connected server (each is its own connection),
- * a + to open another, and the active contract on the right.
+ * a + to open another, and the active contract on the right. Pressing
+ * the contract drops its goal and steps down (ContractPanel).
  */
 export function TopBar() {
   const guide = useGuide();
+  const onDesk = useLayout() === 'desk';
   const desk = useDesk();
   const game = useWorld((state) => state);
   const active = activeConnection(game, desk);
   const contract = activeContract(game, content);
   const done = contract !== undefined && objectiveMet(game, content, contract);
+  const steps = contract ? stagesOf(contract) : [];
 
   return (
     <header class="tabbar">
@@ -56,16 +61,19 @@ export function TopBar() {
       <button class="tabbar__add" type="button" aria-label="New connection" data-tip="Open another connection from the Route map" onClick={() => windows.focus('map')}>
         +
       </button>
+      {onDesk && <GuideCard bar />}
       {contract ? (
         <button
           type="button"
-          class={`tabbar__contract tabbar__contract--live${lit(guide, 'deliver')}`}
+          class={`tabbar__contract tabbar__contract--live${done ? ' is-done' : ''}${desk.contractOpen ? ' is-open' : ''}${lit(guide, 'deliver')}`}
           data-tour="contract"
-          data-tip="Your contract. Open it to see the goal and deliver."
-          onClick={() => windows.focus('contract')}
+          data-tip={desk.contractOpen ? 'Put your contract away' : 'Your contract. Press to see the goal and deliver.'}
+          aria-expanded={desk.contractOpen}
+          onClick={() => deskStore.showContract(!desk.contractOpen)}
         >
-          <span class="tabbar__contract-label">{done ? 'Ready to deliver' : 'Contract'}</span>
-          {contract.title}
+          <span class="tabbar__contract-label">{done ? 'Ready to deliver' : steps.length > 1 ? `Contract · step ${stageIndex(game, contract) + 1} of ${steps.length}` : 'Contract'}</span>
+          <span class="tabbar__contract-name">{contract.title}</span>
+          <span class="tabbar__contract-chevron" aria-hidden="true" />
         </button>
       ) : (
         <span class="tabbar__contract" data-tour="contract" data-tip="Take a job from the Contracts board at the Backroom.">

@@ -3,54 +3,66 @@ import { findPage, sites, type BlockDef, type Net } from '../../../content';
 import { useGame } from '../../hooks';
 import { formatLongDay } from '../../format';
 import { Window } from '../Window';
-import type { WindowId } from '../windowStore';
 
-/** What differs between the two browsers. Each only opens pages on its own network. */
-const BROWSERS: Readonly<Record<Net, { window: WindowId; home: string; scheme: string }>> = {
-  web: { window: 'web', home: 'start.lumen/', scheme: 'net://' },
-  dark: { window: 'dark', home: 'index.veil/', scheme: 'veil://' },
+/** The two networks the browser reaches. Each has its own home page, and pages only link within their own network. */
+const NETS: Readonly<Record<Net, { name: string; tip: string; home: string; scheme: string }>> = {
+  web: { name: 'Lumen', tip: 'The public web: news, company sites and the Open Relay Registry', home: 'start.lumen/', scheme: 'net://' },
+  dark: { name: 'Undertow', tip: 'The hidden network: rumours, tools and people who do not want to be found', home: 'index.veil/', scheme: 'veil://' },
 };
+const NET_IDS: readonly Net[] = ['web', 'dark'];
+
+/** Pages visited on one network, and which of them is showing. */
+interface Trail {
+  readonly pages: readonly string[];
+  readonly at: number;
+}
 
 /**
- * An in-game browser. There is nothing to type: pages are reached by
- * their links, with Back, Forward and Home. It does not load anything
- * from the real internet.
+ * The in-game browser: one window for both networks, picked by the tabs
+ * under its title. Each network keeps its own place and its own Back and
+ * Forward. There is nothing to type: pages are reached by their links.
+ * It does not load anything from the real internet.
  */
-export function BrowserWindow({ net }: { net: Net }) {
-  const browser = BROWSERS[net];
-  // Pages visited, and which of them is showing.
-  const [trail, setTrail] = useState<readonly string[]>([browser.home]);
-  const [at, setAt] = useState(0);
+export function BrowserWindow() {
+  const [net, setNet] = useState<Net>('web');
+  const [trails, setTrails] = useState<Readonly<Record<Net, Trail>>>({
+    web: { pages: [NETS.web.home], at: 0 },
+    dark: { pages: [NETS.dark.home], at: 0 },
+  });
+  const browser = NETS[net];
+  const { pages, at } = trails[net];
   const body = useRef<HTMLDivElement>(null);
-  const address = trail[at] ?? browser.home;
+  const address = pages[at] ?? browser.home;
   const found = findPage(sites, net, address);
   const today = useGame((game) => formatLongDay(game.clock.gameTimeMs));
 
+  const setAt = (next: number) => setTrails({ ...trails, [net]: { pages, at: next } });
   const go = (to: string) => {
     if (to === address) return;
-    setTrail([...trail.slice(0, at + 1), to]);
-    setAt(at + 1);
+    setTrails({ ...trails, [net]: { pages: [...pages.slice(0, at + 1), to], at: at + 1 } });
   };
   // A new page starts at its top.
-  useEffect(() => body.current?.scrollTo(0, 0), [address]);
+  useEffect(() => body.current?.scrollTo(0, 0), [net, address]);
 
   return (
-    <Window id={browser.window} note={found?.site.name}>
+    <Window
+      id="web"
+      note={found?.site.name}
+      tabs={NET_IDS.map((id) => (
+        <button key={id} type="button" class={`tabbtn tabbtn--${id}${id === net ? ' is-current' : ''}`} aria-pressed={id === net} data-tip={NETS[id].tip} onClick={() => setNet(id)}>
+          {NETS[id].name}
+        </button>
+      ))}
+    >
       <div class={`browser browser--${net}`}>
         <div class="browser__bar">
           <button type="button" class="browser__nav" aria-label="Back" disabled={at === 0} onClick={() => setAt(at - 1)}>
             ‹
           </button>
-          <button
-            type="button"
-            class="browser__nav"
-            aria-label="Forward"
-            disabled={at >= trail.length - 1}
-            onClick={() => setAt(at + 1)}
-          >
+          <button type="button" class="browser__nav" aria-label="Forward" disabled={at >= pages.length - 1} onClick={() => setAt(at + 1)}>
             ›
           </button>
-          <button type="button" class="browser__nav" aria-label="Home" onClick={() => go(browser.home)}>
+          <button type="button" class="browser__nav" aria-label="Home" data-tip={`${browser.name}'s home page`} onClick={() => go(browser.home)}>
             ⌂
           </button>
           <span class="browser__address data">
@@ -58,7 +70,7 @@ export function BrowserWindow({ net }: { net: Net }) {
             {address.replace(/\/$/, '')}
           </span>
         </div>
-        <div class="browser__page" ref={body} key={address}>
+        <div class="browser__page" ref={body} key={`${net}:${address}`}>
           {found ? (
             found.page.blocks.map((block, index) => <Block key={index} block={block} go={go} today={today} />)
           ) : (

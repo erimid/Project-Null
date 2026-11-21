@@ -6,6 +6,7 @@ import {
   hostedModel,
   installedOfKind,
   maxPrograms,
+  moduleSlots,
   ownedProgram,
   programFile,
   programStorageGq,
@@ -25,6 +26,8 @@ import { Icon, PROGRAM_GROUPS, fileIcon, kindLabel, programIcon } from '../Icon'
 import { TaskProgress, describeTarget, findTask } from '../TaskProgress';
 import { viewer } from '../viewerStore';
 import { Window } from '../Window';
+import { deskStore, useDesk } from '../deskStore';
+import { WorkbenchSection } from './WorkbenchSection';
 
 /** One installed program as a tile: its icon, version and size, whether it is running, and what can be done with it. */
 function ProgramTile({ game, program, choice }: { game: GameState; program: ProgramDef; choice: boolean }) {
@@ -89,11 +92,48 @@ function ProgramTile({ game, program, choice }: { game: GameState; program: Prog
 }
 
 /**
+ * The Programs window has two sides, picked by the tabs under its title:
+ * the programs and files on the gateway, and the Workbench where modules
+ * are fitted to them. Both stay drawn, so a half-made build is still on
+ * the bench after a look at the drive.
+ */
+export function ProgramsWindow() {
+  const tab = useDesk().programsTab;
+  const running = useWorld((game) => `${game.tasks.length} of ${maxPrograms(game, content)} running`);
+  const slots = useWorld((game) => moduleSlots(game, content));
+  const parts = useWorld((game) => Object.values(game.player.parts).reduce((sum, count) => sum + count, 0));
+  return (
+    <Window
+      id="programs"
+      note={tab === 'workbench' ? `workbench · ${slots} ${slots === 1 ? 'module' : 'modules'} per build` : running}
+      tabs={
+        <>
+          <button type="button" class={`tabbtn${tab === 'programs' ? ' is-current' : ''}`} aria-pressed={tab === 'programs'} data-tip="What is installed, what is running, and the files you have brought home" onClick={() => deskStore.showPrograms('programs')}>
+            Programs
+          </button>
+          <button type="button" class={`tabbtn${tab === 'workbench' ? ' is-current' : ''}`} aria-pressed={tab === 'workbench'} data-tip="Fit modules to your programs to make faster, smaller or quieter versions" onClick={() => deskStore.showPrograms('workbench')}>
+            Workbench
+            {parts > 0 && <span class="count data" aria-label={`${parts} modules on the shelf`}>{parts}</span>}
+          </button>
+        </>
+      }
+    >
+      <div hidden={tab !== 'programs'}>
+        <ProgramsSection />
+      </div>
+      <div hidden={tab !== 'workbench'}>
+        <WorkbenchSection />
+      </div>
+    </Window>
+  );
+}
+
+/**
  * The gateway's programs and storage: how the drive is used, what is
  * running, the installed programs as tiles grouped by what they do, and
  * the files brought home.
  */
-export function ProgramsWindow() {
+function ProgramsSection() {
   const game = useWorld((state) => state);
   const capacity = storageGb(game, content);
   const used = usedStorageGq(game, content);
@@ -115,7 +155,7 @@ export function ProgramsWindow() {
   };
 
   return (
-    <Window id="programs" note={`${game.tasks.length} of ${maxPrograms(game, content)} running`}>
+    <>
       <div class={`drive${used > capacity ? ' is-over' : ''}`}>
         <div class="drive__head">
           <Icon name="drives" size={18} />
@@ -269,7 +309,7 @@ export function ProgramsWindow() {
                       <button
                         type="button"
                         class="btn btn--go"
-                        data-tip="Take this program apart for a module you can fit at the Workbench"
+                        data-tip="Take this program apart for a module you can fit at the Workbench (the other tab of this window)"
                         onClick={() => decompile(file.name)}
                       >
                         Decompile
@@ -298,6 +338,6 @@ export function ProgramsWindow() {
           {notice}
         </p>
       )}
-    </Window>
+    </>
   );
 }

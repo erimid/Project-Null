@@ -53,6 +53,7 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
       'Running programs show their progress here. How many can run at once depends on your hardware.',
       'Copied files land in storage. Open, decrypt or delete them from the Stored files list.',
       'Remove a program you no longer need to free room. With two of a kind, pick the one that runs.',
+      'The Workbench tab fits modules to your programs to make faster, smaller or quieter versions. Your original is kept.',
     ],
   },
   messages: {
@@ -63,14 +64,6 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
       'Write to someone lets you send a letter that talks a person into giving up a password. You put it together from what you have found, nothing to type.',
     ],
   },
-  contract: {
-    summary: 'The job you have taken: what the client wants, and whether it is done.',
-    points: [
-      'Take a job from Contracts on the Backroom board.',
-      'The goal at the bottom ticks off once it is done. Then press Deliver to get paid.',
-      'If a job goes wrong, Give up drops it. The contract also shows at the top right of the screen.',
-    ],
-  },
   skills: {
     summary: 'Spend skill points on lasting upgrades.',
     points: [
@@ -79,27 +72,13 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
       'Skills can be unlearned at the Backroom, for a price.',
     ],
   },
-  workbench: {
-    summary: 'Fit modules to your programs to make faster, smaller or quieter versions.',
-    points: [
-      'Pick a program on the left, then click a module in the tray to socket it. Click a socket to take the module back out.',
-      'Your original program is kept. Scrap a build to get its modules back.',
-      'Modules come from the Backroom market, from jobs, and from files on other servers.',
-    ],
-  },
   web: {
-    summary: 'Lumen, the public web. News, company sites and the Open Relay Registry.',
+    summary: 'Your browser, for both networks: Lumen, the public web, and Undertow, the hidden one.',
     points: [
-      'Follow links to move around. Back, Forward and Home are at the top.',
-      'Company pages and the news are full of names, addresses and leads.',
-      'The Open Relay Foundation lists servers you can use as relays.',
-    ],
-  },
-  dark: {
-    summary: 'Undertow, the hidden network. Rumours, tools and people who do not want to be found.',
-    points: [
-      'It works like Lumen: follow links, nothing to type.',
-      'Things for sale here are not sold anywhere else.',
+      'The tabs under the title switch between Lumen and Undertow. Each keeps its own place.',
+      'Follow links to move around. Back, Forward and Home are at the top. Nothing to type.',
+      'Company pages and the news are full of names, addresses and leads. The Open Relay Foundation lists servers you can use as relays.',
+      'Things for sale on Undertow are not sold anywhere else.',
     ],
   },
   viewer: {
@@ -124,7 +103,7 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
 };
 
 /** A place on the screen the tour points at. Elements carry it as data-tour. */
-export type TourTarget = WindowId | 'tabs' | 'contract' | 'trace' | 'speed' | 'menu';
+export type TourTarget = WindowId | 'tabs' | 'desks' | 'contract' | 'trace' | 'speed' | 'menu';
 
 export interface TourStep {
   readonly title: string;
@@ -133,6 +112,8 @@ export interface TourStep {
   readonly target?: TourTarget;
   /** A window to bring to the front first. */
   readonly open?: WindowId;
+  /** Only on the floating desk: a phone or tablet has no such thing to show. */
+  readonly deskOnly?: boolean;
 }
 
 export const TOUR: readonly TourStep[] = [
@@ -144,6 +125,12 @@ export const TOUR: readonly TourStep[] = [
     title: 'Windows',
     target: 'tabs',
     body: 'Every window has a tab down here. Press one to open the window, press it again to put it away. A number on a tab means something is waiting for you.',
+  },
+  {
+    title: 'Desk layouts',
+    target: 'desks',
+    deskOnly: true,
+    body: 'Three ready-made desks, one press each. Plan is for picking a route, Run for working a server, Home for mail and your gateway. The desk goes to Run by itself when you connect, and back when you disconnect.',
   },
   {
     title: 'Messages',
@@ -166,7 +153,7 @@ export const TOUR: readonly TourStep[] = [
   {
     title: 'Contract',
     target: 'contract',
-    body: 'The job you are working on shows up here. Jobs are taken from the board at the Backroom, a server in your address book.',
+    body: 'The job you are working on shows up here. Press its name to drop down the goal, the steps and the Deliver button. Jobs are taken from the board at the Backroom, a server in your address book.',
   },
   {
     title: 'Trace',
