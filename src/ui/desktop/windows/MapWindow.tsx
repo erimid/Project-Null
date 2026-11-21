@@ -20,6 +20,7 @@ import {
   relayHeat,
   securityOf,
   serverMark,
+  isTaken,
   stepFade,
   traceLegs,
   traceReport,
@@ -301,7 +302,7 @@ export function MapWindow() {
       name: server.name,
       lat: server.lat,
       lon: server.lon,
-      tone: isTraced(server.id) ? 'red' : onRoute ? 'mint' : 'cyan',
+      tone: isTraced(server.id) ? 'red' : onRoute ? 'mint' : isTaken(game, server.id) ? 'violet' : 'cyan',
       label: server.id === gateway.id ? 'YOU' : hop >= 0 ? String(hop + 1) : live?.serverId === server.id ? server.hostname : undefined,
       selected: server.id === selected?.id,
     };
@@ -425,7 +426,10 @@ export function MapWindow() {
                     )}
                     {server.id !== gateway.id && <RelayMarks {...relayMarks(server)} />}
                     {server.id !== gateway.id && serverMark(game, server.id) && (
-                      <span class="address__mark" data-tip="From the news: this company has tightened its security">
+                      <span
+                        class={`address__mark${isTaken(game, server.id) ? ' address__mark--taken' : ''}`}
+                        data-tip={isTaken(game, server.id) ? 'Something has taken this machine. It tidies logs and leaves notes.' : 'From the news: this company has tightened its security'}
+                      >
                         {serverMark(game, server.id)}
                       </span>
                     )}
@@ -491,7 +495,7 @@ export function MapWindow() {
                 const mark = serverMark(game, selected.id);
                 const markLine = mark && (
                   <p class="map__mark" data-tip="Companies react to break-ins. Read the Wire to see who is on their guard.">
-                    {mark === 'On guard' ? 'On guard after a recent break-in: one layer is a level higher for a few days.' : mark === 'Security firm' ? 'Has hired a security firm: its firewall and monitor are a level higher for good.' : mark}
+                    {isTaken(game, selected.id) ? 'Taken. Something else runs this machine now: it tidies its own logs, and it has left you a note.' : mark === 'On guard' ? 'On guard after a recent break-in: one layer is a level higher for a few days.' : mark === 'Security firm' ? 'Has hired a security firm: its firewall and monitor are a level higher for good.' : mark}
                   </p>
                 );
                 if (scanned || connected) {

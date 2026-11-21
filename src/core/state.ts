@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 28;
+export const STATE_VERSION = 29;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -604,6 +604,19 @@ export interface GameState {
   data: { sold: string[] };
   /** How badly the player is wanted (see core/wanted.ts). */
   wanted: WantedState;
+  /** Chorus spreading through the world (see core/chorus.ts). */
+  chorus: ChorusState;
+}
+
+export interface ChorusState {
+  /** Servers it has taken, in the order taken. */
+  taken: string[];
+  /** Game time it takes the next one. 0 = its clock has not started. */
+  nextMs: number;
+  /** Servers taken so far, freed ones included. */
+  takes: number;
+  /** Game time the player last delivered a story job. 0 = not since Chorus woke. */
+  lastStoryMs: number;
 }
 
 /** How much attention the player has drawn. Being traced and leaving logs behind raise it; clean work and time bring it down. */
@@ -682,6 +695,7 @@ export function createGame(options: NewGameOptions): GameState {
     ladder: { day: -1, scores: {}, moves: [], outcomes: {}, beaten: [], above: [] },
     data: { sold: [] },
     wanted: { heat: 0, level: 0, day: 0 },
+    chorus: { taken: [], nextMs: 0, takes: 0, lastStoryMs: 0 },
   };
 }
 

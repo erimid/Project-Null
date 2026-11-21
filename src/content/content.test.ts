@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_LEVEL_GAP } from '../core/tasks';
-import { assets, companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, story, tuning, news } from './index';
+import { assets, companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, story, tuning, news, chorus } from './index';
 import companiesJson from './companies.json';
 import { parseCompanies } from './companies';
 import { parseHardware } from './hardware';
@@ -427,7 +427,7 @@ describe('Act 1 and the written jobs', () => {
   });
 
   it('never says the secret name outside the redacted last file', () => {
-    const text = JSON.stringify([servers, contracts, mail, story, programs, sites, news]).replace(/PROJECT_N████\.dat/g, '').replace(/P R O J E C T +N/g, '');
+    const text = JSON.stringify([servers, contracts, mail, story, programs, sites, news, chorus]).replace(/PROJECT_N████\.dat/g, '').replace(/P R O J E C T +N/g, '');
     expect(text).not.toMatch(/project null/i);
   });
 

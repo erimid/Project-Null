@@ -16,6 +16,7 @@ import type { RivalDef } from '../content/rivals';
 import type { StoryDef } from '../content/story';
 import type { NewsDef } from '../content/news';
 import type { PatronDef } from '../content/patrons';
+import type { ChorusDef } from '../content/chorus';
 import type { LadderDef } from '../content/ladder';
 import type { DataMarketDef } from '../content/data';
 import type { AssetDef } from '../content/assets';
@@ -177,6 +178,8 @@ export interface Content {
   readonly story: StoryDef;
   /** Templates for the daily paper (see core/news.ts). Missing = a paper with nothing to print. */
   readonly news?: NewsDef;
+  /** Chorus (see core/chorus.ts). Missing = it never wakes. */
+  readonly chorus?: ChorusDef;
   /** Named clients with standing (see core/patrons.ts). Missing = none. */
   readonly patrons?: readonly PatronDef[];
   /** The rivals ladder at the Backroom (see core/ladder.ts). Missing = no ladder. */

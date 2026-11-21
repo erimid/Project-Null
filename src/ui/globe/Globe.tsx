@@ -5,8 +5,8 @@ import { blendView, dragView, greatCircle, isVisible, project, type LatLon, type
 export interface GlobeDot extends LatLon {
   readonly id: string;
   readonly name: string;
-  /** mint = yours or on your route, cyan = known, red = danger. */
-  readonly tone: 'mint' | 'cyan' | 'red';
+  /** mint = yours or on your route, cyan = known, red = danger, violet = taken by Chorus. */
+  readonly tone: 'mint' | 'cyan' | 'red' | 'violet';
   /** Short text drawn next to the dot, e.g. "YOU" or "2". */
   readonly label?: string;
   readonly selected?: boolean;
@@ -36,7 +36,7 @@ export const C = SIZE / 2;
 /** Radius of the globe at zoom 1, in drawing units. */
 export const BASE_RADIUS = 200;
 const ZOOMS = [1, 1.6, 2.5] as const;
-const COLORS = { mint: '#4ee6c8', cyan: '#5fd4ff', red: '#ff3b4e' } as const;
+const COLORS = { mint: '#4ee6c8', cyan: '#5fd4ff', red: '#ff3b4e', violet: '#c48bff' } as const;
 const fmt = (n: number) => n.toFixed(1);
 
 /** Lines of latitude and longitude, as lists of points. Built once. */

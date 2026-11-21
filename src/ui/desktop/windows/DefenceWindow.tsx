@@ -1,4 +1,4 @@
-import { findRival, findServer, raidPortAngle, raidReport, raidSetbackMs, ringTolerance, type GameState, type RaidState } from '../../../core';
+import { findRival, findServer, holdOffMs, untraceable, raidPortAngle, raidReport, raidSetbackMs, ringTolerance, type GameState, type RaidState } from '../../../core';
 import { useGame, useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
@@ -101,6 +101,7 @@ export function DefenceWindow() {
       Math.ceil(report.traceRemainingMs / 1000),
       port,
       raid.locked.join(','),
+      untraceable(raid) ? Math.ceil((holdOffMs(game, content) ?? 0) / 1000) : '',
     ].join('|');
   });
   const raidObj = useWorld((game) => game.raid);
@@ -119,7 +120,7 @@ export function DefenceWindow() {
     );
   }
 
-  const [attackerId = '', barrier = '0', breach = '0', breachLeft = '0', trace = '', traceLeft = '0', port = '', lockedText = ''] =
+  const [attackerId = '', barrier = '0', breach = '0', breachLeft = '0', trace = '', traceLeft = '0', port = '', lockedText = '', holdLeft = ''] =
     frame.split('|');
   const rival = findRival(content, attackerId);
   const barriers = raidObj.barriers;
@@ -127,6 +128,8 @@ export function DefenceWindow() {
   const items = lockables ? lockables.split('\n').filter(Boolean) : [];
   const canLock = locked.length < content.rules.raidMaxLocks;
   const tracing = trace !== '';
+  // Chorus has no route to trace: the player holds it off until it gives up.
+  const holding = holdLeft !== '';
   const shut = raidObj.shut ?? 0;
   const lead = Number(breachLeft) - Number(traceLeft);
   const urgent = Number(breachLeft) <= 15;
@@ -164,6 +167,23 @@ export function DefenceWindow() {
             })}
           </div>
         </div>
+        {holding ? (
+          <>
+            <div class="raid__gauge raid__gauge--trace is-on">
+              <div class="row__between">
+                <span class="raid__label">It gives up</span>
+                <span class="raid__count data">{holdLeft}s</span>
+              </div>
+              <span class="meter meter--mint" aria-hidden="true">
+                <span class="meter__fill" style={{ width: `${Math.max(0, 100 - (Number(holdLeft) / (content.chorus?.rival.holdSeconds ?? 1)) * 100)}%` }} />
+              </span>
+            </div>
+            <p class={`raid__race${Number(breachLeft) >= Number(holdLeft) ? ' is-ahead' : ' is-behind'}`} role="status">
+              There is no one at the other end to trace. Keep it out until it gives up, or pull the plug.
+            </p>
+          </>
+        ) : (
+        <>
         <div class={`raid__gauge raid__gauge--trace${tracing ? ' is-on' : ''}`}>
           <div class="row__between">
             <span class="raid__label">{tracing ? 'Your trace reaches them' : 'Your trace back'}</span>
@@ -180,12 +200,14 @@ export function DefenceWindow() {
               ? <>You are ahead by <span class="data">{lead}s</span>. Hold on.</>
               : <>You are behind by <span class="data">{-lead}s</span>. Shut a port to buy time.</>}
         </p>
+        </>
+        )}
       </div>
 
       <div class="contract__actions raid__actions">
-        <button type="button" class="btn btn--go" disabled={tracing} data-tip="Follow their route home. Finish before they break in and their server is yours." onClick={() => act({ type: 'traceBack' })}>
+        {!holding && <button type="button" class="btn btn--go" disabled={tracing} data-tip="Follow their route home. Finish before they break in and their server is yours." onClick={() => act({ type: 'traceBack' })}>
           {tracing ? 'Tracing…' : 'Trace back'}
-        </button>
+        </button>}
         <button type="button" class="btn" disabled={!!port} data-tip="A line-up like a firewall bypass. Lock every ring to set the intruder back. Each port you shut buys less time than the last." onClick={() => act({ type: 'defendPort' })}>
           Close a port <span class="data raid__gain">+{Math.round(raidSetbackMs(raidObj, content) / 1000)}s</span>
         </button>
@@ -198,6 +220,8 @@ export function DefenceWindow() {
           <PortDial frameAngles={port} />
           <p class="lineup__status data">Click each ring as its dot crosses the marker. All locked sets them back {Math.round(raidSetbackMs(raidObj, content) / 1000)}s.</p>
         </div>
+      ) : holding ? (
+        <p class="raid__blurb">No route, no home, no handle. Only the knocking.</p>
       ) : (
         <TraceRoute raid={raidObj} />
       )}

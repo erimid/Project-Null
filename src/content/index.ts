@@ -59,6 +59,8 @@ import { checkParts, parseModules } from './modules';
 import rivalsJson from './rivals.json';
 import { checkRivals, parseRivals } from './rivals';
 import storyJson from './story.json';
+import chorusJson from './chorus.json';
+import { checkChorus, parseChorus } from './chorus';
 import newsJson from './news.json';
 import patronsJson from './patrons.json';
 import ladderJson from './ladder.json';
@@ -103,6 +105,8 @@ export type { ModuleDef, ModuleGrade, ModuleTrait } from './modules';
 export type { RivalDef, RivalStyle } from './rivals';
 export type { StoryBeat, StoryDef, StoryLapse, StoryLine, StoryMail } from './story';
 export { MAIN_LINE, beatFlag, linesOf, storyOf } from './story';
+export type { ChorusDef } from './chorus';
+export { CHORUS_ID } from './chorus';
 export type { CompanyPools } from './companies';
 export type { NewsDef, NewsEventDef, NewsTemplate } from './news';
 export type { Favour, PatronDef } from './patrons';
@@ -141,6 +145,8 @@ export const data = parseData(dataJson);
 export const assets = parseAssets(assetsJson, servers.map((server) => server.id));
 checkPatrons(patrons, servers, companies.sectors.map((sector) => sector.id), contracts);
 checkStory(story, servers, contracts, rivals, patrons.map((patron) => patron.id));
+export const chorus = parseChorus(chorusJson);
+checkChorus(chorus, servers, patrons.map((patron) => patron.id));
 checkNews(news, story.beats.map((beat) => beat.id), companies.sectors.map((sector) => sector.id));
 
 /**

@@ -214,6 +214,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
       },
     };
   },
+  // 28 -> 29: Chorus. It has not woken in any save from before it existed.
+  28: (old) => ({ ...old, chorus: { taken: [], nextMs: 0, takes: 0, lastStoryMs: 0 } }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -532,5 +534,7 @@ function checkState(raw: Obj): GameState {
   ) {
     throw damaged;
   }
+  const chorus = raw.chorus;
+  if (!isObj(chorus) || !isList(chorus.taken, isText) || !isNum(chorus.nextMs) || !isNum(chorus.takes) || !isNum(chorus.lastStoryMs)) throw damaged;
   return raw as unknown as GameState;
 }

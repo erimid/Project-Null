@@ -42,6 +42,8 @@ export interface StoryLapse {
   /** Flags cleared when it fires. */
   readonly clear?: readonly string[];
   readonly withdraw?: boolean;
+  /** Servers Chorus takes when it fires (see content/chorus.ts). */
+  readonly take?: readonly string[];
 }
 
 /** One step of the story. */
@@ -69,6 +71,12 @@ export interface StoryBeat {
   readonly clear?: readonly string[];
   /** Standing moved with patrons when the beat passes, by patron id. The AIs' hidden trust is the patron "ais". */
   readonly standing?: Readonly<Record<string, number>>;
+  /** Servers Chorus takes when the beat passes. */
+  readonly take?: readonly string[];
+  /** Servers won back from Chorus when the beat passes. */
+  readonly free?: readonly string[];
+  /** Game hours the beat sets Chorus's clock back when it passes, on top of the usual. */
+  readonly chorus?: number;
   /** A timed turn: what happens if the beat is left undone too long. */
   readonly lapse?: StoryLapse;
   /** True for a beat where the name is glimpsed. Nothing in the rules depends on it. */
@@ -146,6 +154,13 @@ function flagList(where: string, raw: Record<string, unknown>, key: string): rea
   return value as string[];
 }
 
+function idList(where: string, raw: Record<string, unknown>, key: string): readonly string[] | undefined {
+  const value = raw[key];
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || value.length === 0 || !value.every((item) => typeof item === 'string' && item.length > 0)) throw new StoryError(`${where}: "${key}" must be a list of server ids`);
+  return value as string[];
+}
+
 function standingDeltas(where: string, value: unknown): Record<string, number> {
   if (!isObj(value)) throw new StoryError(`${where}: "standing" must be an object`);
   for (const [id, delta] of Object.entries(value)) {
@@ -162,8 +177,9 @@ function parseLapse(where: string, raw: unknown): StoryLapse {
   if (hours === undefined) throw new StoryError(`${where}: lapse needs "hours"`);
   const set = flagList(`${where} lapse`, raw, 'set');
   const clear = flagList(`${where} lapse`, raw, 'clear');
-  if (raw.mail === undefined && set === undefined && clear === undefined && raw.withdraw !== true) {
-    throw new StoryError(`${where}: a lapse must do something (mail, set, clear or withdraw)`);
+  const take = idList(`${where} lapse`, raw, 'take');
+  if (raw.mail === undefined && set === undefined && clear === undefined && take === undefined && raw.withdraw !== true) {
+    throw new StoryError(`${where}: a lapse must do something (mail, set, clear, take or withdraw)`);
   }
   return {
     hours,
@@ -171,10 +187,11 @@ function parseLapse(where: string, raw: unknown): StoryLapse {
     ...(set === undefined ? {} : { set }),
     ...(clear === undefined ? {} : { clear }),
     ...(raw.withdraw === true ? { withdraw: true } : {}),
+    ...(take === undefined ? {} : { take }),
   };
 }
 
-const BEAT_KEYS = ['id', 'minRating', 'afterHours', 'requires', 'when', 'if', 'mail', 'contractId', 'raid', 'set', 'clear', 'standing', 'lapse', 'reveal'];
+const BEAT_KEYS = ['id', 'minRating', 'afterHours', 'requires', 'when', 'if', 'mail', 'contractId', 'raid', 'set', 'clear', 'standing', 'take', 'free', 'chorus', 'lapse', 'reveal'];
 
 function parseBeat(raw: unknown, index: number, seen: Set<string>): StoryBeat {
   if (!isObj(raw)) throw new StoryError(`beat ${index} must be an object`);
@@ -184,14 +201,17 @@ function parseBeat(raw: unknown, index: number, seen: Set<string>): StoryBeat {
   if (seen.has(id)) throw new StoryError(`${where}: id is used twice`);
   seen.add(id);
   for (const key of Object.keys(raw)) if (!BEAT_KEYS.includes(key)) throw new StoryError(`${where}: unknown part "${key}"`);
-  if (raw.mail === undefined && raw.contractId === undefined && raw.raid === undefined && raw.set === undefined && raw.clear === undefined && raw.standing === undefined) {
-    throw new StoryError(`${where}: a beat must do something (mail, contractId, raid, set, clear or standing)`);
+  if (raw.mail === undefined && raw.contractId === undefined && raw.raid === undefined && raw.set === undefined && raw.clear === undefined && raw.standing === undefined && raw.take === undefined && raw.free === undefined) {
+    throw new StoryError(`${where}: a beat must do something (mail, contractId, raid, set, clear, standing, take or free)`);
   }
   if (raw.lapse !== undefined && raw.contractId === undefined) throw new StoryError(`${where}: only a beat with a contract can lapse`);
   const minRating = optNum(where, raw, 'minRating', 0);
   const afterHours = optNum(where, raw, 'afterHours', 0);
   const set = flagList(where, raw, 'set');
   const clear = flagList(where, raw, 'clear');
+  const take = idList(where, raw, 'take');
+  const free = idList(where, raw, 'free');
+  const chorus = optNum(where, raw, 'chorus', 0);
   return {
     id,
     ...(minRating === undefined ? {} : { minRating }),
@@ -205,6 +225,9 @@ function parseBeat(raw: unknown, index: number, seen: Set<string>): StoryBeat {
     ...(set === undefined ? {} : { set }),
     ...(clear === undefined ? {} : { clear }),
     ...(raw.standing === undefined ? {} : { standing: standingDeltas(where, raw.standing) }),
+    ...(take === undefined ? {} : { take }),
+    ...(free === undefined ? {} : { free }),
+    ...(chorus === undefined ? {} : { chorus }),
     ...(raw.lapse === undefined ? {} : { lapse: parseLapse(where, raw.lapse) }),
     ...(raw.reveal === undefined ? {} : { reveal: raw.reveal === true }),
   };
@@ -282,7 +305,10 @@ export function checkStory(
       if (other) throw new StoryError(`${where}: contract "${beat.contractId}" is already offered by beat "${other}"`);
       offeredBy.set(beat.contractId, beat.id);
     }
-    if (beat.raid !== undefined && !rivals.some((rival) => rival.id === beat.raid)) {
+    for (const id of [...(beat.take ?? []), ...(beat.free ?? []), ...(beat.lapse?.take ?? [])]) {
+      if (!servers.some((server) => server.id === id)) throw new StoryError(`${where}: "${id}" is not a server`);
+    }
+    if (beat.raid !== undefined && beat.raid !== 'chorus' && !rivals.some((rival) => rival.id === beat.raid)) {
       throw new StoryError(`${where}: raid "${beat.raid}" is not a rival`);
     }
     checkFlags(where, beat.set);

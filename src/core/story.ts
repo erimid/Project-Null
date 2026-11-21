@@ -20,6 +20,7 @@ import { beatFlag, linesOf, MAIN_LINE, type StoryBeat, type StoryLapse, type Sto
 import { conditionMet } from './conditions';
 import { shiftStanding, standingWith } from './patrons';
 import { scheduleRaid } from './raid';
+import { freeServer, noteStoryJob, takeServer } from './chorus';
 import type { GameState, StoryLineState } from './state';
 import type { Content } from './world';
 
@@ -115,12 +116,21 @@ function passBeat(state: GameState, content: Content, beat: StoryBeat): void {
   if (!state.flags.includes(beatFlag(beat.id))) state.flags.push(beatFlag(beat.id));
   setFlags(state, beat.set, beat.clear);
   for (const [patronId, delta] of Object.entries(beat.standing ?? {})) shiftStanding(state, content, patronId, delta);
+  for (const id of beat.take ?? []) takeServer(state, content, id);
+  for (const id of beat.free ?? []) freeServer(state, content, id);
+  if (beat.contractId) {
+    const contract = content.contracts.find((item) => item.id === beat.contractId);
+    noteStoryJob(state, content, contract?.patron, beat.chorus ?? 0);
+  } else if (beat.chorus) {
+    noteStoryJob(state, content, undefined, beat.chorus, false);
+  }
 }
 
 /** Fires a timed turn. True if it withdrew the beat's contract, so the line moves on. */
-function fireLapse(state: GameState, beat: StoryBeat, lapse: StoryLapse): boolean {
+function fireLapse(state: GameState, content: Content, beat: StoryBeat, lapse: StoryLapse): boolean {
   if (lapse.mail) sendStoryMail(state, lapse.mail);
   setFlags(state, lapse.set, lapse.clear);
+  for (const id of lapse.take ?? []) takeServer(state, content, id);
   if (!lapse.withdraw) return false;
   // A contract being worked on is not snatched away; the turn waits for the player to give it up or finish it.
   return state.contracts.activeId !== beat.contractId;
@@ -168,7 +178,7 @@ function stepLine(state: GameState, content: Content, line: StoryLine): boolean 
   if (lapse && state.clock.gameTimeMs >= at.lastMs + lapse.hours * 3_600_000) {
     if (!at.lapsed) {
       at.lapsed = true;
-      if (fireLapse(state, beat, lapse)) moveOn(state, at, beat);
+      if (fireLapse(state, content, beat, lapse)) moveOn(state, at, beat);
       return true;
     }
     if (lapse.withdraw && state.contracts.activeId !== beat.contractId) {
