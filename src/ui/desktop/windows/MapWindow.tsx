@@ -13,6 +13,8 @@ import {
   ownedProgram,
   relayCover,
   relayHeat,
+  securityOf,
+  serverMark,
   stepFade,
   traceLegs,
   traceReport,
@@ -416,6 +418,11 @@ export function MapWindow() {
                       />
                     )}
                     {server.id !== gateway.id && <RelayMarks {...relayMarks(server)} />}
+                    {server.id !== gateway.id && serverMark(game, server.id) && (
+                      <span class="address__mark" data-tip="From the news: this company has tightened its security">
+                        {serverMark(game, server.id)}
+                      </span>
+                    )}
                     <span class="address__tag">
                       {server.id === gateway.id
                         ? 'you'
@@ -475,10 +482,17 @@ export function MapWindow() {
                 const scanned = game.scanned.includes(selected.id);
                 const connected = game.connections.some((c) => c.serverId === selected.id);
                 const scanning = game.tasks.some((task) => task.target.kind === 'scan' && task.target.serverId === selected.id);
+                const mark = serverMark(game, selected.id);
+                const markLine = mark && (
+                  <p class="map__mark" data-tip="Companies react to break-ins. Read the Wire to see who is on their guard.">
+                    {mark === 'On guard' ? 'On guard after a recent break-in: one layer is a level higher for a few days.' : mark === 'Security firm' ? 'Has hired a security firm: its firewall and monitor are a level higher for good.' : mark}
+                  </p>
+                );
                 if (scanned || connected) {
-                  const security = selected.security;
+                  const security = securityOf(game, selected);
                   return (
                     <div class="map__scan">
+                      {markLine}
                       <span class="map__scan-head">Security</span>
                       <span class="map__scan-grid data">
                         <span>Password {security.password || '—'}</span>
@@ -489,9 +503,11 @@ export function MapWindow() {
                     </div>
                   );
                 }
-                if (scanning) return <p class="map__scan-wait data">Scanning…</p>;
+                if (scanning) return <>{markLine}<p class="map__scan-wait data">Scanning…</p></>;
                 if (ownedProgram(game, content, 'scan')) {
                   return (
+                    <>
+                    {markLine}
                     <button
                       type="button"
                       class="btn btn--small map__scan-btn"
@@ -500,9 +516,10 @@ export function MapWindow() {
                     >
                       Scan
                     </button>
+                    </>
                   );
                 }
-                return null;
+                return markLine || null;
               })()}
               {selected.id !== gateway.id && <RelayNote server={selected} cover={relayCover(game, selected)} {...relayMarks(selected)} target={target} />}
               {selected.id !== gateway.id && (

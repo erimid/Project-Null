@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { findPage, sites, type BlockDef, type Net } from '../../../content';
-import { useGame } from '../../hooks';
+import { useGame, useWorld } from '../../hooks';
+import { latestEdition } from '../../../core';
+import { WIRE, wirePage } from '../../news/wire';
 import { formatLongDay } from '../../format';
 import { Window } from '../Window';
 
@@ -33,8 +35,11 @@ export function BrowserWindow() {
   const { pages, at } = trails[net];
   const body = useRef<HTMLDivElement>(null);
   const address = pages[at] ?? browser.home;
-  const found = findPage(sites, net, address);
   const today = useGame((game) => formatLongDay(game.clock.gameTimeMs));
+  // The Wire is printed from the game each morning; a new edition re-draws it.
+  useGame((game) => latestEdition(game)?.day ?? -1);
+  const wire = useWorld((game) => (net === 'web' ? wirePage(game, sites.find((site) => site.net === 'web' && site.address === WIRE), address) : undefined));
+  const found = wire ? { site: sites.find((site) => site.address === WIRE)!, page: wire } : findPage(sites, net, address);
 
   const setAt = (next: number) => setTrails({ ...trails, [net]: { pages, at: next } });
   const go = (to: string) => {

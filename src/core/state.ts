@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 19;
+export const STATE_VERSION = 20;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -135,6 +135,8 @@ export interface StoryState {
 export interface Job extends ContractDef {
   /** Game time it comes off the board. */
   readonly expiresMs: number;
+  /** The headline that brought it, for a job a news story opened (see news.ts). */
+  readonly news?: string;
 }
 
 export interface StoredFile {
@@ -409,6 +411,48 @@ export interface ServerState {
   alert?: ServerAlert;
 }
 
+/** One story in the Continental Wire (see core/news.ts). */
+export interface NewsItem {
+  id: string;
+  /** you = about the player's work (never naming them); world = a company's reaction or a background event; story = a story beat's echo. */
+  kind: 'you' | 'world' | 'story';
+  headline: string;
+  /** Paragraphs split by a blank line. */
+  body: string;
+  /** The company it is about, if any. */
+  serverId?: string;
+  /** A job the story opened on the board, if any. */
+  jobId?: string;
+}
+
+/** One morning's paper. */
+export interface Edition {
+  /** Which morning: see editionDay in news.ts. */
+  day: number;
+  items: NewsItem[];
+  weather: string;
+}
+
+/** A word the globe and the address book show beside a server, put there by the story or the news. */
+export interface ServerMark {
+  label: string;
+  /** Game time it comes off. Missing = for good. */
+  untilMs?: number;
+}
+
+export interface NewsState {
+  /** The last few editions, oldest first. */
+  editions: Edition[];
+  /** Stories waiting for the next edition. */
+  pending: NewsItem[];
+  /** Times the player's work on each company has made the news, by server id. */
+  hits: Record<string, number>;
+  /** Companies that have hired a security firm and stay harder for good. */
+  firms: string[];
+  /** Words shown beside servers, by server id. */
+  marks: Record<string, ServerMark>;
+}
+
 export interface GameState {
   version: typeof STATE_VERSION;
   /** Seed every random stream is derived from. */
@@ -452,6 +496,8 @@ export interface GameState {
   raidPending: PendingRaid | null;
   /** Game time before which no random attack is checked for (the cool-down). */
   raidQuietUntilMs: number;
+  /** The daily paper and how the world has reacted to the player (see core/news.ts). */
+  news: NewsState;
 }
 
 /** Settings a new game needs. The UI fills these from the content files. */
@@ -512,6 +558,7 @@ export function createGame(options: NewGameOptions): GameState {
     raid: null,
     raidPending: null,
     raidQuietUntilMs: 0,
+    news: { editions: [], pending: [], hits: {}, firms: [], marks: {} },
   };
 }
 

@@ -41,10 +41,13 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
         </div>
         {contract.story ? (
           <span class="row__tag row__tag--rare card__tag">story</span>
+        ) : job && 'news' in contract && contract.news ? (
+          <span class="row__tag row__tag--warn card__tag" data-tip="The Wire carried a story about this company. The job is only up for a short while.">in the news</span>
         ) : job ? (
           <span class="row__tag row__tag--good card__tag">standing work</span>
         ) : null}
       </div>
+      {job && 'news' in contract && contract.news && <p class="jobcard__news">“{contract.news}”</p>}
       <p class="card__blurb">{contract.summary}</p>
       {staged ? (
         <p class="jobcard__steps" title="A longer job. Each step comes once the one before is done.">

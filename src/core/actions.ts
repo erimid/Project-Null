@@ -17,6 +17,7 @@ import {
   uninstallProgram,
 } from './contracts';
 import { scheduleReview } from './forensics';
+import { reportCaught } from './news';
 import { advanceContract } from './stages';
 import { buyHardware, loseHardware, maxConnections } from './hardware';
 import { modelRead, rentModel } from './model';
@@ -160,6 +161,7 @@ export function caught(state: GameState, content: Content, connection: Connectio
   const server = findServer(content, connection.serverId);
   closeConnection(state, content, connection);
   const { fine, hours } = punish(state, content, connection.serverId);
+  reportCaught(state, content, connection.serverId);
   const target = server?.name ?? 'the target';
   sendMail(state, content, 'caught', { target, fine: String(fine), hours: String(hours) });
   loseHardware(state, content, connection.serverId);

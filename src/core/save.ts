@@ -150,6 +150,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     ...old,
     player: { ...(old.player as object), hardware: { ...((old.player as { hardware: object }).hardware), cooling: 0 } },
   }),
+  // 19 -> 20: the daily news. The first edition is printed when the game next looks at the clock.
+  19: (old) => ({ ...old, news: { editions: [], pending: [], hits: {}, firms: [], marks: {} } }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -330,6 +332,9 @@ const isMessage = (m: unknown): m is Obj =>
   isNum(m.timeMs) &&
   typeof m.read === 'boolean';
 
+const isNewsItem = (n: unknown): n is Obj =>
+  isObj(n) && isText(n.id) && ['you', 'world', 'story'].includes(n.kind as string) && isText(n.headline) && isText(n.body);
+
 const isServerState = (s: unknown): s is Obj =>
   isObj(s) &&
   isList(s.files, (f): f is Obj => isObj(f) && isText(f.name) && isNum(f.sizeGq) && isRole(f.access) && isLevel(f.encrypted)) &&
@@ -406,5 +411,18 @@ function checkState(raw: Obj): GameState {
   if (!(raw.raid === null || isRaid(raw.raid))) throw damaged;
   if (!(raw.raidPending === null || (isObj(raw.raidPending) && isText(raw.raidPending.attackerId) && typeof raw.raidPending.story === 'boolean'))) throw damaged;
   if (!isNum(raw.raidQuietUntilMs)) throw damaged;
+  const news = raw.news;
+  if (
+    !isObj(news) ||
+    !isList(news.editions, (e): e is Obj => isObj(e) && isNum(e.day) && isText(e.weather) && isList(e.items, isNewsItem)) ||
+    !isList(news.pending, isNewsItem) ||
+    !isObj(news.hits) ||
+    !Object.values(news.hits).every(isNum) ||
+    !isList(news.firms, isText) ||
+    !isObj(news.marks) ||
+    !Object.values(news.marks).every((mark) => isObj(mark) && isText(mark.label) && (mark.untilMs === undefined || isNum(mark.untilMs)))
+  ) {
+    throw damaged;
+  }
   return raw as unknown as GameState;
 }

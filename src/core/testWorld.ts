@@ -313,6 +313,7 @@ export const testMail: Record<MailKey, MailDef> = {
   links: letter('links'),
   shops: letter('shops'),
   gear: letter('gear'),
+  news: letter('news'),
   skills: letter('skills'),
   workbench: letter('workbench'),
   decompiling: letter('decompiling'),

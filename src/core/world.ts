@@ -14,6 +14,7 @@ import type { SkillDef } from '../content/skills';
 import type { ModuleDef } from '../content/modules';
 import type { RivalDef } from '../content/rivals';
 import type { StoryDef } from '../content/story';
+import type { NewsDef } from '../content/news';
 import { builtProgram } from './builds';
 import type { Connection, GameState, ServerState } from './state';
 
@@ -159,6 +160,8 @@ export interface Content {
   readonly rivals: readonly RivalDef[];
   /** Act 1 story beats (see core/story.ts). */
   readonly story: StoryDef;
+  /** Templates for the daily paper (see core/news.ts). Missing = a paper with nothing to print. */
+  readonly news?: NewsDef;
   readonly rules: Rules;
 }
 
@@ -274,9 +277,12 @@ function liveAlert(state: GameState, serverId: string) {
 
 /** A server's security as it stands now: as written, plus anything a contract has put it on guard about. */
 export function securityOf(state: GameState, server: ServerDef): SecurityDef {
-  const raise = liveAlert(state, server.id)?.raise;
-  if (!raise) return server.security;
-  const up = (layer: keyof SecurityDef) => Math.min(MAX_LAYER_LEVEL, server.security[layer] + (server.security[layer] > 0 || layer === 'monitor' ? (raise[layer] ?? 0) : 0));
+  const alert = liveAlert(state, server.id)?.raise;
+  // A company that hired a security firm (see news.ts) watches harder and keeps a stronger firewall, for good.
+  const firm = state.news?.firms.includes(server.id) ? { firewall: 1, monitor: 1 } : undefined;
+  if (!alert && !firm) return server.security;
+  const raise = (layer: keyof SecurityDef) => (alert?.[layer] ?? 0) + (firm?.[layer as 'firewall'] ?? 0);
+  const up = (layer: keyof SecurityDef) => Math.min(MAX_LAYER_LEVEL, server.security[layer] + (server.security[layer] > 0 || layer === 'monitor' ? raise(layer) : 0));
   return { password: up('password'), proxy: up('proxy'), firewall: up('firewall'), monitor: up('monitor') };
 }
 

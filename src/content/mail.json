@@ -153,5 +153,10 @@
     "from": "Wren",
     "subject": "Things that are not locks",
     "body": "{handle}, the work you are getting now is not only about getting through the door. Four things that help with everything else.\n\nA Scanner reads a server's security before you connect, so you buy the right bypass first and not the wrong one. A Trace Jammer freezes a trace for a few seconds, once on each connection. It is not a way out. It is a way to finish. A trace sensor, a part for your gateway, reads a trace to the second without a Tracker program taking up room. And a module called Offload lets a program you build run off to the side, without using one of your slots.\n\nNone of them make you quiet. All of them make you a little less loud.\n\nWren"
+  },
+  "news": {
+    "from": "Wren",
+    "subject": "You made the paper",
+    "body": "{handle}, have a look at the Wire this morning. {company} is on the front page.\n\nThey don't know who you are and they never will, if you keep doing it properly. But they know someone was there, and a company that has just been hit puts its guard up for a few days. One that gets hit three times hires a firm, and then it stays hard. The map marks the ones on their guard.\n\nRead the paper now and then. It isn't only about you. Outages, layoffs, auditors: when something goes wrong at a company, somebody always wants a job done there while the door is open. Those jobs go up on the board, and they don't stay long.\n\nWren"
   }
 }

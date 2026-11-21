@@ -60,15 +60,19 @@ function possibleObjectives(state: GameState, server: ServerDef): Objective[] {
   return goals;
 }
 
-/** Makes one new job against a company of about the right tier. Undefined if there is nothing to make. */
-function makeJob(state: GameState, content: Content): Job | undefined {
+/**
+ * Makes one new job against a company of about the right tier, or against
+ * `at` if given (then on `rng`, and never with a first step). Undefined if
+ * there is nothing to make.
+ */
+function makeJob(state: GameState, content: Content, at?: { server: ServerDef; rng: Rng }): Job | undefined {
   const pools = content.companies.jobs;
-  const rng = stream(state, 'jobs');
+  const rng = at?.rng ?? stream(state, 'jobs');
   const tier = tierForRating(state.player.rating, content.rules.tierRatings);
   const busy = touchedServers(state);
-  const companies = content.servers.filter(
-    (server) => server.generated && server.generated.tier <= tier && server.generated.tier >= tier - 1 && !busy.has(server.id),
-  );
+  const companies = at
+    ? [at.server].filter((server) => server.generated && !busy.has(server.id))
+    : content.servers.filter((server) => server.generated && server.generated.tier <= tier && server.generated.tier >= tier - 1 && !busy.has(server.id));
   if (companies.length === 0 || pools.clients.length === 0) return undefined;
   const server = rng.pick(companies);
   const goals = possibleObjectives(state, server);
@@ -109,7 +113,7 @@ function makeJob(state: GameState, content: Content): Job | undefined {
   // (deterministic, and not on the job's id: an id would tie this to nextId,
   // so any new message or entity made elsewhere would reshuffle the board).
   const own = rng.fork(`staged:${server.id}:${rng.getState().state}`);
-  if (pools.staged && serverTier >= 5 && own.chance(0.5)) return addFirstStep(state, content, job, server, values, own);
+  if (!at && pools.staged && serverTier >= 5 && own.chance(0.5)) return addFirstStep(state, content, job, server, values, own);
   return job;
 }
 
@@ -153,6 +157,20 @@ function addFirstStep(state: GameState, content: Content, job: Job, target: Serv
 }
 
 /**
+ * Posts a short-lived job against one company because of something in the
+ * news (see news.ts). It pays `payFactor` times the usual and stays up for
+ * `hours`. Returns the job, or undefined if the company has nothing to ask
+ * for or is already the target of a job on the board.
+ */
+export function postNewsJob(state: GameState, content: Content, server: ServerDef, rng: Rng, hours: number, payFactor: number, headline: string): Job | undefined {
+  const job = makeJob(state, content, { server, rng });
+  if (!job) return undefined;
+  const posted: Job = { ...job, pay: Math.round((job.pay * payFactor) / 50) * 50, expiresMs: state.clock.gameTimeMs + hours * 3_600_000, news: headline };
+  state.contracts.jobs.push(posted);
+  return posted;
+}
+
+/**
  * Takes down jobs that have run out or can no longer be done, and posts
  * new ones until the board has its usual number. The job being worked on
  * is never taken down. Cheap when there is nothing to do.
@@ -160,10 +178,12 @@ function addFirstStep(state: GameState, content: Content, job: Job, target: Serv
 export function refreshJobs(state: GameState, content: Content, stillPossible: (job: Job) => boolean): void {
   const now = state.clock.gameTimeMs;
   const keep = (job: Job) => job.id === state.contracts.activeId || (job.expiresMs > now && stillPossible(job));
-  if (state.contracts.jobs.length >= content.rules.boardJobs && state.contracts.jobs.every(keep)) return;
+  // Jobs the news opened come on top of the usual number.
+  const usual = () => state.contracts.jobs.filter((job) => !job.news).length;
+  if (usual() >= content.rules.boardJobs && state.contracts.jobs.every(keep)) return;
   state.contracts.jobs = state.contracts.jobs.filter(keep);
   // A few tries per missing job, in case a pick has nothing left to ask for.
-  for (let tries = 0; state.contracts.jobs.length < content.rules.boardJobs && tries < content.rules.boardJobs * 3; tries++) {
+  for (let tries = 0; usual() < content.rules.boardJobs && tries < content.rules.boardJobs * 3; tries++) {
     const job = makeJob(state, content);
     if (job) state.contracts.jobs.push(job);
   }

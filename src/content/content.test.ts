@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_LEVEL_GAP } from '../core/tasks';
-import { companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, story, tuning } from './index';
+import { companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, story, tuning, news } from './index';
 import companiesJson from './companies.json';
 import { parseCompanies } from './companies';
 import { parseHardware } from './hardware';
@@ -251,7 +251,7 @@ describe('shipped contracts', () => {
   });
 
   it('only use placeholders the rules fill in', () => {
-    const known = ['handle', 'client', 'title', 'pay', 'target', 'fine', 'hours', 'lines', 'name', 'label', 'model', 'part', 'now', 'step', 'of', 'brief', 'who', 'style', 'home', 'address', 'loss', 'taunt'];
+    const known = ['handle', 'client', 'title', 'pay', 'target', 'fine', 'hours', 'lines', 'name', 'label', 'model', 'part', 'now', 'step', 'of', 'brief', 'who', 'style', 'home', 'address', 'loss', 'taunt', 'company'];
     for (const letter of Object.values(mail)) {
       for (const [, name] of `${letter.from} ${letter.subject} ${letter.body}`.matchAll(/\{(\w+)\}/g)) {
         expect(known).toContain(name);
@@ -424,7 +424,7 @@ describe('Act 1 and the written jobs', () => {
   });
 
   it('never says the secret name outside the redacted last file', () => {
-    const text = JSON.stringify([servers, contracts, mail, story, programs, sites]).replace(/PROJECT_N████\.dat/g, '').replace(/P R O J E C T +N/g, '');
+    const text = JSON.stringify([servers, contracts, mail, story, programs, sites, news]).replace(/PROJECT_N████\.dat/g, '').replace(/P R O J E C T +N/g, '');
     expect(text).not.toMatch(/project null/i);
   });
 
