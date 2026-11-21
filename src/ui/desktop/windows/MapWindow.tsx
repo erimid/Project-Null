@@ -177,6 +177,24 @@ export function MapWindow() {
   const game = useWorld((state) => state);
   const guide = useGuide();
   const [notice, setNotice] = useState('');
+  // Servers Chorus has only just taken, and where it reached each from: the globe shows it happen.
+  const [fresh, setFresh] = useState<readonly { id: string; from?: string }[]>([]);
+  useEffect(() => {
+    const timers = new Set<ReturnType<typeof setTimeout>>();
+    const stop = session.subscribeEvents((event) => {
+      if (event.type !== 'serverTaken') return;
+      setFresh((list) => [...list, { id: event.id, from: event.from }]);
+      const timer = setTimeout(() => {
+        timers.delete(timer);
+        setFresh((list) => list.filter((item) => item.id !== event.id));
+      }, 6000);
+      timers.add(timer);
+    });
+    return () => {
+      stop();
+      timers.forEach(clearTimeout);
+    };
+  }, []);
   const [starredOnly, setStarredOnly] = useState(false);
   const [sort, setSort] = useState<SortId>(savedSort);
   // Heat sort starts coolest first; pressing Heat again flips it.
@@ -305,8 +323,15 @@ export function MapWindow() {
       tone: isTraced(server.id) ? 'red' : onRoute ? 'mint' : isTaken(game, server.id) ? 'violet' : 'cyan',
       label: server.id === gateway.id ? 'YOU' : hop >= 0 ? String(hop + 1) : live?.serverId === server.id ? server.hostname : undefined,
       selected: server.id === selected?.id,
+      ripple: fresh.some((item) => item.id === server.id),
     };
   });
+  for (const item of fresh) {
+    const to = known.find((server) => server.id === item.id);
+    // It reaches from the last place it took, or the nearest one the player knows of.
+    const from = known.find((server) => server.id === item.from) ?? known.find((server) => server.id !== item.id && isTaken(game, server.id));
+    if (to && from) arcs.push({ from, to, tone: 'violet', reach: true });
+  }
 
   const run = (action: Parameters<typeof session.dispatch>[0]) => {
     const result = session.dispatch(action);

@@ -1,4 +1,4 @@
-import { findRival, findServer, holdOffMs, untraceable, raidPortAngle, raidReport, raidSetbackMs, ringTolerance, type GameState, type RaidState } from '../../../core';
+import { findProgram, findRival, findServer, holdOffMs, untraceable, raidPortAngle, raidReport, raidSetbackMs, ringTolerance, type GameState, type RaidState } from '../../../core';
 import { useGame, useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
@@ -133,17 +133,22 @@ export function DefenceWindow() {
   const shut = raidObj.shut ?? 0;
   const lead = Number(breachLeft) - Number(traceLeft);
   const urgent = Number(breachLeft) <= 15;
+  // Chorus is not a hacker and does not look like one: it says what it has come for.
+  const chorus = content.chorus && rival?.handle === content.chorus.rival.handle ? content.chorus : undefined;
+  const wanted = new Set(chorus?.rival.targets ?? []);
+  // What it wants comes first in the list.
+  const ordered = [...items.filter((name) => wanted.has(name)), ...items.filter((name) => !wanted.has(name))];
   // How full each barrier's block is: the ones behind the intruder are gone, the one in front is going.
   const through = (Number(breach) / 1000) * barriers;
 
   return (
-    <Window id="defence" title="Defence" note="under attack">
+    <Window id="defence" title="Defence" note={chorus ? 'something is knocking' : 'under attack'}>
       <div class="raid__who">
-        <span class="raid__badge" aria-hidden="true">!</span>
+        <span class="raid__badge" aria-hidden="true">{chorus ? '∴' : '!'}</span>
         <div>
           <p class="raid__name">
             <strong>{rival?.handle ?? 'Someone'}</strong>
-            {rival && <span class="row__tag row__tag--danger">{AFTER[rival.style] ?? 'intruder'}</span>}
+            {rival && <span class="row__tag row__tag--danger">{chorus ? 'here to help' : AFTER[rival.style] ?? 'intruder'}</span>}
           </p>
           <p class="raid__blurb">{rival?.blurb ?? 'Someone is on your gateway.'}</p>
         </div>
@@ -152,7 +157,7 @@ export function DefenceWindow() {
       <div class="raid__gauges">
         <div class={`raid__gauge raid__gauge--breach${urgent ? ' is-urgent' : ''}`}>
           <div class="row__between">
-            <span class="raid__label">They break in</span>
+            <span class="raid__label">{chorus ? 'It gets in' : 'They break in'}</span>
             <span class="raid__count data">{breachLeft}s</span>
           </div>
           <div class="raid__barriers" key={shut} role="img" aria-label={`Barrier ${Number(barrier) + 1} of ${barriers}`}>
@@ -218,7 +223,7 @@ export function DefenceWindow() {
       {port ? (
         <div class="lineup lineup--raid">
           <PortDial frameAngles={port} />
-          <p class="lineup__status data">Click each ring as its dot crosses the marker. All locked sets them back {Math.round(raidSetbackMs(raidObj, content) / 1000)}s.</p>
+          <p class="lineup__status data">Click each ring as its dot crosses the marker. All locked sets {chorus ? 'it' : 'them'} back {Math.round(raidSetbackMs(raidObj, content) / 1000)}s.</p>
         </div>
       ) : holding ? (
         <p class="raid__blurb">No route, no home, no handle. Only the knocking.</p>
@@ -228,21 +233,23 @@ export function DefenceWindow() {
 
       {shut > 0 && (
         <p class="raid__shut" key={shut}>
-          {shut === 1 ? '1 port shut.' : `${shut} ports shut.`} They are learning: each one buys less.
+          {shut === 1 ? '1 port shut.' : `${shut} ports shut.`} {chorus ? 'It is' : 'They are'} learning: each one buys less.
         </p>
       )}
 
       <h3 class="map__heading">
         Lock what you cannot lose <span class="heading__note data">{locked.length} of {content.rules.raidMaxLocks}</span>
       </h3>
-      <p class="row__dim">A locked file or program is safe if they break in.</p>
+      <p class="row__dim">{chorus ? 'It takes one thing it thinks is hurting you. A locked file or program is safe.' : 'A locked file or program is safe if they break in.'}</p>
       <ul class="raid__locks">
         {items.length === 0 && <li class="row__dim">Nothing on your gateway to lock.</li>}
-        {items.map((name) => {
+        {ordered.map((name) => {
           const isLocked = locked.includes(name);
+          const program = findProgram(content, name, session.getState());
           return (
-            <li key={name} class={`raid__lock${isLocked ? ' is-locked' : ''}`}>
-              <span class={`raid__lock-name${content.programs.some((program) => program.id === name) ? '' : ' data'}`}>{content.programs.find((program) => program.id === name)?.name ?? name}</span>
+            <li key={name} class={`raid__lock${isLocked ? ' is-locked' : ''}${wanted.has(name) ? ' is-wanted' : ''}`}>
+              <span class={`raid__lock-name${program ? '' : ' data'}`}>{program?.name ?? name}</span>
+              {wanted.has(name) && !isLocked && <span class="row__tag row__tag--danger raid__want">it wants this</span>}
               {isLocked ? (
                 <span class="raid__lock-done">locked</span>
               ) : (

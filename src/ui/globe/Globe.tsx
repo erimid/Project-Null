@@ -10,13 +10,17 @@ export interface GlobeDot extends LatLon {
   /** Short text drawn next to the dot, e.g. "YOU" or "2". */
   readonly label?: string;
   readonly selected?: boolean;
+  /** Just taken: rings spread out from it for a few seconds. */
+  readonly ripple?: boolean;
 }
 
 export interface GlobeArc {
   readonly from: LatLon;
   readonly to: LatLon;
-  readonly tone: 'mint' | 'cyan' | 'red';
+  readonly tone: 'mint' | 'cyan' | 'red' | 'violet';
   readonly dashed?: boolean;
+  /** Chorus reaching from one server to the next: thin, and moving. */
+  readonly reach?: boolean;
   /** Drawn heavier: a leg that hops to another part of the world. */
   readonly heavy?: boolean;
   /** Short text drawn at the top of the arc, e.g. "BORDER +14s". */
@@ -246,8 +250,9 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
             d={arcPath(arc, view, R)}
             fill="none"
             stroke={COLORS[arc.tone]}
-            stroke-width={(arc.dashed ? 2 : 2.6) + (arc.heavy ? 1.2 : 0)}
-            stroke-dasharray={arc.dashed ? '5 4' : undefined}
+            class={arc.reach ? 'globe__reach' : undefined}
+            stroke-width={arc.reach ? 1.6 : (arc.dashed ? 2 : 2.6) + (arc.heavy ? 1.2 : 0)}
+            stroke-dasharray={arc.dashed && !arc.reach ? '5 4' : undefined}
             stroke-linecap="round"
           />
         ))}
@@ -284,6 +289,9 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
             >
               <title>{dot.name}</title>
               <circle cx={x} cy={y} r={14} fill="transparent" />
+              {dot.tone === 'violet' && <circle cx={x} cy={y} r={12} class="globe__halo" />}
+              {dot.ripple && <circle cx={x} cy={y} r={12} class="globe__ripple" />}
+              {dot.ripple && <circle cx={x} cy={y} r={12} class="globe__ripple globe__ripple--late" />}
               {dot.selected && <circle cx={x} cy={y} r={11} fill="none" stroke={color} stroke-width="1.5" />}
               <circle cx={x} cy={y} r={4.5} fill={color} />
               {dot.label && (

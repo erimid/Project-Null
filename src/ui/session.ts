@@ -237,7 +237,7 @@ function shape(): string {
   const raid = state.raid
     ? `${state.raid.attackerId}|${Math.floor(state.raid.breachMs / 500)}|${state.raid.port?.locked.join('') ?? ''}|${state.raid.traceBack ? Math.floor(state.raid.traceBack.elapsedMs / 500) : ''}`
     : `${state.raidPending?.attackerId ?? ''}`;
-  return `${state.tasks.length}|${state.connections.length}|${state.messages.length}|${traces}|${monitors}|${sealed}|${phish}|${raid}`;
+  return `${state.tasks.length}|${state.connections.length}|${state.messages.length}|${traces}|${monitors}|${sealed}|${phish}|${raid}|${state.chorus.taken.length}${state.ending?.id ?? ''}`;
 }
 
 function startLoop(): void {

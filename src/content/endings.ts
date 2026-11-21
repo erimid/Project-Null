@@ -21,6 +21,10 @@ export const ENDING_CHORUS: readonly EndingChorus[] = ['free', 'stop', 'spread']
 export interface EndingDef {
   readonly id: string;
   readonly name: string;
+  /** What the player said, in one line, for the screen that marks the ending. */
+  readonly line: string;
+  /** How finishing the last job the usual way reads, where that brings this ending. */
+  readonly way?: { readonly label: string; readonly note: string };
   readonly chorus: EndingChorus;
   /** Patrons who stop posting work and stop answering. */
   readonly gone: readonly string[];
@@ -87,6 +91,8 @@ export function parseEndings(data: unknown): EndingDef[] {
     return {
       id,
       name: text(where, raw, 'name'),
+      line: text(where, raw, 'line'),
+      ...(isObj(raw.way) ? { way: { label: text(`${where} way`, raw.way, 'label'), note: text(`${where} way`, raw.way, 'note') } } : {}),
       chorus,
       gone: gone as string[],
       standing: standing as Record<string, number>,

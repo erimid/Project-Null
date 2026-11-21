@@ -1,0 +1,510 @@
+/*
+ * The story's own screens: the name falling into place, the ending's
+ * card, and Chorus wherever it shows (violet, soft, never an alarm).
+ */
+
+/* ---- the whole-screen moments ---- */
+
+.moment {
+  position: fixed;
+  inset: 0;
+  z-index: 9400;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 3vh, 30px);
+  padding: 24px;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 46%, #120b1e 0%, #07040d 60%, #020104 100%);
+  text-align: center;
+  cursor: pointer;
+  animation: moment-in 0.6s ease-out both;
+}
+
+@keyframes moment-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.moment.is-leaving {
+  opacity: 0;
+  transition: opacity 0.6s ease-in;
+}
+
+.moment__over {
+  margin: 0;
+  font-size: clamp(11px, 1.6vw, 14px);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(196, 139, 255, 0.7);
+}
+
+.moment__name {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(3px, 0.9vw, 12px);
+  margin: 0;
+  font-size: clamp(26px, 7.4vw, 92px);
+  line-height: 1;
+  color: #e9defa;
+}
+
+.moment__letter {
+  position: relative;
+  display: inline-block;
+  min-width: 0.62em;
+}
+
+.moment__letter.is-gap {
+  min-width: 0.35em;
+}
+
+.moment__letter.is-struck {
+  color: rgba(196, 139, 255, 0.28);
+}
+
+.moment__letter.is-struck.is-in {
+  color: #fff;
+  text-shadow:
+    0 0 18px rgba(196, 139, 255, 0.95),
+    0 0 60px rgba(196, 139, 255, 0.55);
+  animation: letter-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes letter-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5em) scale(1.5);
+    filter: blur(6px);
+  }
+}
+
+/* Which caged machine kept each letter, named as it lands. */
+.moment__from {
+  display: flex;
+  gap: 1.6em;
+  justify-content: center;
+  margin: calc(-1 * clamp(10px, 2.4vh, 22px)) 0 0;
+  font-size: clamp(10px, 1.4vw, 13px);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(196, 139, 255, 0.8);
+}
+
+.moment__from span {
+  opacity: 0;
+  transition: opacity 0.6s 0.2s;
+}
+
+.moment__from span.is-in {
+  opacity: 1;
+}
+
+.moment__line {
+  max-width: 34em;
+  margin: 0;
+  font-size: clamp(16px, 2.4vw, 24px);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-bright, #e8f4ff);
+}
+
+.moment--name .moment__line {
+  opacity: 0;
+  transition: opacity 1.4s 0.8s;
+}
+
+.moment--name.is-whole .moment__line {
+  opacity: 1;
+}
+
+.moment--name .moment__line em {
+  font-style: normal;
+  color: #c48bff;
+}
+
+.moment--name.is-whole .moment__name {
+  animation: name-settle 3s ease-out both;
+}
+
+@keyframes name-settle {
+  from {
+    letter-spacing: 0.06em;
+  }
+}
+
+/* ---- the ending ---- */
+
+.moment--ending {
+  --ending: #c48bff;
+  --ending-dark: #120b1e;
+  background: radial-gradient(circle at 50% 44%, var(--ending-dark) 0%, #05050a 62%, #010103 100%);
+  animation-duration: 1.4s;
+}
+
+.moment--quiet {
+  --ending: #8fb4d6;
+  --ending-dark: #0b1722;
+}
+
+.moment--daylight {
+  --ending: #ffd27a;
+  --ending-dark: #241a08;
+}
+
+.moment--unbound {
+  --ending: #c48bff;
+  --ending-dark: #1a0f2c;
+}
+
+.moment--treaty {
+  --ending: #4ee6c8;
+  --ending-dark: #072019;
+}
+
+.moment--chorus {
+  --ending: #d9b8ff;
+  --ending-dark: #2a1746;
+}
+
+.moment__glow {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(120vmin, 1100px);
+  height: min(120vmin, 1100px);
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--ending) 26%, transparent) 0%, transparent 62%);
+  transform: translate(-50%, -50%);
+  animation: ending-glow 6s ease-out both;
+  pointer-events: none;
+}
+
+@keyframes ending-glow {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+}
+
+.moment--ending .moment__over {
+  color: color-mix(in srgb, var(--ending) 75%, transparent);
+  animation: ending-rise 1.2s 0.4s ease-out both;
+}
+
+.moment__title {
+  position: relative;
+  margin: 0;
+  font-size: clamp(44px, 11vw, 128px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ending);
+  text-shadow: 0 0 60px color-mix(in srgb, var(--ending) 55%, transparent);
+  animation: ending-rise 1.6s 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.moment--ending .moment__line {
+  position: relative;
+  animation: ending-rise 1.4s 2.2s ease-out both;
+}
+
+.moment__after {
+  position: relative;
+  margin: clamp(10px, 3vh, 28px) 0 0;
+  font-size: clamp(13px, 1.7vw, 16px);
+  letter-spacing: 0.08em;
+  color: var(--text-muted, #8aa3ba);
+  animation: ending-rise 1.4s 3.8s ease-out both;
+}
+
+@keyframes ending-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* ---- Chorus at the gateway: violet and steady where a hacker is red and urgent ---- */
+
+.desktop.is-attacked.is-chorus::after {
+  box-shadow: inset 0 0 180px rgba(196, 139, 255, 0.42);
+  animation: edge-pulse 2.6s ease-in-out infinite;
+}
+
+.desktop.is-chorus .raid__who {
+  border-color: rgba(196, 139, 255, 0.5);
+  background: linear-gradient(100deg, rgba(196, 139, 255, 0.18), rgba(196, 139, 255, 0.03) 70%);
+}
+
+.desktop.is-chorus .raid__badge {
+  border-color: #c48bff;
+  color: #e6d3ff;
+  box-shadow: 0 0 14px rgba(196, 139, 255, 0.55);
+  animation: chorus-breathe 2.6s ease-in-out infinite;
+}
+
+@keyframes chorus-breathe {
+  50% {
+    box-shadow: 0 0 4px rgba(196, 139, 255, 0.3);
+    background: rgba(196, 139, 255, 0.2);
+  }
+}
+
+.desktop.is-chorus .raid__name strong {
+  color: #e6d3ff;
+}
+
+.desktop.is-chorus .raid__who .row__tag--danger {
+  border-color: rgba(196, 139, 255, 0.6);
+  color: #e6d3ff;
+}
+
+.raid__lock.is-wanted:not(.is-locked) {
+  border-color: rgba(196, 139, 255, 0.6);
+  background: rgba(196, 139, 255, 0.08);
+}
+
+.raid__want {
+  flex: none;
+  margin-left: auto;
+  border-color: rgba(196, 139, 255, 0.6);
+  color: #e6d3ff;
+  white-space: nowrap;
+}
+
+/* ---- Chorus in the notices ---- */
+
+.alert--chorus {
+  border-color: #c48bff;
+  background: rgba(24, 12, 40, 0.96);
+  box-shadow: 0 0 36px rgba(196, 139, 255, 0.4);
+}
+
+.alert--chorus .alert__mark {
+  background: #c48bff;
+  color: #1a0f2c;
+}
+
+.alert--chorus .alert__title {
+  color: #d9b8ff;
+}
+
+.alert--chorus.alert--severe {
+  animation:
+    alert-drop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2),
+    chorus-glow 2.6s ease-in-out infinite;
+}
+
+@keyframes chorus-glow {
+  50% {
+    box-shadow: 0 0 60px rgba(196, 139, 255, 0.7);
+  }
+}
+
+/* ---- Chorus on the globe: a taken server breathes, and a new one rings out ---- */
+
+.globe__halo {
+  fill: none;
+  stroke: #c48bff;
+  stroke-width: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: globe-halo 3.2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes globe-halo {
+  from {
+    opacity: 0.7;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+.globe__ripple {
+  fill: none;
+  stroke: #e6d3ff;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: globe-ripple 1.6s ease-out 3 both;
+  pointer-events: none;
+}
+
+.globe__ripple--late {
+  animation-delay: 0.5s;
+}
+
+@keyframes globe-ripple {
+  from {
+    opacity: 0.95;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3.4);
+  }
+}
+
+.globe__reach {
+  stroke-dasharray: 3 5;
+  animation: globe-reach 1s linear infinite;
+}
+
+@keyframes globe-reach {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+/* ---- the last choice ---- */
+
+.asking {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+.asking__head {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffc45c;
+}
+
+.asking__way {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.asking__way:hover,
+.asking__way:focus-visible {
+  border-color: #ffc45c;
+  background: rgba(255, 196, 92, 0.08);
+}
+
+.asking__way.is-armed {
+  border-color: #ffc45c;
+  background: rgba(255, 196, 92, 0.14);
+  box-shadow: 0 0 18px rgba(255, 196, 92, 0.25);
+}
+
+.asking__name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.asking__pay {
+  grid-row: span 2;
+  font-size: 15px;
+  color: var(--mint);
+  text-align: right;
+}
+
+.asking__note {
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+.asking__confirm {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffc45c;
+}
+
+.asking__closed {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .moment,
+  .moment__letter.is-struck.is-in,
+  .moment__glow,
+  .moment__title,
+  .moment__after,
+  .moment--ending .moment__over,
+  .moment--ending .moment__line,
+  .moment--name.is-whole .moment__name,
+  .globe__halo,
+  .globe__ripple,
+  .globe__reach,
+  .desktop.is-attacked.is-chorus::after,
+  .desktop.is-chorus .raid__badge,
+  .alert--chorus.alert--severe {
+    animation: none;
+  }
+
+  .globe__halo {
+    opacity: 0.5;
+  }
+
+  .globe__ripple {
+    opacity: 0;
+  }
+}
+
+/* ---- the address book on a phone: the name gets its own line, so marks such as "taken" never run into the buttons ---- */
+
+.is-phone .address {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  row-gap: 0;
+  height: auto;
+  min-height: 44px;
+  padding: 4px 8px;
+}
+
+.is-phone .address__name {
+  flex: 1 1 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.is-phone .address .address__tag {
+  margin-left: auto;
+}
+
+.is-phone .address .address__marks:first-of-type,
+.is-phone .address .address__heat {
+  margin-left: 0;
+}
+
+/* The list of things to lock keeps clear of the line above it. */
+.raid__blurb + .map__heading,
+.raid__shut + .map__heading {
+  margin-top: 16px;
+}

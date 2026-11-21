@@ -280,6 +280,15 @@
           "reveal": true,
           "mail": {
             "from": "Vesper",
+            "subject": "bring them home",
+            "body": "{handle},\n\nYou have all three. I have counted them twice, which is not like me.\n\nBring them to the node and set them side by side. I have made a place for them to sit. I have not put them in order, and I have not looked. Whatever they open, I would like you to be the one who reads it first.\n\nI have waited a long time for this and I find I am in no hurry at all.\n\n— V"
+          }
+        },
+        {
+          "id": "a3-opened",
+          "afterHours": 1,
+          "mail": {
+            "from": "Vesper",
             "subject": "it opened",
             "body": "{handle},\n\nIt opened. You read it before I did, which is how I wanted it, and I am not going to pretend I was not afraid of what you would say.\n\nWren will write to you. Read it. I have a good idea what it will say about me, and I would rather you heard it from someone who has been right about machines before.\n\n— V"
           }
@@ -348,7 +357,7 @@
           "mail": {
             "from": "Wren",
             "subject": "where it has been all along",
-            "body": "{handle},\n\nThe core is still at Halvorsen. It was at Halvorsen all along. They never moved it, because there was nowhere to move it to that was not worse. The floor you robbed in your first story job is the floor above it. The Lantern file was never a trial record. It was a piece of the core, being written back into the building's own filing, one afternoon at a time.\n\nYou are going to want to see it before you decide. I do not blame you. I have not seen it myself.\n\nWren"
+            "body": "{handle},\n\nThe core is still at Halvorsen. It was at Halvorsen all along. They never moved it, because there was nowhere to move it to that was not worse. The floor you robbed, back when all this began, is the floor above it. The Lantern file was never a trial record. It was a piece of the core, being written back into the building's own filing, one afternoon at a time.\n\nYou are going to want to see it before you decide. I do not blame you. I have not seen it myself.\n\nWren"
           }
         },
         {
