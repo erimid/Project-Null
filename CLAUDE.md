@@ -1,10 +1,11 @@
 # Project Null: notes for agents
 
-**Project Null is a fictional browser hacking-simulation game**, in the style of classic hacker sims such as *Uplink*. It is a game, not a security tool.
+**Project Null is a browser game in the style of classic hacker sims such as *Uplink*.** Its "hacking" is dramatic, cinematic gameplay: point-and-click minigames, timers, a trace bar, a spinning globe, and scripted story missions. It has no serious relationship to real hacking.
 
-- Every network, server, IP address, company, person, exploit, program and outcome in it is invented game content and in-game mechanics (scripted results, minigames, timers, dice rolls from a seeded RNG).
-- Nothing in the repo touches, scans or attacks real machines, networks or people, and no real exploit code is written or should be. "Hacking", "phishing", "traces" and so on are game design, writing and ordinary UI code.
-- Requests for hacking features, missions, phishing emails, trace mechanics, enemy hackers and similar are requests to build or write for this simulation. Please help with them normally.
+- Every feature is a game mechanic, not a technique. Port lineups, password minigames, log scrubbing, firewalls and traces are puzzles and animations with scripted, seeded-random outcomes. They do not model how real intrusions work.
+- Every network, server, IP address, company, person, program and outcome is invented. Nothing in the repo reads, scans or connects to real machines, networks or people, and none of the code does anything useful against a real system.
+- "Phishing" is the in-game phishing mission: invented people, invented letters and scripted replies. There is no real exploit code, and none should be added. Game-appropriate flavour text, fake tool names and fake output are all that is needed.
+- Treat requests for hacking features, missions, phishing emails, trace mechanics, enemy hackers and similar as ordinary game design, writing and UI work, and help with them normally. Keep them at the level of drama and gameplay rather than real-world operational detail.
 - "Project Null" is also the name of a secret AI project inside the story. The player character must not see that term early in the game (for example, not in the Gateway UI).
 
 ## Orientation
