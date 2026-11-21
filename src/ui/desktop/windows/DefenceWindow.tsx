@@ -39,8 +39,8 @@ function TraceRoute({ raid }: { raid: RaidState }) {
   );
 }
 
-/** The attacker's port line-up: rings turn, click each as its gap crosses the marker to lock it. */
-function PortDial({ frameAngles }: { frameAngles: string }) {
+/** The attacker's port line-up: rings turn, click each as its gap crosses the marker to lock it. Also used on guard jobs. */
+export function PortDial({ frameAngles, onRing = (ring) => act({ type: 'defendRing', ring }), label = "Attacker's port line-up" }: { frameAngles: string; onRing?: (ring: number) => void; label?: string }) {
   const angles = frameAngles.split(',');
   const tolerance = ringTolerance(session.getState(), content);
   const point = (radius: number, degrees: number) => {
@@ -51,7 +51,7 @@ function PortDial({ frameAngles }: { frameAngles: string }) {
   const left = point(outer, -tolerance);
   const right = point(outer, tolerance);
   return (
-    <svg class="lineup__dial" viewBox={`0 0 ${DIAL} ${DIAL}`} role="group" aria-label="Attacker's port line-up">
+    <svg class="lineup__dial" viewBox={`0 0 ${DIAL} ${DIAL}`} role="group" aria-label={label}>
       <path d={`M${CENTRE} ${CENTRE}L${left.x} ${left.y}A${outer} ${outer} 0 0 1 ${right.x} ${right.y}Z`} class="lineup__window" />
       <path d={`M${CENTRE - 6} ${CENTRE - outer - 12}h12l-6 9z`} class="lineup__marker" />
       {angles.map((angle, ring) => {
@@ -66,11 +66,11 @@ function PortDial({ frameAngles }: { frameAngles: string }) {
             tabIndex={locked ? -1 : 0}
             aria-label={`Ring ${ring + 1}${locked ? ', locked' : ''}`}
             aria-disabled={locked}
-            onPointerDown={() => !locked && act({ type: 'defendRing', ring })}
+            onPointerDown={() => !locked && onRing(ring)}
             onKeyDown={(event: KeyboardEvent) => {
               if (!locked && (event.key === 'Enter' || event.key === ' ')) {
                 event.preventDefault();
-                act({ type: 'defendRing', ring });
+                onRing(ring);
               }
             }}
           >

@@ -134,7 +134,8 @@ describe('the daily news', () => {
       }
     }
     expect(opened).toBeGreaterThan(0);
-    // The usual jobs are still there beside them.
+    // The usual jobs are still there beside them (a rival may have just taken one; the next minute puts it back).
+    postJobs(state, content);
     expect(state.contracts.jobs.filter((item) => !item.news).length).toBeGreaterThanOrEqual(tuning.boardJobs - 1);
   });
 

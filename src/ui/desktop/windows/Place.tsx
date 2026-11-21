@@ -25,6 +25,10 @@ export const OBJECTIVE_WORDS: Record<string, string> = {
   read: 'Read a file',
   plant: 'Plant a file',
   frame: 'Frame someone',
+  guard: 'Guard a server',
+  hold: 'Stay in',
+  hunt: 'Find the hacker',
+  swap: 'Swap a file',
 };
 
 /** How dangerous a job looks, for each risk level 0 to 5. */

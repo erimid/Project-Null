@@ -9,6 +9,17 @@ import type { ContractDef, ObjectiveDef, StageDef, TwistDef } from '../content/s
 import { evidenceCount } from './forensics';
 import { CLIENT_FILE, type GameState } from './state';
 import { fileDef, findServer, securityOf, sendMail, type Content } from './world';
+import { beginKind, beginRace, checkRace, kindMet, kindPossible } from './kinds';
+
+/** True if this goal is the step of the active contract being worked on now. */
+function isLiveGoal(state: GameState, content: Content, targetId: string, goal: ObjectiveDef): boolean {
+  const id = state.contracts.activeId;
+  if (id === null) return false;
+  const contract = content.contracts.find((item) => item.id === id) ?? state.contracts.jobs.find((job) => job.id === id);
+  if (!contract) return false;
+  const stage = stagesOf(contract)[stageIndex(state, contract)]!;
+  return stage.targetId === targetId && (stage.objective === goal || JSON.stringify(stage.objective) === JSON.stringify(goal));
+}
 
 /** How long a server stays on its guard after a stage twist, in game hours. */
 export const ALERT_HOURS = 48;
@@ -85,6 +96,8 @@ export function goalMet(state: GameState, content: Content, targetId: string, go
     case 'frame':
       // A false trail only holds once nothing of the player's own is left beside it.
       return (target?.logs.some((entry) => entry.framed === goal.who) ?? false) && evidenceCount(state, targetId) === 0;
+    default:
+      return kindMet(state, targetId, goal, isLiveGoal(state, content, targetId, goal)) ?? false;
   }
 }
 
@@ -94,7 +107,7 @@ export function goalPossible(state: GameState, content: Content, targetId: strin
   if (goal.kind === 'steal' || goal.kind === 'read') return state.servers[targetId]?.files.some((file) => file.name === goal.file) ?? false;
   // The file to plant must still be on the gateway.
   if (goal.kind === 'plant') return state.player.files.some((file) => file.name === goal.file && file.from === CLIENT_FILE);
-  return true;
+  return kindPossible(state, targetId, goal, isLiveGoal(state, content, targetId, goal)) ?? true;
 }
 
 /** Puts a server on its guard: layers up or a layer run from elsewhere, for a while. */
@@ -150,6 +163,7 @@ function beginStage(state: GameState, content: Content, contract: ContractDef, i
   state.contracts.stage = index;
   state.contracts.stageStartMs = state.clock.gameTimeMs;
   for (const twist of stage.twists ?? []) applyTwist(state, content, stage.targetId, twist);
+  beginKind(state, content, stage);
   const goal = stage.objective;
   if (goal.kind === 'plant' && !state.player.files.some((file) => file.name === goal.file)) {
     state.player.files.push({ name: goal.file, sizeGq: goal.sizeGq, from: CLIENT_FILE });
@@ -170,6 +184,7 @@ function beginStage(state: GameState, content: Content, contract: ContractDef, i
 
 /** Starts the first step of a contract the player has just taken. */
 export function startContract(state: GameState, content: Content, contract: ContractDef): void {
+  beginRace(state, contract);
   beginStage(state, content, contract, 0);
 }
 
@@ -200,6 +215,8 @@ export function stageDeadline(state: GameState, contract: ContractDef): number |
  * Returns true if the contract was lost.
  */
 export function advanceContract(state: GameState, content: Content, contract: ContractDef): boolean {
+  // Another hacker on the same job may have got there first.
+  if (checkRace(state, content, contract)) return true;
   const steps = stagesOf(contract);
   for (let guard = 0; guard < steps.length; guard++) {
     const index = stageIndex(state, contract);

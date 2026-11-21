@@ -35,6 +35,7 @@ export type {
   PendingRaid,
   PlayerState,
   RaidPort,
+  GuardState,
   RaidState,
   Review,
   RingPuzzle,
@@ -144,3 +145,4 @@ export { EDITION_HOUR, editionDay, editionTimeMs, hasFirm, inTheNews, latestEdit
 export type { Action, ActionResult } from './actions';
 export { SAVE_FORMAT, SaveError, deserializeGame, readSummary, serializeGame, summarize } from './save';
 export type { LoadedGame, Migration, SaveFile, SaveSummary } from './save';
+export { GUARD_RINGS, foundFlag, guardRingAngle, guardSetbackMs, holdNeedMs, raceProgress } from './kinds';

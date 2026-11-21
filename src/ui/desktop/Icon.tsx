@@ -164,6 +164,10 @@ const OBJECTIVE_ICONS: Record<string, IconName> = {
   read: 'book',
   plant: 'putUp',
   frame: 'blame',
+  guard: 'shield',
+  hold: 'clock',
+  hunt: 'radar',
+  swap: 'twin',
 };
 
 const FILE_ICONS: Record<string, IconName> = {

@@ -1,4 +1,4 @@
-import { activeContract, contractRisk, findModule, objectiveMet, objectivePossible, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
+import { activeContract, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
 import { findServer, type ContractDef } from '../../core/content';
 import { formatMoney } from '../format';
 import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
@@ -34,6 +34,14 @@ function objectiveText(contract: ContractDef): string {
       return `Put ${goal.file} onto ${target}.`;
     case 'frame':
       return `On ${target}, leave a false trail pointing at ${goal.who}, and clear your own.`;
+    case 'guard':
+      return `Log in to ${target} as its administrator and hold off ${goal.rival ?? 'the intruder'} for ${goal.seconds} seconds. Shut the ports they probe.`;
+    case 'hold':
+      return `Stay logged in on ${target} for ${goal.seconds} seconds while its trace runs.`;
+    case 'hunt':
+      return `Follow the hacker's trail from ${target}'s access log, server by server, and connect to their machine.`;
+    case 'swap':
+      return `On ${target}, delete ${goal.file} and upload the doctored copy in its place.`;
   }
 }
 
@@ -120,6 +128,7 @@ export function ContractPanel() {
   // The target can always be opened, even before it is in the address book list.
   const places = [...new Set([stage.targetId, ...steps.map((step) => step.targetId), ...game.knownServers])];
   const sealed = goal.kind === 'steal' && game.player.files.some((file) => file.name === goal.file && file.encrypted);
+  const race = raceProgress(game, contract);
   const deadlineMs = stageDeadline(game, contract);
   const minutesLeft = deadlineMs === undefined ? undefined : Math.max(0, Math.round((deadlineMs - game.clock.gameTimeMs) / 60_000));
   // The brief for the step being worked on: the stage's own, or the contract's for the first.
@@ -223,6 +232,17 @@ export function ContractPanel() {
       )}
       {minutesLeft !== undefined && !done && (
         <p class="board__warning">This step must be finished within <span class="data">{minutesLeft}</span> game {minutesLeft === 1 ? 'minute' : 'minutes'}.</p>
+      )}
+      {race && contract.race && !done && (
+        <div class="race">
+          <div class="row__between">
+            <span class="race__label">{contract.race.rival} is on it too</span>
+            <span class="data">{Math.max(0, Math.ceil((race.untilMs - game.clock.gameTimeMs) / 60_000))} min</span>
+          </div>
+          <span class={`meter${race.share > 0.8 ? ' meter--over' : ''}`} aria-label={`${contract.race.rival} is ${Math.round(race.share * 100)}% of the way there`}>
+            <span class="meter__fill" style={{ width: `${race.share * 100}%` }} />
+          </span>
+        </div>
       )}
       {sealed && <p class="board__warning">You have the file, but it is still encrypted. Run a Decrypter on it from Programs.</p>}
       {!possible && <p class="board__warning">This can no longer be done. Give the contract up.</p>}

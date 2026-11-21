@@ -5,6 +5,7 @@
  * A job stays up for a while, then is taken down and replaced.
  */
 import type { ContractDef, ServerDef } from '../content/schema';
+import { NEW_KINDS, type NewKind } from '../content/companies';
 import { fill } from './generate';
 import { assignPatron } from './patrons';
 import type { GameState, Job } from './state';
@@ -114,9 +115,96 @@ function makeJob(state: GameState, content: Content, at?: { server: ServerDef; r
   // (deterministic, and not on the job's id: an id would tie this to nextId,
   // so any new message or entity made elsewhere would reshuffle the board).
   const own = rng.fork(`staged:${server.id}:${rng.getState().state}`);
-  const made = !at && pools.staged && serverTier >= 5 && own.chance(0.5) ? addFirstStep(state, content, job, server, values, own) : job;
+  // Some become one of the newer kinds of job, and some become a race (see kinds.ts). Forked the same way.
+  const other = at ? undefined : newKind(state, content, job, server, values, rng.fork(`kind:${server.id}:${rng.getState().state}`));
+  const made = other ?? (!at && pools.staged && serverTier >= 5 && own.chance(0.5) ? addFirstStep(state, content, job, server, values, own) : job);
+  const raced = at ? made : maybeRace(content, made, serverTier, rng.fork(`race:${server.id}:${rng.getState().state}`));
   // Some jobs are a patron's, under their own name (see patrons.ts). Forked the same way, so the board's draws stay as they were.
-  return assignPatron(state, content, made, server, rng.fork(`patron:${server.id}:${rng.getState().state}`));
+  return assignPatron(state, content, raced, server, rng.fork(`patron:${server.id}:${rng.getState().state}`));
+}
+
+/** Share of board jobs that are one of the newer kinds, once the tier allows any. */
+export const NEW_KIND_SHARE = 0.3;
+/** Share of copy and delete jobs, tier 2 up, that are races. */
+export const RACE_SHARE = 0.15;
+/** The lowest company tier each newer kind is posted against, and what it pays as a share of the usual. */
+const KIND_RULES: Readonly<Record<NewKind, { tier: number; pay: number }>> = {
+  swap: { tier: 1, pay: 1.1 },
+  frame: { tier: 2, pay: 1.2 },
+  hold: { tier: 2, pay: 1.0 },
+  guard: { tier: 3, pay: 1.3 },
+  hunt: { tier: 3, pay: 1.4 },
+};
+
+/** Maybe turns a fresh job into one of the newer kinds: frame, guard, stay in, find the hacker or swap. */
+function newKind(state: GameState, content: Content, job: Job, server: ServerDef, values: Record<string, string>, rng: Rng): Job | undefined {
+  const pools = content.companies.jobs;
+  const tier = server.generated!.tier;
+  const kinds = NEW_KINDS.filter((kind) => pools.kinds?.[kind] && tier >= KIND_RULES[kind].tier);
+  if (kinds.length === 0 || !rng.chance(NEW_KIND_SHARE)) return undefined;
+  const kind = rng.pick(kinds);
+  const seconds = 30 + 10 * tier;
+  const racers = pools.racers && pools.racers.length > 0 ? pools.racers : ['a rival'];
+  let objective: ContractDef['objective'];
+  const extra: Record<string, string> = {};
+  switch (kind) {
+    case 'frame': {
+      const who = `${rng.pick(content.companies.first)} ${rng.pick(content.companies.last)}`;
+      const address = `${rng.int(11, 223)}.${rng.int(1, 254)}.${rng.int(1, 254)}.${rng.int(2, 254)}`;
+      objective = { kind, who, address };
+      Object.assign(extra, { who, address });
+      break;
+    }
+    case 'guard': {
+      const rival = rng.pick(racers);
+      objective = { kind, seconds, rival };
+      Object.assign(extra, { seconds: String(seconds), rival });
+      break;
+    }
+    case 'hold':
+      objective = { kind, seconds };
+      extra.seconds = String(seconds);
+      break;
+    case 'hunt': {
+      const busy = touchedServers(state);
+      const others = content.servers.filter((other) => other.generated && other.id !== server.id && !busy.has(other.id) && other.generated.tier <= tier);
+      if (others.length < 2) return undefined;
+      const trail = rng.shuffle([...others]).slice(0, 2).map((other) => other.id);
+      objective = { kind, trail };
+      break;
+    }
+    case 'swap': {
+      if (job.objective.kind !== 'steal' && job.objective.kind !== 'destroy') return undefined;
+      objective = { kind, file: job.objective.file };
+      break;
+    }
+  }
+  const wording = pools.kinds![kind]!;
+  const all = { ...values, ...extra };
+  return {
+    ...job,
+    title: rng.pick(wording.titles),
+    summary: fill(rng.pick(wording.summaries), all),
+    brief: fill(rng.pick(wording.briefs), all),
+    pay: Math.round((job.pay * KIND_RULES[kind].pay) / 50) * 50,
+    objective,
+  };
+}
+
+/** Maybe makes a copy or delete job a race against another hacker: better pay, and a clock. */
+function maybeRace(content: Content, job: Job, tier: number, rng: Rng): Job {
+  const racers = content.companies.jobs.racers;
+  if (!racers || racers.length === 0 || tier < 2 || job.stages || (job.objective.kind !== 'steal' && job.objective.kind !== 'destroy') || !rng.chance(RACE_SHARE)) return job;
+  const rival = rng.pick(racers);
+  return {
+    ...job,
+    title: `Race: ${job.title}`,
+    pay: Math.round((job.pay * 1.3) / 50) * 50,
+    brief: `${job.brief}
+
+One more thing: ${rival} has been offered the same job. Whoever finishes first gets paid.`,
+    race: { rival, minutes: 150 + 30 * tier },
+  };
 }
 
 /**

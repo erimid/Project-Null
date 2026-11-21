@@ -146,8 +146,16 @@ export function abandonContract(state: GameState, content: Content): string | nu
   // A job given up is gone from the board; someone else will take it.
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== state.contracts.activeId);
   state.contracts.activeId = null;
+  resetKinds(state);
   clearClientFiles(state);
   return null;
+}
+
+/** Clears what the newer kinds of job keep while one is under way. */
+function resetKinds(state: GameState): void {
+  state.contracts.heldMs = 0;
+  state.contracts.guard = null;
+  state.contracts.raceUntilMs = 0;
 }
 
 /**
@@ -173,6 +181,7 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   noteRating(state);
   state.contracts.completed.push(contract.id);
   state.contracts.activeId = null;
+  resetKinds(state);
   // The victim notices; the next edition carries it.
   reportContract(state, content, contract);
   // Whoever paid remembers, and so does anyone whose companies were hurt.
