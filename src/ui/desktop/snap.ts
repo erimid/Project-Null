@@ -4,7 +4,8 @@
  * While a window is dragged its edges stick to the edges of the desk and
  * to the edges of other windows when they come close. Dragging the
  * pointer right up to a side of the desk offers to fill that half,
- * a corner a quarter, and the top edge the whole desk.
+ * a corner a quarter, and the top edge the whole desk. On a wide desk
+ * the bottom edge offers a third: left, middle or right.
  */
 
 export interface Rect {
@@ -19,7 +20,10 @@ export interface Area {
   readonly h: number;
 }
 
-export type Zone = 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'full';
+export type Zone = 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'full' | 'third-left' | 'third-centre' | 'third-right';
+
+/** From this width a desk offers thirds as well as halves: half an ultrawide screen is wider than most windows want. */
+export const THIRDS_FROM = 2200;
 
 /** How close, in pixels, an edge has to come before it sticks. */
 export const SNAP_DISTANCE = 12;
@@ -108,6 +112,7 @@ export function zoneAt(px: number, py: number, area: Area): Zone | null {
   if (bottom) {
     if (nearLeft) return 'bottom-left';
     if (nearRight) return 'bottom-right';
+    if (area.w >= THIRDS_FROM) return px < area.w / 3 ? 'third-left' : px > (area.w * 2) / 3 ? 'third-right' : 'third-centre';
   }
   return null;
 }
@@ -120,7 +125,14 @@ export function zoneRect(zone: Zone, area: Area, gap = ZONE_GAP): Rect {
   const fullH = area.h - gap * 2;
   const rightX = area.w - gap - halfW;
   const bottomY = area.h - gap - halfH;
+  const thirdW = Math.round((area.w - gap * 4) / 3);
   switch (zone) {
+    case 'third-left':
+      return { x: gap, y: gap, w: thirdW, h: fullH };
+    case 'third-centre':
+      return { x: gap * 2 + thirdW, y: gap, w: area.w - gap * 4 - thirdW * 2, h: fullH };
+    case 'third-right':
+      return { x: area.w - gap - thirdW, y: gap, w: thirdW, h: fullH };
     case 'full':
       return { x: gap, y: gap, w: fullW, h: fullH };
     case 'left':

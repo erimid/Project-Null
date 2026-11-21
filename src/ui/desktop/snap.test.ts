@@ -90,4 +90,19 @@ describe('grabOffset', () => {
     expect(grabOffset(400, 800, 400)).toBe(200);
     expect(grabOffset(10, 800, 400)).toBe(5);
   });
+
+  it('offers thirds along the bottom edge of a wide desk only', () => {
+    const wide = { w: 3440, h: 1330 };
+    expect(zoneAt(600, 1328, wide)).toBe('third-left');
+    expect(zoneAt(1720, 1328, wide)).toBe('third-centre');
+    expect(zoneAt(2900, 1328, wide)).toBe('third-right');
+    expect(zoneAt(40, 1328, wide)).toBe('bottom-left');
+    expect(zoneAt(800, 898, { w: 1600, h: 900 })).toBe(null);
+    const rects = (['third-left', 'third-centre', 'third-right'] as const).map((zone) => zoneRect(zone, wide));
+    expect(rects[0]!.x).toBe(ZONE_GAP);
+    expect(rects[1]!.x).toBe(rects[0]!.x + rects[0]!.w + ZONE_GAP);
+    expect(rects[2]!.x).toBe(rects[1]!.x + rects[1]!.w + ZONE_GAP);
+    expect(rects[2]!.x + rects[2]!.w).toBe(wide.w - ZONE_GAP);
+    for (const rect of rects) expect(rect.h).toBe(wide.h - ZONE_GAP * 2);
+  });
 });

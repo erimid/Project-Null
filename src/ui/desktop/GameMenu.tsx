@@ -118,7 +118,7 @@ export function GameMenu() {
                 >
                   {snap.on ? 'On' : 'Off'}
                 </button>
-                <span class="menu__item-note">Edges stick together. Drag to a side for half the screen, a corner for a quarter. Hold Shift to drag freely.</span>
+                <span class="menu__item-note">Edges stick together. Drag to a side for half the screen, a corner for a quarter, or on a wide screen the bottom edge for a third. Hold Shift to drag freely.</span>
               </div>
             </>
           )}

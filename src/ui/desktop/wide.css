@@ -1,0 +1,427 @@
+/*
+ * Windows that fill themselves. The Messages and Server windows used to
+ * put a short list at the top and leave the rest dark, most of all on a
+ * wide screen. These rules size their contents by the window (the `win`
+ * container), so they suit a narrow window, a tall one and a very wide one.
+ */
+
+/* ---- messages: a reader, the list beside the letter ---- */
+
+.window__body:has(> .mail) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* A narrow window: the list on top, as tall as it needs up to two fifths of the window, and the letter fills the rest. */
+.mail {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: fit-content(40%) minmax(0, 1fr);
+  min-height: 0;
+}
+
+.mail__list {
+  min-height: 0;
+  max-height: none;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95, 212, 255, 0.3) transparent;
+}
+
+.mail__read {
+  min-height: 0;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95, 212, 255, 0.3) transparent;
+}
+
+.mail__read > .message-body {
+  max-width: 780px;
+  margin-top: 0;
+}
+
+.mail__read > .message-body:not(.is-voice, .is-alert) {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.mail__none {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  margin: 0;
+  color: var(--text-dim);
+}
+
+/* Wide enough for two panes: the list down the left at full height, the letter on the right. */
+@container win (min-width: 700px) {
+  .mail {
+    grid-template-columns: clamp(280px, 36%, 440px) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .mail__list {
+    padding-right: 10px;
+    border-right: 1px solid var(--line-soft);
+  }
+
+  .mail__read {
+    margin-top: 0;
+    padding: 4px 6px 0 22px;
+    border-top: 0;
+  }
+
+  /* In the list column each message takes two lines: who and when, then what about. */
+  .mail__list .message {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 10px;
+    padding: 9px 10px;
+  }
+
+  .mail__list .message__from {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mail__list .message__subject {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    font-size: 16px;
+  }
+
+  .mail__list .message:not(.is-unread) .message__from {
+    font-size: 14px;
+  }
+
+  .mail__list .message.is-selected {
+    box-shadow: inset 3px 0 0 var(--cyan);
+  }
+
+  .mail__read .message-body__subject {
+    font-size: 22px;
+  }
+
+  .mail__read > .message-body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+}
+
+/* ---- server: the door (logging in) ---- */
+
+/* Each account is a card with its own button, and the cards share the width: side by side in a wide window, stacked in a narrow one. */
+.door {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.door__card {
+  --tone: 95, 212, 255;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  gap: 10px 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(var(--tone), 0.07), rgba(3, 8, 15, 0.5) 60%);
+  animation: row-in 0.25s ease-out backwards;
+}
+
+.door__card.is-open {
+  --tone: 78, 230, 200;
+  border-color: rgba(78, 230, 200, 0.4);
+}
+
+.door__who {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.door__user {
+  font-size: 17px;
+  color: var(--text-bright);
+}
+
+.door__name {
+  font-size: 14px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.door__state {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+
+.door__go {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+}
+
+.door__go > .btn {
+  flex: 1;
+  min-height: 36px;
+  font-size: 15px;
+}
+
+.door__go > .cracking {
+  flex: 1;
+  justify-content: space-between;
+}
+
+/* ---- server: the sheet beside the door and the lists ---- */
+
+.sheet {
+  display: none;
+}
+
+/* A window wide enough for it: the lists keep the left, the sheet takes a column on the right. On the widest windows both stay a readable width, in the middle. */
+@container win (min-width: 940px) {
+  .srv--sheet {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 30%, 420px);
+    align-items: start;
+    gap: 0 22px;
+    max-width: 1720px;
+    margin-inline: auto;
+  }
+
+  .sheet {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, rgba(95, 212, 255, 0.06), transparent 160px),
+      rgba(3, 8, 15, 0.55);
+  }
+}
+
+.sheet__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sheet__title {
+  min-width: 0;
+}
+
+.sheet__name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text-bright);
+}
+
+.sheet__where,
+.sheet__address,
+.sheet__blurb,
+.sheet__job,
+.sheet__access {
+  margin: 0;
+}
+
+.sheet__where {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.sheet__address {
+  font-size: 12px;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+}
+
+.sheet__blurb {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.sheet__job {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid rgba(78, 230, 200, 0.4);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mint-text);
+}
+
+.sheet__part {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.sheet__label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.sheet__dim {
+  display: block;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+
+.sheet__access {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.sheet__access.is-in {
+  color: var(--mint-text);
+}
+
+.sheet__defences {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sheet__defence {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0 10px;
+  padding-left: 10px;
+  border-left: 2px solid var(--line-strong);
+}
+
+.sheet__defence.is-open {
+  border-left-color: var(--mint);
+}
+
+.sheet__defence-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.sheet__defence-state {
+  min-width: 74px;
+  font-size: 13px;
+  text-align: right;
+  color: var(--text-muted);
+}
+
+.sheet__defence.is-open .sheet__defence-state {
+  color: var(--mint);
+}
+
+.sheet__defence > .sheet__dim {
+  grid-column: 1 / -1;
+}
+
+.sheet__heat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sheet__heat-bar {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(95, 212, 255, 0.12);
+  overflow: hidden;
+}
+
+.sheet__heat-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--heat, 0) * 100%);
+  border-radius: 3px;
+  background: #ffb45c;
+}
+
+.sheet__heat.is-hot .sheet__heat-bar::after {
+  background: #ff6b6b;
+}
+
+.sheet__heat-word {
+  min-width: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--text-bright);
+}
+
+.sheet__inside {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.sheet__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  text-align: left;
+  color: var(--text);
+}
+
+.sheet__tile:hover,
+.sheet__tile.is-current {
+  border-color: var(--line-strong);
+  background: rgba(95, 212, 255, 0.1);
+  color: var(--text-bright);
+}
+
+.sheet__tile-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sheet__tile-count {
+  font-size: 12px;
+  color: var(--text-dim);
+}
