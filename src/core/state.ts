@@ -171,6 +171,8 @@ export interface StoryLineState {
   lastMs: number;
   /** True once the current beat's timed turn has fired. */
   lapsed?: boolean;
+  /** True once the current beat's timed turn has said it is coming. */
+  warned?: boolean;
 }
 
 /** How far the player has got through the story, and which story contracts are on the board (see core/story.ts). */

@@ -98,8 +98,13 @@ describe('Act 3 played through', () => {
     const state = fresh();
     play(state, {}, ['act3-clerk'], 8);
     expect(passed(state, 'a3-wick-ask')).toBe(false);
-    // Wick asked three game days ago and was ignored.
-    state.clock.gameTimeMs += 100 * HOUR;
+    // Three game days of being ignored: Wick says, gently, that time is short. Nothing is lost yet.
+    state.clock.gameTimeMs += 80 * HOUR;
+    advanceStory(state, content);
+    expect(state.messages.filter((message) => message.from === 'Wick').at(-1)?.subject).toBe('something is answering the request line');
+    expect(state.flags).not.toContain('station-taken');
+    // Two more, and the station goes.
+    state.clock.gameTimeMs += 50 * HOUR;
     advanceStory(state, content);
     expect(state.flags).toContain('station-taken');
     expect(isTaken(state, 'wick-node')).toBe(true);
@@ -119,7 +124,7 @@ describe('Act 3 played through', () => {
     const state = fresh();
     play(state, {}, ['act3-ask', 'act3-postbox'], 30);
     expect(passed(state, 'a3-wick-ask')).toBe(true);
-    // Left for three days: the Office has the post box. Wren's letters stop where they are.
+    // Left for five days, after a warning from Wren: the Office has the post box. Wren's letters stop where they are.
     expect(state.flags).toContain('wren-caught');
     const lettersBefore = state.messages.filter((message) => message.from === 'Wren').length;
     expect(storyOffered(state)).toContain('act3-postbox');

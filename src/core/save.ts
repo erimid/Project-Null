@@ -477,7 +477,7 @@ function checkState(raw: Obj): GameState {
   if (
     !isObj(story) ||
     !isObj(story.lines) ||
-    !Object.values(story.lines).every((line) => isObj(line) && isNum(line.beat) && typeof line.arrived === 'boolean' && isNum(line.lastMs) && (line.lapsed === undefined || typeof line.lapsed === 'boolean')) ||
+    !Object.values(story.lines).every((line) => isObj(line) && isNum(line.beat) && typeof line.arrived === 'boolean' && isNum(line.lastMs) && (line.lapsed === undefined || typeof line.lapsed === 'boolean') && (line.warned === undefined || typeof line.warned === 'boolean')) ||
     !isList(story.offered, isText)
   ) {
     throw damaged;

@@ -70,6 +70,9 @@ export function objectivePossible(state: GameState, content: Content, contract: 
   const stage = currentStage(state, contract);
   // A plant's file is handed over when the contract is taken, so before then it is always possible.
   if (stage.objective.kind === 'plant' && state.contracts.activeId !== contract.id) return true;
+  // So is a file the job itself puts on the server as it is taken.
+  const goal = stage.objective;
+  if ((goal.kind === 'read' || goal.kind === 'steal') && state.contracts.activeId !== contract.id && (stage.twists ?? []).some((twist) => twist.kind === 'drop' && twist.file === goal.file)) return true;
   return goalPossible(state, content, stage.targetId, stage.objective);
 }
 

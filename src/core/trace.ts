@@ -182,12 +182,23 @@ export const maxHops = (state: GameState, content: Content): number => MAX_HOPS 
 /** Reroutes allowed on one connection, with the player's skills. */
 export const maxReroutes = (state: GameState, content: Content): number => content.rules.maxReroutes + effect(state, content, 'slipAway');
 
+/** True while the job in hand is to guard this server: the player is there at the client's asking. */
+export function guarding(state: GameState, content: Content, serverId: string): boolean {
+  const id = state.contracts?.activeId ?? null;
+  if (id === null) return false;
+  const contract = content.contracts.find((item) => item.id === id) ?? state.contracts.jobs.find((job) => job.id === id);
+  if (!contract) return false;
+  const steps = [{ targetId: contract.targetId, objective: contract.objective }, ...(contract.stages ?? [])];
+  const stage = steps[Math.max(0, Math.min(steps.length - 1, state.contracts.stage))]!;
+  return stage.objective.kind === 'guard' && stage.targetId === serverId;
+}
+
 export function newTrace(state: GameState, content: Content, target: ServerDef, route: readonly string[]): TraceState {
   // A legend contract with a short fuse (see legend.ts): its servers trace faster.
   const fuse = twistOn(state, 'shortFuse', target.id) ? SHORT_FUSE : 1;
   const hopMs = traceHopMs(content, target, route, traceSlow(state, content) * fuse, undefined, state);
   const trace: TraceState = { status: 'none', graceMs: 0, elapsedMs: 0, hopMs };
-  if (target.untraced) return trace;
+  if (target.untraced || guarding(state, content, target.id)) return trace;
   // The strongest monitors start tracing the moment a connection opens.
   if (securityOf(state, target).monitor >= content.rules.monitorGraceSeconds.length) trace.status = 'active';
   return trace;
@@ -201,6 +212,8 @@ export function newTrace(state: GameState, content: Content, target: ServerDef, 
 export function noteIntrusion(state: GameState, content: Content, connection: Connection): void {
   if (connection.trace.status !== 'none' || connection.monitor.blindMs > 0) return;
   if (findServer(content, connection.serverId)?.untraced) return;
+  // A client who has asked the player in to guard their server does not trace their own guard.
+  if (guarding(state, content, connection.serverId)) return;
   // A monitor whose alerts wait on a console the player is sitting at notices nothing.
   if (monitorHeld(state, content, connection)) return;
   const at = findServer(content, connection.serverId);

@@ -64,7 +64,7 @@
     },
     {
       "name": "PROJECT_NULL_core.arc",
-      "sizeGq": 16,
+      "sizeGq": 120,
       "access": "admin",
       "content": {
         "kind": "text",

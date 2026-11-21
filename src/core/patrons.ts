@@ -37,6 +37,9 @@ export const FAVOUR_CUT = 0.5;
 /** A warned player's gateway holds an intruder up this much longer. */
 export const WARNED_BREACH = 1.25;
 
+/** Standing the AIs need to trust the player with the end of the story: what the story's own jobs earn, less one betrayal. */
+export const AI_TRUSTED = 18;
+
 /** The choice recorded for a contract finished the usual way. */
 export const DEFAULT_CHOICE = 'default';
 
@@ -139,6 +142,26 @@ function standingFor(content: Content, contract: ContractDef): number {
  * with the patron behind it and with any patron whose companies it hurt,
  * and sends a first letter if the player has just met a patron.
  */
+/** Raises standing with a patron to at least `least`. Never lowers it. */
+export function liftStanding(state: GameState, content: Content, patronId: string, least: number): void {
+  const now = standingWith(state, patronId);
+  if (now < least) shiftStanding(state, content, patronId, least - now);
+}
+
+/**
+ * Gives a hidden patron the standing its written jobs earned in a save
+ * from before standing was kept, so the story's later acts find the trust
+ * the player built. Only before Act 3 has moved it. Safe on any save.
+ */
+export function backfillTrust(state: GameState, content: Content): void {
+  if (state.flags.some((flag) => flag.startsWith('story:a3-'))) return;
+  for (const patron of patronsOf(content)) {
+    if (!patron.hidden) continue;
+    const done = content.contracts.filter((contract) => contract.patron === patron.id && state.contracts.completed.includes(contract.id));
+    liftStanding(state, content, patron.id, done.reduce((sum, contract) => sum + standingFor(content, contract), 0));
+  }
+}
+
 export function noteDelivery(state: GameState, content: Content, contract: ContractDef, choice: ChoiceDef | undefined): void {
   if (contract.choices && contract.choices.length > 0) state.patrons.choices[contract.id] = choice?.id ?? DEFAULT_CHOICE;
   const patron = findPatron(content, contract.patron);
