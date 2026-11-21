@@ -56,6 +56,8 @@ import { checkParts, parseModules } from './modules';
 import rivalsJson from './rivals.json';
 import { checkRivals, parseRivals } from './rivals';
 import storyJson from './story.json';
+import newsJson from './news.json';
+import { checkNews, parseNews } from './news';
 import { checkStory, parseStory } from './story';
 import { parseSkills } from './skills';
 import { checkContent, parseContracts, parseGameInfo, parseMail, parsePrograms, parseServers, parseTuning } from './schema';
@@ -92,6 +94,7 @@ export type { ModuleDef, ModuleGrade, ModuleTrait } from './modules';
 export type { RivalDef, RivalStyle } from './rivals';
 export type { StoryBeat, StoryDef, StoryMail } from './story';
 export type { CompanyPools } from './companies';
+export type { NewsDef, NewsEventDef, NewsTemplate } from './news';
 export type { AskDef, FactDef, FileRef, PeopleDef, PersonDef, RewardDef } from './people';
 export type { BlockDef, LinkDef, Net, PageDef, SiteDef } from './sites';
 
@@ -118,6 +121,8 @@ checkParts(modules, servers, contracts, programs, companies.sectors);
 checkPeople(people, servers, tuning.phishMaxDetails);
 checkRivals(rivals, servers);
 checkStory(story, servers, contracts, rivals);
+export const news = parseNews(newsJson);
+checkNews(news, story.beats.map((beat) => beat.id), companies.sectors.map((sector) => sector.id));
 
 /**
  * Dots that draw the continents on the globe: [lat, lon, lat, lon, ...]

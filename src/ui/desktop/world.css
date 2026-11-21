@@ -1,0 +1,34 @@
+/* The living world: news tags on job cards, marks in the address book, the Wire. */
+
+.row__tag--warn {
+  border-color: rgba(255, 196, 92, 0.55);
+  color: #ffc45c;
+}
+
+.jobcard__news {
+  margin: 2px 0 4px;
+  font-size: 13px;
+  font-style: italic;
+  color: #ffd998;
+}
+
+.address__mark {
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid rgba(255, 196, 92, 0.45);
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #ffc45c;
+}
+
+.map__mark {
+  margin: 8px 0 4px;
+  padding: 6px 10px;
+  border-left: 3px solid #ffc45c;
+  font-size: 13px;
+  color: #ffd998;
+}

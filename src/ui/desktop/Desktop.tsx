@@ -30,6 +30,7 @@ import './desktop.css';
 import './tutorial.css';
 import './stage5.css';
 import './layouts.css';
+import './world.css';
 
 const SPEED_KEYS: Readonly<Record<string, Speed>> = { '1': 1, '2': 2, '3': 4 };
 

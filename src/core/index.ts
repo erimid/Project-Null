@@ -25,6 +25,10 @@ export type {
   PhishState,
   MonitorState,
   NewGameOptions,
+  Edition,
+  NewsItem,
+  NewsState,
+  ServerMark,
   PendingRaid,
   PlayerState,
   RaidPort,
@@ -130,6 +134,7 @@ export { advanceStory, currentBeat, storyComplete, storyOffered } from './story'
 export { REGIONS, fill, generateCompanies, regionOf, worldFor } from './generate';
 export type { Region } from './generate';
 export { isJob, tierForRating } from './jobs';
+export { EDITION_HOUR, editionDay, editionTimeMs, hasFirm, inTheNews, latestEdition, markServer, serverMark } from './news';
 export type { Action, ActionResult } from './actions';
 export { SAVE_FORMAT, SaveError, deserializeGame, readSummary, serializeGame, summarize } from './save';
 export type { LoadedGame, Migration, SaveFile, SaveSummary } from './save';

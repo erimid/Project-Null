@@ -13,6 +13,7 @@ import { isJob, refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
 import { advanceStory } from './story';
+import { printEditions, reportContract } from './news';
 import { sellsOnly, sellsProgram, shopOf, shopPrice } from './market';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
 import { findConnection, findProgram, findServer, noteProgress, once, securityOf, sendMail, type Content } from './world';
@@ -36,6 +37,7 @@ export function activeContract(state: GameState, content: Content): ContractDef 
 export function postJobs(state: GameState, content: Content): void {
   refreshJobs(state, content, (job) => objectivePossible(state, content, job));
   advanceStory(state, content);
+  printEditions(state, content);
 }
 
 /**
@@ -166,6 +168,8 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   noteRating(state);
   state.contracts.completed.push(contract.id);
   state.contracts.activeId = null;
+  // The victim notices; the next edition carries it.
+  reportContract(state, content, contract);
   // A delivered job comes off the board and another takes its place.
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
   postJobs(state, content);
