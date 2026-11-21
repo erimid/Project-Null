@@ -3,7 +3,7 @@ import { gameDate, isConnected, mostUrgentTrace, pointsFree } from '../../core';
 import { formatTime, ratingStep } from '../format';
 import { useGame, useWorld } from '../hooks';
 import { content, session } from '../session';
-import { ON_DEMAND, TraceAlarm } from './BottomBar';
+import { TraceAlarm } from './BottomBar';
 import { activeConnection, useDesk } from './deskStore';
 import { GameMenu } from './GameMenu';
 import { lit, useGuide } from './guide';
@@ -11,7 +11,7 @@ import { WINDOW_HELP } from './help';
 import { useLayout } from './layout';
 import { usePanes } from './panes';
 import { SpeedControl } from './SpeedControl';
-import { WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId } from './windowStore';
+import { ON_DEMAND, WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId } from './windowStore';
 
 /** The four windows that get a tab of their own on a phone. Everything else is under More. */
 const MAIN: readonly WindowId[] = ['server', 'map', 'gateway', 'messages'];

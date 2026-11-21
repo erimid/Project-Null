@@ -8,10 +8,8 @@ import { GameMenu } from './GameMenu';
 import { lit, useGuide } from './guide';
 import { WINDOW_HELP } from './help';
 import { SpeedControl } from './SpeedControl';
-import { WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId } from './windowStore';
-
-/** Windows that only have a tab on the bar while they are open: Saved games opens from the game menu, the file viewer from a file. */
-export const ON_DEMAND: readonly WindowId[] = ['viewer', 'saves', 'defence'];
+import { DeskSwitch } from './DeskSwitch';
+import { ON_DEMAND, WINDOW_DEFS, WINDOW_IDS, useWindows, windows } from './windowStore';
 
 const clockText = (ms: number) => {
   const seconds = Math.ceil(ms / 1000);
@@ -155,7 +153,7 @@ export function TraceAlarm() {
 }
 
 /**
- * Bottom bar: the game menu, a tab per window, then the trace light,
+ * Bottom bar: the game menu, the desk layouts, a tab per window, then the trace light,
  * credits, date and time, the speed control and Disconnect.
  */
 /** "3 more to Operator", for the rating's tooltip. */
@@ -200,6 +198,7 @@ export function BottomBar() {
     <footer class={`dock${tracing ? ' is-tracing' : ''}`}>
       <TraceAlarm />
       <GameMenu />
+      <DeskSwitch />
       <nav class="dock__tabs" aria-label="Windows" data-tour="tabs">
         {tabs.map((id) => (
           <button

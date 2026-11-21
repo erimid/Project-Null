@@ -18,7 +18,7 @@ function sources(): string {
 
 describe('tutorial text', () => {
   it('has a help card for every window', () => {
-    expect(WINDOW_IDS.length).toBeGreaterThan(10);
+    expect(WINDOW_IDS.length).toBeGreaterThanOrEqual(10);
     for (const id of WINDOW_IDS) {
       expect(WINDOW_HELP[id].summary.length).toBeGreaterThan(10);
       expect(WINDOW_HELP[id].points.length).toBeGreaterThan(0);

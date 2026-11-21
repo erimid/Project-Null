@@ -14,7 +14,7 @@ trace lands. All point-and-click.
 | `src/content/` | Game data as JSON, loaded and checked through `src/content/index.ts`. One file per server in `servers/`. `schema.ts` describes every field. |
 | `src/ui/` | Glue between the simulation and the browser: `session.ts` runs the game loop and saving, `hooks.ts` lets screens read game values, `storage/` keeps saves in the browser. |
 | `src/ui/globe/` | The wireframe globe: projection maths (tested) and the SVG drawing. |
-| `src/ui/desktop/` | The desktop layout: server tabs on top, floating windows, bottom bar. A mobile layout can be added later over the same `core`. |
+| `src/ui/desktop/` | The desktop layout: server tabs on top (with the contract drop-down), floating windows, bottom bar. `desks.ts` holds the three ready-made desk layouts (Plan, Run, Home). A mobile layout can be added later over the same `core`. |
 
 Rules that keep it tidy:
 

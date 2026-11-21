@@ -64,7 +64,7 @@ export function guideStep(state: GameState, content: Content): GuideStep | null 
     }
     if (there) return { id: 'leave-target', text: 'Now disconnect. Close the tab at the top with the ×.' };
     if (state.connections.length > 0) return { id: 'leave-board', text: 'Disconnect from every connection. Close the tabs at the top with the ×.' };
-    return { id: 'deliver', text: 'Open the Contract window and press Deliver. You are paid on the spot.' };
+    return { id: 'deliver', text: 'Press your contract at the top right of the screen, then press Deliver. You are paid on the spot.' };
   }
 
   const board_ = at(BOARD);

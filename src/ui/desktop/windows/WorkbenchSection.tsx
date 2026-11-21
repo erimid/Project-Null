@@ -19,7 +19,6 @@ import { ConfirmButton } from '../ConfirmButton';
 import { IconTile, ModulePlate, Pips, TRAIT_WORDS } from '../Gear';
 import { Icon, kindLabel, moduleIcon, programIcon } from '../Icon';
 import { TaskProgress } from '../TaskProgress';
-import { Window } from '../Window';
 import { gradeEffect } from './MarketSection';
 
 const capital = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -70,11 +69,11 @@ function shelf(game: GameState): [ModuleDef, number, number][] {
 }
 
 /**
- * The Workbench: pick a program you own, fit modules from your shelf, and
- * build. Below, the modules on hand (and refining, with the skill) and
- * the programs you have built.
+ * The Workbench, a side of the Programs window: pick a program you own,
+ * fit modules from your shelf, and build. Below, the modules on hand (and
+ * refining, with the skill) and the programs you have built.
  */
-export function WorkbenchWindow() {
+export function WorkbenchSection() {
   const game = useWorld((state) => state);
   const [baseId, setBaseId] = useState<string | null>(null);
   const [chosen, setChosen] = useState<Fitted[]>([]);
@@ -125,7 +124,7 @@ export function WorkbenchWindow() {
   const gains = (trait: string) => !!check?.ok && (check.preview.traits as readonly string[]).includes(trait);
 
   return (
-    <Window id="workbench" note={`${slots} ${slots === 1 ? 'module' : 'modules'} per build`}>
+    <>
       <div class="wb">
         <aside class="wb__programs">
           <p class="bench__step">1. Pick a program</p>
@@ -328,6 +327,6 @@ export function WorkbenchWindow() {
           {notice}
         </p>
       )}
-    </Window>
+    </>
   );
 }

@@ -6,7 +6,7 @@ import { content } from '../../session';
 import { IconTile, ModulePlate } from '../Gear';
 import { Icon, objectiveIcon, type IconName } from '../Icon';
 import { useGuide } from '../guide';
-import { windows } from '../windowStore';
+import { deskStore } from '../deskStore';
 import { OBJECTIVE_WORDS, Place, RiskMeter } from './Place';
 import type { View } from './serverView';
 
@@ -98,7 +98,7 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
           )}
           {part && contract.part && <ModulePlate module={part} grade={contract.part.grade} />}
         </span>
-        <button type="button" class={`btn btn--go card__buy${guide?.id === 'accept' && contract.id === GUIDED_JOB ? ' is-guided' : ''}`} disabled={!!blocked} title={blocked} data-tip="Take this job. It shows in your Contract window." data-sfx="accepted" onClick={onAccept}>
+        <button type="button" class={`btn btn--go card__buy${guide?.id === 'accept' && contract.id === GUIDED_JOB ? ' is-guided' : ''}`} disabled={!!blocked} title={blocked} data-tip="Take this job. It shows at the top right of the screen." data-sfx="accepted" onClick={onAccept}>
           Accept
         </button>
       </div>
@@ -165,7 +165,7 @@ export function Contracts({ game, connection, act }: View) {
           <span>
             You are working on <strong>{active.title}</strong>. Deliver it or give it up before taking another.
           </span>
-          <button type="button" class="btn" onClick={() => windows.focus('contract')}>
+          <button type="button" class="btn" onClick={() => deskStore.showContract(true)}>
             Open it
           </button>
         </p>
@@ -231,7 +231,7 @@ export function Contracts({ game, connection, act }: View) {
             risk={risks.get(contract.id) ?? 0}
             blocked={blocked}
             onAccept={() => {
-              if (act({ type: 'acceptContract', connectionId: connection.id, contractId: contract.id })) windows.focus('contract');
+              if (act({ type: 'acceptContract', connectionId: connection.id, contractId: contract.id })) deskStore.showContract(true);
             }}
           />
         ))}

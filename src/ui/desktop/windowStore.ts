@@ -4,55 +4,47 @@
  * localStorage) and not in save files.
  */
 import { useEffect, useState } from 'preact/hooks';
+import { DESKS, deskRects, type DeskName } from './desks';
 import { fitOnDesk, refit } from './fit';
-import { zoneRect, type Area, type Zone } from './snap';
+import { zoneRect, type Area, type Rect, type Zone } from './snap';
 
-export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'contract', 'skills', 'workbench', 'web', 'dark', 'viewer', 'saves', 'defence'] as const;
+export const WINDOW_IDS = ['gateway', 'map', 'server', 'programs', 'messages', 'skills', 'web', 'viewer', 'saves', 'defence'] as const;
 export type WindowId = (typeof WINDOW_IDS)[number];
+
+/** Windows that only have a tab on the bar while they are open: Saved games opens from the game menu, the file viewer from a file. */
+export const ON_DEMAND: readonly WindowId[] = ['viewer', 'saves', 'defence'];
 
 export interface WindowDef {
   readonly title: string;
   /** Short name on its bottom-bar tab. */
   readonly pill: string;
+  /** Its width when it is not part of a desk layout. */
   readonly width: number;
-  /** Starting height, for windows whose contents scroll inside them. Others are as tall as their contents. */
+  /** Its height then, for windows whose contents scroll inside them. Others are as tall as their contents. */
   readonly height?: number;
   /** Narrowest it can be dragged to. Defaults to MIN_WIDTH. */
   readonly minWidth?: number;
-  /** Starting position. A negative x is measured from the right edge of the screen. */
+  /** Where it opens when it is not part of a desk layout. */
   readonly x: number;
   readonly y: number;
-  readonly open: boolean;
 }
 
 /*
- * The default desk: the server being worked on fills the left, the route
- * map sits top right with the gateway's readout under it, and nothing
- * that is open from the start covers anything else. Windows opened later
- * step down and to the right from the left edge.
+ * The desk starts in the Plan layout (see desks.ts), which places the
+ * route map and messages. These are the sizes and places of windows
+ * opened outside a layout: they step down and to the right from the left edge.
  */
-const EDGE = 24;
-const GAP = 16;
-const TOP = 20;
-const MAP_WIDTH = 700;
-/** Room the gateway needs under the map for its tiles and its board. */
-const GATEWAY_HEIGHT = 424;
-
 export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
-  // x: -24 means 24px in from the right edge of the screen. The gateway's y is worked out from the map's height.
-  gateway: { title: 'Gateway', pill: 'Gateway', width: MAP_WIDTH, x: -EDGE, y: TOP, open: true },
-  map: { title: 'Route map', pill: 'Map', width: MAP_WIDTH, x: -EDGE, y: TOP, open: true },
-  server: { title: 'Server', pill: 'Server', width: 760, minWidth: 520, x: EDGE, y: TOP, open: true },
-  programs: { title: 'Programs', pill: 'Programs', width: 460, x: 184, y: 92, open: false },
-  messages: { title: 'Messages', pill: 'Messages', width: 560, x: EDGE, y: TOP, open: false },
-  contract: { title: 'Contract', pill: 'Contract', width: 440, x: 144, y: 56, open: false },
-  skills: { title: 'Skills', pill: 'Skills', width: 900, height: 640, x: 64, y: 40, open: false },
-  workbench: { title: 'Workbench', pill: 'Bench', width: 620, height: 600, x: 104, y: 56, open: false },
-  web: { title: 'Lumen', pill: 'Web', width: 620, height: 500, x: 104, y: 56, open: false },
-  dark: { title: 'Undertow', pill: 'Darknet', width: 620, height: 500, x: 144, y: 92, open: false },
-  viewer: { title: 'File viewer', pill: 'Viewer', width: 640, x: 224, y: 128, open: false },
-  saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 264, y: 92, open: false },
-  defence: { title: 'Defence', pill: 'Defence', width: 560, height: 640, x: 120, y: 28, open: false },
+  gateway: { title: 'Gateway', pill: 'Gateway', width: 720, x: 144, y: 56 },
+  map: { title: 'Route map', pill: 'Map', width: 760, height: 620, x: 104, y: 40 },
+  server: { title: 'Server', pill: 'Server', width: 760, minWidth: 520, x: 24, y: 20 },
+  programs: { title: 'Programs', pill: 'Programs', width: 600, height: 620, x: 184, y: 72 },
+  messages: { title: 'Messages', pill: 'Messages', width: 560, x: 24, y: 20 },
+  skills: { title: 'Skills', pill: 'Skills', width: 900, height: 640, x: 64, y: 40 },
+  web: { title: 'Browser', pill: 'Web', width: 620, height: 520, x: 104, y: 56 },
+  viewer: { title: 'File viewer', pill: 'Viewer', width: 640, x: 224, y: 128 },
+  saves: { title: 'Saved games', pill: 'Saves', width: 640, x: 264, y: 92 },
+  defence: { title: 'Defence', pill: 'Defence', width: 560, height: 640, x: 120, y: 28 },
 };
 
 export const MIN_WIDTH = 320;
@@ -79,6 +71,11 @@ export interface WindowLayout {
   readonly restore: SavedPlace | null;
   /** The snap zone it fills, so it can fill it again when the desk changes size. */
   readonly zone: Zone | null;
+  /**
+   * The desk layout that put it where it is, so it keeps its place in that
+   * layout when the desk changes size. Null once the player moves or sizes it.
+   */
+  readonly desk: DeskName | null;
 }
 
 export interface SavedPlace {
@@ -91,42 +88,23 @@ export interface SavedPlace {
 type Layouts = Readonly<Record<WindowId, WindowLayout>>;
 
 // Bumped whenever the default layout changes, so everyone gets the new one once.
-const STORAGE_KEY = 'project-null.windows.v10';
-// (v10 layouts load as they are: `restore` is new and simply starts empty.)
+const STORAGE_KEY = 'project-null.windows.v11';
 
-/**
- * On a screen narrower than the usual desk (a tablet held wide, a small
- * laptop) the server and the map column are narrowed to share what there
- * is, so nothing starts on top of anything else.
- */
-function fittedWidths(): Partial<Record<WindowId, number>> {
-  const room = window.innerWidth - EDGE * 2 - GAP;
-  if (room >= WINDOW_DEFS.server.width + MAP_WIDTH) return {};
-  const serverMin = WINDOW_DEFS.server.minWidth ?? MIN_WIDTH;
-  const column = Math.max(560, room - 540);
-  const server = Math.max(serverMin, room - column);
-  return { server, map: column, gateway: column };
-}
+/** The desk's size before it has been drawn: the browser window less the two bars. */
+const guessArea = (): Area => ({ w: window.innerWidth, h: window.innerHeight - BARS_HEIGHT });
 
 function defaults(): Layouts {
-  const desk = window.innerHeight - BARS_HEIGHT;
-  const fitted = fittedWidths();
-  // The map takes what the gateway's readout leaves of the right-hand column, within reason.
-  const mapHeight = Math.round(Math.min(720, Math.max(430, desk - TOP - GAP - GATEWAY_HEIGHT - GAP)));
+  const planned = new Map<WindowId, Rect>(deskRects('plan', guessArea()));
   const entries = WINDOW_IDS.map((id, index) => {
     const def = WINDOW_DEFS[id];
-    const width = fitted[id] ?? def.width;
-    const x = def.x >= 0 ? def.x : Math.max(EDGE, window.innerWidth + def.x - width);
-    const y = id === 'gateway' ? TOP + mapHeight + GAP : def.y;
-    const h = id === 'map' ? mapHeight : (def.height ?? null);
-    return [id, { x, y, open: def.open, z: index + 1, minimized: false, w: fitted[id] ?? null, h, restore: null, zone: null }] as const;
+    const rect = planned.get(id);
+    const layout: WindowLayout = rect
+      ? { ...rect, open: true, z: index + 1, minimized: false, restore: null, zone: null, desk: 'plan' }
+      : { x: def.x, y: def.y, open: false, z: index + 1, minimized: false, w: null, h: def.height ?? null, restore: null, zone: null, desk: null };
+    return [id, layout] as const;
   });
   return Object.fromEntries(entries) as Layouts;
 }
-
-/** The height a window goes back to when its corner is double-clicked. */
-const usualWidth = (id: WindowId): number | null => defaults()[id].w;
-const usualHeight = (id: WindowId): number | null => defaults()[id].h;
 
 const ZONES: readonly Zone[] = ['left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'full'];
 
@@ -163,6 +141,7 @@ function load(): Layouts {
           h: size(entry.h),
           restore: savedPlace(entry.restore),
           zone: ZONES.includes(entry.zone as Zone) && entry.restore ? (entry.zone as Zone) : null,
+          desk: DESKS.includes(entry.desk as DeskName) ? (entry.desk as DeskName) : null,
         };
       }
     }
@@ -174,9 +153,13 @@ function load(): Layouts {
 
 let layouts: Layouts = load();
 /** The desk's size. A guess until the desk is drawn and reports it with `setArea`. */
-let area: Area = { w: window.innerWidth, h: window.innerHeight - BARS_HEIGHT };
+let area: Area = guessArea();
 /** Whether `area` is the desk's real size yet. */
 let measured = false;
+/** How far the contract hangs down from the top bar, while it is dropped down. */
+let contractDrop = 0;
+/** Where a desk layout puts its windows on the desk as it is now. */
+const placedBy = (name: DeskName) => new Map<WindowId, Rect>(deskRects(name, area, contractDrop));
 
 /** `layout` moved and shrunk so it is wholly on the desk. */
 function fit(id: WindowId, layout: WindowLayout): WindowLayout {
@@ -229,8 +212,8 @@ export const windows = {
     const fitted = { ...layouts };
     for (const id of WINDOW_IDS) {
       const layout = layouts[id];
-      if (layout.zone) {
-        const rect = zoneRect(layout.zone, area);
+      const rect = layout.zone ? zoneRect(layout.zone, area) : layout.desk ? placedBy(layout.desk).get(id) : undefined;
+      if (rect) {
         fitted[id] = { ...layout, ...rect };
         continue;
       }
@@ -240,11 +223,37 @@ export const windows = {
     }
     set(fitted, true);
   },
+  /**
+   * The contract dropped down, changed height or was put away: windows
+   * that a layout placed around it (the messages in Plan) make room.
+   */
+  setContractDrop(height: number): void {
+    const next = Math.max(0, Math.round(height));
+    if (next === contractDrop) return;
+    contractDrop = next;
+    if (!measured) return;
+    const moved = { ...layouts };
+    let changed = false;
+    for (const id of WINDOW_IDS) {
+      const layout = layouts[id];
+      const rect = layout.desk && !layout.zone ? placedBy(layout.desk).get(id) : undefined;
+      if (!rect || (rect.x === layout.x && rect.y === layout.y && rect.w === layout.w && rect.h === layout.h)) continue;
+      moved[id] = { ...layout, ...rect };
+      changed = true;
+    }
+    if (changed) set(moved, false);
+  },
   isOnTop: (id: WindowId) => isShown(id) && layouts[id].z === topShownZ(),
 
   /** Opens it if it is closed or minimized, and brings it to the front. */
   focus(id: WindowId): void {
-    if (!windows.isOnTop(id)) set(patch(id, { open: true, minimized: false, z: topZ() + 1 }), true);
+    if (windows.isOnTop(id)) return;
+    // Heights only ever grow, so now and then they are counted afresh from 1 (the bars and alerts sit at fixed heights above).
+    if (topZ() > 1000) {
+      const order = [...WINDOW_IDS].sort((a, b) => layouts[a].z - layouts[b].z);
+      layouts = Object.fromEntries(WINDOW_IDS.map((other) => [other, { ...layouts[other], z: order.indexOf(other) + 1 }])) as Layouts;
+    }
+    set(patch(id, { open: true, minimized: false, z: topZ() + 1 }), true);
   },
   close(id: WindowId): void {
     set(patch(id, { open: false, minimized: false }), true);
@@ -258,19 +267,36 @@ export const windows = {
     if (windows.isOnTop(id)) windows.minimize(id);
     else windows.focus(id);
   },
+  /**
+   * Lays the desk out: the layout's windows are opened and put in their
+   * places, and the other everyday windows are put away on the bar. The
+   * file viewer, saved games and Defence stay as they are, on top.
+   */
+  arrange(name: DeskName): void {
+    const next = { ...layouts };
+    const placed = placedBy(name);
+    let z = topZ();
+    for (const id of WINDOW_IDS) {
+      if (ON_DEMAND.includes(id) || placed.has(id)) continue;
+      if (layouts[id].open) next[id] = { ...layouts[id], minimized: true };
+    }
+    for (const [id, rect] of placed) next[id] = { ...layouts[id], ...rect, open: true, minimized: false, z: ++z, restore: null, zone: null, desk: name };
+    for (const id of ON_DEMAND) if (isShown(id)) next[id] = { ...layouts[id], z: ++z };
+    set(next, true);
+  },
   /** While dragging the corner. Call `settle` when the drag ends. */
   resize(id: WindowId, w: number, h: number): void {
-    set(patch(id, { w, h, restore: null, zone: null }), false);
+    set(patch(id, { w, h, restore: null, zone: null, desk: null }), false);
   },
   /** Back to its usual size. */
   resetSize(id: WindowId): void {
-    set(patch(id, { w: usualWidth(id), h: usualHeight(id), restore: null, zone: null }), true);
+    set(patch(id, { w: null, h: WINDOW_DEFS[id].height ?? null, restore: null, zone: null, desk: null }), true);
   },
   /** Fills a snap zone, remembering where it was so it can go back. */
   place(id: WindowId, zone: Zone): void {
     const layout = layouts[id];
     const restore = layout.restore ?? { x: layout.x, y: layout.y, w: layout.w, h: layout.h };
-    set(patch(id, { ...zoneRect(zone, area), restore, zone }), true);
+    set(patch(id, { ...zoneRect(zone, area), restore, zone, desk: null }), true);
   },
   /**
    * Leaves the zone it fills: back to the size it had before. Moves it back
@@ -284,7 +310,7 @@ export const windows = {
   },
   /** While dragging. Call `settle` when the drag ends. */
   move(id: WindowId, x: number, y: number): void {
-    set(patch(id, { x, y }), false);
+    set(patch(id, { x, y, desk: null }), false);
   },
   settle(): void {
     set(layouts, true);
