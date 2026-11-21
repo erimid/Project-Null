@@ -163,9 +163,12 @@ describe('a whole career', () => {
   it.each(SEEDS)('a trace that runs is neither a formality nor a wall (seed %i)', (seed) => {
     for (const profile of [PROFILES.careful, PROFILES.typical]) {
       const report = career(profile, seed);
-      const lengths = report.jobs.flatMap((job) => (job.traceSeconds === null ? [] : [job.traceSeconds]));
+      // The second job is the first trace anyone meets, and it is made slow on purpose (see the guided first job).
+      const gentle = (job: { id: string }) => job.id === 'kestrel-ledger';
+      const lengths = report.jobs.flatMap((job) => (job.traceSeconds === null || gentle(job) ? [] : [job.traceSeconds]));
       // The plan's band: a good route buys one to two and a half minutes, and never the four to six it used to.
       expect(Math.max(...lengths), profile.name).toBeLessThanOrEqual(160);
+      for (const job of report.jobs.filter(gentle)) expect(job.traceSeconds ?? 0, profile.name).toBeLessThanOrEqual(240);
       const later = settled(report).flatMap((job) => (job.traceSeconds === null ? [] : [job.traceSeconds]));
       expect(median(later), profile.name).toBeGreaterThanOrEqual(45);
       expect(median(later), profile.name).toBeLessThanOrEqual(100);

@@ -32,6 +32,7 @@ import { activeConnection, deskStore, useDesk, type Section } from '../deskStore
 import { TaskProgress, findTask } from '../TaskProgress';
 import { viewer } from '../viewerStore';
 import { FileName } from '../FileName';
+import { lit, useGuide } from '../guide';
 import { Window } from '../Window';
 import { Contracts } from './ContractsSection';
 import { Hardware } from './HardwareSection';
@@ -124,6 +125,7 @@ function Cracking({ taskId, secret }: { taskId: string; secret: string }) {
 }
 
 function LoginScreen({ game, server, state, connection, run }: View) {
+  const guide = useGuide();
   const lastLogin = [...state.logs].reverse().find((entry) => entry.text.startsWith('login ') && !entry.byPlayer);
 
   return (
@@ -166,7 +168,7 @@ function LoginScreen({ game, server, state, connection, run }: View) {
               {open ? (
                 <button
                   type="button"
-                  class="btn btn--go"
+                  class={`btn btn--go${lit(guide, 'login') || (account.role === 'admin' ? lit(guide, 'enter') : '')}`}
                   data-tip="Log in with this account. An admin login can do everything on the server."
                   onClick={() => session.dispatch({ type: 'login', connectionId: connection.id, user: account.user })}
                 >
@@ -177,7 +179,7 @@ function LoginScreen({ game, server, state, connection, run }: View) {
               ) : (
                 <button
                   type="button"
-                  class="btn"
+                  class={`btn${account.role === 'admin' ? lit(guide, 'break') : ''}`}
                   data-tip="Run your password breaker on this account. Breaking in gets noticed by the monitor."
                   onClick={() => run({ kind: 'password', user: account.user })}
                 >
@@ -495,6 +497,7 @@ function PortLineup({ taskId, rings }: { taskId: string; rings: number }) {
 }
 
 function Files({ game, state, connection, run, act }: View) {
+  const guide = useGuide();
   const [read, setRead] = useState('');
   const [path, setPath] = useState('');
   const admin = connection.role === 'admin';
@@ -622,7 +625,7 @@ function Files({ game, state, connection, run, act }: View) {
                   ) : (
                     <button
                       type="button"
-                      class="btn"
+                      class={`btn${guide?.id === 'copy' && file.name === guide.file ? ' is-guided' : ''}`}
                       data-tip="Copy this file to your gateway's storage"
                       onClick={() => run({ kind: 'copyFile', file: file.name })}
                     >
@@ -651,6 +654,7 @@ function Files({ game, state, connection, run, act }: View) {
 }
 
 function Logs({ game, state, connection, run, act }: View) {
+  const guide = useGuide();
   // Lines picked for removal. Picking is the hands-on part: knowing which lines are yours.
   const [picked, setPicked] = useState<readonly number[]>([]);
   const scrubber = modelWith(game, content, 'scrub');
@@ -705,7 +709,7 @@ function Logs({ game, state, connection, run, act }: View) {
             {chosen.length < state.logs.length ? (
               <button
                 type="button"
-                class="btn"
+                class={`btn${lit(guide, 'scrub')}`}
                 data-tip="Pick every line in the log"
                 onClick={() => setPicked(state.logs.map((entry) => entry.id))}
               >
@@ -719,7 +723,7 @@ function Logs({ game, state, connection, run, act }: View) {
             )}
             <button
               type="button"
-              class="btn btn--danger"
+              class={`btn btn--danger${chosen.length > 0 ? lit(guide, 'scrub') : ''}`}
               disabled={chosen.length === 0}
               title={chosen.length === 0 ? 'Pick the log lines to scrub first' : undefined}
               data-tip="Delete the picked lines. A proxy has to be bypassed first."
@@ -879,6 +883,7 @@ function Directory({ game, connection }: View) {
 
 /** The server at the far end of the connection whose tab is in front. */
 export function ServerWindow() {
+  const guide = useGuide();
   const desk = useDesk();
   const game = useWorld((state) => state);
   // The last refusal, and the connection it belongs to, so it never shows on another server's tab.
@@ -913,7 +918,7 @@ export function ServerWindow() {
         loggedIn && (
           <button
             type="button"
-            class="tabbtn tabbtn--exit"
+            class={`tabbtn tabbtn--exit${lit(guide, 'relog')}`}
             data-tip="Log out but stay connected"
             onClick={() => act({ type: 'logout', connectionId: connection.id })}
           >
@@ -927,7 +932,7 @@ export function ServerWindow() {
           <button
             key={name}
             type="button"
-            class={`tabbtn${name === section ? ' is-current' : ''}`}
+            class={`tabbtn${name === section ? ' is-current' : ''}${name !== section && guide && ((guide.id === 'accept' && name === 'contracts') || (guide.id === 'copy' && name === 'files') || (guide.id === 'scrub' && name === 'logs')) ? ' is-guided' : ''}`}
             aria-pressed={name === section}
             data-tip={SECTION_TIPS[name]}
             onClick={() => deskStore.showSection(connection.id, name)}

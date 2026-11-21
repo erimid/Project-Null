@@ -92,6 +92,8 @@ export {
 export { evidenceCount, isEvidence } from './forensics';
 export { canRead, factsByFile, fileNotes, findAsk, findPerson, judge, knownFacts, knownPeople, leads, marks, openAsks, sendersFor, standing } from './phish';
 export type { Draft, Group, Leads, Standing, Verdict } from './phish';
+export { GUIDED_JOB, guideStep } from './guide';
+export type { GuideId, GuideStep } from './guide';
 export { findModel, hasSkill, modelWith, rentedModel, workingModels } from './model';
 export {
   HARDWARE_SLOT_LABELS,

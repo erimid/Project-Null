@@ -5,6 +5,7 @@ import { useGame, useWorld } from '../hooks';
 import { content, session } from '../session';
 import { activeConnection, deskStore, useDesk } from './deskStore';
 import { GameMenu } from './GameMenu';
+import { lit, useGuide } from './guide';
 import { WINDOW_HELP } from './help';
 import { SpeedControl } from './SpeedControl';
 import { WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId } from './windowStore';
@@ -190,6 +191,7 @@ export function BottomBar() {
   const connections = useGame((game) => game.connections.length);
   const layouts = useWindows();
   const desk = useDesk();
+  const guide = useGuide();
   const active = useWorld((game) => activeConnection(game, desk));
   // The server window only exists while connected.
   const tabs = WINDOW_IDS.filter((id) => (ON_DEMAND.includes(id) ? layouts[id].open : id !== 'server' || connected));
@@ -246,7 +248,7 @@ export function BottomBar() {
       </div>
       <SpeedControl />
       <button
-        class="dock__cut"
+        class={`dock__cut${lit(guide, ['leave-board', 'leave-target'])}`}
         type="button"
         disabled={!active}
         data-tip={active ? 'Hang up the connection in front. Shift+Esc drops every connection.' : 'Not connected to anything.'}

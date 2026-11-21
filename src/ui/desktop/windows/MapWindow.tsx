@@ -24,6 +24,7 @@ import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { Globe, type GlobeArc, type GlobeDot } from '../../globe/Globe';
 import { activeConnection, deskStore, useDesk } from '../deskStore';
+import { lit, useGuide } from '../guide';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
 
@@ -165,6 +166,7 @@ const seconds = (ms: number) => {
 export function MapWindow() {
   const desk = useDesk();
   const game = useWorld((state) => state);
+  const guide = useGuide();
   const [notice, setNotice] = useState('');
   const [starredOnly, setStarredOnly] = useState(false);
   const [sort, setSort] = useState<SortId>(savedSort);
@@ -401,7 +403,7 @@ export function MapWindow() {
                   </button>
                   <button
                     type="button"
-                    class={`address${server.id === selected?.id ? ' is-selected' : ''}`}
+                    class={`address${server.id === selected?.id ? ' is-selected' : ''}${lit(guide, ['goto', 'goto-target'], server.id)}`}
                     aria-pressed={server.id === selected?.id}
                     onClick={() => pick(server.id)}
                   >
@@ -512,7 +514,7 @@ export function MapWindow() {
                 ) : (
                   <button
                     type="button"
-                    class={`btn btn--go map__connect${!live && game.route.length > 0 ? ' is-ready' : ''}`}
+                    class={`btn btn--go map__connect${!live && game.route.length > 0 ? ' is-ready' : ''}${lit(guide, ['goto', 'goto-target'], selected.id)}`}
                     data-tip={
                       inRoute
                         ? 'Connect to this server through the other relays in your route. It comes out of the route.'
@@ -530,6 +532,9 @@ export function MapWindow() {
                     </span>
                   </button>
                 )
+              )}
+              {tracker && !live && !connectedTo && selected.id !== gateway.id && !selected.untraced && (selected.kind === 'company' || selected.kind === 'relay') && routeIds.filter((id) => id !== selected.id).length === 0 && traceTotal > 0 && (
+                <p class="map__direct">Direct line. They will have you in {Math.max(1, Math.round(traceTotal / 1000))} seconds.</p>
               )}
               {selected.id !== gateway.id && (
                 <div class="map__actions">

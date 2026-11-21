@@ -30,6 +30,8 @@ export interface ServerDef {
   readonly hostname: string;
   /** True if the Open Relay Registry lists this server's address. */
   readonly listed: boolean;
+  /** True if nobody here ever traces anyone. Only the first job's library has it. */
+  readonly untraced?: boolean;
   /** Strength of each security layer; 0 means the server doesn't have it. */
   readonly security: SecurityDef;
   /** How long this server's trace needs to get past one average relay, in seconds. */
@@ -953,6 +955,7 @@ export function parseServers(data: unknown, file = 'servers.json'): ServerDef[] 
       blurb: text(file, where, raw, 'blurb'),
       hostname: text(file, where, raw, 'hostname'),
       listed: flag(file, where, raw, 'listed'),
+      ...(raw.untraced === undefined ? {} : { untraced: flag(file, where, raw, 'untraced') }),
       security: parseSecurity(file, where, raw.security),
       traceSecondsPerHop: num(file, where, raw, 'traceSecondsPerHop', 1, 600),
       relayDelay: num(file, where, raw, 'relayDelay', 0.1, 10),

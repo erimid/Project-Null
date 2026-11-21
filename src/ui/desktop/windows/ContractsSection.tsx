@@ -1,10 +1,11 @@
 import { useState } from 'preact/hooks';
-import { activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, stagesOf } from '../../../core';
+import { GUIDED_JOB, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, stagesOf } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatGameTime, formatMoney, formatRating } from '../../format';
 import { content } from '../../session';
 import { IconTile, ModulePlate } from '../Gear';
 import { Icon, objectiveIcon, type IconName } from '../Icon';
+import { useGuide } from '../guide';
 import { windows } from '../windowStore';
 import { OBJECTIVE_WORDS, Place, RiskMeter } from './Place';
 import type { View } from './serverView';
@@ -19,6 +20,7 @@ const isStaged = (contract: ContractDef) => stagesOf(contract).length > 1;
 
 /** One job on the board: what kind it is, where, what it pays and how dangerous it looks. */
 function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef; risk: number; blocked: string | undefined; onAccept: () => void }) {
+  const guide = useGuide();
   const stages = stagesOf(contract);
   const target = findServer(content, contract.targetId);
   const job = isJob(contract);
@@ -96,7 +98,7 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
           )}
           {part && contract.part && <ModulePlate module={part} grade={contract.part.grade} />}
         </span>
-        <button type="button" class="btn btn--go card__buy" disabled={!!blocked} title={blocked} data-tip="Take this job. It shows in your Contract window." data-sfx="accepted" onClick={onAccept}>
+        <button type="button" class={`btn btn--go card__buy${guide?.id === 'accept' && contract.id === GUIDED_JOB ? ' is-guided' : ''}`} disabled={!!blocked} title={blocked} data-tip="Take this job. It shows in your Contract window." data-sfx="accepted" onClick={onAccept}>
           Accept
         </button>
       </div>
