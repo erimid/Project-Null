@@ -16,11 +16,14 @@ import type { RivalDef } from '../content/rivals';
 import type { StoryDef } from '../content/story';
 import type { NewsDef } from '../content/news';
 import type { PatronDef } from '../content/patrons';
+import type { ChorusDef } from '../content/chorus';
+import type { EndingDef } from '../content/endings';
 import type { LadderDef } from '../content/ladder';
 import type { DataMarketDef } from '../content/data';
 import type { AssetDef } from '../content/assets';
 import { twistOn } from './legend';
-import { backfillChoices } from './patrons';
+import { backfillChoices, backfillTrust } from './patrons';
+import { backfillStoryFlags } from './story';
 import { builtProgram } from './builds';
 import { autoPack, dropFromMemory, loadedOfKind, memoryGb, needsMemory, trimLoadout } from './loadout';
 import type { Connection, GameState, ServerState } from './state';
@@ -176,6 +179,10 @@ export interface Content {
   readonly story: StoryDef;
   /** Templates for the daily paper (see core/news.ts). Missing = a paper with nothing to print. */
   readonly news?: NewsDef;
+  /** The endings of the story (see core/endings.ts). Missing = none. */
+  readonly endings?: readonly EndingDef[];
+  /** Chorus (see core/chorus.ts). Missing = it never wakes. */
+  readonly chorus?: ChorusDef;
   /** Named clients with standing (see core/patrons.ts). Missing = none. */
   readonly patrons?: readonly PatronDef[];
   /** The rivals ladder at the Backroom (see core/ladder.ts). Missing = no ladder. */
@@ -487,6 +494,8 @@ export function syncWithContent(state: GameState, content: Content): GameState {
 
   // Choices made before they were recorded: worked out once from what is on the gateway.
   once(state, 'choices-recorded', () => backfillChoices(state, content));
+  once(state, 'trust-counted', () => backfillTrust(state, content));
+  backfillStoryFlags(state, content);
 
   once(state, 'welcome', () => sendMail(state, content, 'welcome'));
   noteProgress(state, content);

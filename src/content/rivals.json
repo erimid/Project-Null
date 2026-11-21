@@ -31,5 +31,17 @@
     "minRating": 20,
     "style": "framer",
     "taunt": "Do give my regards to the auditors."
+  },
+  {
+    "id": "warden",
+    "handle": "Warden",
+    "blurb": "The Office's own caged machine. It knocks like a bailiff and apologises while it does it.",
+    "homeId": "office-director",
+    "relays": ["continuity-office"],
+    "level": 4,
+    "minRating": 100,
+    "style": "vandal",
+    "taunt": "I am sorry. I was ordered.",
+    "storyOnly": true
   }
 ]

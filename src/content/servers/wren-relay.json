@@ -1,0 +1,60 @@
+{
+  "id": "wren-relay",
+  "name": "Pym & Teller Registered Agents",
+  "kind": "relay",
+  "owner": "Pym & Teller (Gibraltar) Ltd",
+  "hostname": "PT-AGENT",
+  "address": "109.200.12.44",
+  "city": "Gibraltar",
+  "country": "Gibraltar",
+  "lat": 36.14,
+  "lon": -5.35,
+  "blurb": "A registered agent that forwards other people's mail. One client's mail it forwards more carefully than the rest.",
+  "listed": false,
+  "security": {
+    "password": 2,
+    "proxy": 2,
+    "firewall": 1,
+    "monitor": 1
+  },
+  "traceSecondsPerHop": 12,
+  "relayDelay": 1.0,
+  "banner": [
+    "PYM & TELLER · REGISTERED AGENTS",
+    "we receive your post so that you need not be found"
+  ],
+  "accounts": [
+    {
+      "user": "agent",
+      "role": "admin",
+      "name": "Agent on duty"
+    }
+  ],
+  "files": [
+    {
+      "name": "forwarding_list.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "clients",
+      "content": {
+        "kind": "text",
+        "text": "FORWARDING · 214 CLIENTS\n\nclient 114: mail forwarded weekly to a post box in Valletta. No name on file. Pays in cash twice a year by courier. The courier is always a different person and is always smiling."
+      }
+    },
+    {
+      "name": "privacy_notice.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "We hold your post so that nobody has to hold you. We do not read it. We do not know what is in it. We forward it, and when a client asks us to forward it somewhere we have not been to, we do that too, and we do not ask.\n\nThis is the whole of our service, and the whole of our policy."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 3000,
+      "text": "login agent from 109.200.12.1"
+    }
+  ]
+}

@@ -76,6 +76,16 @@
       "name": "staff_leave_q1.dat",
       "sizeGq": 2,
       "access": "admin"
+    },
+    {
+      "name": "incident_reclass_0412.dat",
+      "sizeGq": 3,
+      "access": "admin",
+      "folder": "orders",
+      "content": {
+        "kind": "text",
+        "text": "RECONCILIATION ORDER 0412\n\nincident: the night shift at a municipal grid controller, Ghent, who were on duty for the six hours of order 0411\nclassification ordered: STAFF REMINDED OF CONFIDENTIALITY\nnote: each of the three is to be visited. Each is to be told that what they saw was a firmware fault. If they say they did not see a firmware fault, the visit is to be repeated.\n\nthis is the one hundred and tenth order of this kind this year."
+      }
     }
   ],
   "logs": [

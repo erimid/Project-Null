@@ -3,8 +3,8 @@
  * game before and after each change. Alerts and sounds listen to these,
  * so the simulation itself never needs to know about either.
  */
-import { activeContract, findRival, findServer, pointsAt, pointsSpent, raidReport, stageIndex, stagesOf, type Content, type GameState } from '../core';
-import { gameInfo } from '../content';
+import { activeContract, findEnding, findRival, readFlag, findServer, pointsAt, pointsSpent, raidReport, stageIndex, stagesOf, type Content, type GameState } from '../core';
+import { gameInfo, linesOf } from '../content';
 
 const titleOf = (rating: number) => gameInfo.ratings.findLast((level) => rating >= level.min)?.title;
 
@@ -40,9 +40,15 @@ export type GameEvent =
   /** Every ring locked: the port is shut and the intruder set back. */
   | { readonly type: 'portShut' }
   /** The attack is over: the intruder was traced home, got in, or the plug was pulled. */
-  | { readonly type: 'raidEnded'; readonly who: string; readonly result: 'won' | 'lost' | 'fled' }
+  | { readonly type: 'raidEnded'; readonly who: string; readonly result: 'won' | 'lost' | 'fled' | 'held' }
   /** A staged contract moved on to its next step. */
-  | { readonly type: 'stepDone'; readonly step: number; readonly of: number };
+  | { readonly type: 'stepDone'; readonly step: number; readonly of: number }
+  /** Chorus took a server. `from` is one it already held, if any: where it reached out from. */
+  | { readonly type: 'serverTaken'; readonly id: string; readonly server: string; readonly from?: string }
+  /** The player has just read the file that holds the struck-out name. */
+  | { readonly type: 'nameRead' }
+  /** The story reached one of its endings. */
+  | { readonly type: 'ended'; readonly id: string; readonly name: string };
 
 /** The parts of the game that events are worked out from. */
 export interface Snapshot {
@@ -70,7 +76,26 @@ export interface Snapshot {
   readonly lastSubject: string;
   /** The contract being worked on and the step it is at, as "id:step:steps". */
   readonly stage: string;
+  /** Servers Chorus holds. */
+  readonly taken: readonly string[];
+  /** True once the file that holds the struck-out name has been read. */
+  readonly named: boolean;
+  /** The ending the story reached, if it has. */
+  readonly ending: string | null;
 }
+
+/** The flags that say the name has been read: the last thing read in each job whose story beat is a reveal. */
+function nameFlags(content: Content): string[] {
+  const flags: string[] = [];
+  for (const beat of linesOf(content.story).flatMap((line) => line.beats)) {
+    if (!beat.reveal || !beat.contractId) continue;
+    const job = content.contracts.find((contract) => contract.id === beat.contractId);
+    const last = job && stagesOf(job).at(-1);
+    if (last && last.objective.kind === 'read') flags.push(readFlag(last.targetId, last.objective.file));
+  }
+  return flags;
+}
+const nameFlagsOf = new WeakMap<Content, string[]>();
 
 export function snapshot(state: GameState, content?: Content): Snapshot {
   const raid = state.raid;
@@ -87,6 +112,9 @@ export function snapshot(state: GameState, content?: Content): Snapshot {
       : null,
     lastSubject: state.messages.at(-1)?.subject ?? '',
     stage: job ? `${job.id}:${stageIndex(state, job)}:${stagesOf(job).length}` : '',
+    taken: [...state.chorus.taken],
+    named: !!content && (nameFlagsOf.get(content) ?? nameFlagsOf.set(content, nameFlags(content)).get(content)!).some((flag) => state.flags.includes(flag)),
+    ending: state.ending?.id ?? null,
     connections: new Map(
       state.connections.map((c) => [c.id, { serverId: c.serverId, tracing: c.trace.status === 'active', user: c.user }]),
     ),
@@ -162,7 +190,14 @@ export function diff(before: Snapshot, after: Snapshot, content: Content, byCloc
     if (after.raid.shut > before.raid.shut) events.push({ type: 'portShut' });
     else if (after.raid.rings > before.raid.rings) events.push({ type: 'ringLocked' });
   } else if (before.raid && !after.raid) {
-    const result = after.lastSubject.startsWith(subjectStem('raidWon')) ? 'won' : after.lastSubject.startsWith(subjectStem('raidLost')) ? 'lost' : 'fled';
+    const letters = content.chorus?.letters;
+    const result = after.lastSubject.startsWith(subjectStem('raidWon'))
+      ? 'won'
+      : after.lastSubject.startsWith(subjectStem('raidLost')) || after.lastSubject === letters?.lost.subject
+        ? 'lost'
+        : after.lastSubject === letters?.held.subject
+          ? 'held'
+          : 'fled';
     events.push({ type: 'raidEnded', who: before.raid.who, result });
   }
   // A staged job moving on: same contract, a later step.
@@ -172,9 +207,21 @@ export function diff(before: Snapshot, after: Snapshot, content: Content, byCloc
     events.push({ type: 'stepDone', step: Number(stepAfter), of: Number(steps) });
   }
 
+  // The story's own moments. An ending that hands Chorus everything is one event, not a hundred.
+  const ended = after.ending !== null && before.ending === null;
+  if (ended) events.push({ type: 'ended', id: after.ending!, name: findEnding(content, after.ending!)?.name ?? after.ending! });
+  if (after.named && !before.named) events.push({ type: 'nameRead' });
+  if (!ended && after.taken.length > 0 && after.taken.at(-1) !== before.taken.at(-1)) {
+    for (const id of after.taken) {
+      if (before.taken.includes(id)) continue;
+      const from = before.taken.at(-1);
+      events.push({ type: 'serverTaken', id, server: name(id), ...(from ? { from } : {}) });
+    }
+  }
+
   // The attack has its own alarm and its own ending; its mail does not chime over them.
   const raidNews = (after.raid && !before.raid) || (before.raid && !after.raid);
-  if (after.messages > before.messages && !raidNews) events.push({ type: 'message' });
+  if (after.messages > before.messages && !raidNews && !ended) events.push({ type: 'message' });
   if (after.balance > before.balance) events.push({ type: 'paid' });
   if (after.balance < before.balance) events.push({ type: 'spent' });
   if (after.rating > before.rating) {

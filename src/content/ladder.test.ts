@@ -25,7 +25,8 @@ describe('the rivals ladder', () => {
     const rows = ladderRows(state, content);
     expect(rows).toHaveLength(ladder.rivals.length + 1);
     expect(rows.filter((row) => row.id === null)).toHaveLength(1);
-    for (const raider of rivals) expect(rows.some((row) => row.id === raider.id)).toBe(true);
+    // Warden is the Office's caged machine, not a hacker on the ladder: only the story sends it.
+    for (const raider of rivals.filter((rival) => !rival.storyOnly)) expect(rows.some((row) => row.id === raider.id)).toBe(true);
     expect(ladderPlace(state, content)).toBeGreaterThan(5);
   });
 

@@ -1,7 +1,7 @@
-import { TWISTS, activeContract, activeLegend, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
+import { TWISTS, activeContract, findEnding, offeredChoices, activeLegend, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
 import { findServer, type ContractDef } from '../../core/content';
 import { formatMoney } from '../format';
-import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { useWorld } from '../hooks';
 import type { ComponentChildren } from 'preact';
 import { content, session } from '../session';
@@ -87,6 +87,9 @@ export function ContractPanel() {
   // Redrawn with the windows, so it keeps the width of Plan's side column as the desk changes size.
   useWindows();
   const shown = open && contract !== undefined;
+  // The last job is answered with two presses: the first picks a way, the second means it.
+  const [armed, setArmed] = useState<string | null>(null);
+  useEffect(() => setArmed(null), [contract?.id, shown]);
   // Esc puts it away.
   useEffect(() => {
     if (!shown) return;
@@ -135,6 +138,17 @@ export function ContractPanel() {
   const minutesLeft = deadlineMs === undefined ? undefined : Math.max(0, Math.round((deadlineMs - game.clock.gameTimeMs) / 60_000));
   // The brief for the step being worked on: the stage's own, or the contract's for the first.
   const brief = current === 0 ? contract.brief : steps[current]!.brief ?? contract.brief;
+
+  // The job that ends the story asks its question in full, not as a row of buttons.
+  const ways = contract.choices ?? [];
+  const asking = contract.ending !== undefined || ways.some((choice) => choice.ending !== undefined);
+  const usual = findEnding(content, contract.ending)?.way;
+  const open_ = offeredChoices(game, contract);
+  const answers = [
+    { id: '', label: usual?.label ?? 'Deliver', note: usual?.note ?? 'Hand the job in the usual way.', pay: contract.pay },
+    ...open_.map((choice) => ({ id: choice.id, label: choice.label, note: choice.note, pay: choice.pay })),
+  ];
+  const closed = ways.length - open_.length;
 
   const note = done ? 'ready to deliver' : steps.length > 1 ? `step ${current + 1} of ${steps.length}` : 'in progress';
 
@@ -261,7 +275,7 @@ export function ContractPanel() {
         <ConfirmButton class="btn btn--danger" confirmLabel="Really give up?" tip="Drop this job. You are not paid for it." onConfirm={() => finish({ type: 'abandonContract' })}>
           Give up
         </ConfirmButton>
-        <button
+        {!(asking && done) && <button
           type="button"
           class={`btn btn--go${lit(guide, 'deliver')}`}
           disabled={!done}
@@ -270,9 +284,9 @@ export function ContractPanel() {
           onClick={() => finish({ type: 'deliverContract' })}
         >
           Deliver{contract.choices && contract.choices.length > 0 ? ` for ${formatMoney(contract.pay)}` : ''}
-        </button>
-        {done &&
-          (contract.choices ?? []).map((choice) => (
+        </button>}
+        {done && !asking &&
+          offeredChoices(game, contract).map((choice) => (
             <button
               key={choice.id}
               type="button"
@@ -284,6 +298,30 @@ export function ContractPanel() {
             </button>
           ))}
       </div>
+      {asking && done && (
+        <div class="asking" role="group" aria-label="What should happen">
+          <p class="asking__head">You have the core. What should happen?</p>
+          {answers.map((answer) => (
+            <button
+              key={answer.id}
+              type="button"
+              class={`asking__way${armed === answer.id ? ' is-armed' : ''}`}
+              aria-pressed={armed === answer.id}
+              onClick={() => (armed === answer.id ? finish(answer.id ? { type: 'deliverContract', choiceId: answer.id } : { type: 'deliverContract' }) : setArmed(answer.id))}
+            >
+              <span class="asking__name">{answer.label}</span>
+              <span class="asking__pay data">{formatMoney(answer.pay)}</span>
+              <span class="asking__note">{answer.note}</span>
+              {armed === answer.id && <span class="asking__confirm">Press again to answer. It cannot be taken back.</span>}
+            </button>
+          ))}
+          {closed > 0 && (
+            <p class="asking__closed">
+              {closed === 1 ? 'One other way is' : `${closed} other ways are`} closed to you. {closed === 1 ? 'It' : 'They'} needed the trust of sides you do not have.
+            </p>
+          )}
+        </div>
+      )}
       </div>
     </aside>
   );

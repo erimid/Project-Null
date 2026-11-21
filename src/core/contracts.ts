@@ -17,6 +17,8 @@ import { isJob, postLegend, refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
 import { advanceStory } from './story';
+import { advanceChorus } from './chorus';
+import { reachEnding } from './endings';
 import { printEditions, reportContract } from './news';
 import { advanceLadder } from './ladder';
 import { FAVOUR_CUT, hasFavour, noteDelivery, noteFailure } from './patrons';
@@ -43,6 +45,7 @@ export function activeContract(state: GameState, content: Content): ContractDef 
 export function postJobs(state: GameState, content: Content): void {
   refreshJobs(state, content, (job) => objectivePossible(state, content, job));
   advanceStory(state, content);
+  advanceChorus(state, content);
   advanceLadder(state, content);
   printEditions(state, content);
   postHeist(state, content);
@@ -67,6 +70,9 @@ export function objectivePossible(state: GameState, content: Content, contract: 
   const stage = currentStage(state, contract);
   // A plant's file is handed over when the contract is taken, so before then it is always possible.
   if (stage.objective.kind === 'plant' && state.contracts.activeId !== contract.id) return true;
+  // So is a file the job itself puts on the server as it is taken.
+  const goal = stage.objective;
+  if ((goal.kind === 'read' || goal.kind === 'steal') && state.contracts.activeId !== contract.id && (stage.twists ?? []).some((twist) => twist.kind === 'drop' && twist.file === goal.file)) return true;
   return goalPossible(state, content, stage.targetId, stage.objective);
 }
 
@@ -190,6 +196,7 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   if (!objectiveMet(state, content, contract)) return 'The job is not done yet.';
   const choice = choiceId === undefined ? undefined : contract.choices?.find((item) => item.id === choiceId);
   if (choiceId !== undefined && !choice) return 'That is not one of the ways to finish this job.';
+  if (choice && !conditionMet(state, choice.when)) return 'You have not earned that way to finish this job.';
   // Every stolen file goes to whoever is paid for it, unless the player keeps them.
   if (!choice?.keep) {
     const handed = stagesOf(contract).flatMap((stage) => (stage.objective.kind === 'steal' ? [{ name: stage.objective.file, from: stage.targetId }] : []));
@@ -211,6 +218,9 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   reportContract(state, content, contract);
   // Whoever paid remembers, and so does anyone whose companies were hurt.
   noteDelivery(state, content, contract, choice);
+  // The final job ends the story the way it was finished.
+  const ending = choice ? choice.ending : contract.ending;
+  if (ending) reachEnding(state, content, ending);
   // A delivered job comes off the board and another takes its place.
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
   postJobs(state, content);

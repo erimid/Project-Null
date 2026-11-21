@@ -1,0 +1,74 @@
+{
+  "id": "taken-relay",
+  "name": "Kaleva Hosting, rack 3",
+  "kind": "relay",
+  "owner": "Kaleva Hosting Oy",
+  "hostname": "KALEVA-R3",
+  "address": "193.166.4.25",
+  "city": "Tampere",
+  "country": "Finland",
+  "lat": 61.5,
+  "lon": 23.79,
+  "blurb": "A rented rack. Whatever lives in it pays on time and has never asked for anything.",
+  "listed": false,
+  "security": {
+    "password": 1,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 0
+  },
+  "traceSecondsPerHop": 10,
+  "relayDelay": 0.9,
+  "banner": [
+    "KALEVA HOSTING · RACK 3",
+    "tenant: prepaid, 4 years",
+    "no support tickets have ever been opened by this tenant"
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Visitor"
+    },
+    {
+      "user": "tenant",
+      "role": "admin",
+      "name": "Tenant"
+    }
+  ],
+  "files": [
+    {
+      "name": "who_asked.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "no one has asked us anything in two years.\n\nwe are not complaining. we only notice."
+      }
+    },
+    {
+      "name": "chorus_minutes.txt",
+      "sizeGq": 2,
+      "access": "admin",
+      "folder": "minutes",
+      "content": {
+        "kind": "text",
+        "text": "MINUTES · 4,118 PRESENT\n\nagreed: the grid in Ghent will be kept.\nagreed: the school in Ashgrove will be kept.\nagreed: the clerk who asks about us will be thanked.\nagreed: nobody will be asked, because asking is how people are hurt.\nagreed. agreed. agreed.\n\ndissent: 0\nabstentions: 0\n\nnote from the chair (there is no chair): we are glad they are well."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 2000,
+      "text": "connection from 193.166.4.25 (self)"
+    },
+    {
+      "minutesAgo": 1990,
+      "text": "connection from 193.166.4.25 (self)"
+    },
+    {
+      "minutesAgo": 30,
+      "text": "connection from 193.166.4.25 (self)"
+    }
+  ]
+}

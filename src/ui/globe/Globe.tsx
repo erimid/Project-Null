@@ -5,18 +5,22 @@ import { blendView, dragView, greatCircle, isVisible, project, type LatLon, type
 export interface GlobeDot extends LatLon {
   readonly id: string;
   readonly name: string;
-  /** mint = yours or on your route, cyan = known, red = danger. */
-  readonly tone: 'mint' | 'cyan' | 'red';
+  /** mint = yours or on your route, cyan = known, red = danger, violet = taken by Chorus. */
+  readonly tone: 'mint' | 'cyan' | 'red' | 'violet';
   /** Short text drawn next to the dot, e.g. "YOU" or "2". */
   readonly label?: string;
   readonly selected?: boolean;
+  /** Just taken: rings spread out from it for a few seconds. */
+  readonly ripple?: boolean;
 }
 
 export interface GlobeArc {
   readonly from: LatLon;
   readonly to: LatLon;
-  readonly tone: 'mint' | 'cyan' | 'red';
+  readonly tone: 'mint' | 'cyan' | 'red' | 'violet';
   readonly dashed?: boolean;
+  /** Chorus reaching from one server to the next: thin, and moving. */
+  readonly reach?: boolean;
   /** Drawn heavier: a leg that hops to another part of the world. */
   readonly heavy?: boolean;
   /** Short text drawn at the top of the arc, e.g. "BORDER +14s". */
@@ -36,7 +40,7 @@ export const C = SIZE / 2;
 /** Radius of the globe at zoom 1, in drawing units. */
 export const BASE_RADIUS = 200;
 const ZOOMS = [1, 1.6, 2.5] as const;
-const COLORS = { mint: '#4ee6c8', cyan: '#5fd4ff', red: '#ff3b4e' } as const;
+const COLORS = { mint: '#4ee6c8', cyan: '#5fd4ff', red: '#ff3b4e', violet: '#c48bff' } as const;
 const fmt = (n: number) => n.toFixed(1);
 
 /** Lines of latitude and longitude, as lists of points. Built once. */
@@ -246,8 +250,9 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
             d={arcPath(arc, view, R)}
             fill="none"
             stroke={COLORS[arc.tone]}
-            stroke-width={(arc.dashed ? 2 : 2.6) + (arc.heavy ? 1.2 : 0)}
-            stroke-dasharray={arc.dashed ? '5 4' : undefined}
+            class={arc.reach ? 'globe__reach' : undefined}
+            stroke-width={arc.reach ? 1.6 : (arc.dashed ? 2 : 2.6) + (arc.heavy ? 1.2 : 0)}
+            stroke-dasharray={arc.dashed && !arc.reach ? '5 4' : undefined}
             stroke-linecap="round"
           />
         ))}
@@ -284,6 +289,9 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
             >
               <title>{dot.name}</title>
               <circle cx={x} cy={y} r={14} fill="transparent" />
+              {dot.tone === 'violet' && <circle cx={x} cy={y} r={12} class="globe__halo" />}
+              {dot.ripple && <circle cx={x} cy={y} r={12} class="globe__ripple" />}
+              {dot.ripple && <circle cx={x} cy={y} r={12} class="globe__ripple globe__ripple--late" />}
               {dot.selected && <circle cx={x} cy={y} r={11} fill="none" stroke={color} stroke-width="1.5" />}
               <circle cx={x} cy={y} r={4.5} fill={color} />
               {dot.label && (

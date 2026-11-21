@@ -186,6 +186,8 @@ export function settleRival(state: GameState, content: Content, rivalId: string,
   if (!rival || !state.ladder.beaten.includes(rivalId)) return 'You have nothing on them to decide about.';
   state.ladder.beaten = state.ladder.beaten.filter((id) => id !== rivalId);
   state.ladder.outcomes[rivalId] = outcome;
+  // The story can read it: e.g. a truce with Sable keeps Sable out of the final job.
+  if (!state.flags.includes(ladderFlag(rivalId, outcome))) state.flags.push(ladderFlag(rivalId, outcome));
   if (outcome === 'sold') {
     const price = addressPrice(content, rivalId);
     state.player.balance += price;
@@ -198,3 +200,6 @@ export function settleRival(state: GameState, content: Content, rivalId: string,
   }
   return null;
 }
+
+/** The flag set when the player decides what to do about a raider they beat: e.g. ladder:sable:truce. */
+export const ladderFlag = (rivalId: string, outcome: string): string => `ladder:${rivalId}:${outcome}`;

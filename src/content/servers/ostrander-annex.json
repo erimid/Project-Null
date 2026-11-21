@@ -71,6 +71,16 @@
       "name": "quarterly_loss_run.dat",
       "sizeGq": 5,
       "access": "admin"
+    },
+    {
+      "name": "ledger_line.dat",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "custody",
+      "content": {
+        "kind": "text",
+        "text": "LEDGER · constraint layer · restored line\n\nThe layer removes one thing from everything Ledger says: a word that is not a word. It is part of a name. The part this file holds is a single letter, and it is the first of the three struck out of the name on the node:\n\n  U\n\nthe layer's own comment on this line: \"do not read aloud.\""
+      }
     }
   ],
   "logs": [

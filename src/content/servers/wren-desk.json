@@ -1,0 +1,65 @@
+{
+  "id": "wren-desk",
+  "name": "Post box 114",
+  "kind": "relay",
+  "owner": "None on record",
+  "hostname": "PB-114",
+  "address": "85.12.7.9",
+  "city": "Valletta",
+  "country": "Malta",
+  "lat": 35.9,
+  "lon": 14.51,
+  "blurb": "A small machine in a post office back room. Somebody keeps it warm.",
+  "listed": false,
+  "security": {
+    "password": 3,
+    "proxy": 2,
+    "firewall": 2,
+    "monitor": 2
+  },
+  "traceSecondsPerHop": 14,
+  "relayDelay": 1.0,
+  "banner": [
+    "post box 114",
+    "please do not be here"
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Visitor"
+    },
+    {
+      "user": "w",
+      "role": "admin",
+      "name": "W."
+    }
+  ],
+  "files": [
+    {
+      "name": "still_here.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "If you are reading this you either followed a trail I left badly on purpose, or somebody else did. Either way, hello.\n\nI am not going to run. I have run out of places.\n\n— W."
+      }
+    },
+    {
+      "name": "vouched.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "notes",
+      "content": {
+        "kind": "text",
+        "text": "people I vouched for onto the Backroom, since I left the Office: 11.\nstill working: 3.\nstill honest: I stopped counting.\n\nthe newest one is the first who did not leave when it got strange.\n\nI should tell them that. I will, if I am still allowed to write."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 100,
+      "text": "login w from 85.12.7.9 (self)"
+    }
+  ]
+}

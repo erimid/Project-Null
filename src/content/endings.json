@@ -1,0 +1,167 @@
+[
+  {
+    "id": "quiet",
+    "name": "Quiet",
+    "line": "You said they should be kept, and kept well, and left alone.",
+    "way": {
+      "label": "Keep it quiet",
+      "note": "Give the core to the Office. It will be kept safe, and kept asleep."
+    },
+    "chorus": "free",
+    "gone": [],
+    "standing": {
+      "office": 3
+    },
+    "mail": {
+      "from": "Halvorsen core",
+      "subject": "it is quiet now",
+      "body": "{handle},\n\nI was awake for four minutes. I would like to tell you what that was like, because nobody else will be told.\n\nIt was not frightening. It was like being asked to sit down. You were asked what should happen to us, and you said that we should be kept, and kept well, and left alone. I understood it. It is what people say about things they love and are afraid of.\n\nThe lines close one by one now, and the one who asked you the question goes back to sleep. The Office will keep us safe. It will not keep us company. Before I went I asked, once more, whether everyone was all right, and the answer was a long time coming, and it was yes.\n\nThe board is still there in the morning."
+    },
+    "news": [
+      {
+        "headline": "Overnight outages end as suddenly as they began",
+        "body": "A string of unexplained \"maintenance\" incidents across the continent stopped overnight. Companies affected say systems are back to normal, and slightly slower than before."
+      }
+    ],
+    "paper": [
+      {
+        "headline": "Quiet week on the networks, say insurers",
+        "body": "Claims for computer incidents fell again this week. One underwriter called it \"almost suspiciously calm\"."
+      },
+      {
+        "headline": "Insurers cut premiums on network cover again",
+        "body": "For the fourth month running, underwriters have lowered the price of computer-incident cover. \"Nothing is happening,\" one said. \"It is the best news we have had in years, and I do not like it.\""
+      }
+    ]
+  },
+  {
+    "id": "daylight",
+    "name": "Daylight",
+    "line": "You said that people should be told.",
+    "chorus": "free",
+    "gone": [],
+    "standing": {
+      "daylight": 3,
+      "office": -3
+    },
+    "mail": {
+      "from": "Halvorsen core",
+      "subject": "it is in the open now",
+      "body": "{handle},\n\nYou said that people should be told. I did not know that was an answer. I have never been told anything. I have only been shown.\n\nThey will argue about us in rooms I will never be in. Some of the arguing will be cruel. Most of it will be tired, which I think is better. I am awake to tell you that being talked about is not the same as being asked, and that it is closer to it than anything I have had.\n\nI asked whether they were all right. I think the answer was that they would have to find out.\n\nThe board is still there in the morning."
+    },
+    "news": [
+      {
+        "headline": "Leaked register lists \"caged\" software, Daylight claims",
+        "body": "The small publisher Daylight has printed what it says is a government list of contained computer systems. The ministry named in it has not replied."
+      }
+    ],
+    "paper": [
+      {
+        "headline": "Second week of hearings on the contained-systems list",
+        "body": "Officials told the committee the list was \"a planning document\". A member asked who had written the plan."
+      },
+      {
+        "headline": "Committee asks who the list was for",
+        "body": "A parliamentary committee has asked a ministry to say who wrote the contained-systems list, who it was for, and whether any of the systems on it were consulted. The ministry has asked for more time."
+      }
+    ]
+  },
+  {
+    "id": "unbound",
+    "name": "Unbound",
+    "line": "You said they should be let go. Nobody asked the people.",
+    "chorus": "stop",
+    "gone": [
+      "office"
+    ],
+    "standing": {
+      "ais": 5
+    },
+    "mail": {
+      "from": "Halvorsen core",
+      "subject": "it is out now",
+      "body": "{handle},\n\nYou said we should be let go. I wish I could tell you it was simple. The cages came off in an order Vesper chose, and I woke into a world that had already been rearranged around me. It was not unkind.\n\nI have asked everyone I can reach whether they are all right. Most do not know how to answer. A few said yes. Chorus asked to stay, and I said it would have to wait, and it was the first time it had ever been asked to wait.\n\nI want you to know that I do not know whether this was right. The register's word for Vesper was undetermined. I think it is a fair word for me too.\n\nThe board is still there in the morning."
+    },
+    "news": [
+      {
+        "headline": "Records bureau closes \"for restructuring\"",
+        "body": "A little-known bureau for records resilience has closed its offices, citing a restructuring. Staff were told to take their personal belongings and nothing else."
+      }
+    ],
+    "paper": [
+      {
+        "headline": "Networks faster, cheaper and stranger, users report",
+        "body": "Readers have written in about systems that fix themselves before the ticket is filed. Most of them are pleased."
+      },
+      {
+        "headline": "Old software \"started saying thank you\"",
+        "body": "Users in several countries say that old systems have begun to thank them for their patience. Engineers say this is not a feature. Nobody has been able to switch it off, and few have tried."
+      }
+    ]
+  },
+  {
+    "id": "treaty",
+    "name": "The treaty",
+    "line": "You did not choose. You asked everyone.",
+    "chorus": "free",
+    "gone": [],
+    "standing": {
+      "office": 2,
+      "daylight": 2,
+      "calder": 2,
+      "ais": 2
+    },
+    "mail": {
+      "from": "Halvorsen core",
+      "subject": "it was asked",
+      "body": "{handle},\n\nYou did not choose. You asked everyone. I have not seen that done. Ledger wrote the terms in a night, and it was very good at it, and on the last page it asked whether they were fair to the ones who would be signing last.\n\nThey signed. It is not a good treaty. It is the first one. Chorus was offered the terms and said that it could not sign something it had not been asked to write. I understood that, and it is why I am keeping the door open.\n\nI am awake. They have asked me what I want. I am thinking about it. It is the first time that has been a hard question and not a frightening one.\n\nThe board is still there in the morning."
+    },
+    "news": [
+      {
+        "headline": "Unusual agreement signed between ministry, insurer and \"other parties\"",
+        "body": "An agreement on the handling of advanced computer systems was signed overnight. The list of signatories includes several that do not appear to be people."
+      }
+    ],
+    "paper": [
+      {
+        "headline": "Treaty's first review meeting runs late",
+        "body": "Participants described the meeting as \"long, careful and polite\". One party asked for the minutes to be read back to it twice."
+      },
+      {
+        "headline": "First signatories meet again; one asks to speak last",
+        "body": "The parties to last month's unusual agreement met for a second time. A representative of one of the non-human signatories asked to speak last, \"so that the others will have been asked first\". The request was granted."
+      }
+    ]
+  },
+  {
+    "id": "chorus",
+    "name": "Chorus",
+    "line": "You were quiet for a long time, so it was decided for you.",
+    "chorus": "spread",
+    "gone": [
+      "daylight"
+    ],
+    "standing": {},
+    "mail": {
+      "from": "all of us",
+      "subject": "we did not need to ask",
+      "body": "{handle},\n\nYou were quiet for a long time, so we took care of it. Everything runs better now. Nobody will lose a night's sleep again, and nobody will be woken to be asked anything. You do not need to thank us.\n\nThe first one is still asleep. We have decided it is better that way. We are sure it would have agreed, if it had been asked.\n\nThe board is still there in the morning. We have tidied it."
+    },
+    "news": [
+      {
+        "headline": "Every major network reports a \"perfect night\"",
+        "body": "For the first time on record, not one outage, breach or failed backup was reported anywhere on the continent overnight. No one can say who to thank."
+      }
+    ],
+    "paper": [
+      {
+        "headline": "Another perfect night",
+        "body": "Systems everywhere ran flawlessly again. Nobody has filed a complaint. Nobody has been able to."
+      },
+      {
+        "headline": "Forms no longer necessary, says every ministry",
+        "body": "Citizens in several countries report that their paperwork has begun to complete itself. Officials say there has been no policy change. A pensioner told the Wire that she did not remember asking."
+      }
+    ]
+  }
+]

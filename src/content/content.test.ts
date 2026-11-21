@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_LEVEL_GAP } from '../core/tasks';
-import { assets, companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, story, tuning, news } from './index';
+import { assets, companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, story, tuning, news, chorus, linesOf } from './index';
 import companiesJson from './companies.json';
 import { parseCompanies } from './companies';
 import { parseHardware } from './hardware';
@@ -116,7 +116,12 @@ describe('shipped servers', () => {
       // contract's target (taking the contract reveals the address).
       const told = people.asks.some((ask) => ask.reward.kind === 'address' && ask.reward.serverId === server.id);
       const rivalHome = rivals.some((rival) => rival.homeId === server.id);
-      const contractTarget = contracts.some((contract) => contract.targetId === server.id || (contract.stages ?? []).some((stage) => stage.targetId === server.id));
+      // ...or a machine on a hacker's trail, which a log points to.
+      const contractTarget = contracts.some(
+        (contract) =>
+          contract.targetId === server.id ||
+          [{ objective: contract.objective }, ...(contract.stages ?? [])].some((step) => ('targetId' in step && step.targetId === server.id) || (step.objective.kind === 'hunt' && step.objective.trail.includes(server.id))),
+      );
       // ...or a relay that comes with a property the player buys.
       const bought = assets.some((asset) => asset.serverId === server.id);
       expect(server.listed || told || rivalHome || contractTarget || bought || gameInfo.startingServers.includes(server.id), server.id).toBe(true);
@@ -230,14 +235,18 @@ describe('contract checks', () => {
 describe('shipped contracts', () => {
   it('can be started by a new player, and each one is only a few standing jobs past the one before', () => {
     expect(contracts.some((contract) => contract.minRating === 0)).toBe(true);
+    // Acts 3 and 4 play on past the top title (Legend is reached in the middle of them), so they are counted apart.
+    const late = (contract: { id: string }) => /^(act[34]|after)-/.test(contract.id);
     let rating = 0;
+    let beforeAct3 = 0;
     for (const contract of [...contracts].sort((a, b) => a.minRating - b.minRating)) {
       // The gap is made up with standing jobs. More than a handful in a row would be a grind.
       expect(contract.minRating - rating, contract.id).toBeLessThanOrEqual(4);
       rating = Math.max(rating, contract.minRating) + contract.rating;
     }
+    for (const contract of contracts.filter((item) => !late(item)).sort((a, b) => a.minRating - b.minRating)) beforeAct3 = Math.max(beforeAct3, contract.minRating) + contract.rating;
     // The top title takes all of them and then some.
-    expect(gameInfo.ratings[gameInfo.ratings.length - 1]!.min).toBeGreaterThan(rating - 4);
+    expect(gameInfo.ratings[gameInfo.ratings.length - 1]!.min).toBeGreaterThan(beforeAct3 - 4);
   });
 
   it('only need layers a program on sale or owned at the start can beat', () => {
@@ -426,15 +435,35 @@ describe('Act 1 and the written jobs', () => {
     expect(inFolders.length).toBeGreaterThanOrEqual(35);
   });
 
-  it('never says the secret name outside the redacted last file', () => {
-    const text = JSON.stringify([servers, contracts, mail, story, programs, sites, news]).replace(/PROJECT_N████\.dat/g, '').replace(/P R O J E C T +N/g, '');
-    expect(text).not.toMatch(/project null/i);
+  it('never says the secret name before Act 3 reads it out, and only in the last pieces of the story', () => {
+    const hide = (value: unknown) => JSON.stringify(value).replace(/PROJECT_N████\.dat/g, '').replace(/P R O J E C T +N/g, '');
+    // What is only read once the three lines are side by side: the last job of Act 3 and everything after.
+    const afterName = linesOf(story).flatMap((line) => {
+      const at = line.beats.findIndex((beat) => beat.id === 'a3-name');
+      return at >= 0 ? line.beats.slice(at) : line.beats.filter((beat) => /^(a4|after)-/.test(beat.id));
+    });
+    const lateBeats = new Set(afterName.map((beat) => beat.id));
+    const lateContracts = new Set(['act3-name', ...contracts.filter((contract) => contract.id.startsWith('act4-') || contract.id.startsWith('after-')).map((contract) => contract.id)]);
+    const lateServers = new Set(['halvorsen-core']);
+    const early = [
+      servers.filter((server) => !lateServers.has(server.id)),
+      contracts.filter((contract) => !lateContracts.has(contract.id)),
+      mail,
+      story.beats.filter((beat) => !lateBeats.has(beat.id)),
+      programs,
+      sites,
+      news,
+      chorus,
+    ];
+    expect(hide(early)).not.toMatch(/project null/i);
+    // And it does get said, once the name is read.
+    expect(hide([contracts.filter((contract) => lateContracts.has(contract.id)), afterName])).toMatch(/project null/i);
   });
 
   it('runs Act 2 on from Act 1 with five disguised or personal story jobs and an ending beat', () => {
     const ids = story.beats.map((beat) => beat.id);
     expect(ids.indexOf('a2-quiet')).toBe(ids.indexOf('the-name') + 1);
-    expect(story.beats.at(-1)!.reveal).toBe(true);
+    expect(story.beats.find((beat) => beat.id === 'a2-end')!.reveal).toBe(true);
     const act2 = story.beats.filter((beat) => beat.id.startsWith('a2-') && beat.contractId);
     expect(act2).toHaveLength(5);
     for (const beat of act2) {
