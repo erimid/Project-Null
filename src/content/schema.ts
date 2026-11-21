@@ -340,7 +340,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes', 'stages', 'stageNote', 'contractLate', 'defence', 'raid', 'raidWon', 'raidLost', 'raidFled', 'shops', 'gear', 'news', 'memory'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes', 'stages', 'stageNote', 'contractLate', 'defence', 'raid', 'raidWon', 'raidLost', 'raidFled', 'shops', 'gear', 'news', 'memory', 'property', 'legend'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -536,6 +536,11 @@ export interface Tuning {
   readonly gearAfterRating: number;
   /** Each time the player's best rating passes another multiple of this, they earn a skill point. */
   readonly skillPointRating: number;
+  /** Past this best rating a skill point takes `skillPointSlowRating` rating, not `skillPointRating`: the long upper titles earn points at the same pace as the short early ones. */
+  readonly skillPointSlowAfter: number;
+  readonly skillPointSlowRating: number;
+  /** The rating from which the board posts legend contracts (see core/legend.ts). */
+  readonly legendRating: number;
   /** Credits to unlearn every skill the first time. Each time after costs this much more. */
   readonly unlearnPrice: number;
   /** Seconds the Workbench takes to fit one module, on a stock processor. */
@@ -1291,6 +1296,9 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     shopsAfterRating: num(file, 'tuning', data, 'shopsAfterRating', 0, 100_000),
     gearAfterRating: num(file, 'tuning', data, 'gearAfterRating', 0, 100_000),
     skillPointRating: num(file, 'tuning', data, 'skillPointRating', 1, 1000),
+    skillPointSlowAfter: num(file, 'tuning', data, 'skillPointSlowAfter', 0, 100_000),
+    skillPointSlowRating: num(file, 'tuning', data, 'skillPointSlowRating', 1, 1000),
+    legendRating: num(file, 'tuning', data, 'legendRating', 0, 100_000),
     unlearnPrice: num(file, 'tuning', data, 'unlearnPrice', 0, 10_000_000),
     buildSeconds: num(file, 'tuning', data, 'buildSeconds', 0, 3600),
     workbenchAfter: num(file, 'tuning', data, 'workbenchAfter', 0, 1000),

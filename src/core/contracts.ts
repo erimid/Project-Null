@@ -10,9 +10,10 @@ import type { Connection, GameState } from './state';
 import { payPart } from './crafting';
 import { noteRating } from './skills';
 import { freeStorageGb } from './tasks';
-import { dropFromMemory, ownsProgram, stowNew } from './loadout';
+import { dropFromMemory, ownsProgram, stowNew, trimLoadout } from './loadout';
+import { SAFE_HOUSE, hasAsset } from './assets';
 import { JOB_COOL, coolHeat, coolWithTime, wanted } from './wanted';
-import { isJob, refreshJobs } from './jobs';
+import { isJob, postLegend, refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
 import { advanceStory } from './story';
@@ -45,7 +46,8 @@ export function postJobs(state: GameState, content: Content): void {
   advanceLadder(state, content);
   printEditions(state, content);
   postHeist(state, content);
-  coolWithTime(state);
+  postLegend(state, content);
+  coolWithTime(state, content);
 }
 
 /**
@@ -143,6 +145,8 @@ export function acceptContract(state: GameState, content: Content, connectionId:
   const short = heistRefusal(state, content, contract);
   if (short) return short;
   state.contracts.activeId = contract.id;
+  // A twist that holds memory down takes hold now: whatever no longer fits goes back to the drive.
+  if (isJob(contract) && contract.legend) trimLoadout(state, content);
   startContract(state, content, contract);
   once(state, 'firstAccept', () => sendMail(state, content, 'firstAccept'));
   if (stagesOf(contract).length > 1) once(state, 'stages', () => sendMail(state, content, 'stages'));
@@ -201,7 +205,8 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   state.contracts.activeId = null;
   resetKinds(state);
   // Work that gets done is the best cover: attention fades a little with every delivery.
-  coolHeat(state, JOB_COOL);
+  coolHeat(state, content, JOB_COOL);
+  if (isJob(contract) && contract.legend) state.player.legends++;
   // The victim notices; the next edition carries it.
   reportContract(state, content, contract);
   // Whoever paid remembers, and so does anyone whose companies were hurt.
@@ -334,7 +339,7 @@ export function punish(state: GameState, content: Content, serverId: string): { 
   // Someone already wanted pays more and stays out of sight longer (see wanted.ts).
   const heat = wanted(state);
   const fine = Math.min(state.player.balance, Math.round(baseFine(content, serverId) * heat.fines * (hasFavour(state, content, 'fineCut') ? FAVOUR_CUT : 1)));
-  const hours = content.rules.lieLowHours * heat.lieLow * (hasFavour(state, content, 'lieLowCut') ? FAVOUR_CUT : 1);
+  const hours = content.rules.lieLowHours * heat.lieLow * (hasFavour(state, content, 'lieLowCut') ? FAVOUR_CUT : 1) * (hasAsset(state, content, 'safeHouse') ? SAFE_HOUSE.lieLow : 1);
   state.player.balance -= fine;
   state.player.rating = Math.max(0, state.player.rating - content.rules.caughtRatingLoss);
   state.player.lieLowUntilMs = state.clock.gameTimeMs + hours * 3_600_000;

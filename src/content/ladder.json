@@ -12,7 +12,7 @@
     },
     {
       "id": "sable",
-      "start": 26,
+      "start": 27,
       "pace": 2.0
     },
     {
@@ -61,14 +61,14 @@
       "id": "hush",
       "handle": "Hush",
       "blurb": "Works for one client at a time and never says who. Has been near the top for years.",
-      "start": 34,
+      "start": 43,
       "pace": 1.6
     },
     {
       "id": "drover",
       "handle": "Drover",
       "blurb": "Old hand, older habits. Moves whole herds of data and sells it by the head.",
-      "start": 40,
+      "start": 55,
       "pace": 1.2
     },
     {

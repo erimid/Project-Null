@@ -1,4 +1,4 @@
-import { activeContract, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
+import { TWISTS, activeContract, activeLegend, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
 import { findServer, type ContractDef } from '../../core/content';
 import { formatMoney } from '../format';
 import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
@@ -119,6 +119,7 @@ export function ContractPanel() {
     if (session.dispatch(action).ok) deskStore.showContract(false);
   };
   const steps = stagesOf(contract);
+  const twist = activeLegend(game)?.legend?.twist;
   const current = stageIndex(game, contract);
   const stage = stageView(game, contract);
   const done = objectiveMet(game, content, contract);
@@ -195,6 +196,14 @@ export function ContractPanel() {
           )}
         </div>
       </header>
+      {twist && (
+        <p class="contract__twist">
+          <Icon name="sparkle" size={16} />
+          <span>
+            <strong>{TWISTS[twist].name}.</strong> {TWISTS[twist].line}
+          </span>
+        </p>
+      )}
       {steps.length > 1 && (
         <ol class="contract__steps" aria-label={`Step ${current + 1} of ${steps.length}`}>
           {steps.map((step, index) => {

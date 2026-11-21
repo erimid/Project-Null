@@ -1,7 +1,9 @@
 import { useState } from 'preact/hooks';
 import {
   LOADOUT_SLOTS,
+  TWISTS,
   findModule,
+  twistOn,
   freeMemoryGb,
   isLoaded,
   loadedPrograms,
@@ -139,6 +141,11 @@ function MemoryPanel({ game }: { game: GameState }) {
         {locked && (
           <span class="memory__lock" data-tip="What you loaded is what you have until you disconnect.">
             <Icon name="lock" size={13} /> Locked while connected
+          </span>
+        )}
+        {twistOn(game, 'travelLight') && (
+          <span class="memory__lock" data-tip={TWISTS.travelLight.line}>
+            <Icon name="sparkle" size={13} /> Travel light
           </span>
         )}
         <span class="data drive__free">{free} GB free</span>

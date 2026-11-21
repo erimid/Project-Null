@@ -296,6 +296,8 @@ export const testContracts: ContractDef[] = [
 const letter = (key: string, extra = ''): MailDef => ({ from: 'Fixer', subject: key, body: `${key} for {handle}${extra}` });
 export const testMail: Record<MailKey, MailDef> = {
   welcome: letter('welcome'),
+  property: letter('property'),
+  legend: letter('legend'),
   firstAccept: letter('firstAccept'),
   firstDelivery: letter('firstDelivery'),
   paid: { from: '{client}', subject: 'Paid: {title}', body: '{pay}' },

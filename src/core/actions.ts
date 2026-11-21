@@ -22,7 +22,7 @@ import { settleRival } from './ladder';
 import { sellData } from './data';
 import { followTrail, lockGuardRing, noteConnect, openGuardPort } from './kinds';
 import { advanceContract } from './stages';
-import { buyHardware, loseHardware, maxConnections } from './hardware';
+import { buyAsset, buyHardware, loseHardware, maxConnections } from './hardware';
 import { modelRead, rentModel } from './model';
 import { readFile, sendPhish } from './phish';
 import { buyModule, refineModule, returnModules, scrapBuild } from './crafting';
@@ -84,6 +84,8 @@ export type Action =
   | { readonly type: 'uninstallProgram'; readonly programId: string }
   /** Buy a hardware part from the board you are logged in to. It is installed at once. */
   | { readonly type: 'buyHardware'; readonly connectionId: string; readonly partId: string }
+  /** Buy a property (a relay, a safe house, a second gateway) from the board you are logged in to. */
+  | { readonly type: 'buyAsset'; readonly connectionId: string; readonly assetId: string }
   /** Rent a language model from the board you are logged in to. */
   | { readonly type: 'rentModel'; readonly connectionId: string; readonly modelId: string }
   /** Have the rented model read every file on a connection. */
@@ -360,6 +362,8 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
 
     case 'buyHardware':
       return answer(buyHardware(state, content, action.connectionId, action.partId, usedStorageGq(state, content)));
+    case 'buyAsset':
+      return answer(buyAsset(state, content, action.connectionId, action.assetId));
     case 'rentModel':
       return answer(rentModel(state, content, action.connectionId, action.modelId));
     case 'modelRead':

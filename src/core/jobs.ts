@@ -12,6 +12,7 @@ import type { GameState, Job } from './state';
 import type { Rng } from './rng';
 import { stream } from './streams';
 import type { Content } from './world';
+import { legendDay, legendWeek, twistOfWeek } from './legend';
 
 /** The tier of company the board offers work against at this rating. `tierRatings` is the lowest rating for each tier. */
 export function tierForRating(rating: number, tierRatings: readonly number[]): number {
@@ -65,10 +66,10 @@ function possibleObjectives(state: GameState, server: ServerDef): Objective[] {
 
 /**
  * Makes one new job against a company of about the right tier, or against
- * `at` if given (then on `rng`, and never with a first step). Undefined if
+ * `at` if given (then on `rng`, and with a first step only if `staged`). Undefined if
  * there is nothing to make.
  */
-function makeJob(state: GameState, content: Content, at?: { server: ServerDef; rng: Rng }): Job | undefined {
+function makeJob(state: GameState, content: Content, at?: { server: ServerDef; rng: Rng; staged?: boolean }): Job | undefined {
   const pools = content.companies.jobs;
   const rng = at?.rng ?? stream(state, 'jobs');
   const tier = tierForRating(state.player.rating, content.rules.tierRatings);
@@ -118,7 +119,7 @@ function makeJob(state: GameState, content: Content, at?: { server: ServerDef; r
   const own = rng.fork(`staged:${server.id}:${rng.getState().state}`);
   // Some become one of the newer kinds of job, and some become a race (see kinds.ts). Forked the same way.
   const other = at ? undefined : newKind(state, content, job, server, values, rng.fork(`kind:${server.id}:${rng.getState().state}`));
-  const made = other ?? (!at && pools.staged && serverTier >= 5 && own.chance(0.5) ? addFirstStep(state, content, job, server, values, own) : job);
+  const made = other ?? (pools.staged && (at ? at.staged === true : serverTier >= 5 && own.chance(0.5)) ? addFirstStep(state, content, job, server, values, own) : job);
   const raced = at ? made : maybeRace(content, made, serverTier, rng.fork(`race:${server.id}:${rng.getState().state}`));
   // Some jobs are a patron's, under their own name (see patrons.ts). Forked the same way, so the board's draws stay as they were.
   return assignPatron(state, content, raced, server, rng.fork(`patron:${server.id}:${rng.getState().state}`));
@@ -230,7 +231,11 @@ function addFirstStep(state: GameState, content: Content, job: Job, target: Serv
     if (file.access !== 'admin') return false;
     const written = first.files.find((item) => item.name === file.name);
     // A module installer or program file is loot, not a document a client would send you for.
-    return !written?.part && !written?.program;
+    if (written?.part || written?.program) return false;
+    // Two companies in one trade keep files of the same name, and the gateway holds one file of a name:
+    // never one the player already has, or the one the second step is going to ask for.
+    if (state.player.files.some((own) => own.name === file.name)) return false;
+    return !('file' in job.objective && job.objective.file === file.name);
   });
   if (files.length === 0) return job;
   const file = rng.pick(files).name;
@@ -269,13 +274,52 @@ export function postNewsJob(state: GameState, content: Content, server: ServerDe
 export function refreshJobs(state: GameState, content: Content, stillPossible: (job: Job) => boolean): void {
   const now = state.clock.gameTimeMs;
   const keep = (job: Job) => job.id === state.contracts.activeId || (job.expiresMs > now && stillPossible(job));
-  // Jobs the news opened, and heists, come on top of the usual number.
-  const usual = () => state.contracts.jobs.filter((job) => !job.news && !job.heist).length;
+  // Jobs the news opened, heists and legend contracts come on top of the usual number.
+  const usual = () => state.contracts.jobs.filter((job) => !job.news && !job.heist && !job.legend).length;
   if (usual() >= content.rules.boardJobs && state.contracts.jobs.every(keep)) return;
   state.contracts.jobs = state.contracts.jobs.filter(keep);
   // A few tries per missing job, in case a pick has nothing left to ask for.
   for (let tries = 0; usual() < content.rules.boardJobs && tries < content.rules.boardJobs * 3; tries++) {
     const job = makeJob(state, content);
     if (job) state.contracts.jobs.push(job);
+  }
+}
+
+/** A legend contract pays this many times a job of its kind, and is worth this much rating. */
+export const LEGEND_PAY = 3;
+export const LEGEND_RATING = 3;
+/** Hours a legend contract stays on the board. */
+export const LEGEND_HOURS = 48;
+
+/**
+ * Posts a legend contract (see legend.ts) if the player has the rating for
+ * them, a game day has turned since the last, and none is on the board:
+ * a two-step job against the hardest company that is free, with the week's
+ * twist. Cheap when there is nothing to do.
+ */
+export function postLegend(state: GameState, content: Content): void {
+  const from = content.rules.legendRating;
+  if (from === undefined || state.player.rating < from) return;
+  const day = legendDay(state);
+  if (state.contracts.legendDay >= day || state.contracts.jobs.some((job) => job.legend)) return;
+  const rng = stream(state, 'legend');
+  const busy = touchedServers(state);
+  // The hardest companies first. There are only a few, and the board may have them all spoken for, so the next hardest stand in.
+  const free = rng.shuffle(content.servers.filter((server) => server.generated && !busy.has(server.id)));
+  const companies = [...free].sort((a, b) => b.generated!.tier - a.generated!.tier);
+  for (const server of companies.slice(0, 8)) {
+    const job = makeJob(state, content, { server, rng, staged: true });
+    if (!job) continue;
+    state.contracts.legendDay = day;
+    const week = legendWeek(state);
+    state.contracts.jobs.push({
+      ...job,
+      title: `Legend: ${job.title.replace(/^Race: /, '')}`,
+      pay: Math.round((job.pay * LEGEND_PAY) / 50) * 50,
+      rating: LEGEND_RATING,
+      expiresMs: state.clock.gameTimeMs + LEGEND_HOURS * 3_600_000,
+      legend: { twist: twistOfWeek(state.seed, week), week },
+    });
+    return;
   }
 }

@@ -14,6 +14,9 @@ import type { SkillDef } from '../content/skills';
 import type { ModuleDef } from '../content/modules';
 import { builtProgram } from './builds';
 import { LOADOUT_SLOTS, type GameState } from './state';
+import type { AssetDef } from '../content/assets';
+import { SECOND_GATEWAY, hasAsset } from './assets';
+import { TRAVEL_LIGHT_GB, twistOn } from './legend';
 
 /** The kinds of program that work over a connection, and so have to be in memory to run. */
 export const FIELD_KINDS: readonly ProgramKind[] = ['breakPassword', 'bypassProxy', 'bypassFirewall', 'bypassMonitor', 'copyFile', 'deleteFile', 'deleteLog', 'traceTracker', 'jamTrace'];
@@ -27,6 +30,7 @@ interface Parts {
   readonly skills: readonly SkillDef[];
   readonly modules: readonly ModuleDef[];
   readonly servers: readonly ServerDef[];
+  readonly assets?: readonly AssetDef[];
 }
 
 function programOf(state: GameState, content: Parts, id: string): ProgramDef | undefined {
@@ -42,7 +46,9 @@ export function memoryGb(state: GameState, content: Parts): number {
   if (!part?.memoryGb) return Infinity;
   let extra = 0;
   for (const skill of content.skills) if (skill.effect === 'deepMemory') extra += skill.amount * (state.player.skills[skill.id] ?? 0);
-  return part.memoryGb + extra;
+  if (hasAsset(state, content, 'secondGateway')) extra += SECOND_GATEWAY.memoryGb;
+  // A legend contract that wants no footprint (see legend.ts) holds memory down while it is open.
+  return twistOn(state, 'travelLight') ? Math.min(TRAVEL_LIGHT_GB, part.memoryGb + extra) : part.memoryGb + extra;
 }
 
 /** The programs in memory, in the order they were loaded. Anything no longer installed is left out. */

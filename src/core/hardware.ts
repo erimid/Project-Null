@@ -12,6 +12,7 @@ import { stream } from './streams';
 import { findConnection, findServer, sendMail, type Content } from './world';
 import { sellsHardware, shopFor, shopPrice } from './market';
 import { trimLoadout } from './loadout';
+import { SECOND_GATEWAY, findAsset, hasAsset, whyNotAsset } from './assets';
 
 /** Slots in the order screens list them, with their names. */
 export const HARDWARE_SLOT_LABELS: readonly (readonly [HardwareSlot, string])[] = [
@@ -46,10 +47,10 @@ export const cpuSpeed = (state: GameState, content: Content): number =>
 export const fileSpeed = (state: GameState, content: Content): number =>
   (installed(state, content, 'modem')?.fileSpeed ?? 1) * tuned(state, content) * (1 + effect(state, content, 'modemSpeed'));
 export const maxPrograms = (state: GameState, content: Content): number =>
-  (installed(state, content, 'cpu')?.programs ?? 3) + effect(state, content, 'extraPrograms');
+  (installed(state, content, 'cpu')?.programs ?? 3) + effect(state, content, 'extraPrograms') + (hasAsset(state, content, 'secondGateway') ? SECOND_GATEWAY.programs : 0);
 export const storageGb = (state: GameState, content: Content): number => installed(state, content, 'storage')?.storageGb ?? 40;
 export const maxConnections = (state: GameState, content: Content): number =>
-  installed(state, content, 'ports')?.connections ?? 1;
+  (installed(state, content, 'ports')?.connections ?? 1) + (hasAsset(state, content, 'secondGateway') ? SECOND_GATEWAY.connections : 0);
 
 /** The model running on the gateway's own rack, if one is installed. */
 export function hostedModel(state: GameState, content: Content): ModelDef | undefined {
@@ -87,6 +88,36 @@ export function buyHardware(state: GameState, content: Content, connectionId: st
   return null;
 }
 
+/** What a property costs at the board the player is logged in to on this connection. */
+export function assetPrice(state: GameState, content: Content, serverId: string, assetId: string): number {
+  const shop = findServer(content, serverId);
+  const asset = findAsset(content, assetId);
+  if (!shop || !asset) return 0;
+  return shopPrice(shopFor(state, content, shop), asset.price);
+}
+
+/**
+ * Buys a property (see assets.ts) from the broker on a board's Hardware
+ * shelf. It is the player's from then on. Returns a reason if it can't
+ * be done.
+ */
+export function buyAsset(state: GameState, content: Content, connectionId: string, assetId: string): string | null {
+  const connection = findConnection(state, connectionId);
+  const shop = connection && connection.user !== null ? findServer(content, connection.serverId) : undefined;
+  if (!shop || shop.kind !== 'board') return 'Log in to the board first.';
+  if (!shopFor(state, content, shop).hardware) return 'This shop does not deal in property.';
+  const asset = findAsset(content, assetId);
+  const why = whyNotAsset(state, content, assetId);
+  if (!asset || why) return why ?? 'That is not for sale.';
+  const price = assetPrice(state, content, shop.id, assetId);
+  if (state.player.balance < price) return 'You cannot afford that.';
+  state.player.balance -= price;
+  state.player.assets.push(asset.id);
+  // A relay of your own goes straight into the address book.
+  if (asset.serverId && !state.knownServers.includes(asset.serverId)) state.knownServers.push(asset.serverId);
+  return null;
+}
+
 /**
  * Being traced by a server with strong security costs a part: one slot,
  * picked at random from those above stock, drops one tier. Returns the
@@ -95,6 +126,8 @@ export function buyHardware(state: GameState, content: Content, connectionId: st
 export function loseHardware(state: GameState, content: Content, serverId: string): HardwareDef | undefined {
   const server = findServer(content, serverId);
   if (!server) return undefined;
+  // With a safe house the trace finds that address, not the gateway.
+  if (hasAsset(state, content, 'safeHouse')) return undefined;
   const strongest = Math.max(server.security.password, server.security.proxy, server.security.firewall, server.security.monitor);
   if (strongest < content.rules.hardwareLossLevel) return undefined;
   const slots = (Object.keys(state.player.hardware) as HardwareSlot[]).filter(

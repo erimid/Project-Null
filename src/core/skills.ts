@@ -29,9 +29,20 @@ export function noteRating(state: GameState): void {
   state.player.bestRating = Math.max(state.player.bestRating, state.player.rating);
 }
 
-/** Points earned so far: one each time the best rating passes another multiple of `skillPointRating`. */
-export const pointsEarned = (state: GameState, content: Content): number =>
-  Math.floor(state.player.bestRating / content.rules.skillPointRating);
+/**
+ * Skill points a best rating is worth: one for every `skillPointRating`
+ * of it, and past `skillPointSlowAfter` one for every
+ * `skillPointSlowRating`. The upper titles are long, and earn points at
+ * about the pace of the short early ones.
+ */
+export function pointsAt(rules: Content['rules'], rating: number): number {
+  const turn = rules.skillPointSlowAfter ?? Infinity;
+  const early = Math.floor(Math.min(rating, turn) / rules.skillPointRating);
+  return early + Math.floor(Math.max(0, rating - turn) / (rules.skillPointSlowRating ?? rules.skillPointRating));
+}
+
+/** Points earned so far. */
+export const pointsEarned = (state: GameState, content: Content): number => pointsAt(content.rules, state.player.bestRating);
 
 /** Points tied up in learned skills. */
 export function pointsSpent(state: GameState, content: Content): number {
@@ -43,8 +54,18 @@ export const pointsFree = (state: GameState, content: Content): number =>
   Math.max(0, pointsEarned(state, content) - pointsSpent(state, content));
 
 /** The best rating at which the next point comes. */
-export const nextPointRating = (state: GameState, content: Content): number =>
-  (pointsEarned(state, content) + 1) * content.rules.skillPointRating;
+export function nextPointRating(state: GameState, content: Content): number {
+  const have = pointsEarned(state, content);
+  let rating = state.player.bestRating + 1;
+  while (pointsAt(content.rules, rating) <= have) rating++;
+  return rating;
+}
+
+/** How much rating lies between the last point earned and the next. */
+export function pointStep(state: GameState, content: Content): number {
+  const turn = content.rules.skillPointSlowAfter ?? Infinity;
+  return nextPointRating(state, content) > turn ? (content.rules.skillPointSlowRating ?? content.rules.skillPointRating) : content.rules.skillPointRating;
+}
 
 /** Why the next rank of a skill can't be learned now, or null if it can. */
 export function whyNotLearn(state: GameState, content: Content, id: string): string | null {

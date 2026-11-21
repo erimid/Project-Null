@@ -3,7 +3,7 @@
  * game before and after each change. Alerts and sounds listen to these,
  * so the simulation itself never needs to know about either.
  */
-import { activeContract, findRival, findServer, pointsSpent, raidReport, stageIndex, stagesOf, type Content, type GameState } from '../core';
+import { activeContract, findRival, findServer, pointsAt, pointsSpent, raidReport, stageIndex, stagesOf, type Content, type GameState } from '../core';
 import { gameInfo } from '../content';
 
 const titleOf = (rating: number) => gameInfo.ratings.findLast((level) => rating >= level.min)?.title;
@@ -138,7 +138,7 @@ export function diff(before: Snapshot, after: Snapshot, content: Content, byCloc
 
   if (after.ranks > before.ranks) events.push({ type: 'skillLearned' });
   if (after.ranks < before.ranks) events.push({ type: 'skillsUnlearned' });
-  const points = (best: number) => Math.floor(best / content.rules.skillPointRating);
+  const points = (best: number) => pointsAt(content.rules, best);
   if (points(after.bestRating) > points(before.bestRating)) {
     events.push({ type: 'pointEarned', free: Math.max(0, points(after.bestRating) - after.spent) });
   }

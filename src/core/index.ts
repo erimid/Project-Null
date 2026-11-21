@@ -91,6 +91,8 @@ export {
   effect,
   findSkill,
   nextPointRating,
+  pointStep,
+  pointsAt,
   pointsEarned,
   pointsFree,
   pointsSpent,
@@ -166,5 +168,10 @@ export {
 } from './loadout';
 export { MOVES, MOVE_NAMES, PATCH_LAYERS, SURGE_SECONDS, knowsMove, movesLeft, patchModule, whyNotMove } from './moves';
 export { WANTED_LEVELS, wanted, wantedEffects, wantedLevel, wantedShare } from './wanted';
+export { SAFE_HOUSE, SECOND_GATEWAY, findAsset, hasAsset, ownRelay, whyNotAsset } from './assets';
+export { assetPrice, buyAsset } from './hardware';
+export { LEGEND_TWISTS, TRAVEL_LIGHT_GB, TWISTS, activeLegend, legendWeek, twistOfWeek, twistOn } from './legend';
+export type { LegendTwist } from './legend';
+export { LEGEND_HOURS, LEGEND_PAY, LEGEND_RATING, postLegend } from './jobs';
 export { LOADOUT_SLOTS } from './state';
 export type { MoveId, PatchLayer, WantedState } from './state';

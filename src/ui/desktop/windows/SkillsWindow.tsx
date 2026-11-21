@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { findServer, nextPointRating, pointsEarned, pointsFree, skillRank, unlearnPrice, whyNotLearn, type GameState } from '../../../core';
-import { tuning } from '../../../content';
+import { findServer, nextPointRating, pointStep, pointsEarned, pointsFree, skillRank, unlearnPrice, whyNotLearn, type GameState } from '../../../core';
 import { ACTIVE_EFFECTS } from '../../../content/skills';
 import type { SkillBranch, SkillDef } from '../../../core/content';
 import { formatMoney } from '../../format';
@@ -131,7 +130,7 @@ export function SkillsWindow() {
   const price = unlearnPrice(game, content);
   const anything = Object.values(game.player.skills).some((rank) => rank > 0);
   const next = nextPointRating(game, content);
-  const step = tuning.skillPointRating;
+  const step = pointStep(game, content);
 
   const unlearn = () => {
     if (!board) return;

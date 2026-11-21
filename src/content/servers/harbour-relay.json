@@ -1,0 +1,55 @@
+{
+  "id": "harbour-relay",
+  "name": "Harbour Hall, rack 14",
+  "kind": "relay",
+  "owner": "Sundhöfn Colocation",
+  "hostname": "rk-hall2-r14",
+  "address": "85.220.47.141",
+  "city": "Reykjavik",
+  "country": "Iceland",
+  "lat": 64.15,
+  "lon": -21.94,
+  "blurb": "A leased rack in a harbour data hall. Yours, under another name.",
+  "listed": false,
+  "security": {
+    "password": 0,
+    "proxy": 0,
+    "firewall": 0,
+    "monitor": 3
+  },
+  "traceSecondsPerHop": 30,
+  "relayDelay": 2.2,
+  "banner": [
+    "SUNDHÖFN COLOCATION · hall 2 · rack 14",
+    "Tenant console. Remote hands on request.",
+    "Power: A+B feeds nominal. Door last opened: never."
+  ],
+  "accounts": [
+    {
+      "user": "tenant",
+      "role": "guest",
+      "name": "Rack tenant"
+    }
+  ],
+  "files": [
+    {
+      "name": "lease.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "SUNDHÖFN COLOCATION\nLease, hall 2, rack 14.\n\nTenant: Northlight Marine Survey ehf.\nTerm: rolling, paid twelve months ahead.\nContact: none given. Invoices to the post box.\n\nNote from the front desk: nobody from Northlight has ever visited. The rack was built by a courier with a pallet and a diagram."
+      }
+    },
+    {
+      "name": "remote_hands.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "REMOTE HANDS, rack 14\n\n03 Feb  Pallet received. Built to tenant's diagram. Tenant not present.\n11 Feb  Tenant asked by post for the blanking plates to be left off. Done.\n02 Mar  Hall 2 audit. Rack 14 skipped at the tenant's request. Fee paid.\n19 Apr  Engineer reports the rack draws power and passes traffic and has never once been logged in to from this building."
+      }
+    }
+  ],
+  "logs": []
+}

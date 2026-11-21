@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_LEVEL_GAP } from '../core/tasks';
-import { companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, story, tuning, news } from './index';
+import { assets, companies, contracts, findPage, gameInfo, hardware, mail, models, modules, people, programs, rivals, servers, sites, skills, story, tuning, news } from './index';
 import companiesJson from './companies.json';
 import { parseCompanies } from './companies';
 import { parseHardware } from './hardware';
@@ -117,7 +117,9 @@ describe('shipped servers', () => {
       const told = people.asks.some((ask) => ask.reward.kind === 'address' && ask.reward.serverId === server.id);
       const rivalHome = rivals.some((rival) => rival.homeId === server.id);
       const contractTarget = contracts.some((contract) => contract.targetId === server.id || (contract.stages ?? []).some((stage) => stage.targetId === server.id));
-      expect(server.listed || told || rivalHome || contractTarget || gameInfo.startingServers.includes(server.id), server.id).toBe(true);
+      // ...or a relay that comes with a property the player buys.
+      const bought = assets.some((asset) => asset.serverId === server.id);
+      expect(server.listed || told || rivalHome || contractTarget || bought || gameInfo.startingServers.includes(server.id), server.id).toBe(true);
     }
   });
 

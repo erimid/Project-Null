@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import {
   HARDWARE_SLOT_LABELS,
   effectiveSpeed,
+  findAsset,
   findPart,
   gameDate,
   gatewayOf,
@@ -56,6 +57,8 @@ export function GatewayWindow() {
       .filter(Boolean)
       .join(' · ');
   });
+  const property = useGame((game) => game.player.assets.map((id) => findAsset(content, id)?.name ?? '').filter(Boolean).join(' · '));
+  const legends = useGame((game) => game.player.legends);
   // Joined into one text so the board only redraws when a part changes.
   const tiers = useGame((game) => HARDWARE_SLOT_LABELS.map(([slot]) => game.player.hardware[slot]).join(','));
   const hardware = Object.fromEntries(HARDWARE_SLOT_LABELS.map(([slot], index) => [slot, Number(tiers.split(',')[index])])) as Record<HardwareSlot, number>;
@@ -133,6 +136,18 @@ export function GatewayWindow() {
           <dt>Model</dt>
           <dd>{model || <span class="row__dim">none</span>}</dd>
         </div>
+        {property && (
+          <div class="tile" data-tip="What you own beyond the gateway. Bought from the broker on a Hardware shelf.">
+            <dt>Property</dt>
+            <dd>{property}</dd>
+          </div>
+        )}
+        {legends > 0 && (
+          <div class="tile" data-tip="Legend contracts you have delivered.">
+            <dt>Legend contracts</dt>
+            <dd class="data">{legends}</dd>
+          </div>
+        )}
       </dl>
       <h3 class="map__heading tiles__heading">
         Hardware

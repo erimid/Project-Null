@@ -41,6 +41,9 @@ import daylightBoard from './servers/daylight-board.json';
 import ostranderAnnex from './servers/ostrander-annex.json';
 import continuityOffice from './servers/continuity-office.json';
 import wickNode from './servers/wick-node.json';
+import harbourRelay from './servers/harbour-relay.json';
+import assetsJson from './assets.json';
+import { parseAssets } from './assets';
 import companiesJson from './companies.json';
 import { parseCompanies } from './companies';
 import hardwareJson from './hardware.json';
@@ -104,6 +107,7 @@ export type { NewsDef, NewsEventDef, NewsTemplate } from './news';
 export type { Favour, PatronDef } from './patrons';
 export type { LadderDef, LadderRivalDef } from './ladder';
 export type { DataKindDef, DataMarketDef } from './data';
+export type { AssetDef, AssetEffect } from './assets';
 export type { AskDef, FactDef, FileRef, PeopleDef, PersonDef, RewardDef } from './people';
 export type { BlockDef, LinkDef, Net, PageDef, SiteDef } from './sites';
 
@@ -111,7 +115,7 @@ export const gameInfo = parseGameInfo(gameJson);
 export const sites = parseSites(sitesJson);
 export const tuning = parseTuning(tuningJson);
 export const servers = parseServers(
-  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint, daylightBoard, ostranderAnnex, continuityOffice, wickNode, tinShed, vargaSurplus, lowtideExchange],
+  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint, daylightBoard, ostranderAnnex, continuityOffice, wickNode, harbourRelay, tinShed, vargaSurplus, lowtideExchange],
   'servers/',
 );
 export const programs = parsePrograms(programsJson);
@@ -134,6 +138,7 @@ export const news = parseNews(newsJson);
 export const patrons = parsePatrons(patronsJson);
 export const ladder = parseLadder(ladderJson, rivals);
 export const data = parseData(dataJson);
+export const assets = parseAssets(assetsJson, servers.map((server) => server.id));
 checkPatrons(patrons, servers, companies.sectors.map((sector) => sector.id), contracts);
 checkNews(news, story.beats.map((beat) => beat.id), companies.sectors.map((sector) => sector.id));
 

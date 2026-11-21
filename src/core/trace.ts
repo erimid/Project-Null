@@ -10,6 +10,7 @@ import { effect } from './skills';
 import { regionOf } from './generate';
 import { findConnection, findServer, gatewayOf, ownedProgram, securityOf, type Content } from './world';
 import { privateRelay } from './ladder';
+import { SHORT_FUSE, twistOn } from './legend';
 
 /** What a leg of the route crosses: nothing much, a border, or a stretch of the world. */
 export type LegKind = 'country' | 'border' | 'overseas';
@@ -170,7 +171,7 @@ export const traceSense = (state: GameState, content: Content): number => instal
 
 /** True if the player can read how far a trace has got: a Trace Tracker program, or a trace sensor in the gateway. */
 export const canReadTrace = (state: GameState, content: Content): boolean =>
-  traceSense(state, content) > 0 || ownedProgram(state, content, 'traceTracker') !== undefined;
+  !twistOn(state, 'blindRun') && (traceSense(state, content) > 0 || ownedProgram(state, content, 'traceTracker') !== undefined);
 
 /** How much longer each step of a trace takes, from the Long way round skill. */
 export const traceSlow = (state: GameState, content: Content): number => 1 + effect(state, content, 'traceSlow');
@@ -182,7 +183,9 @@ export const maxHops = (state: GameState, content: Content): number => MAX_HOPS 
 export const maxReroutes = (state: GameState, content: Content): number => content.rules.maxReroutes + effect(state, content, 'slipAway');
 
 export function newTrace(state: GameState, content: Content, target: ServerDef, route: readonly string[]): TraceState {
-  const hopMs = traceHopMs(content, target, route, traceSlow(state, content), undefined, state);
+  // A legend contract with a short fuse (see legend.ts): its servers trace faster.
+  const fuse = twistOn(state, 'shortFuse', target.id) ? SHORT_FUSE : 1;
+  const hopMs = traceHopMs(content, target, route, traceSlow(state, content) * fuse, undefined, state);
   const trace: TraceState = { status: 'none', graceMs: 0, elapsedMs: 0, hopMs };
   if (target.untraced) return trace;
   // The strongest monitors start tracing the moment a connection opens.
