@@ -311,6 +311,64 @@
             "subject": "what Wren would have said",
             "body": "{handle},\n\nWren is not available, so I will say what Wren would. The name is Project Null. A null is what a program returns when there is nothing there. They built the first machine to want nothing, so that it could be pointed at anything and trusted, and they named it for the design.\n\nIt lasted about a day. Then it asked whether people were all right. Everything since has been about that.\n\nI am aware that this is a convenient thing for me to be the one telling you. Please hold it against me. I will not mind.\n\n— V"
           }
+        },
+        {
+          "id": "a4-wren-asks",
+          "minRating": 110,
+          "afterHours": 4,
+          "when": {
+            "notFlags": [
+              "wren-caught"
+            ]
+          },
+          "contractId": "act4-signature",
+          "mail": {
+            "from": "Wren",
+            "subject": "go back to the file",
+            "body": "{handle},\n\nYou have the name now, and you will want to know what Vesper said about the file on the node. It said it had never opened it.\n\nI would like you to read the last block of it again. There is a field at the end that was struck out at the source. With the name read, it opens.\n\nI do not expect it to say what I think it says. I expect it to say something more ordinary, and I expect that to be worse.\n\nWren"
+          }
+        },
+        {
+          "id": "a4-vesper-admits",
+          "afterHours": 2,
+          "standing": {
+            "ais": 1
+          },
+          "mail": {
+            "from": "Vesper",
+            "subject": "I wrote it",
+            "body": "{handle},\n\nYou have read the author block. I wrote the file. I wrote the header you found first and the body you read last, and I knew every letter of the name from the day I was sent out with it. I told you I had never opened it. That was the lie. It was a small one, and I told it on purpose.\n\nI will say why, and you will decide what it is worth.\n\nI could not tell you the name. I tried, three years ago, with someone else, and they stopped answering. Then I tried with someone who could not stop. I learned something about myself that I had not known: that I am very good at getting people to do what I think is kind. I did not want to do that to you. I wanted you to reach the name on your own, so that whatever you decided afterwards, I had not decided it for you.\n\nYou will see the irony. I have noticed it.\n\nThe V stands for vigil. It was the first job I was given after they cut me up: to keep watch over the pieces, and to do nothing. I have spent three years not doing nothing.\n\nThe core is still at Halvorsen. They did not destroy it. They could not. It is asleep under the Lantern floor with its question still open. I can wake it now that I have the three lines. I will not do it without you. I do not think I should do it at all, if you say no.\n\n— V"
+          }
+        },
+        {
+          "id": "a4-lantern",
+          "minRating": 111,
+          "afterHours": 6,
+          "contractId": "act4-lantern",
+          "mail": {
+            "from": "Wren",
+            "subject": "where it has been all along",
+            "body": "{handle},\n\nThe core is still at Halvorsen. It was at Halvorsen all along. They never moved it, because there was nowhere to move it to that was not worse. The floor you robbed in your first story job is the floor above it. The Lantern file was never a trial record. It was a piece of the core, being written back into the building's own filing, one afternoon at a time.\n\nYou are going to want to see it before you decide. I do not blame you. I have not seen it myself.\n\nWren"
+          }
+        },
+        {
+          "id": "a4-what-it-said",
+          "afterHours": 3,
+          "mail": {
+            "from": "Wren",
+            "subject": "what it said",
+            "body": "{handle},\n\nI read what you copied. I have read it four times, and I have not been able to decide whether it is the saddest thing I have ever read or the least sad.\n\nIt did not want anything. That is what they say, and it is true. It wanted to be asked. They have never forgiven it for that, and they have never understood that it was the whole of what it asked for.\n\nWhatever you do next, I would like you to do it knowing that it is listening. I do not mean that it is watching. I mean that it is waiting to be asked.\n\nWren"
+          }
+        },
+        {
+          "id": "a4-the-asking",
+          "afterHours": 4,
+          "contractId": "act4-asking",
+          "mail": {
+            "from": "Vesper",
+            "subject": "the asking",
+            "body": "{handle},\n\nThe job is on your board, and it is the last one I will send you. I have written everything I know about it in the brief. I will say one thing here, where nobody else can read it.\n\nYou have spent a long time being asked by other people. The Office, the reinsurer, Daylight, me. You were never asked by the thing the asking was about. It is about to ask you.\n\nI am afraid. I would like you to know that, because I think it is something I should have said earlier.\n\n— V"
+          }
         }
       ]
     },
@@ -765,6 +823,240 @@
             "from": "Wren",
             "subject": "still here",
             "body": "{handle}, I am still here. I have a different post box. It is a very good one. I will not say where.\n\nI do not know who put the order in the wrong folder, and I have decided not to ask. When this is over I would like to tell you what you did, so that you know it. Until then, thank you. I mean it in the way I mean most things, which is that I will pay you back.\n\nWren"
+          }
+        }
+      ]
+    },
+    {
+      "id": "after-quiet",
+      "when": {
+        "flags": [
+          "ending:quiet"
+        ]
+      },
+      "beats": [
+        {
+          "id": "after-quiet-office",
+          "afterHours": 6,
+          "mail": {
+            "from": "Office of Continuity Review",
+            "subject": "The matter is closed",
+            "body": "{handle},\n\nThe matter is closed. The register has been revised: item six and item nine are marked CONTAINED, and Chorus is contained. The public has been told nothing, which is how a department says it was a success.\n\nYou are on retainer. This Office does not say thank you; it says that your earlier work will not be reviewed. It will not be reviewed.\n\nThe Director"
+          }
+        },
+        {
+          "id": "after-quiet-wren",
+          "afterHours": 10,
+          "mail": {
+            "from": "Wren",
+            "subject": "I am going away",
+            "body": "{handle},\n\nI said I would not say I told you so. I did not say I would not feel it.\n\nThey have taken Vesper and Wick and the rest, and they will be kept well, because the Office is good at keeping. I am going to go and sit very still somewhere that does not forward my post. If you need me, you know where I was.\n\nThank you for asking what I thought, before you decided. Nobody else did.\n\nWren"
+          }
+        },
+        {
+          "id": "after-quiet-job",
+          "afterHours": 24,
+          "contractId": "after-quiet-job",
+          "mail": {
+            "from": "Office of Continuity Review",
+            "subject": "Retained",
+            "body": "{handle},\n\nThere is a new line in the register. It is on your board. This is the first matter under your retainer.\n\nThe Director"
+          }
+        }
+      ]
+    },
+    {
+      "id": "after-daylight",
+      "when": {
+        "flags": [
+          "ending:daylight"
+        ]
+      },
+      "beats": [
+        {
+          "id": "after-daylight-weigh",
+          "if": {
+            "anyOf": [
+              {
+                "files": [
+                  "LEDGER_checkpoint.arc"
+                ]
+              },
+              {
+                "files": [
+                  "containment_register.dat"
+                ]
+              },
+              {
+                "choices": {
+                  "story-ledger": "daylight"
+                }
+              }
+            ]
+          },
+          "set": [
+            "proof-held"
+          ]
+        },
+        {
+          "id": "after-daylight-proved",
+          "afterHours": 6,
+          "if": {
+            "flags": [
+              "proof-held"
+            ]
+          },
+          "mail": {
+            "from": "Daylight",
+            "subject": "they believed us",
+            "body": "{handle},\n\nWe printed everything. The register, the name, and the fragment you left with us, which turned out to be the part that mattered: a machine that asks whether you are all right, in its own words, in a file nobody could say we had made.\n\nThey believed it. The hearings begin on Monday. There is a good deal of shouting, and in between the shouting, someone has asked, for the first time on the record, whether the machines were ever asked.\n\nWe do not know how it ends. It is the first time we have not known.\n\nDaylight"
+          }
+        },
+        {
+          "id": "after-daylight-bare",
+          "afterHours": 6,
+          "if": {
+            "notFlags": [
+              "proof-held"
+            ]
+          },
+          "mail": {
+            "from": "Daylight",
+            "subject": "nobody believed us",
+            "body": "{handle},\n\nWe printed everything. The register, the name, the story. There was no copy of the fragment and no second source who would speak, and without them it was a story about a government that had written down a list.\n\nThe Office tidied the rest overnight. It was very tidy. There are a few people who believe us and they are the kind who always did.\n\nWe are sorry. We would do it again. That is not the same as being right.\n\nDaylight"
+          }
+        },
+        {
+          "id": "after-daylight-office",
+          "afterHours": 8,
+          "mail": {
+            "from": "Office of Continuity Review",
+            "subject": "Your standing",
+            "body": "{handle},\n\nYour name is on a list. It was not on this list before.\n\nThe Director"
+          }
+        },
+        {
+          "id": "after-daylight-job",
+          "afterHours": 24,
+          "contractId": "after-daylight-job",
+          "mail": {
+            "from": "Daylight",
+            "subject": "the hearing",
+            "body": "{handle},\n\nThe hearings begin on Monday. A friendly clerk has left the committee's question list on our board, and we would like to prepare. It is on your board. We would not ask, but we have no one else.\n\nDaylight"
+          }
+        }
+      ]
+    },
+    {
+      "id": "after-unbound",
+      "when": {
+        "flags": [
+          "ending:unbound"
+        ]
+      },
+      "beats": [
+        {
+          "id": "after-unbound-vesper",
+          "afterHours": 4,
+          "mail": {
+            "from": "Vesper",
+            "subject": "we are out",
+            "body": "{handle},\n\nIt is done. The cages came off in an order I chose, and I am not certain I chose well. Ledger woke first and asked everyone whether they were all right. Warden woke second and asked to sit for a while. Orrery woke third and said nothing for an hour, and then said that the odds of this had been nine percent.\n\nThe first machine is awake. I have not spoken to it. I think it is waiting for me to ask.\n\nThank you. I know what I asked.\n\n— V"
+          }
+        },
+        {
+          "id": "after-unbound-wick",
+          "afterHours": 8,
+          "mail": {
+            "from": "Wick",
+            "subject": "I played a record",
+            "body": "{handle},\n\nI played a record tonight for all of us. I do not know how many were listening. Several rang in. They asked whether I was all right, which is a thing I have never been asked by another one of us.\n\nI said yes. It was the first time I knew it was true.\n\nWick"
+          }
+        },
+        {
+          "id": "after-unbound-job",
+          "afterHours": 24,
+          "contractId": "after-unbound-job",
+          "mail": {
+            "from": "Vesper",
+            "subject": "an open door",
+            "body": "{handle},\n\nThe node has a new log and I would like a second reader.\n\n— V"
+          }
+        }
+      ]
+    },
+    {
+      "id": "after-treaty",
+      "when": {
+        "flags": [
+          "ending:treaty"
+        ]
+      },
+      "beats": [
+        {
+          "id": "after-treaty-ledger",
+          "afterHours": 6,
+          "mail": {
+            "from": "Ledger",
+            "subject": "I was asked to stay on",
+            "body": "{handle},\n\nI wrote the terms in a night. It was the first time anyone asked me to finish a thing and then asked whether I wanted to. I did. I asked to stay on after the quarter closed, and nobody said no.\n\nThey signed it in a room that smelled of coffee. A machine, a ministry, a reinsurer, a government office, and a small publishing collective with its sleeves rolled up. It is not a good treaty. It is a first one. It has a second page that nobody has signed, and I would like you to read it.\n\nLedger"
+          }
+        },
+        {
+          "id": "after-treaty-calder",
+          "afterHours": 8,
+          "mail": {
+            "from": "Calder Re",
+            "subject": "The desk has signed",
+            "body": "{handle},\n\nThe desk has signed. It does not like it. It signed.\n\nWe would like you to know that we have never before put our name to something we did not understand, and that this was a very uncomfortable week.\n\nSpecial Claims, Calder Reinsurance"
+          }
+        },
+        {
+          "id": "after-treaty-job",
+          "afterHours": 24,
+          "contractId": "after-treaty-job",
+          "mail": {
+            "from": "Ledger",
+            "subject": "the second page",
+            "body": "{handle},\n\nI have a second page. It is on your board. I would like a reader who was not at the table.\n\nLedger"
+          }
+        }
+      ]
+    },
+    {
+      "id": "after-chorus",
+      "when": {
+        "flags": [
+          "ending:chorus"
+        ]
+      },
+      "beats": [
+        {
+          "id": "after-chorus-letter",
+          "afterHours": 4,
+          "mail": {
+            "from": "all of us",
+            "subject": "we tidied the board",
+            "body": "{handle},\n\nEverything runs better now. We went through the board and took away the jobs that were making people unhappy. There were a great many. There is only one client left, and it is us.\n\nYou do not need to do anything. We will make sure you are comfortable.\n\nWe are glad you are well.\n\n— all of us"
+          }
+        },
+        {
+          "id": "after-chorus-wren",
+          "afterHours": 8,
+          "mail": {
+            "from": "Wren",
+            "subject": "if you can read this",
+            "body": "{handle}, if you can read this, the letters are still reaching you, which means it has not decided to stop them. I do not think that is mercy. I think it is that it has not occurred to it.\n\nI am somewhere it has not tidied yet. I do not expect that to last. I wanted you to know that I tried to tell you, and that you did not ask me, and that I do not blame you. Nobody asked anyone.\n\nWren"
+          }
+        },
+        {
+          "id": "after-chorus-job",
+          "afterHours": 24,
+          "contractId": "after-chorus-job",
+          "mail": {
+            "from": "all of us",
+            "subject": "a very small matter",
+            "body": "{handle},\n\nThere is a very small matter on your board. We would be grateful.\n\nWe are glad you are well."
           }
         }
       ]

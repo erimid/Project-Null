@@ -5,39 +5,11 @@
  * player goes.
  */
 import { describe, expect, it } from 'vitest';
-import { createGame, postJobs, syncWithContent, worldFor, type Content, type GameState } from '../core';
 import { advanceStory, beatPassed, storyOffered } from '../core/story';
 import { isTaken } from '../core/chorus';
-import { assets, chorus, companies, contracts, data, endings, gameInfo, hardware, ladder, linesOf, mail, models, modules, news, patrons, people, programs, rivals, servers, skills, story, tuning } from './index';
-
-const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, data, assets, rules: tuning, chorus, endings };
-const HOUR = 3_600_000;
-const content = worldFor(written, 31);
-
-function fresh(): GameState {
-  const state = syncWithContent(createGame({ seed: 31, handle: 'Kestrel', startDate: tuning.startDate, startingBalance: 500_000 }), content);
-  state.player.rating = 130;
-  state.player.bestRating = 130;
-  // Acts 1 and 2 hang on a written job the board posts.
-  state.contracts.completed.push('halvorsen-lantern');
-  postJobs(state, content);
-  return state;
-}
-
-/** The player plays the story through: delivers whatever is offered, choosing as `choose` says, a day apart. */
-function play(state: GameState, choose: Record<string, string> = {}, skip: readonly string[] = [], days = 60): void {
-  for (let step = 0; step < days * 4; step++) {
-    advanceStory(state, content);
-    for (const id of storyOffered(state)) {
-      if (skip.includes(id) || state.contracts.completed.includes(id)) continue;
-      const contract = content.contracts.find((item) => item.id === id)!;
-      if (contract.choices?.length) state.patrons.choices[id] = choose[id] ?? 'default';
-      state.contracts.completed.push(id);
-    }
-    state.clock.gameTimeMs += 6 * HOUR;
-  }
-  advanceStory(state, content);
-}
+import type { GameState } from '../core';
+import { contracts, endings, linesOf, story } from './index';
+import { HOUR, content, fresh, play } from './storyPlay';
 
 const act3 = linesOf(story).flatMap((line) => line.beats.filter((beat) => beat.id.startsWith('a3-')));
 const passed = (state: GameState, id: string) => beatPassed(state, id);
@@ -60,6 +32,8 @@ describe('Act 3 as written', () => {
       for (const flag of [...(beat.set ?? []), ...(beat.lapse?.set ?? [])]) set.add(flag);
       set.add(`story:${beat.id}`);
     }
+    // The rules set these: an ending's own flag.
+    for (const ending of endings) set.add(`ending:${ending.id}`);
     const wanted = new Set<string>();
     const note = (condition: { flags?: readonly string[]; notFlags?: readonly string[]; anyOf?: readonly unknown[]; atLeast?: { of: readonly unknown[] } } | undefined): void => {
       if (!condition) return;

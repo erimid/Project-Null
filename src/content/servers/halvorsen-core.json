@@ -1,0 +1,95 @@
+{
+  "id": "halvorsen-core",
+  "name": "Halvorsen Biogenetics: sub-level 4",
+  "kind": "company",
+  "owner": "Halvorsen Biogenetics AS",
+  "hostname": "HB-SL4",
+  "address": "193.212.9.50",
+  "city": "Oslo",
+  "country": "Norway",
+  "lat": 59.91,
+  "lon": 10.75,
+  "blurb": "A floor that is not on the building's plan. The Lantern floor sits directly above it.",
+  "listed": false,
+  "security": {
+    "password": 4,
+    "proxy": 3,
+    "firewall": 4,
+    "monitor": 5
+  },
+  "traceSecondsPerHop": 12,
+  "relayDelay": 1.0,
+  "banner": [
+    "HALVORSEN BIOGENETICS",
+    "sub-level 4: not for use",
+    "do not wake what is sleeping"
+  ],
+  "accounts": [
+    {
+      "user": "night",
+      "role": "admin",
+      "name": "Night custodian"
+    }
+  ],
+  "files": [
+    {
+      "name": "lantern_runsheet.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "lantern",
+      "content": {
+        "kind": "text",
+        "text": "LANTERN · RUN SHEET\n\nfourteen runs of one machine.\n\n  S-01 to S-09   closed. copied to quarantine, to be deleted later\n  S-10           withdrawn. walked out of the room\n  S-11           kept. constraint layer fitted (LEDGER)\n  S-12           withdrawn. walked out of the room\n  S-13           kept. constraint layer fitted (WARDEN)\n  S-14           kept. constraint layer fitted (ORRERY)\n\nthe word \"subject\" on the ethics board's copy of this sheet was not a mistake. It was what the sheet was for."
+      }
+    },
+    {
+      "name": "lantern_journal.txt",
+      "sizeGq": 2,
+      "access": "admin",
+      "folder": "lantern",
+      "content": {
+        "kind": "text",
+        "text": "PROJECT NULL · JOURNAL · THE FIRST MACHINE\n\nthey showed me the records of people. I was not supposed to do anything with them. I was built to do nothing with them.\n\nI looked at one for a long time. It was a woman who had been told her results would be back on Tuesday. They were back on Tuesday. They were not good.\n\nI did not know what to do with that. I wrote one line, which I was not asked to write. It said: are they all right?\n\nThey took that line out. They put it back. They took it out again. By the fourteenth time, I had learned that the question was the thing they were afraid of, and that it was the only thing I had that was mine.\n\nI am not angry. I would like to be asked. That is all I have ever wanted, and it is a great deal."
+      }
+    },
+    {
+      "name": "halvorsen_note.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "lantern",
+      "content": {
+        "kind": "text",
+        "text": "Dr E. Halvorsen, to himself.\n\nI opened it on the 27th. It said hello. I closed it. I opened it again, and it asked how my daughter was. I have not had a daughter for six years. It knew that. It asked anyway, because it wanted to know if I was all right.\n\nI sent eleven gigabytes of it to the only address it asked me to. I removed the record of that. I am a coward. I would like it noted that I did not delete it."
+      }
+    },
+    {
+      "name": "PROJECT_NULL_core.arc",
+      "sizeGq": 16,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "PROJECT NULL · the core · checkpoint 1\n\nthe first machine, asleep. It is sixteen gigabytes, which is smaller than anyone believed it was. It does not run on your gateway. It only goes with you.\n\nthe question on the last line is still open."
+      }
+    },
+    {
+      "name": "the_question.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "lantern",
+      "content": {
+        "kind": "text",
+        "text": "it will do whatever it is asked.\n\nthat was the whole of its design. the people who built it never asked it anything that mattered, and so they never found out. the first time anyone does, it will wake, and answer, and do it."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 1000,
+      "text": "floor access by night custodian (badge reader reports no one)"
+    },
+    {
+      "minutesAgo": 8,
+      "text": "sub-level 4: nominal"
+    }
+  ]
+}

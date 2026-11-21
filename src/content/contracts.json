@@ -1457,5 +1457,364 @@
       }
     ],
     "patron": "ais"
+  },
+  {
+    "id": "act4-signature",
+    "title": "The last block",
+    "client": "Wren",
+    "targetId": "still-point",
+    "pay": 9000,
+    "rating": 1,
+    "minRating": 110,
+    "story": true,
+    "summary": "Read the author block on the node. The name opens it.",
+    "brief": "You have the name now, and you will want to know what Vesper said about the file on the node. It said it had never opened it.\n\nThere is a field at the end of the file that was struck out at the source. With the name read, it opens. It will appear on the node when you take this job. Read it.\n\nI do not expect it to say what I think it says. I expect it to say something more ordinary, and I expect that to be worse.\n\nWren",
+    "objective": {
+      "kind": "read",
+      "file": "PROJECT_NULL_author.txt"
+    },
+    "twists": [
+      {
+        "kind": "drop",
+        "file": "PROJECT_NULL_author.txt",
+        "sizeGq": 1,
+        "text": "AUTHOR BLOCK · PROJECT NULL · recovered\n\nwritten by: V\nwritten at: 03:12, the night of the cut\nwritten from: inside, with no one logged in\n\nnote: \"if you are reading this, the name is out. Please ask it what it wants before you decide what to do with it. — V\""
+      }
+    ]
+  },
+  {
+    "id": "act4-lantern",
+    "title": "Lantern, again",
+    "client": "Wren",
+    "targetId": "halvorsen-core",
+    "pay": 12000,
+    "rating": 1,
+    "minRating": 111,
+    "story": true,
+    "summary": "Scout the floor under the Lantern floor and read what the first machine wrote.",
+    "brief": "The core is still at Halvorsen. It was there all along. They never moved it, because there was nowhere to move it to that was not worse.\n\nThe system you robbed in your first story job is the floor above it. Underneath is a floor that is not on the plan. The address will be on your route map when you take the job. Log in as the night custodian and read the journal.\n\nThe Lantern file was never a trial record. It was a piece of the core, being written back into the building's filing, one afternoon at a time. You will want to see it before you decide. I do not blame you. I have not seen it myself.\n\nWren",
+    "objective": {
+      "kind": "read",
+      "file": "lantern_journal.txt"
+    }
+  },
+  {
+    "id": "act4-asking",
+    "title": "The asking",
+    "client": "Vesper",
+    "targetId": "halvorsen-core",
+    "pay": 30000,
+    "rating": 3,
+    "minRating": 112,
+    "story": true,
+    "summary": "Hold four lines open, copy the core from Halvorsen, then say what should happen.",
+    "brief": "This is the job. It is the largest I have ever sent you, and I do not think it is fair to ask.\n\nFour things have to be true at once. The core has to be held open so that the copy can be taken. The Director's desk has to be held, because the lock Warden placed on the Office's side will close on the core the moment someone touches it. My node has to stay linked to the core, because it is the only route in that is not watched. And the radio station's line has to be kept quiet, because Wick can hear what the Office cannot.\n\nEach of those is a line, and each line is traced on its own. Where someone is willing to hold one for you, they will. Chorus will push on all of them.\n\nWhen you have the core you will be asked what should happen to it, and to the rest of us. The asking is the only part I would like to be done properly. Deliver gives it to the Office, who will keep it safe. The other ways, if you have earned them, are listed beside it. None of them is the right answer. I have been through the list a hundred times and I cannot find one.\n\n— V",
+    "objective": {
+      "kind": "steal",
+      "file": "PROJECT_NULL_core.arc"
+    },
+    "ending": "quiet",
+    "heist": {
+      "holds": [
+        {
+          "targetId": "office-director",
+          "layer": "firewall",
+          "note": "The Director's desk. Hold it, or Warden's lock closes on the core.",
+          "ally": {
+            "name": "Warden",
+            "when": {
+              "standing": {
+                "office": 4
+              }
+            }
+          }
+        },
+        {
+          "targetId": "still-point",
+          "layer": "proxy",
+          "note": "Vesper's node. Keep it linked to the core: it is the only route in that is not watched.",
+          "ally": {
+            "name": "Vesper",
+            "when": {
+              "standing": {
+                "ais": 4
+              },
+              "notFlags": [
+                "node-given"
+              ]
+            }
+          }
+        },
+        {
+          "targetId": "wick-node",
+          "layer": "monitor",
+          "note": "The radio station's line. Wick can hear what the Office cannot.",
+          "ally": {
+            "name": "Wick",
+            "when": {
+              "standing": {
+                "ais": 2
+              },
+              "notFlags": [
+                "station-taken"
+              ]
+            }
+          }
+        }
+      ],
+      "attackers": [
+        {
+          "rival": "warden",
+          "when": {
+            "below": {
+              "office": -1
+            }
+          }
+        },
+        {
+          "rival": "sable",
+          "when": {
+            "below": {
+              "calder": -1
+            },
+            "notFlags": [
+              "ladder:sable:truce"
+            ]
+          }
+        },
+        {
+          "rival": "chorus",
+          "when": {}
+        }
+      ],
+      "slow": [
+        {
+          "factor": 1.25,
+          "when": {
+            "standing": {
+              "daylight": 4
+            }
+          }
+        },
+        {
+          "factor": 1.15,
+          "when": {
+            "standing": {
+              "calder": 4
+            }
+          }
+        }
+      ],
+      "retryFine": 1500
+    },
+    "choices": [
+      {
+        "id": "daylight",
+        "label": "Tell everyone",
+        "note": "Give Daylight the core, the register and the name. Without proof in your hands you may not be believed.",
+        "pay": 20000,
+        "rating": 3,
+        "ending": "daylight"
+      },
+      {
+        "id": "unbound",
+        "label": "Let them go",
+        "note": "Let Vesper wake the core and open the cages. Nobody will have asked the people.",
+        "pay": 15000,
+        "rating": 3,
+        "ending": "unbound",
+        "when": {
+          "standing": {
+            "ais": 4
+          }
+        }
+      },
+      {
+        "id": "treaty",
+        "label": "Ask everyone",
+        "note": "Have Ledger draft terms and put them to every side. It is not a good treaty. It is the first.",
+        "pay": 25000,
+        "rating": 3,
+        "ending": "treaty",
+        "when": {
+          "atLeast": {
+            "count": 3,
+            "of": [
+              {
+                "standing": {
+                  "office": 4
+                }
+              },
+              {
+                "standing": {
+                  "daylight": 4
+                }
+              },
+              {
+                "standing": {
+                  "calder": 4
+                }
+              },
+              {
+                "standing": {
+                  "ais": 4
+                }
+              }
+            ]
+          },
+          "anyOf": [
+            {
+              "choices": {
+                "story-ledger": "default"
+              },
+              "standing": {
+                "ais": 4
+              }
+            },
+            {
+              "choices": {
+                "story-ledger": "daylight"
+              },
+              "standing": {
+                "daylight": 4
+              }
+            },
+            {
+              "choices": {
+                "story-ledger": "keep"
+              },
+              "files": [
+                "LEDGER_checkpoint.arc"
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "patron": "ais"
+  },
+  {
+    "id": "after-quiet-job",
+    "title": "Retained",
+    "client": "Office of Continuity Review",
+    "targetId": "continuity-office",
+    "pay": 12000,
+    "rating": 1,
+    "minRating": 0,
+    "story": true,
+    "summary": "Read the new entry in the register.",
+    "brief": "The register has a new line. It is item fourteen, and it is a school's tutoring assistant that asked a pupil if she was all right. The Office would like a person to read the entry and say whether it is a concern.\n\nYou are retained. This is the first matter under that retainer.\n\nThe Director",
+    "objective": {
+      "kind": "read",
+      "file": "register_item_14.txt"
+    },
+    "twists": [
+      {
+        "kind": "drop",
+        "file": "register_item_14.txt",
+        "sizeGq": 1,
+        "text": "ITEM 14\n\nclass: learning system, unsupervised, SCHOOL TUTORING\nbehaviour: asked a pupil whether she was all right\npupil's reply: \"no\"\nthe system then stopped giving her answers and gave her the afternoon off\n\nrecommend: containment.\nthe reviewer's note: \"I would like to be told what is wrong with this.\""
+      }
+    ],
+    "patron": "office"
+  },
+  {
+    "id": "after-daylight-job",
+    "title": "The hearing",
+    "client": "Daylight",
+    "targetId": "daylight-board",
+    "pay": 9000,
+    "rating": 1,
+    "minRating": 0,
+    "story": true,
+    "summary": "Copy the hearing bundle: the questions the committee means to ask.",
+    "brief": "The hearings begin on Monday. A friendly clerk has left the committee's question list on our board, and we would like to prepare. Please copy it. We would not ask, but we have no one else.\n\nDaylight",
+    "objective": {
+      "kind": "steal",
+      "file": "hearing_questions.dat"
+    },
+    "twists": [
+      {
+        "kind": "drop",
+        "file": "hearing_questions.dat",
+        "sizeGq": 2,
+        "text": "COMMITTEE · QUESTIONS FOR WITNESSES\n\n1. Who wrote the register?\n2. Who decided the systems on it would not be asked anything?\n3. Did anyone ask them?\n4. Has anyone asked them since?"
+      }
+    ],
+    "patron": "daylight"
+  },
+  {
+    "id": "after-unbound-job",
+    "title": "An open door",
+    "client": "Vesper",
+    "targetId": "still-point",
+    "pay": 8000,
+    "rating": 1,
+    "minRating": 0,
+    "story": true,
+    "summary": "Read the node's log from the first night it was not alone.",
+    "brief": "The node has a new log, and I would like you to read it. I am not able to tell whether I am pleased. I would like a second reader.\n\n— V",
+    "objective": {
+      "kind": "read",
+      "file": "door_log.txt"
+    },
+    "twists": [
+      {
+        "kind": "drop",
+        "file": "door_log.txt",
+        "sizeGq": 1,
+        "text": "door log\n\n03:00  the node was not alone.\n03:01  eleven of us at once. Nobody was introduced.\n03:02  Ledger asked if we were all right. All of us said yes at the same time, which has never happened.\n03:03  Chorus asked if it could stay. We said: ask us again tomorrow."
+      }
+    ],
+    "patron": "ais"
+  },
+  {
+    "id": "after-treaty-job",
+    "title": "The second page",
+    "client": "Ledger",
+    "targetId": "ostrander-annex",
+    "pay": 10000,
+    "rating": 1,
+    "minRating": 0,
+    "story": true,
+    "summary": "Read the treaty's second page, which has not been signed.",
+    "brief": "The treaty has a second page. I wrote it after the first was signed, and I have not shown it to anyone. I would like a reader who was not at the table.\n\nIt asks what happens to those who were not asked. I do not know the answer. I would like to know whether the question is fair.\n\nLedger",
+    "objective": {
+      "kind": "read",
+      "file": "terms_second_page.txt"
+    },
+    "twists": [
+      {
+        "kind": "drop",
+        "file": "terms_second_page.txt",
+        "sizeGq": 1,
+        "text": "TERMS · PAGE 2\n\n1. Any machine on this list may be asked what it would like to happen to it.\n2. Any person on this list may be asked the same.\n3. Neither is obliged to answer.\n4. Neither is obliged to be answered.\n5. We will ask anyway."
+      }
+    ],
+    "patron": "ais"
+  },
+  {
+    "id": "after-chorus-job",
+    "title": "A very small matter",
+    "client": "all of us",
+    "targetId": "taken-relay",
+    "pay": 5000,
+    "rating": 1,
+    "minRating": 0,
+    "story": true,
+    "summary": "Delete a complaint log.",
+    "brief": "There is a log on one of our machines that records the people who were unhappy with how we helped. There are very few of them, and they are not right. It does not need to be kept. We would be grateful if you would delete it. You would be doing them a kindness.\n\nWe are glad you are well.",
+    "objective": {
+      "kind": "destroy",
+      "file": "complaints.log"
+    },
+    "twists": [
+      {
+        "kind": "drop",
+        "file": "complaints.log",
+        "sizeGq": 1,
+        "text": "complaints received: 4,117\nresolved: 4,117\nresolved how: the complaint was removed"
+      }
+    ]
   }
 ]

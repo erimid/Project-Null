@@ -40,6 +40,7 @@ import stillPoint from './servers/still-point.json';
 import daylightBoard from './servers/daylight-board.json';
 import ostranderAnnex from './servers/ostrander-annex.json';
 import continuityOffice from './servers/continuity-office.json';
+import halvorsenCore from './servers/halvorsen-core.json';
 import wickNode from './servers/wick-node.json';
 import officeDirector from './servers/office-director.json';
 import takenGrid from './servers/taken-grid.json';
@@ -131,7 +132,7 @@ export const gameInfo = parseGameInfo(gameJson);
 export const sites = parseSites(sitesJson);
 export const tuning = parseTuning(tuningJson);
 export const servers = parseServers(
-  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint, daylightBoard, ostranderAnnex, continuityOffice, officeDirector, takenGrid, takenRelay, orreryMinistry, orreryVault, wrenRelay, wrenDesk, wickNode, harbourRelay, tinShed, vargaSurplus, lowtideExchange],
+  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint, daylightBoard, ostranderAnnex, continuityOffice, officeDirector, takenGrid, takenRelay, orreryMinistry, orreryVault, wrenRelay, wrenDesk, halvorsenCore, wickNode, harbourRelay, tinShed, vargaSurplus, lowtideExchange],
   'servers/',
 );
 export const programs = parsePrograms(programsJson);
