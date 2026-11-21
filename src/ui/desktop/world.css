@@ -239,3 +239,69 @@ li:has(> .logline__follow) {
 .heist__state .row__tag {
   margin-right: auto;
 }
+
+/* The data desk at Lowtide. */
+.datadesk__prices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.datadesk__kind {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(95, 212, 255, 0.06);
+}
+
+.datadesk__kind.is-up .datadesk__swing {
+  color: var(--mint);
+}
+
+.datadesk__kind.is-down .datadesk__swing {
+  color: var(--red);
+}
+
+.datadesk__file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid rgba(95, 212, 255, 0.08);
+}
+
+.datadesk__what {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+.datadesk__what .row__dim {
+  font-size: 13px;
+}
+
+.datadesk__no {
+  max-width: 45%;
+  font-size: 13px;
+  text-align: right;
+}
+
+.datadesk__swing,
+.datadesk__file .btn {
+  white-space: nowrap;
+}
+
+.datadesk__file .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}

@@ -157,6 +157,13 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   // 22 -> 23: new kinds of job. Nothing was being held, guarded or raced.
   22: (old) => ({ ...old, contracts: { ...(old.contracts as object), heldMs: 0, guard: null, raceUntilMs: 0 } }),
   23: (old) => ({ ...old, contracts: { ...(old.contracts as object), heist: null, burned: [], heistDay: -1 } }),
+  // Files already on the gateway count as taken when the save was loaded.
+  24: (old) => {
+    const player = old.player as { files?: unknown } | undefined;
+    const now = (old.clock as { gameTimeMs?: number } | undefined)?.gameTimeMs ?? 0;
+    const files = Array.isArray(player?.files) ? player.files.map((file: unknown) => (typeof file === 'object' && file !== null ? { ...file, takenMs: now } : file)) : player?.files;
+    return { ...old, ...(player ? { player: { ...player, files } } : {}), data: { sold: [] } };
+  },
   // 21 -> 22: the rivals ladder. It sets itself up on the next clock check; raiders already beaten wait for a decision.
   21: (old) => ({
     ...old,
@@ -466,6 +473,7 @@ function checkState(raw: Obj): GameState {
   ) {
     throw damaged;
   }
+  if (!isObj(raw.data) || !isList(raw.data.sold, isText)) throw damaged;
   const patrons = raw.patrons;
   if (
     !isObj(patrons) ||

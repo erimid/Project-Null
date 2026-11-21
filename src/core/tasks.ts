@@ -325,6 +325,7 @@ function finish(state: GameState, content: Content, connection: Connection, task
         name: file.name,
         sizeGq: file.sizeGq,
         from: connection.serverId,
+        takenMs: state.clock.gameTimeMs,
         ...(file.encrypted ? { encrypted: file.encrypted } : {}),
         ...(file.text ? { text: file.text } : {}),
       });

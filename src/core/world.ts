@@ -17,6 +17,7 @@ import type { StoryDef } from '../content/story';
 import type { NewsDef } from '../content/news';
 import type { PatronDef } from '../content/patrons';
 import type { LadderDef } from '../content/ladder';
+import type { DataMarketDef } from '../content/data';
 import { backfillChoices } from './patrons';
 import { builtProgram } from './builds';
 import type { Connection, GameState, ServerState } from './state';
@@ -169,6 +170,8 @@ export interface Content {
   readonly patrons?: readonly PatronDef[];
   /** The rivals ladder at the Backroom (see core/ladder.ts). Missing = no ladder. */
   readonly ladder?: LadderDef;
+  /** What the data market at Lowtide buys (see core/data.ts). Missing = it buys nothing. */
+  readonly data?: DataMarketDef;
   readonly rules: Rules;
 }
 

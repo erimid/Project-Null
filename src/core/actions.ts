@@ -19,6 +19,7 @@ import {
 import { scheduleReview } from './forensics';
 import { reportCaught } from './news';
 import { settleRival } from './ladder';
+import { sellData } from './data';
 import { followTrail, lockGuardRing, noteConnect, openGuardPort } from './kinds';
 import { advanceContract } from './stages';
 import { buyHardware, loseHardware, maxConnections } from './hardware';
@@ -127,7 +128,8 @@ export type Action =
   /** Open a port line-up against the intruder on a server the player is guarding. */
   | { readonly type: 'guardPort' }
   /** Try to lock one ring of the guard port. */
-  | { readonly type: 'guardRing'; readonly ring: number };
+  | { readonly type: 'guardRing'; readonly ring: number }
+  | { readonly type: 'sellData'; readonly connectionId: string; readonly name: string; readonly from: string };
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
@@ -432,6 +434,8 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
       return answer(lockRaidFile(state, content, action.name));
     case 'pullPlug':
       return answer(pullPlug(state, content));
+    case 'sellData':
+      return answer(sellData(state, content, action.connectionId, action.name, action.from));
     case 'followTrail':
       return answer(followTrail(state, content, action.connectionId, action.logId));
     case 'guardPort':
