@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DESKS, DESK_GAP, deskRects, sideWidth } from './desks';
+import { DESKS, DESK_GAP, deskColumns, deskRects, sideWidth } from './desks';
 import type { Area, Rect } from './snap';
 
 const SCREENS: readonly Area[] = [
@@ -8,6 +8,14 @@ const SCREENS: readonly Area[] = [
   { w: 1440, h: 790 },
   { w: 1920, h: 970 },
   { w: 2560, h: 1330 },
+  // 21:9 and 32:9 monitors, and the narrowest desks that get three and four columns.
+  { w: 2200, h: 900 },
+  { w: 2560, h: 970 },
+  { w: 3440, h: 1330 },
+  { w: 3799, h: 1490 },
+  { w: 3840, h: 2050 },
+  { w: 4000, h: 1000 },
+  { w: 5120, h: 1330 },
 ];
 
 const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
@@ -41,14 +49,39 @@ describe('desk layouts', () => {
   });
 
   it('gives the main window the most room, and puts it in front', () => {
-    const area = { w: 1440, h: 790 };
     const main = { plan: 'map', run: 'server', home: 'messages' } as const;
-    for (const name of DESKS) {
-      const rects = deskRects(name, area);
-      const [frontId, front] = rects.at(-1)!;
-      expect(frontId).toBe(main[name]);
-      for (const [, rect] of rects) expect(front.w * front.h).toBeGreaterThanOrEqual(rect.w * rect.h);
+    for (const area of SCREENS) {
+      for (const name of DESKS) {
+        const rects = deskRects(name, area);
+        const [frontId, front] = rects.at(-1)!;
+        expect(frontId).toBe(main[name]);
+        for (const [id, rect] of rects) expect(front.w * front.h, `${name} ${id} on ${area.w}x${area.h}`).toBeGreaterThanOrEqual(rect.w * rect.h);
+      }
     }
+  });
+
+  it('brings out more windows on a wide desk, and never stretches one across it', () => {
+    expect(deskColumns({ w: 1920, h: 970 })).toBe(2);
+    expect(deskColumns({ w: 3440, h: 1330 })).toBe(3);
+    expect(deskColumns({ w: 5120, h: 1330 })).toBe(4);
+    for (const area of SCREENS.filter((screen) => deskColumns(screen) > 2)) {
+      for (const name of DESKS) {
+        const rects = deskRects(name, area);
+        expect(rects.length, `${name} on ${area.w}`).toBeGreaterThanOrEqual(4);
+        // Columns fill the width exactly: the widest window is well short of the whole desk.
+        for (const [id, rect] of rects) expect(rect.w, `${name} ${id} on ${area.w}`).toBeLessThanOrEqual(area.w * 0.6);
+        const right = Math.max(...rects.map(([, rect]) => rect.x + rect.w));
+        expect(right).toBe(area.w - DESK_GAP);
+        const bottoms = rects.map(([, rect]) => rect.y + rect.h);
+        expect(Math.max(...bottoms)).toBe(area.h - DESK_GAP);
+      }
+    }
+  });
+
+  it('keeps the messages under the contract on a wide desk too', () => {
+    const area = { w: 3440, h: 1330 };
+    const open = new Map(deskRects('plan', area, 400));
+    expect(open.get('messages')).toEqual({ x: area.w - DESK_GAP - sideWidth(area), y: 400 + DESK_GAP, w: sideWidth(area), h: area.h - 400 - DESK_GAP * 2 });
   });
 
   it('gives the route map the whole height of the desk in Plan, beside a column the contract fits', () => {

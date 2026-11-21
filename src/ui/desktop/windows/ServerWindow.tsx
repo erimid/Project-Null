@@ -29,6 +29,7 @@ import {
   REGIONS,
   regionOf,
   type Region,
+  relayHeat,
 } from '../../../core';
 import { findServer, type ServerDef } from '../../../core/content';
 import { formatGameTime } from '../../format';
@@ -39,6 +40,8 @@ import { TaskProgress, findTask } from '../TaskProgress';
 import { viewer } from '../viewerStore';
 import { FileName } from '../FileName';
 import { lit, useGuide } from '../guide';
+import { IconTile, Pips } from '../Gear';
+import { Icon, type IconName } from '../Icon';
 import { Window } from '../Window';
 import { Contracts } from './ContractsSection';
 import { Hardware } from './HardwareSection';
@@ -159,46 +162,53 @@ function LoginScreen({ game, server, state, connection, run }: View) {
         )}
       </dl>
       <h3 class="login__heading">Log in as</h3>
-      <ul class="rows">
+      <ul class="door">
         {server.accounts.map((account) => {
           const open = canLogIn(game, server, account.user);
           const locked = account.role === 'admin' && server.security.password > 0;
           const task = findTask(game, connection, { kind: 'password', user: account.user });
           const secret = fakePassword(`${server.id}/${account.user}`);
+          const admin = account.role === 'admin';
           return (
-            <li key={account.user} class="row row--account">
-              <span class="data row__main">{account.user}</span>
-              <span class="row__dim">
-                {account.name}
+            <li key={account.user} class={`door__card${open ? ' is-open' : ''}${admin ? ' is-admin' : ''}`}>
+              <IconTile icon={admin ? 'key' : 'unlock'} tone={open ? 'good' : undefined} />
+              <span class="door__who">
+                <span class="data door__user">{account.user}</span>
+                <span class="door__name">{account.name}</span>
+              </span>
+              <span class="door__state">
+                {admin ? 'Administrator: files, logs and records.' : 'Sees only what the public sees.'}
                 {locked && open && (
                   <>
-                    {' · password '}
+                    {' Password '}
                     <span class="data cracking__code">{secret}</span>
                   </>
                 )}
-                {locked && !open && !task && ' · password needed'}
+                {locked && !open && !task && ' Password needed.'}
               </span>
-              {open ? (
-                <button
-                  type="button"
-                  class={`btn btn--go${lit(guide, 'login') || (account.role === 'admin' ? lit(guide, 'enter') : '')}`}
-                  data-tip="Log in with this account. An admin login can do everything on the server."
-                  onClick={() => session.dispatch({ type: 'login', connectionId: connection.id, user: account.user })}
-                >
-                  Log in
-                </button>
-              ) : task ? (
-                <Cracking taskId={task.id} secret={secret} />
-              ) : (
-                <button
-                  type="button"
-                  class={`btn${account.role === 'admin' ? lit(guide, 'break') : ''}`}
-                  data-tip="Run your password breaker on this account. Breaking in gets noticed by the monitor."
-                  onClick={() => run({ kind: 'password', user: account.user })}
-                >
-                  Break password
-                </button>
-              )}
+              <span class="door__go">
+                {open ? (
+                  <button
+                    type="button"
+                    class={`btn btn--go${lit(guide, 'login') || (admin ? lit(guide, 'enter') : '')}`}
+                    data-tip="Log in with this account. An admin login can do everything on the server."
+                    onClick={() => session.dispatch({ type: 'login', connectionId: connection.id, user: account.user })}
+                  >
+                    Log in
+                  </button>
+                ) : task ? (
+                  <Cracking taskId={task.id} secret={secret} />
+                ) : (
+                  <button
+                    type="button"
+                    class={`btn${admin ? lit(guide, 'break') : ''}`}
+                    data-tip="Run your password breaker on this account. Breaking in gets noticed by the monitor."
+                    onClick={() => run({ kind: 'password', user: account.user })}
+                  >
+                    Break password
+                  </button>
+                )}
+              </span>
             </li>
           );
         })}
@@ -982,6 +992,151 @@ function Directory({ game, connection }: View) {
   );
 }
 
+const KIND_ICONS: Record<ServerDef['kind'], IconName> = { gateway: 'chip', directory: 'book', board: 'rack', relay: 'route', company: 'rack' };
+const KIND_NAMES: Record<ServerDef['kind'], string> = {
+  gateway: 'Your gateway',
+  directory: 'Public directory',
+  board: 'Contracts board',
+  relay: 'Open relay',
+  company: 'Company server',
+};
+
+/** Sections that are a plain list: beside these a wide window has room for the server's sheet. */
+const LIST_SECTIONS: readonly Section[] = ['files', 'logs', 'records', 'directory'];
+
+/**
+ * What the player knows about the server, in a column of its own when the
+ * window is wide enough: where it is, how far in they are, each defence
+ * and what stands on the other side of it. It only shows what the rest of
+ * the window and the Route map already tell.
+ */
+function ServerSheet({ game, server, state, connection, sections, section }: View & { sections: readonly Section[]; section: Section | undefined }) {
+  const { password, proxy, firewall, monitor } = securityOf(game, server);
+  const admin = connection.role === 'admin';
+  const loggedIn = connection.user !== null;
+  const passwordKnown = server.accounts.some((account) => account.role === 'admin' && canLogIn(game, server, account.user));
+  const heat = relayHeat(game, content, server.id);
+  const top = Math.max(1, ...content.servers.map((other) => Math.max(other.security.password, other.security.proxy, other.security.firewall, other.security.monitor)));
+  const defences: { name: string; level: number; open: boolean; state: string; guards: string }[] = [
+    { name: 'Password', level: password ?? 0, open: passwordKnown, state: passwordKnown ? 'broken' : 'locked', guards: 'the administrator account' },
+    { name: 'Proxy', level: proxy ?? 0, open: connection.bypassed.proxy, state: connection.bypassed.proxy ? 'bypassed' : 'in the way', guards: 'logs and records' },
+    {
+      name: 'Firewall',
+      level: firewall ?? 0,
+      open: connection.bypassed.firewall || !!heldBy(game, content, server.id, 'firewall'),
+      state: connection.bypassed.firewall ? 'bypassed' : heldBy(game, content, server.id, 'firewall') ? 'held open' : 'in the way',
+      guards: 'copying and deleting files',
+    },
+    {
+      name: 'Monitor',
+      level: monitor ?? 0,
+      open: connection.monitor.blindMs > 0 || !!heldBy(game, content, server.id, 'monitor'),
+      state: connection.monitor.blindMs > 0 ? 'blind' : heldBy(game, content, server.id, 'monitor') ? 'kept busy' : 'watching',
+      guards: 'traces you while you work',
+    },
+  ].filter((defence) => defence.level > 0);
+  const visibleFiles = state.files.filter((file) => admin || file.access === 'guest');
+  const sizeGb = visibleFiles.reduce((sum, file) => sum + file.sizeGq, 0);
+  const counts: Partial<Record<Section, string>> = {
+    files: `${visibleFiles.length} ${visibleFiles.length === 1 ? 'file' : 'files'} · ${sizeGb} GB`,
+    logs: `${state.logs.length} ${state.logs.length === 1 ? 'line' : 'lines'}`,
+    records: `${state.records.length} ${state.records.length === 1 ? 'row' : 'rows'}`,
+  };
+  const active = activeContract(game, content);
+  const stage = active ? stageView(game, active) : undefined;
+  const isTarget = stage?.targetId === server.id;
+
+  return (
+    <aside class="sheet" aria-label={`About ${server.name}`}>
+      <header class="sheet__head">
+        <IconTile icon={KIND_ICONS[server.kind]} size="lg" />
+        <div class="sheet__title">
+          <h3 class="sheet__name">{server.name}</h3>
+          <p class="sheet__where">
+            {KIND_NAMES[server.kind]} · {server.city}, {server.country}
+          </p>
+          <p class="sheet__address data">
+            {server.hostname} · {server.address}
+          </p>
+        </div>
+      </header>
+      {server.blurb && <p class="sheet__blurb">{server.blurb}</p>}
+      {isTarget && (
+        <p class="sheet__job">
+          <Icon name="radar" size={16} /> Your contract points here.
+        </p>
+      )}
+
+      <section class="sheet__part">
+        <h4 class="sheet__label">Your access</h4>
+        <p class={`sheet__access${loggedIn ? ' is-in' : ''}`}>
+          {loggedIn ? (
+            <>
+              Logged in as <span class="data">{connection.user}</span>
+              <span class="sheet__dim">{admin ? 'Administrator: everything here is open to you.' : 'Guest: public files only. Logs and records need the administrator.'}</span>
+            </>
+          ) : (
+            <>
+              At the door
+              <span class="sheet__dim">Connected, not logged in. Nothing inside can be touched yet.</span>
+            </>
+          )}
+        </p>
+      </section>
+
+      {defences.length > 0 && (
+        <section class="sheet__part">
+          <h4 class="sheet__label">Defences</h4>
+          <ul class="sheet__defences">
+            {defences.map((defence) => (
+              <li key={defence.name} class={`sheet__defence${defence.open ? ' is-open' : ''}`}>
+                <span class="sheet__defence-name">{defence.name}</span>
+                <Pips on={defence.level} of={top} label={`Level ${defence.level}`} />
+                <span class="sheet__defence-state">{defence.state}</span>
+                <span class="sheet__dim">{defence.guards}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {server.kind !== 'gateway' && (
+        <section class="sheet__part">
+          <h4 class="sheet__label">Heat</h4>
+          <div class={`sheet__heat${heat >= 1.5 ? ' is-hot' : ''}`} style={{ '--heat': Math.min(1, heat / 2).toFixed(2) }}>
+            <span class="sheet__heat-bar" aria-hidden="true" />
+            <span class="sheet__heat-word">{heat >= 1.5 ? 'Hot' : heat >= 0.05 ? 'Warm' : 'Cold'}</span>
+          </div>
+          <p class="sheet__dim">{heat >= 0.05 ? 'This server has seen you lately. As a relay it would hold a trace up for less time until it cools.' : 'This server has not noticed you lately.'}</p>
+        </section>
+      )}
+
+      {loggedIn && sections.some((name) => name in counts) && (
+        <section class="sheet__part">
+          <h4 class="sheet__label">Inside</h4>
+          <div class="sheet__inside">
+            {sections
+              .filter((name) => name in counts)
+              .map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  class={`sheet__tile${name === section ? ' is-current' : ''}`}
+                  aria-pressed={name === section}
+                  data-sfx="tab"
+                  onClick={() => deskStore.showSection(connection.id, name)}
+                >
+                  <span class="sheet__tile-name">{SECTION_LABELS[name]}</span>
+                  <span class="sheet__tile-count data">{counts[name]}</span>
+                </button>
+              ))}
+          </div>
+        </section>
+      )}
+    </aside>
+  );
+}
+
 /** The server at the far end of the connection whose tab is in front. */
 export function ServerWindow() {
   const guide = useGuide();
@@ -1009,6 +1164,8 @@ export function ServerWindow() {
     return result.ok;
   };
   const view: View = { game, server, state, connection, run, act };
+  // Beside the door and the plain lists a wide window shows the server's sheet. The shops and boards fill their own width.
+  const withSheet = !loggedIn || (section !== undefined && LIST_SECTIONS.includes(section));
 
   return (
     <Window
@@ -1045,21 +1202,26 @@ export function ServerWindow() {
     >
       <Security {...view} />
       <JobWatch {...view} />
-      {!loggedIn && <LoginScreen {...view} />}
-      {section === 'contracts' && <Contracts {...view} />}
-      {section === 'ladder' && <Ladder {...view} />}
-      {section === 'data' && <DataDesk {...view} />}
-      {section === 'market' && <Market {...view} />}
-      {section === 'hardware' && <Hardware {...view} />}
-      {section === 'files' && <Files {...view} />}
-      {section === 'logs' && <Logs {...view} />}
-      {section === 'records' && <Records {...view} />}
-      {section === 'directory' && <Directory {...view} />}
-      {notice?.connectionId === connection.id && (
-        <p class="map__notice" role="status">
-          {notice.text}
-        </p>
-      )}
+      <div class={`srv${withSheet ? ' srv--sheet' : ''}`}>
+        <div class="srv__main">
+          {!loggedIn && <LoginScreen {...view} />}
+          {section === 'contracts' && <Contracts {...view} />}
+          {section === 'ladder' && <Ladder {...view} />}
+          {section === 'data' && <DataDesk {...view} />}
+          {section === 'market' && <Market {...view} />}
+          {section === 'hardware' && <Hardware {...view} />}
+          {section === 'files' && <Files {...view} />}
+          {section === 'logs' && <Logs {...view} />}
+          {section === 'records' && <Records {...view} />}
+          {section === 'directory' && <Directory {...view} />}
+          {notice?.connectionId === connection.id && (
+            <p class="map__notice" role="status">
+              {notice.text}
+            </p>
+          )}
+        </div>
+        {withSheet && <ServerSheet {...view} sections={sections} section={section} />}
+      </div>
     </Window>
   );
 }

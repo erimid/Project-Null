@@ -4,7 +4,7 @@
  * localStorage) and not in save files.
  */
 import { useEffect, useState } from 'preact/hooks';
-import { DESKS, deskRects, type DeskName } from './desks';
+import { DESKS, deskColumns, deskRects, type DeskName } from './desks';
 import { fitOnDesk, refit } from './fit';
 import { zoneRect, type Area, type Rect, type Zone } from './snap';
 
@@ -39,7 +39,7 @@ export const WINDOW_DEFS: Readonly<Record<WindowId, WindowDef>> = {
   map: { title: 'Route map', pill: 'Map', width: 760, height: 620, x: 104, y: 40 },
   server: { title: 'Server', pill: 'Server', width: 760, minWidth: 520, x: 24, y: 20 },
   programs: { title: 'Programs', pill: 'Programs', width: 600, height: 620, x: 184, y: 72 },
-  messages: { title: 'Messages', pill: 'Messages', width: 560, x: 24, y: 20 },
+  messages: { title: 'Messages', pill: 'Messages', width: 780, height: 560, x: 24, y: 20 },
   skills: { title: 'Skills', pill: 'Skills', width: 900, height: 640, x: 64, y: 40 },
   web: { title: 'Browser', pill: 'Web', width: 620, height: 520, x: 104, y: 56 },
   viewer: { title: 'File viewer', pill: 'Viewer', width: 640, x: 224, y: 128 },
@@ -88,7 +88,7 @@ export interface SavedPlace {
 type Layouts = Readonly<Record<WindowId, WindowLayout>>;
 
 // Bumped whenever the default layout changes, so everyone gets the new one once.
-const STORAGE_KEY = 'project-null.windows.v11';
+const STORAGE_KEY = 'project-null.windows.v12';
 
 /** The desk's size before it has been drawn: the browser window less the two bars. */
 const guessArea = (): Area => ({ w: window.innerWidth, h: window.innerHeight - BARS_HEIGHT });
@@ -106,7 +106,7 @@ function defaults(): Layouts {
   return Object.fromEntries(entries) as Layouts;
 }
 
-const ZONES: readonly Zone[] = ['left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'full'];
+const ZONES: readonly Zone[] = ['left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'full', 'third-left', 'third-centre', 'third-right'];
 
 function savedPlace(value: unknown): SavedPlace | null {
   if (typeof value !== 'object' || value === null) return null;
@@ -207,11 +207,27 @@ export const windows = {
     if (next.w <= 0 || next.h <= 0) return;
     const before = measured ? area : next;
     if (measured && before.w === next.w && before.h === next.h) return;
+    // A desk that grows wide enough gets another column of windows, and one that narrows loses it.
+    const regrouped = measured && deskColumns(before) !== deskColumns(next);
     area = { w: next.w, h: next.h };
     measured = true;
     const fitted = { ...layouts };
+    // The layout still in force, if the player has left any of its windows where it put them.
+    const inForce = WINDOW_IDS.map((id) => layouts[id]).find((layout) => layout.desk && layout.open && !layout.minimized && !layout.zone)?.desk;
+    const joining = regrouped && inForce ? placedBy(inForce) : undefined;
+    let z = topZ();
     for (const id of WINDOW_IDS) {
-      const layout = layouts[id];
+      let layout = layouts[id];
+      const joins = joining?.get(id);
+      if (joins && layout.desk !== inForce && !ON_DEMAND.includes(id)) {
+        // The layout has a place for it now: bring it out, behind the windows already there.
+        fitted[id] = { ...layout, ...joins, open: true, minimized: false, restore: null, zone: null, desk: inForce!, z: ++z };
+        continue;
+      }
+      if (layout.desk && !layout.zone && !placedBy(layout.desk).has(id)) {
+        // Its layout no longer has a column for it on a desk this size: it goes back on the bar.
+        layout = { ...layout, minimized: layout.open, desk: null };
+      }
       const rect = layout.zone ? zoneRect(layout.zone, area) : layout.desk ? placedBy(layout.desk).get(id) : undefined;
       if (rect) {
         fitted[id] = { ...layout, ...rect };

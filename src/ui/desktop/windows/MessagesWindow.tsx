@@ -5,6 +5,8 @@ import { activeContract, findAsk, findEnding, findPerson, objectiveMet } from '.
 import { content, session } from '../../session';
 import { story } from '../../../content';
 import { Compose } from '../Compose';
+import { Icon } from '../Icon';
+import { useLayout } from '../layout';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
 
@@ -45,7 +47,46 @@ export function MessagesWindow() {
   }, [newest?.id]);
 
   const unread = messages.filter((message) => !message.read).length;
-  const open = messages.find((message) => message.id === openId);
+  // On the desk the window is a reader: the list on one side, the letter on the other. So there is always
+  // a letter open there: the one picked, or else the newest one already read (opening it changes nothing).
+  const desk = useLayout() === 'desk';
+  const open = messages.find((message) => message.id === openId) ?? (desk ? [...messages].reverse().find((message) => message.read) : undefined);
+  const shownId = open?.id ?? null;
+
+  const list = (
+    <ul class="rows rows--scroll mail__list">
+      {[...messages].reverse().map((message) => (
+        <li key={message.id}>
+          <button
+            type="button"
+            class={`message${toneOf(message.from)}${message.id === shownId ? ' is-selected' : ''}${message.read ? '' : ' is-unread'}`}
+            aria-pressed={message.id === shownId}
+            onClick={() => {
+              setOpenId(message.id);
+              if (!message.read) session.dispatch({ type: 'readMessage', messageId: message.id });
+            }}
+          >
+            <span class="message__from">{message.from}</span>
+            <span class="message__subject">{message.subject}</span>
+            <span class="message__time data">{formatGameTime(message.timeMs)}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+  const letter = open && (
+    <article class={`message-body${toneOf(open.from)}`} key={open.id}>
+      <h3 class="message-body__subject">{open.subject}</h3>
+      <p class="message-body__meta">
+        From {open.from} · <span class="data">{formatGameTime(open.timeMs)}</span>
+      </p>
+      {open.body.split('\n\n').map((paragraph, index) => (
+        <p key={index} class={/^(—|-- )/.test(paragraph) || paragraph === open.from ? 'message-body__sign' : undefined} style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}>
+          {paragraph}
+        </p>
+      ))}
+    </article>
+  );
 
   return (
     <Window
@@ -81,39 +122,23 @@ export function MessagesWindow() {
       )}
       {composing ? null : messages.length === 0 ? (
         <p class="empty">No messages.</p>
+      ) : desk ? (
+        <div class="mail">
+          {list}
+          <div class="mail__read">
+            {letter || (
+              <p class="mail__none">
+                <Icon name="send" size={28} />
+                Pick a message to read it.
+              </p>
+            )}
+          </div>
+        </div>
       ) : (
-        <ul class="rows rows--scroll">
-          {[...messages].reverse().map((message) => (
-            <li key={message.id}>
-              <button
-                type="button"
-                class={`message${toneOf(message.from)}${message.id === openId ? ' is-selected' : ''}${message.read ? '' : ' is-unread'}`}
-                aria-pressed={message.id === openId}
-                onClick={() => {
-                  setOpenId(message.id);
-                  if (!message.read) session.dispatch({ type: 'readMessage', messageId: message.id });
-                }}
-              >
-                <span class="message__from">{message.from}</span>
-                <span class="message__subject">{message.subject}</span>
-                <span class="message__time data">{formatGameTime(message.timeMs)}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {!composing && open && (
-        <article class={`message-body${toneOf(open.from)}`} key={open.id}>
-          <h3 class="message-body__subject">{open.subject}</h3>
-          <p class="message-body__meta">
-            From {open.from} · <span class="data">{formatGameTime(open.timeMs)}</span>
-          </p>
-          {open.body.split('\n\n').map((paragraph, index) => (
-            <p key={index} class={/^(—|-- )/.test(paragraph) || paragraph === open.from ? 'message-body__sign' : undefined} style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}>
-              {paragraph}
-            </p>
-          ))}
-        </article>
+        <>
+          {list}
+          {letter}
+        </>
       )}
     </Window>
   );
