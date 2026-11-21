@@ -15,6 +15,7 @@ import { scheduleReview } from './forensics';
 import { stream } from './streams';
 import { gatewayOf, findServer, sendMail, type Content } from './world';
 import { isConnected } from './state';
+import { WARNED_BREACH, hasFavour, warnOfRaid } from './patrons';
 import { ringTolerance } from './tasks';
 import { totalTraceMs, traceReport } from './trace';
 import type { GameState, RaidPort, RaidState, TraceState } from './state';
@@ -72,7 +73,8 @@ export function beginRaid(state: GameState, content: Content, attackerId: string
     route: [...rival.relays],
     startedAtMs: state.clock.gameTimeMs,
     breachMs: 0,
-    breachTotalMs: (content.rules.raidBreachSeconds[level - 1] ?? 50) * 1000,
+    // A player who was warned (a patron's favour) is ready for a random attack: it takes longer to break in.
+    breachTotalMs: (content.rules.raidBreachSeconds[level - 1] ?? 50) * 1000 * (!story && hasFavour(state, content, 'raidWarning') ? WARNED_BREACH : 1),
     barriers: content.rules.raidBarriers[level - 1] ?? 3,
     port: null,
     traceBack: null,
@@ -109,6 +111,7 @@ export function maybeScheduleRaid(state: GameState, content: Content, pay: numbe
   if (able.length === 0) return;
   const rival = rng.pick(able);
   state.raidPending = { attackerId: rival.id, story: false };
+  warnOfRaid(state, content, rival.handle);
   // Even a scheduled attack starts the clock on the next one.
   state.raidQuietUntilMs = state.clock.gameTimeMs + rules.raidCooldownHours * 3_600_000;
 }

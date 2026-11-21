@@ -17,7 +17,7 @@ import { evidenceCount, isEvidence } from './forensics';
 import { worldFor } from './generate';
 import { maxConnections } from './hardware';
 import { isJob } from './jobs';
-import { sellsHardware, sellsModule, sellsOnly, sellsProgram, shopOf, shopPrice } from './market';
+import { sellsHardware, sellsModule, sellsOnly, sellsProgram, shopFor, shopPrice } from './market';
 import { heldBy, monitorHeld } from './link';
 import { canRead, judge, knownFacts, knownPeople, standing } from './phish';
 import { skillRank } from './skills';
@@ -695,7 +695,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       else if (part) base = sellsHardware(state, shop, part) ? part.price : undefined;
       else if (program) base = sellsProgram(state, shop, program) ? program.price : undefined;
       if (base === undefined) continue;
-      const price = shopPrice(shopOf(shop), base);
+      const price = shopPrice(shopFor(state, content, shop), base);
       if (!best || price < best.price) best = { shop, price };
     }
     return best;

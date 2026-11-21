@@ -396,7 +396,8 @@
     "objective": {
       "kind": "read",
       "file": "node_index.txt"
-    }
+    },
+    "patron": "ais"
   },
   {
     "id": "story-courier",
@@ -412,7 +413,8 @@
     "objective": {
       "kind": "steal",
       "file": "courier_manifest.dat"
-    }
+    },
+    "patron": "ais"
   },
   {
     "id": "story-thename",
@@ -428,7 +430,8 @@
     "objective": {
       "kind": "steal",
       "file": "PROJECT_N████.dat"
-    }
+    },
+    "patron": "ais"
   },
   {
     "id": "kestrel-handover",
@@ -903,7 +906,8 @@
       "kind": "plant",
       "file": "diag_probe.bin",
       "sizeGq": 2
-    }
+    },
+    "patron": "office"
   },
   {
     "id": "story-checkpoint",
@@ -942,9 +946,13 @@
           "from": "Hollis Lane Procurement",
           "subject": "Re: Retrieval of a stolen model fragment",
           "body": "You have kept the file. That was not what we engaged you for. We note it, and have paid you less. We note, too, that you did not ask who we were. That was sensible."
+        },
+        "standing": {
+          "calder": -2
         }
       }
-    ]
+    ],
+    "patron": "calder"
   },
   {
     "id": "story-ledger",
@@ -989,6 +997,9 @@
           "from": "Daylight",
           "subject": "you did not have to",
           "body": "Thank you. We will hold it until we can run the whole story, and we will not say who sent it. We will say a stranger did the right thing and did not ask to be paid very much."
+        },
+        "standing": {
+          "daylight": 3
         }
       },
       {
@@ -999,7 +1010,8 @@
         "rating": 1,
         "keep": true
       }
-    ]
+    ],
+    "patron": "ais"
   },
   {
     "id": "story-reclass",
@@ -1025,7 +1037,8 @@
         },
         "brief": "Thank you. Our overnight log is on the station box. Please read it; it is the proof that people rang in about the incident. We have not shown it to anyone."
       }
-    ]
+    ],
+    "patron": "ais"
   },
   {
     "id": "story-register",
@@ -1048,6 +1061,7 @@
         "layer": "firewall",
         "by": 1
       }
-    ]
+    ],
+    "patron": "ais"
   }
 ]

@@ -4,7 +4,7 @@
  */
 import type { ModelDef, ModelSkill } from '../content/models';
 import { hostedModel } from './hardware';
-import { shopOf, shopPrice } from './market';
+import { shopFor, shopPrice } from './market';
 import { readEverything } from './phish';
 import type { Connection, GameState } from './state';
 import { traceHeld, traceReport } from './trace';
@@ -44,7 +44,7 @@ export function rentModel(state: GameState, content: Content, connectionId: stri
   }
   const model = findModel(content, modelId);
   if (!model) return 'That is not for rent.';
-  const shop = shopOf(findServer(content, connection.serverId)!);
+  const shop = shopFor(state, content, findServer(content, connection.serverId)!);
   if (!shop.models) return 'This shop does not rent models.';
   const price = shopPrice(shop, model.price);
   if (state.player.balance < price) return 'You cannot afford that.';

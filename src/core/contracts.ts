@@ -14,7 +14,8 @@ import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
 import { advanceStory } from './story';
 import { printEditions, reportContract } from './news';
-import { sellsOnly, sellsProgram, shopOf, shopPrice } from './market';
+import { FAVOUR_CUT, hasFavour, noteDelivery, noteFailure } from './patrons';
+import { sellsOnly, sellsProgram, shopFor, shopPrice } from './market';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
 import { findConnection, findProgram, findServer, noteProgress, once, securityOf, sendMail, type Content } from './world';
 
@@ -136,8 +137,10 @@ export function acceptContract(state: GameState, content: Content, connectionId:
   return null;
 }
 
-export function abandonContract(state: GameState): string | null {
+export function abandonContract(state: GameState, content: Content): string | null {
   if (state.contracts.activeId === null) return 'You have no contract.';
+  const given = activeContract(state, content);
+  if (given) noteFailure(state, content, given, false);
   // A job given up is gone from the board; someone else will take it.
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== state.contracts.activeId);
   state.contracts.activeId = null;
@@ -170,6 +173,8 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   state.contracts.activeId = null;
   // The victim notices; the next edition carries it.
   reportContract(state, content, contract);
+  // Whoever paid remembers, and so does anyone whose companies were hurt.
+  noteDelivery(state, content, contract, choice);
   // A delivered job comes off the board and another takes its place.
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
   postJobs(state, content);
@@ -258,7 +263,7 @@ export function buyProgram(state: GameState, content: Content, connectionId: str
   if (!program || (program.price <= 0 && !content.startingPrograms.includes(programId))) return 'That is not for sale.';
   if (!sellsProgram(state, shop, program)) return 'This shop does not stock that.';
   if (state.player.programs.includes(program.id)) return 'You already own that.';
-  const price = shopPrice(shopOf(shop), program.price);
+  const price = shopPrice(shopFor(state, content, shop), program.price);
   if (state.player.balance < price) return 'You cannot afford that.';
   if (program.sizeGq > freeStorageGb(state, content)) return 'Not enough room on your gateway.';
   state.player.balance -= price;
@@ -292,8 +297,9 @@ export function deleteStoredFile(state: GameState, name: string): string | null 
  */
 export function punish(state: GameState, content: Content, serverId: string): { fine: number; hours: number } {
   const server = findServer(content, serverId);
-  const fine = Math.min(state.player.balance, baseFine(content, serverId));
-  const hours = content.rules.lieLowHours;
+  // Patrons in the inner circle soften the blow: one pays half the fine, one shortens the time out of sight.
+  const fine = Math.min(state.player.balance, Math.round(baseFine(content, serverId) * (hasFavour(state, content, 'fineCut') ? FAVOUR_CUT : 1)));
+  const hours = content.rules.lieLowHours * (hasFavour(state, content, 'lieLowCut') ? FAVOUR_CUT : 1);
   state.player.balance -= fine;
   state.player.rating = Math.max(0, state.player.rating - content.rules.caughtRatingLoss);
   state.player.lieLowUntilMs = state.clock.gameTimeMs + hours * 3_600_000;
@@ -304,6 +310,7 @@ export function punish(state: GameState, content: Content, serverId: string): { 
   const active = activeContract(state, content);
   const contract = active && stageView(state, active);
   if (active && contract?.targetId === serverId && !objectiveMet(state, content, active)) {
+    noteFailure(state, content, active, true);
     clearClientFiles(state);
     state.contracts.activeId = null;
     state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== active.id);

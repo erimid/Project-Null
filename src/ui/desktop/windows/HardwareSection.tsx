@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { HARDWARE_SLOT_LABELS, findPart, freeStorageGb, rackStorageGb, rareToday, sellsHardware, shopOf, shopPrice } from '../../../core';
+import { HARDWARE_SLOT_LABELS, findPart, freeStorageGb, rackStorageGb, rareToday, sellsHardware, shopFor, shopPrice } from '../../../core';
 import type { HardwareDef, HardwareSlot } from '../../../core/content';
 import { content } from '../../session';
 import { GatewayBoard, SLOT_BLURBS, partStats, slotLabel, type SlotMark } from '../GatewayBoard';
@@ -12,7 +12,7 @@ import { Price, ShopSign } from './Shop';
 /** One part on the counter, measured against what is fitted now. */
 function PartCard({ part, fitted, scale, rare, view, onFitted }: { part: HardwareDef; fitted: HardwareDef | undefined; scale: number[]; rare: boolean; view: View; onFitted: () => void }) {
   const { game, server, connection, act } = view;
-  const price = shopPrice(shopOf(server), part.price);
+  const price = shopPrice(shopFor(game, content, server), part.price);
   const extraGb = part.slot === 'rack' ? (part.sizeGb ?? 0) - rackStorageGb(game, content) : 0;
   const tooBig = extraGb > freeStorageGb(game, content);
   const poor = game.player.balance < price;
@@ -82,7 +82,7 @@ function PartCard({ part, fitted, scale, rare, view, onFitted }: { part: Hardwar
  */
 export function Hardware(view: View) {
   const { game, server } = view;
-  const shop = shopOf(server);
+  const shop = shopFor(game, content, server);
   const rareIds = new Set(rareToday(game, server).filter((line) => line.kind === 'hardware').map((line) => line.id));
   const upgradesFor = (slot: HardwareSlot) =>
     content.hardware

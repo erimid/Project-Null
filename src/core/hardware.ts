@@ -10,7 +10,7 @@ import type { GameState, HardwareState } from './state';
 import { effect } from './skills';
 import { stream } from './streams';
 import { findConnection, findServer, sendMail, type Content } from './world';
-import { sellsHardware, shopOf, shopPrice } from './market';
+import { sellsHardware, shopFor, shopPrice } from './market';
 
 /** Slots in the order screens list them, with their names. */
 export const HARDWARE_SLOT_LABELS: readonly (readonly [HardwareSlot, string])[] = [
@@ -74,7 +74,7 @@ export function buyHardware(state: GameState, content: Content, connectionId: st
   if (!part || part.price <= 0) return 'That is not for sale.';
   if (!sellsHardware(state, shop, part)) return 'This shop does not stock that.';
   if (state.player.hardware[part.slot] >= part.tier) return 'Your gateway already has that or better.';
-  const price = shopPrice(shopOf(shop), part.price);
+  const price = shopPrice(shopFor(state, content, shop), part.price);
   if (state.player.balance < price) return 'You cannot afford that.';
   if (part.slot === 'rack') {
     const extra = (part.sizeGb ?? 0) - rackStorageGb(state, content);

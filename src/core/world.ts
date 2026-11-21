@@ -15,6 +15,8 @@ import type { ModuleDef } from '../content/modules';
 import type { RivalDef } from '../content/rivals';
 import type { StoryDef } from '../content/story';
 import type { NewsDef } from '../content/news';
+import type { PatronDef } from '../content/patrons';
+import { backfillChoices } from './patrons';
 import { builtProgram } from './builds';
 import type { Connection, GameState, ServerState } from './state';
 
@@ -162,6 +164,8 @@ export interface Content {
   readonly story: StoryDef;
   /** Templates for the daily paper (see core/news.ts). Missing = a paper with nothing to print. */
   readonly news?: NewsDef;
+  /** Named clients with standing (see core/patrons.ts). Missing = none. */
+  readonly patrons?: readonly PatronDef[];
   readonly rules: Rules;
 }
 
@@ -393,6 +397,9 @@ export function syncWithContent(state: GameState, content: Content): GameState {
       }
     }
   });
+
+  // Choices made before they were recorded: worked out once from what is on the gateway.
+  once(state, 'choices-recorded', () => backfillChoices(state, content));
 
   once(state, 'welcome', () => sendMail(state, content, 'welcome'));
   noteProgress(state, content);

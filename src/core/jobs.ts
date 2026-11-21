@@ -6,6 +6,7 @@
  */
 import type { ContractDef, ServerDef } from '../content/schema';
 import { fill } from './generate';
+import { assignPatron } from './patrons';
 import type { GameState, Job } from './state';
 import type { Rng } from './rng';
 import { stream } from './streams';
@@ -113,8 +114,9 @@ function makeJob(state: GameState, content: Content, at?: { server: ServerDef; r
   // (deterministic, and not on the job's id: an id would tie this to nextId,
   // so any new message or entity made elsewhere would reshuffle the board).
   const own = rng.fork(`staged:${server.id}:${rng.getState().state}`);
-  if (!at && pools.staged && serverTier >= 5 && own.chance(0.5)) return addFirstStep(state, content, job, server, values, own);
-  return job;
+  const made = !at && pools.staged && serverTier >= 5 && own.chance(0.5) ? addFirstStep(state, content, job, server, values, own) : job;
+  // Some jobs are a patron's, under their own name (see patrons.ts). Forked the same way, so the board's draws stay as they were.
+  return assignPatron(state, content, made, server, rng.fork(`patron:${server.id}:${rng.getState().state}`));
 }
 
 /**

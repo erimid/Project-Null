@@ -1,7 +1,8 @@
 import { useState } from 'preact/hooks';
-import { GUIDED_JOB, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, stagesOf } from '../../../core';
+import { GUIDED_JOB, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, openPatron, standingName, standingWith, stagesOf } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatGameTime, formatMoney, formatRating } from '../../format';
+import { useGame } from '../../hooks';
 import { content } from '../../session';
 import { IconTile, ModulePlate } from '../Gear';
 import { Icon, objectiveIcon, type IconName } from '../Icon';
@@ -17,6 +18,18 @@ type Sort = 'board' | 'pay' | 'risk' | 'rating';
 let kept: { filter: Filter; sort: Sort; flipped: boolean } = { filter: 'all', sort: 'board', flipped: false };
 
 const isStaged = (contract: ContractDef) => stagesOf(contract).length > 1;
+
+/** The standing the player has with the patron who posted a job, if a named one did. */
+function PatronChip({ contract }: { contract: ContractDef }) {
+  const patron = openPatron(content, contract);
+  const standing = useGame((game) => (patron ? standingWith(game, patron.id) : 0));
+  if (!patron) return null;
+  return (
+    <span class={`jobcard__patron is-${standingName(standing).toLowerCase().replace(' ', '-')}`} data-tip={`${patron.title}. Your standing with them: ${standingName(standing)}. See Gateway › Contacts.`}>
+      {standingName(standing)}
+    </span>
+  );
+}
 
 /** One job on the board: what kind it is, where, what it pays and how dangerous it looks. */
 function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef; risk: number; blocked: string | undefined; onAccept: () => void }) {
@@ -37,6 +50,7 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
             <span class="jobcard__client">
               <Icon name="person" size={13} /> {contract.client}
             </span>
+            <PatronChip contract={contract} />
           </span>
         </div>
         {contract.story ? (
