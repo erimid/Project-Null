@@ -18,6 +18,8 @@ import { isConnected } from './state';
 import { WARNED_BREACH, hasFavour, warnOfRaid } from './patrons';
 import { noteBeaten, outOfRaids } from './ladder';
 import { ringTolerance } from './tasks';
+import { dropFromMemory } from './loadout';
+import { wanted } from './wanted';
 import { totalTraceMs, traceReport } from './trace';
 import type { GameState, RaidPort, RaidState, TraceState } from './state';
 
@@ -107,7 +109,9 @@ export function maybeScheduleRaid(state: GameState, content: Content, pay: numbe
   if (state.clock.gameTimeMs < state.raidQuietUntilMs) return;
   if (pay < rules.raidProfilePay) return;
   const rng = stream(state, 'raid');
-  if (!rng.chance(rules.raidChance)) return;
+  // A bounty on a wanted player brings them more often.
+  const bounty = wanted(state).raids;
+  if (!rng.chance(Math.min(1, rules.raidChance * bounty))) return;
   // A raider whose address was sold, or who has a truce with the player, stays away.
   const able = content.rivals.filter((rival) => rival.minRating <= state.player.rating && !outOfRaids(state, rival.id));
   if (able.length === 0) return;
@@ -115,7 +119,7 @@ export function maybeScheduleRaid(state: GameState, content: Content, pay: numbe
   state.raidPending = { attackerId: rival.id, story: false };
   warnOfRaid(state, content, rival.handle);
   // Even a scheduled attack starts the clock on the next one.
-  state.raidQuietUntilMs = state.clock.gameTimeMs + rules.raidCooldownHours * 3_600_000;
+  state.raidQuietUntilMs = state.clock.gameTimeMs + (rules.raidCooldownHours / bounty) * 3_600_000;
 }
 
 /** Begins a pending attack once the moment is right. Called each tick. */
@@ -291,6 +295,8 @@ function loseRaid(state: GameState, content: Content): void {
       loss = `wiped ${file.name} from your gateway`;
     } else if (program) {
       state.player.programs = state.player.programs.filter((id) => id !== program);
+      state.player.builds = state.player.builds.filter((build) => build.id !== program);
+      dropFromMemory(state, program);
       loss = `wiped ${content.programs.find((p) => p.id === program)?.name ?? program} from your gateway`;
     } else {
       loss = takeCredits(state, content) ? 'drained credits from your account' : 'found nothing worth taking';

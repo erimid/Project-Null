@@ -10,6 +10,8 @@ import { checkBuild, finishBuild, finishDecompile, hasTrait, partTaken, programF
 import { effect } from './skills';
 import { stream } from './streams';
 import { noteIntrusion } from './trace';
+import { needsMemory } from './loadout';
+import { SURGE_SPEED } from './moves';
 import { fileDef, findAccount, securityOf, findConnection, findProgram, findServer, ownedProgram, once, sendMail, type Content } from './world';
 
 /** A program this many levels below a layer can't touch it at all. */
@@ -109,7 +111,12 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
     return { ok: true, seconds: build.seconds, program: findProgram(content, target.base)! };
   }
   const program = ownedProgram(state, content, PROGRAM_FOR[target.kind]);
-  if (!program) return no('You do not own a program for that.');
+  if (!program) {
+    // On the drive but not in memory: say so, since the cure is different.
+    const kind = PROGRAM_FOR[target.kind];
+    const onDrive = needsMemory(kind) ? state.player.programs.map((id) => findProgram(content, id, state)).find((item) => item?.kind === kind) : undefined;
+    return no(onDrive ? `${onDrive.name} is on your drive, not in memory. Load it before you connect.` : 'You do not own a program for that.');
+  }
   if (!hasTrait(state, content, program.id, 'parallel') && usedSlots(state, content) >= most) {
     return no(`Your gateway can run ${most} programs at once.`);
   }
@@ -118,6 +125,8 @@ function baseCheck(state: GameState, content: Content, connection: Connection | 
   if (state.tasks.some(same)) return no('That is already running.');
 
   const against = (layer: string, level: number): Check => {
+    // A Hot patch rebuilt the program for this layer on this connection: it meets it as an equal.
+    if (connection?.patched === layer && level > program.version) return { ok: true, seconds: program.baseSeconds, program, level };
     const seconds = layerSeconds(program, level, 2 - effect(state, content, 'overreach'));
     if (seconds === null) return no(`${program.name} v${program.version} is too weak for this ${layer} (level ${level}).`);
     return { ok: true, seconds, program, level };
@@ -268,7 +277,7 @@ export function echoCell(state: GameState, content: Content, connectionId: strin
 /** Applies a finished program that ran on the gateway itself. */
 function finishLocal(state: GameState, content: Content, task: Task): void {
   const target = task.target;
-  if (target.kind === 'build') return finishBuild(state, task);
+  if (target.kind === 'build') return finishBuild(state, content, task);
   if (target.kind === 'decompile') return finishDecompile(state, content, task);
   if (target.kind === 'scan') {
     if (!state.scanned.includes(target.serverId)) state.scanned.push(target.serverId);
@@ -295,7 +304,7 @@ function finish(state: GameState, content: Content, connection: Connection, task
       const at = findServer(content, connection.serverId);
       const level = at ? securityOf(state, at).monitor : 0;
       connection.monitor = {
-        blindMs: blindSeconds(content, program, level) * 1000,
+        blindMs: blindSeconds(content, program, connection.patched === 'monitor' ? Math.min(level, program.version) : level) * 1000,
         used: true,
         echo: newEcho(state, level),
       };
@@ -511,8 +520,16 @@ export function startTask(state: GameState, content: Content, connectionId: stri
 
 /** Moves every running program forward and applies the ones that finish. */
 export function advanceTasks(state: GameState, content: Content, simMs: number): void {
+  // An Overclock runs everything on its connection faster until it burns out.
+  const surge = new Map<string, number>();
+  for (const connection of state.connections) {
+    const left = connection.surgeMs ?? 0;
+    if (left <= 0) continue;
+    surge.set(connection.id, Math.min(simMs, left) * (SURGE_SPEED - 1));
+    connection.surgeMs = Math.max(0, left - simMs);
+  }
   for (const task of [...state.tasks]) {
-    task.progressMs += simMs;
+    task.progressMs += simMs + (task.connectionId === null ? 0 : (surge.get(task.connectionId) ?? 0));
     // A port line-up ends when its last ring locks, which is also when its time runs out.
     if (task.puzzle ? !advancePuzzle(task) : task.progressMs < task.durationMs) continue;
     state.tasks = state.tasks.filter((other) => other !== task);

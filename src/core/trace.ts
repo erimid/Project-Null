@@ -141,7 +141,7 @@ export const PLANNER_HOPS = [0, 4, 6, 8] as const;
  * good, so a route built by hand can beat them.
  */
 export function bestRoute(state: GameState, content: Content, targetId: string | null, version = 3): string[] {
-  const most = Math.min(MAX_HOPS, PLANNER_HOPS[Math.max(0, Math.min(3, version))] ?? 0);
+  const most = Math.min(maxHops(state, content), PLANNER_HOPS[Math.max(0, Math.min(3, version))] ?? 0);
   const target = targetId ? findServer(content, targetId) : undefined;
   const busy = new Set(state.connections.map((connection) => connection.serverId));
   const pool = state.knownServers
@@ -174,6 +174,9 @@ export const canReadTrace = (state: GameState, content: Content): boolean =>
 
 /** How much longer each step of a trace takes, from the Long way round skill. */
 export const traceSlow = (state: GameState, content: Content): number => 1 + effect(state, content, 'traceSlow');
+
+/** Most relays one route may pass through, with the player's skills. */
+export const maxHops = (state: GameState, content: Content): number => MAX_HOPS + effect(state, content, 'ninthRelay');
 
 /** Reroutes allowed on one connection, with the player's skills. */
 export const maxReroutes = (state: GameState, content: Content): number => content.rules.maxReroutes + effect(state, content, 'slipAway');

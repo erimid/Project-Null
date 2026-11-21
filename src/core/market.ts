@@ -14,6 +14,7 @@ import type { ModuleDef } from '../content/modules';
 import type { GameState } from './state';
 import type { Content } from './world';
 import { shopDiscount } from './patrons';
+import { wanted } from './wanted';
 import { createRng, hashSeed } from './rng';
 
 /** A board with no shop of its own sells everything at list price. */
@@ -26,7 +27,9 @@ export const shopOf = (server: ServerDef): ShopDef => server.shop ?? GENERAL_STO
 export function shopFor(state: GameState, content: Content, server: ServerDef): ShopDef {
   const shop = shopOf(server);
   const off = shopDiscount(state, content, server.id);
-  return off > 0 ? { ...shop, priceFactor: shop.priceFactor * (1 - off) } : shop;
+  // Someone who is wanted pays for the risk of being sold to.
+  const risk = wanted(state).prices;
+  return off > 0 || risk !== 1 ? { ...shop, priceFactor: shop.priceFactor * (1 - off) * risk } : shop;
 }
 
 /** Which day it is, counting from the start of game time. Rare stock turns over at each day's end. */

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { findServer, nextPointRating, pointsEarned, pointsFree, skillRank, unlearnPrice, whyNotLearn, type GameState } from '../../../core';
 import { tuning } from '../../../content';
+import { ACTIVE_EFFECTS } from '../../../content/skills';
 import type { SkillBranch, SkillDef } from '../../../core/content';
 import { formatMoney } from '../../format';
 import { useWorld } from '../../hooks';
@@ -57,13 +58,26 @@ function SkillCard({ game, skill, onRefused }: { game: GameState; skill: SkillDe
     onRefused(result.ok ? '' : result.reason);
   };
 
+  const active = ACTIVE_EFFECTS.includes(skill.effect);
+  const signatureAt = content.rules.signatureRating ?? 0;
+
   return (
     <li
-      class={`skill skill--row${skill.row}${rank > 0 ? ' is-learned' : ''}${full ? ' is-full' : ''}${locked ? ' is-locked' : ''}${reason === null ? ' is-ready' : ''}${fresh ? ' is-fresh' : ''}`}
+      class={`skill skill--row${skill.row}${active ? ' skill--move' : ''}${skill.signature ? ' skill--signature' : ''}${rank > 0 ? ' is-learned' : ''}${full ? ' is-full' : ''}${locked ? ' is-locked' : ''}${reason === null ? ' is-ready' : ''}${fresh ? ' is-fresh' : ''}`}
     >
       <span class="skill__node" aria-hidden="true" />
       <div class="skill__head">
         <strong class="skill__name">{skill.name}</strong>
+        {active && (
+          <span class="skill__kind" data-tip="Not always on: a button you press, once on each connection.">
+            Button
+          </span>
+        )}
+        {skill.signature && (
+          <span class="skill__kind skill__kind--signature" data-tip={`You can learn one signature, and only one, once your best rating reaches ${signatureAt}.`}>
+            Signature
+          </span>
+        )}
         <span class="skill__pips" aria-label={`Rank ${rank} of ${skill.ranks}`}>
           {Array.from({ length: skill.ranks }, (_, index) => (
             <span key={`${index}${index < rank ? 'on' : ''}`} class={`skill__pip${index < rank ? ' is-on' : ''}${fresh && index === rank - 1 ? ' is-new' : ''}`} />
@@ -75,6 +89,10 @@ function SkillCard({ game, skill, onRefused }: { game: GameState; skill: SkillDe
         <span class="skill__cost">
           {full ? (
             <span class="skill__done">Learned</span>
+          ) : skill.signature ? (
+            <>
+              No points · best rating <span class="data">{signatureAt}</span>
+            </>
           ) : (
             <>
               <span class="skill__price" aria-hidden="true">

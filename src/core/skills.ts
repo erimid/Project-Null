@@ -51,6 +51,13 @@ export function whyNotLearn(state: GameState, content: Content, id: string): str
   const skill = findSkill(content, id);
   if (!skill) return 'No such skill.';
   if (skillRank(state, id) >= skill.ranks) return `You have learned all of ${skill.name}.`;
+  if (skill.signature) {
+    const at = content.rules.signatureRating ?? Infinity;
+    if (state.player.bestRating < at) return `A signature opens at a best rating of ${at}.`;
+    const held = content.skills.find((other) => other.signature && other.id !== id && skillRank(state, other.id) > 0);
+    if (held) return `You already carry a signature: ${held.name}. Unlearn to pick another.`;
+    return null;
+  }
   if (skill.needs !== undefined && skillRank(state, skill.needs) === 0) {
     return `Learn ${findSkill(content, skill.needs)?.name ?? skill.needs} first.`;
   }

@@ -3,7 +3,7 @@
  * "action": a small plain object. The UI never changes GameState itself.
  * That keeps the rules in one place and makes them testable.
  */
-import { MAX_HOPS, ROUTE_SLOTS, SPEEDS, isConnected, type Connection, type Fitted, type GameState, type LadderOutcome, type Speed, type TaskTarget } from './state';
+import { ROUTE_SLOTS, SPEEDS, isConnected, type Connection, type Fitted, type GameState, type LadderOutcome, type MoveId, type PatchLayer, type Speed, type TaskTarget } from './state';
 import {
   abandonContract,
   acceptContract,
@@ -25,10 +25,13 @@ import { advanceContract } from './stages';
 import { buyHardware, loseHardware, maxConnections } from './hardware';
 import { modelRead, rentModel } from './model';
 import { readFile, sendPhish } from './phish';
-import { buyModule, preferProgram, refineModule, returnModules, scrapBuild } from './crafting';
+import { buyModule, refineModule, returnModules, scrapBuild } from './crafting';
+import { autoPack, loadProgram, loadoutLocked, saveLoadout, unloadProgram, useLoadout } from './loadout';
+import { MOVES, useMove } from './moves';
+import { TRACED_HEAT, raiseHeat } from './wanted';
 import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
-import { bestRoute, coolRelays, hopUnderTrace, intruding, jamTrace, newTrace, noteIntrusion, reroute, warmRelay } from './trace';
+import { bestRoute, coolRelays, hopUnderTrace, intruding, jamTrace, maxHops, newTrace, noteIntrusion, reroute, warmRelay } from './trace';
 import { lockRaidFile, lockRaidRing, openRaidPort, pullPlug, startRaidTrace } from './raid';
 import { findAccount, findConnection, findServer, gatewayOf, once, ownedProgram, sendMail, sourceAddress, type Content } from './world';
 
@@ -105,8 +108,18 @@ export type Action =
   | { readonly type: 'scrapProgram'; readonly programId: string }
   /** Melt two modules of one grade into one of the next. */
   | { readonly type: 'refineModule'; readonly moduleId: string; readonly grade: number }
-  /** Pick which installed program runs for its kind. */
-  | { readonly type: 'preferProgram'; readonly programId: string }
+  /** Load an installed program into memory, in place of any other of its kind. */
+  | { readonly type: 'loadProgram'; readonly programId: string }
+  /** Take a program out of memory. It stays on the drive. */
+  | { readonly type: 'unloadProgram'; readonly programId: string }
+  /** Fill memory with the strongest program of each kind that fits. */
+  | { readonly type: 'packMemory' }
+  /** Keep what is in memory in a slot, to load again later. */
+  | { readonly type: 'saveLoadout'; readonly slot: number }
+  /** Load a kept loadout into memory. */
+  | { readonly type: 'useLoadout'; readonly slot: number }
+  /** Use an active skill on a connection. `layer` says what a Hot patch is for. */
+  | { readonly type: 'useMove'; readonly connectionId: string; readonly move: MoveId; readonly layer?: PatchLayer }
   /** Buy a module from the board you are logged in to. */
   | { readonly type: 'buyModule'; readonly connectionId: string; readonly moduleId: string; readonly grade: number }
   /** Take a program file stored on the gateway apart into modules. */
@@ -176,6 +189,8 @@ export function caught(state: GameState, content: Content, connection: Connectio
   reportCaught(state, content, connection.serverId);
   const target = server?.name ?? 'the target';
   sendMail(state, content, 'caught', { target, fine: String(fine), hours: String(hours) });
+  // Every trace that lands makes the next one cost more. The letter says what the word on the player is now.
+  raiseHeat(state, content, TRACED_HEAT);
   loseHardware(state, content, connection.serverId);
 }
 
@@ -201,7 +216,7 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
       if (!server || !state.knownServers.includes(server.id)) return refuse('You do not have that address.');
       if (server.kind === 'gateway') return refuse('Your gateway is always the start of the route.');
       if (state.route.includes(server.id)) return refuse(`${server.name} is already in the route.`);
-      if (state.route.length >= MAX_HOPS) return refuse(`A route can have at most ${MAX_HOPS} relays.`);
+      if (state.route.length >= maxHops(state, content)) return refuse(`A route can have at most ${maxHops(state, content)} relays.`);
       state.route.push(server.id);
       return OK;
     }
@@ -227,7 +242,7 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
       const saved = state.savedRoutes[action.slot];
       if (!saved || saved.length === 0) return refuse('That slot is empty.');
       const busy = new Set(state.connections.map((connection) => connection.serverId));
-      state.route = saved.filter((id) => state.knownServers.includes(id) && !busy.has(id) && !!findServer(content, id)).slice(0, MAX_HOPS);
+      state.route = saved.filter((id) => state.knownServers.includes(id) && !busy.has(id) && !!findServer(content, id)).slice(0, maxHops(state, content));
       return OK;
     }
     case 'autoRoute': {
@@ -403,7 +418,7 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
       return answer(buyProgram(state, content, action.connectionId, action.programId));
     case 'uninstallProgram':
       // A crafted program comes apart into its modules rather than vanishing.
-      if (state.player.builds.some((build) => build.id === action.programId)) return answer(scrapBuild(state, action.programId));
+      if (state.player.builds.some((build) => build.id === action.programId)) return answer(scrapBuild(state, content, action.programId));
       return answer(uninstallProgram(state, action.programId));
     case 'deleteStoredFile':
       return answer(deleteStoredFile(state, action.name));
@@ -414,11 +429,24 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
     case 'buildProgram':
       return answer(startTask(state, content, null, { kind: 'build', base: action.base, modules: action.modules.map((fitted) => ({ ...fitted })) }));
     case 'scrapProgram':
-      return answer(scrapBuild(state, action.programId));
+      return answer(scrapBuild(state, content, action.programId));
     case 'refineModule':
       return answer(refineModule(state, content, action.moduleId, action.grade));
-    case 'preferProgram':
-      return answer(preferProgram(state, content, action.programId));
+    case 'loadProgram':
+      return answer(loadProgram(state, content, action.programId));
+    case 'unloadProgram':
+      return answer(unloadProgram(state, content, action.programId));
+    case 'packMemory':
+      if (loadoutLocked(state, content)) return refuse('Memory is locked while you are inside a server. Disconnect first.');
+      autoPack(state, content);
+      return OK;
+    case 'saveLoadout':
+      return answer(saveLoadout(state, content, action.slot));
+    case 'useLoadout':
+      return answer(useLoadout(state, content, action.slot));
+    case 'useMove':
+      if (!MOVES.includes(action.move)) return refuse('No such skill.');
+      return answer(useMove(state, content, action.connectionId, action.move, action.layer));
     case 'buyModule':
       return answer(buyModule(state, content, action.connectionId, action.moduleId, action.grade));
     case 'decompileFile':

@@ -10,6 +10,8 @@ import type { Connection, GameState } from './state';
 import { payPart } from './crafting';
 import { noteRating } from './skills';
 import { freeStorageGb } from './tasks';
+import { dropFromMemory, ownsProgram, stowNew } from './loadout';
+import { JOB_COOL, coolHeat, coolWithTime, wanted } from './wanted';
 import { isJob, refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
@@ -43,6 +45,7 @@ export function postJobs(state: GameState, content: Content): void {
   advanceLadder(state, content);
   printEditions(state, content);
   postHeist(state, content);
+  coolWithTime(state);
 }
 
 /**
@@ -197,6 +200,8 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   state.contracts.completed.push(contract.id);
   state.contracts.activeId = null;
   resetKinds(state);
+  // Work that gets done is the best cover: attention fades a little with every delivery.
+  coolHeat(state, JOB_COOL);
   // The victim notices; the next edition carries it.
   reportContract(state, content, contract);
   // Whoever paid remembers, and so does anyone whose companies were hurt.
@@ -288,12 +293,14 @@ export function buyProgram(state: GameState, content: Content, connectionId: str
   // Starting programs cost nothing: the market gives them back if you removed one.
   if (!program || (program.price <= 0 && !content.startingPrograms.includes(programId))) return 'That is not for sale.';
   if (!sellsProgram(state, shop, program)) return 'This shop does not stock that.';
-  if (state.player.programs.includes(program.id)) return 'You already own that.';
+  if (ownsProgram(state, program.id)) return state.player.programs.includes(program.id) ? 'You already own that.' : 'You already own that: it is built into something on your Workbench.';
   const price = shopPrice(shopFor(state, content, shop), program.price);
   if (state.player.balance < price) return 'You cannot afford that.';
   if (program.sizeGq > freeStorageGb(state, content)) return 'Not enough room on your gateway.';
   state.player.balance -= price;
   state.player.programs.push(program.id);
+  // It goes straight into memory if it is better than what is loaded and there is room.
+  stowNew(state, content, program.id);
   return null;
 }
 
@@ -302,7 +309,7 @@ export function uninstallProgram(state: GameState, programId: string): string | 
   if (!state.player.programs.includes(programId)) return 'That program is not installed.';
   if (state.tasks.some((task) => task.programId === programId)) return 'That program is running. Stop it first.';
   state.player.programs = state.player.programs.filter((id) => id !== programId);
-  for (const [kind, id] of Object.entries(state.player.preferred)) if (id === programId) delete state.player.preferred[kind];
+  dropFromMemory(state, programId);
   return null;
 }
 
@@ -324,8 +331,10 @@ export function deleteStoredFile(state: GameState, name: string): string | null 
 export function punish(state: GameState, content: Content, serverId: string): { fine: number; hours: number } {
   const server = findServer(content, serverId);
   // Patrons in the inner circle soften the blow: one pays half the fine, one shortens the time out of sight.
-  const fine = Math.min(state.player.balance, Math.round(baseFine(content, serverId) * (hasFavour(state, content, 'fineCut') ? FAVOUR_CUT : 1)));
-  const hours = content.rules.lieLowHours * (hasFavour(state, content, 'lieLowCut') ? FAVOUR_CUT : 1);
+  // Someone already wanted pays more and stays out of sight longer (see wanted.ts).
+  const heat = wanted(state);
+  const fine = Math.min(state.player.balance, Math.round(baseFine(content, serverId) * heat.fines * (hasFavour(state, content, 'fineCut') ? FAVOUR_CUT : 1)));
+  const hours = content.rules.lieLowHours * heat.lieLow * (hasFavour(state, content, 'lieLowCut') ? FAVOUR_CUT : 1);
   state.player.balance -= fine;
   state.player.rating = Math.max(0, state.player.rating - content.rules.caughtRatingLoss);
   state.player.lieLowUntilMs = state.clock.gameTimeMs + hours * 3_600_000;

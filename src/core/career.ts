@@ -27,7 +27,8 @@ import { intruding, relayHeat, relayWorth, totalTraceMs } from './trace';
 import { raidPortAngle } from './raid';
 import { storyComplete } from './story';
 import { goalMet, readFlag, stagesOf, stageView } from './stages';
-import { fileDef, findProgram, findServer, linkOf, ownedProgram, securityOf, syncWithContent, type Content } from './world';
+import { fileDef, findProgram, findServer, installedOfKind, linkOf, ownedProgram, securityOf, syncWithContent, type Content } from './world';
+import { FIELD_KINDS, loadedPrograms, memoryGb } from './loadout';
 
 /** How a player plays. The numbers stand in for a person's habits. */
 export interface Profile {
@@ -181,6 +182,7 @@ const LATE_WISHES: readonly string[] = [
   'cpu-5',
   'proxy-bypass-4',
   'modem-5',
+  'memory-5',
   'cooling-2',
   'storage-5',
   'trace-jammer-2',
@@ -201,11 +203,13 @@ const WISHES: readonly string[] = [
   'route-planner',
   'cpu-2',
   'decrypter',
+  'memory-2',
   'modem-2',
   'storage-2',
   'password-breaker-2',
   'firewall-bypass-2',
   'proxy-bypass-2',
+  'memory-3',
   'cpu-3',
   'monitor-bypass-2',
   'modem-3',
@@ -218,6 +222,7 @@ const WISHES: readonly string[] = [
   'cpu-4',
   'modem-4',
   'storage-4',
+  'memory-4',
   'route-planner-2',
   'rack-2',
   'route-planner-3',
@@ -233,12 +238,14 @@ const CRAFT_WISHES: readonly string[] = [
   'cpu-2',
   'mod:tidy:1',
   'decrypter',
+  'memory-2',
   'modem-2',
   'storage-2',
   'password-breaker-2',
   'firewall-bypass-2',
   'mod:swift:2',
   'proxy-bypass-2',
+  'memory-3',
   'cpu-3',
   'mod:quiet:2',
   'monitor-bypass-2',
@@ -256,6 +263,7 @@ const CRAFT_WISHES: readonly string[] = [
   'mod:quiet:3',
   'modem-4',
   'storage-4',
+  'memory-4',
   'mod:tidy:3',
   'rack-2',
   ...LATE_WISHES,
@@ -551,7 +559,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       run(connection, { kind: 'proxy' });
     }
     // A review may have closed the case while the proxy was being dealt with.
-    if (lines().length > 0) run(connection, { kind: 'deleteLog', logIds: lines() });
+    if (lines().length > 0 && ownedProgram(state, content, 'deleteLog')) run(connection, { kind: 'deleteLog', logIds: lines() });
   };
 
   const fileBlocked = (server: ServerDef, connection: Connection): boolean =>
@@ -620,11 +628,61 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     }
   };
 
+  /** The best program of a kind on the drive, loaded or not. */
+  const best = (kind: ProgramKind): ProgramDef | undefined => installedOfKind(state, content, kind)[0];
+
+  /** The kinds of program one step of a job cannot be done without, most needed first. */
+  const mustCarry = (stage: { targetId: string; objective: ContractDef["objective"] }): ProgramKind[] => {
+    const server = findServer(content, stage.targetId);
+    if (!server) return [];
+    const sec = securityOf(state, server);
+    const goal = stage.objective;
+    const kinds: ProgramKind[] = [];
+    const admin = adminOf(server);
+    if (admin && sec.password > 0 && !state.player.passwords[server.id]?.includes(admin.user)) kinds.push('breakPassword');
+    const holder = linkOf(state, server);
+    const held = holder && findServer(content, holder.serverId);
+    if (held && adminOf(held) && securityOf(state, held).password > 0 && !kinds.includes('breakPassword')) kinds.push('breakPassword');
+    if (goal.kind === 'record' || goal.kind === 'frame') {
+      if (sec.proxy > 0) kinds.push('bypassProxy');
+    } else if (['steal', 'destroy', 'plant', 'read'].includes(goal.kind) && sec.firewall > 0 && !(holder?.layer === 'firewall' && maxConnections(state, content) >= 2)) kinds.push('bypassFirewall');
+    if (goal.kind === 'steal' || goal.kind === 'plant') kinds.push('copyFile');
+    if (goal.kind === 'destroy') kinds.push('deleteFile');
+    // Someone who cleans up carries what cleaning takes, on every server the job touches.
+    if (profile.scrub) for (const kind of ['deleteLog', 'bypassProxy'] as const) if (!kinds.includes(kind)) kinds.push(kind);
+    return kinds;
+  };
+
+  /**
+   * Packs memory for one step of a job, as a player does before connecting:
+   * what the step cannot be done without, then whatever else is useful for
+   * as long as it fits.
+   */
+  const pack = (stage: ContractDef): void => {
+    const server = findServer(content, stage.targetId);
+    const order: ProgramKind[] = [...mustCarry(stage)];
+    const sec = server ? securityOf(state, server) : undefined;
+    if (sec && sec.monitor > 0) order.push('bypassMonitor');
+    for (const kind of FIELD_KINDS) order.push(kind);
+    const wanted = [...new Set(order)].map((kind) => best(kind)).filter((program): program is ProgramDef => program !== undefined);
+    let room = memoryGb(state, content);
+    const carry = wanted.filter((program) => {
+      if (program.sizeGq > room) return false;
+      room -= program.sizeGq;
+      return true;
+    });
+    const loaded = loadedPrograms(state, content);
+    if (loaded.length === carry.length && carry.every((program) => loaded.includes(program))) return;
+    for (const program of loaded) act({ type: 'unloadProgram', programId: program.id });
+    for (const program of carry) act({ type: 'loadProgram', programId: program.id });
+  };
+
   /** One trip to the current step's target. Returns false if it had to leave early. */
   const visit = (contract: ContractDef): boolean => {
     const stage = step(contract);
     const server = findServer(content, stage.targetId)!;
     try {
+      pack(stage);
       let holder: Connection | undefined;
       const link = linkOf(state, server);
       if (wantsHolder(server) && link) {
@@ -670,8 +728,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     if (part) return state.player.hardware[part.slot] >= part.tier;
     const program = findProgram(content, id);
     if (!program) return true;
-    const best = ownedProgram(state, content, program.kind);
-    return best !== undefined && best.version >= program.version;
+    const own = best(program.kind);
+    return own !== undefined && own.version >= program.version;
   };
 
   /** The shops this player buys from: the board, and once Wren has pointed the others out, every shop in the address book. */
@@ -724,6 +782,11 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     const program: ProgramDef | undefined = findProgram(content, id);
     if (program && !wish && !part) {
       // An older version only takes up room.
+      // A build on an older version comes apart first: its modules go back on the shelf for the new one.
+      for (const build of [...state.player.builds]) {
+        const base = content.programs.find((own) => own.id === build.base);
+        if (base && base.kind === program.kind && base.version < program.version) act({ type: 'scrapProgram', programId: build.id });
+      }
       const older = content.programs.find((own) => state.player.programs.includes(own.id) && own.kind === program.kind && own.version < program.version);
       if (older && program.sizeGq - older.sizeGq <= freeStorageGb(state, content)) act({ type: 'uninstallProgram', programId: older.id });
     }
@@ -734,8 +797,6 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
         ? act({ type: 'buyHardware', connectionId, partId: id })
         : act({ type: 'buyProgram', connectionId, programId: id });
     if (!result.ok) return false;
-    // A newer version takes over from whatever was built on the old one, until the Workbench catches up.
-    if (program && !wish && !part) act({ type: 'preferProgram', programId: program.id });
     const name = wish ? `${findModule(content, wish.id)?.name ?? wish.id} ${wish.grade} module` : (part?.name ?? `${program!.name} v${program!.version}`);
     bought.push({ name: `${name}${deal.shop.id === board.id ? '' : ` (${deal.shop.name})`}`, price: deal.price, atMinutes: minutes() });
     return true;
@@ -751,7 +812,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       return fit?.id ?? null;
     };
     const want = (kind: ProgramDef['kind'], level: number): boolean => {
-      const own = ownedProgram(state, content, kind);
+      const own = best(kind);
       if (own && level - own.version <= MAX_LEVEL_GAP) return true;
       const id = cheapest(kind, level);
       if (id === null) return false;
@@ -775,7 +836,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
         if (sec.proxy > 0 && !want('bypassProxy', sec.proxy)) return null;
       } else if ((goal.kind === 'steal' || goal.kind === 'destroy' || goal.kind === 'plant' || goal.kind === 'read') && sec.firewall > 0) {
         const linked = linkOf(state, server)?.layer === 'firewall';
-        const own = ownedProgram(state, content, 'bypassFirewall');
+        const own = best('bypassFirewall');
         const reachable = cheapest('bypassFirewall', sec.firewall) !== null;
         if (linked && (!reachable || maxConnections(state, content) >= 2)) {
           if (maxConnections(state, content) < 2) list.push('ports-2');
@@ -795,6 +856,16 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
           if (!next) return null;
           list.push(next.id);
         }
+      }
+      // What this step cannot be done without has to fit in memory together, counting what is about to be bought.
+      const carried = mustCarry(stage).map((kind) => {
+        const buying = list.map((id) => content.programs.find((program) => program.id === id)).find((program) => program?.kind === kind);
+        return (buying ?? best(kind))?.sizeGq ?? 0;
+      });
+      if (carried.reduce((sum, size) => sum + size, 0) > memoryGb(state, content)) {
+        const next = content.hardware.find((part) => part.slot === 'memory' && part.tier === state.player.hardware.memory + 1);
+        if (!next) return null;
+        list.push(next.id);
       }
     }
     return [...new Set(list)];
@@ -820,7 +891,9 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     }
     pool.sort((a, b) => b.grade - a.grade);
     const bases = new Map<ProgramKind, ProgramDef>();
-    for (const program of buildBases(state, content)) {
+    // A program already built on counts too: its build stands in for it on the drive.
+    const builtOn = content.programs.filter((program) => state.player.builds.some((build) => build.base === program.id));
+    for (const program of [...buildBases(state, content), ...builtOn]) {
       if ((bases.get(program.kind)?.version ?? 0) < program.version) bases.set(program.kind, program);
     }
     const slots = moduleSlots(state, content);
@@ -845,9 +918,21 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       idle(() => state.tasks.length === 0);
       const build = state.player.builds[state.player.builds.length - 1];
       if (!build) continue;
-      act({ type: 'preferProgram', programId: build.id });
       built.push({ name: findProgram(content, build.id, state)?.name ?? build.id, atMinutes: minutes() });
     }
+  };
+
+  /** Room the job in hand needs for the files it brings home, in GB. */
+  const haul = (): number => {
+    const job = activeContract(state, content);
+    if (!job) return 0;
+    let room = 0;
+    for (const stage of stagesOf(job)) {
+      if (stage.objective.kind !== 'steal') continue;
+      const name = stage.objective.file;
+      room += state.servers[stage.targetId]?.files.find((item) => item.name === name)?.sizeGq ?? 0;
+    }
+    return room;
   };
 
   /** Logs in to the board, takes the best contract it can do, and shops. Returns the contract taken. */
@@ -891,6 +976,9 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
         if (wish && wish.grade > marketGrade(state, content)) continue;
         // Not on any shelf it can reach today: on to the next thing.
         if (!offer(id)) continue;
+        // Nor anything that would take the room the job in hand needs for its file.
+        const size = wish ? 0 : (findProgram(content, id)?.sizeGq ?? 0);
+        if (size > 0 && size > freeStorageGb(state, content) - haul()) continue;
         if (state.player.balance >= price(id) + profile.reserve && buy(id)) again = true;
         break;
       }

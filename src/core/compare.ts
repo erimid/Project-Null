@@ -5,7 +5,8 @@
  */
 import type { ProgramDef, ProgramKind } from '../content/schema';
 import type { GameState } from './state';
-import { ownedProgram, type Content } from './world';
+import { ownsProgram } from './loadout';
+import { installedOfKind, ownedProgram, type Content } from './world';
 
 /** The size of file the file programs are timed on, so a copier that is slow to start but quick per GB compares fairly. */
 export const REFERENCE_FILE_GB = 10;
@@ -52,8 +53,9 @@ export interface ProgramComparison {
 
 /** Measures a program against the one of its kind the player runs now. */
 export function compareProgram(state: GameState, content: Content, program: ProgramDef): ProgramComparison {
-  const owned = state.player.programs.includes(program.id);
-  const current = ownedProgram(state, content, program.kind);
+  const owned = ownsProgram(state, program.id);
+  // What runs now: the one in memory, or with none loaded the strongest on the drive.
+  const current = ownedProgram(state, content, program.kind) ?? installedOfKind(state, content, program.kind)[0];
   if (!current) return { owned, versions: 0, sizeGq: 0, upgrade: !owned };
   const mine = programPace(current);
   const theirs = programPace(program);

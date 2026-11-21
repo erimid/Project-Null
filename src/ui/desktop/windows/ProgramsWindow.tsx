@@ -1,13 +1,21 @@
 import { useState } from 'preact/hooks';
 import {
+  LOADOUT_SLOTS,
   findModule,
+  freeMemoryGb,
+  isLoaded,
+  loadedPrograms,
+  loadoutLocked,
+  matchesLoadout,
+  memoryGb,
+  needsMemory,
+  whyNotLoad,
   findProgram,
   findServer,
   hostedModel,
   installedOfKind,
   maxPrograms,
   moduleSlots,
-  ownedProgram,
   programFile,
   programStorageGq,
   rackStorageGb,
@@ -29,15 +37,18 @@ import { Window } from '../Window';
 import { deskStore, useDesk } from '../deskStore';
 import { WorkbenchSection } from './WorkbenchSection';
 
-/** One installed program as a tile: its icon, version and size, whether it is running, and what can be done with it. */
-function ProgramTile({ game, program, choice }: { game: GameState; program: ProgramDef; choice: boolean }) {
+/** One installed program as a tile: its icon, version and size, whether it is in memory or running, and what can be done with it. */
+function ProgramTile({ game, program }: { game: GameState; program: ProgramDef }) {
   const build = game.player.builds.find((item) => item.id === program.id);
   const running = game.tasks.some((task) => task.programId === program.id);
-  const inUse = ownedProgram(game, content, program.kind)?.id === program.id;
+  const field = needsMemory(program.kind);
+  const loaded = field && isLoaded(game, program.id);
+  const locked = loadoutLocked(game, content);
+  const blocked = field && !loaded ? whyNotLoad(game, content, program.id) : null;
   // A crafted program keeps the name and the top version of the one it was built from.
   const base = build ? content.programs.find((item) => item.id === build.base) : undefined;
   return (
-    <li class={`ptile${running ? ' is-running' : ''}${choice && inUse ? ' is-used' : ''}${choice && !inUse ? ' is-spare' : ''}`} data-tip={program.blurb}>
+    <li class={`ptile${running ? ' is-running' : ''}${loaded ? ' is-used' : ''}${field && !loaded ? ' is-spare' : ''}`} data-tip={program.blurb}>
       <IconTile icon={programIcon(program.kind)} tone={running ? 'good' : undefined} />
       <div class="ptile__text">
         <strong>{base?.name ?? program.name}</strong>
@@ -60,27 +71,38 @@ function ProgramTile({ game, program, choice }: { game: GameState; program: Prog
           <span class="ptile__state is-running">
             <i class="ptile__beat" aria-hidden="true" /> Running
           </span>
-        ) : choice && inUse ? (
-          <span class="ptile__state is-used">
-            <Icon name="check" size={14} /> This one runs
+        ) : !field ? (
+          <span class="ptile__state is-home" data-tip="Runs at home, straight off the drive. It needs no memory.">
+            <Icon name="drives" size={14} /> Runs at home
           </span>
-        ) : choice ? (
+        ) : loaded ? (
           <button
             type="button"
-            class="btn btn--go"
-            data-tip="Run this copy from now on, instead of the others of its kind"
-            onClick={() => session.dispatch({ type: 'preferProgram', programId: program.id })}
+            class="btn ptile__load is-loaded"
+            data-sfx="unload"
+            disabled={locked}
+            data-tip={locked ? 'Memory is locked while you are inside a server.' : 'In memory, ready to run on a job. Click to take it out and free the room.'}
+            onClick={() => session.dispatch({ type: 'unloadProgram', programId: program.id })}
           >
-            Use this
+            <Icon name="check" size={14} /> Loaded
           </button>
         ) : (
-          <span />
+          <button
+            type="button"
+            class="btn btn--go ptile__load"
+            data-sfx="load"
+            disabled={blocked !== null}
+            data-tip={blocked ?? 'Load it into memory so it can run on a job. It takes the place of any other of its kind.'}
+            onClick={() => session.dispatch({ type: 'loadProgram', programId: program.id })}
+          >
+            Load
+          </button>
         )}
         {!running && (
           <ConfirmButton
             class="btn btn--danger"
             confirmLabel={build ? 'Scrap?' : 'Remove?'}
-            tip={build ? 'Take this build apart and get its modules back.' : 'Uninstall to free storage. The market gives it back if you need it.'}
+            tip={build ? 'Take this build apart. You get its modules and the plain program back.' : 'Uninstall to free storage. The market gives it back if you need it.'}
             onConfirm={() => session.dispatch({ type: 'uninstallProgram', programId: program.id })}
           >
             {build ? 'Scrap' : 'Remove'}
@@ -88,6 +110,81 @@ function ProgramTile({ game, program, choice }: { game: GameState; program: Prog
         )}
       </div>
     </li>
+  );
+}
+
+/**
+ * Memory: what is loaded for the next job, as a bar with one block per
+ * program, and the three kits a loadout can be kept in.
+ */
+function MemoryPanel({ game }: { game: GameState }) {
+  const capacity = memoryGb(game, content);
+  const loaded = loadedPrograms(game, content);
+  const free = freeMemoryGb(game, content);
+  const locked = loadoutLocked(game, content);
+  const [notice, setNotice] = useState('');
+  const send = (action: Parameters<typeof session.dispatch>[0]) => {
+    const result = session.dispatch(action);
+    setNotice(result.ok ? '' : result.reason);
+  };
+  if (!Number.isFinite(capacity)) return null;
+  return (
+    <div class={`drive memory${locked ? ' is-locked' : ''}`} data-guide="memory">
+      <div class="drive__head">
+        <Icon name="ram" size={18} />
+        <strong>Memory</strong>
+        <span class="data drive__used">
+          {capacity - free} of {capacity} GB
+        </span>
+        {locked && (
+          <span class="memory__lock" data-tip="What you loaded is what you have until you disconnect.">
+            <Icon name="lock" size={13} /> Locked while connected
+          </span>
+        )}
+        <span class="data drive__free">{free} GB free</span>
+      </div>
+      <div class="memory__bar" role="img" aria-label={`In memory: ${loaded.map((program) => `${program.name} ${program.sizeGq} GB`).join(', ') || 'nothing'}. ${free} GB free.`}>
+        {loaded.map((program) => (
+          <span key={program.id} class="memory__block" style={{ flexGrow: program.sizeGq }} data-tip={`${program.name} v${program.version} · ${program.sizeGq} GB`}>
+            <Icon name={programIcon(program.kind)} size={14} />
+          </span>
+        ))}
+        {free > 0 && <span class="memory__block memory__block--free" style={{ flexGrow: free }} />}
+      </div>
+      <p class="memory__note">Only what is loaded here runs on a job. Load before you connect: memory locks while you are inside a server.</p>
+      <div class="memory__kits">
+        <button type="button" class="btn" disabled={locked} data-tip="Load the strongest program of each kind, for as long as they fit" onClick={() => send({ type: 'packMemory' })}>
+          Pack the best
+        </button>
+        {Array.from({ length: LOADOUT_SLOTS }, (_, slot) => {
+          const saved = (game.player.savedLoadouts[slot] ?? []).map((id) => findProgram(content, id, game)).filter((program): program is ProgramDef => program !== undefined);
+          const current = matchesLoadout(game, content, slot);
+          const names = saved.map((program) => `${program.name} v${program.version}`).join(', ');
+          return (
+            <span key={slot} class={`kit${current ? ' is-current' : ''}${saved.length === 0 ? ' is-empty' : ''}`}>
+              <button
+                type="button"
+                class="btn kit__use"
+                disabled={locked || saved.length === 0 || current}
+                data-tip={saved.length === 0 ? 'Nothing kept here yet. Save what is loaded with the button beside this one.' : current ? `This kit is what is loaded now: ${names}` : `Load this kit: ${names}`}
+                onClick={() => send({ type: 'useLoadout', slot })}
+              >
+                Kit {slot + 1}
+                <span class="data kit__count">{saved.length === 0 ? 'empty' : `${saved.reduce((sum, program) => sum + program.sizeGq, 0)} GB`}</span>
+              </button>
+              <button type="button" class="btn kit__save" disabled={loaded.length === 0 || current} data-tip={`Keep what is loaded now as kit ${slot + 1}`} aria-label={`Save as kit ${slot + 1}`} onClick={() => send({ type: 'saveLoadout', slot })}>
+                Save
+              </button>
+            </span>
+          );
+        })}
+      </div>
+      {notice && (
+        <p class="map__notice" role="status">
+          {notice}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -188,6 +285,8 @@ function ProgramsSection() {
         <p class="board__warning">Your gateway holds more than its drive is meant to. Nothing new fits until you free some room.</p>
       )}
 
+      <MemoryPanel game={game} />
+
       <h3 class="map__heading section-gap">
         Running{' '}
         <span class="data heading__note">
@@ -243,20 +342,20 @@ function ProgramsSection() {
             </p>
             <ul class="progs__grid">
               {kinds.map(({ kind, list }) =>
-                list.length > 1 ? (
-                  // Several copies of one tool: boxed together, the one that runs lit.
+                list.length > 1 && needsMemory(kind) ? (
+                  // Several copies of one tool: boxed together, the one in memory lit.
                   <li key={kind} class="kindset">
                     <span class="kindset__label">
-                      {kindLabel(kind)}: <b>{list.length} copies</b>. Pick the one that runs.
+                      {kindLabel(kind)}: <b>{list.length} copies</b>. One of a kind fits in memory at a time.
                     </span>
                     <ul class="progs__grid">
                       {list.map((program) => (
-                        <ProgramTile key={program.id} game={game} program={program} choice />
+                        <ProgramTile key={program.id} game={game} program={program} />
                       ))}
                     </ul>
                   </li>
                 ) : (
-                  <ProgramTile key={list[0]!.id} game={game} program={list[0]!} choice={false} />
+                  list.map((program) => <ProgramTile key={program.id} game={game} program={program} />)
                 ),
               )}
             </ul>

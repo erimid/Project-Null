@@ -233,7 +233,7 @@
     "id": "overclock",
     "branch": "engineering",
     "row": 3,
-    "name": "Overclock",
+    "name": "Fine tuning",
     "ranks": 2,
     "cost": 2,
     "needs": "tuned-hardware",
@@ -288,5 +288,77 @@
     "effect": "tightBuilds",
     "amount": 0.25,
     "blurb": "Crafted programs take another quarter less room."
+  },
+  {
+    "id": "burst",
+    "branch": "intrusion",
+    "row": 4,
+    "name": "Overclock",
+    "ranks": 1,
+    "cost": 3,
+    "needs": "extra-thread",
+    "effect": "surge",
+    "amount": 1,
+    "blurb": "A button under a server's defences, once per connection. Every program running there goes twice as fast for ten seconds. The fans are loud: the monitor notices at once."
+  },
+  {
+    "id": "false-trail",
+    "branch": "ghost",
+    "row": 4,
+    "name": "False trail",
+    "ranks": 1,
+    "cost": 3,
+    "needs": "long-way-round",
+    "effect": "falseTrail",
+    "amount": 1,
+    "blurb": "A button on the trace alarm, once per connection. The trace chases a decoy and loses the relay it was on and the one before."
+  },
+  {
+    "id": "hot-patch",
+    "branch": "engineering",
+    "row": 4,
+    "name": "Hot patch",
+    "ranks": 1,
+    "cost": 3,
+    "needs": "second-slot",
+    "effect": "hotPatch",
+    "amount": 1,
+    "blurb": "A button under a server's defences, once per connection. A loaded program is rebuilt on the spot to match a layer that outclasses it, and uses up the cheapest module on your shelf."
+  },
+  {
+    "id": "second-wind",
+    "branch": "intrusion",
+    "row": 5,
+    "name": "Second wind",
+    "ranks": 1,
+    "cost": 0,
+    "signature": true,
+    "effect": "doubleTap",
+    "amount": 1,
+    "blurb": "Overclock, False trail and Hot patch each work twice on a connection."
+  },
+  {
+    "id": "ninth-relay",
+    "branch": "ghost",
+    "row": 5,
+    "name": "Ninth relay",
+    "ranks": 1,
+    "cost": 0,
+    "signature": true,
+    "effect": "ninthRelay",
+    "amount": 1,
+    "blurb": "Your routes take nine relays where everyone else's stop at eight."
+  },
+  {
+    "id": "deep-memory",
+    "branch": "engineering",
+    "row": 5,
+    "name": "Deep memory",
+    "ranks": 1,
+    "cost": 0,
+    "signature": true,
+    "effect": "deepMemory",
+    "amount": 10,
+    "blurb": "Your gateway's memory holds 10 GB more than the part allows."
   }
 ]

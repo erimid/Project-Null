@@ -11,6 +11,7 @@ import type { ProgramKind } from '../../core/content';
 
 /** The drawings: what goes inside each icon's <svg>. */
 const ICONS = {
+  ram: '<rect x="2.5" y="7" width="19" height="9" rx="1.5"/><path d="M6.5 10v3M10.5 10v3M14.5 10v3M18 10v3M5 16v3M9 16v3M13 16v3M17 16v3M2.5 19h19"/>',
   // ---- programs, by what they do ----
   key: '<circle cx="8" cy="15.5" r="4.2"/><path d="M11 12.5l9-9M16.5 7l3 3M13.5 10l2 2"/>',
   around: '<rect x="8" y="10" width="8" height="9" rx="1.5"/><path d="M4 16V8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8M17.5 13.5L20 16l2.5-2.5"/>',
@@ -134,6 +135,7 @@ const PROGRAM_ICONS: Record<ProgramKind, IconName> = {
 
 const SLOT_ICONS: Record<string, IconName> = {
   cpu: 'chip',
+  memory: 'ram',
   storage: 'drives',
   modem: 'modem',
   ports: 'sockets',

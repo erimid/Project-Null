@@ -304,10 +304,11 @@ describe('hardware', () => {
     { id: 's', slot: 'storage', tier: 1, name: 'S', blurb: 'b', price: 0, storageGb: 40 },
     { id: 'm', slot: 'modem', tier: 1, name: 'M', blurb: 'b', price: 0, fileSpeed: 1 },
     { id: 'p', slot: 'ports', tier: 1, name: 'P', blurb: 'b', price: 0, connections: 1 },
+    { id: 'r', slot: 'memory', tier: 1, name: 'R', blurb: 'b', price: 0, memoryGb: 12 },
   ];
 
   it('ships a stock part for every core slot, free, and racks that host real models', () => {
-    for (const slot of ['cpu', 'storage', 'modem', 'ports'] as const) {
+    for (const slot of ['cpu', 'memory', 'storage', 'modem', 'ports'] as const) {
       expect(hardware.find((part) => part.slot === slot && part.tier === 1)?.price, slot).toBe(0);
     }
     for (const part of hardware.filter((item) => item.slot === 'rack')) {
@@ -316,14 +317,14 @@ describe('hardware', () => {
   });
 
   it('accepts a minimal set and rejects gaps, paid stock parts, missing values and unknown models', () => {
-    expect(parseHardware(stock, [])).toHaveLength(4);
+    expect(parseHardware(stock, [])).toHaveLength(5);
     expect(() => parseHardware([...stock, cpu(3, 10)], [])).toThrow(/no gaps/);
     expect(() => parseHardware([cpu(1, 5), ...stock.slice(1)], [])).toThrow(/price must be 0/);
     expect(() => parseHardware([{ ...cpu(1, 0), programs: undefined }, ...stock.slice(1)], [])).toThrow(/programs/);
     expect(() => parseHardware(stock.slice(1), [])).toThrow(/tier 1/);
-    const rack = { id: 'r', slot: 'rack', tier: 1, name: 'R', blurb: 'b', price: 9, sizeGb: 4, model: 'ghost' };
+    const rack = { id: 'k', slot: 'rack', tier: 1, name: 'R', blurb: 'b', price: 9, sizeGb: 4, model: 'ghost' };
     expect(() => parseHardware([...stock, rack], ['magpie'])).toThrow(/models.json/);
-    expect(parseHardware([...stock, { ...rack, model: 'magpie' }], ['magpie'])).toHaveLength(5);
+    expect(parseHardware([...stock, { ...rack, model: 'magpie' }], ['magpie'])).toHaveLength(6);
   });
 });
 

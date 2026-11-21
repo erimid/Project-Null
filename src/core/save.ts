@@ -164,6 +164,19 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     const files = Array.isArray(player?.files) ? player.files.map((file: unknown) => (typeof file === 'object' && file !== null ? { ...file, takenMs: now } : file)) : player?.files;
     return { ...old, ...(player ? { player: { ...player, files } } : {}), data: { sold: [] } };
   },
+  // 25 -> 26: loadouts, a memory slot and the wanted level. What the player had picked to run is what gets loaded
+  // (syncWithContent finishes the job, since only it knows how big each program is). Nobody was wanted.
+  25: (old) => {
+    const { preferred, ...player } = old.player as Record<string, unknown>;
+    const picks = typeof preferred === 'object' && preferred !== null ? Object.values(preferred).filter((id): id is string => typeof id === 'string') : [];
+    return {
+      ...old,
+      player: { ...player, hardware: { ...(player.hardware as object), memory: 1 }, loadout: picks, savedLoadouts: [[], [], []] },
+      wanted: { heat: 0, level: 0, day: 0 },
+      // Tells the next sync that this gateway was running everything it owned: its memory grows, free, to hold that.
+      flags: [...(Array.isArray(old.flags) ? old.flags : []), 'beforeLoadouts'],
+    };
+  },
   // 21 -> 22: the rivals ladder. It sets itself up on the next clock check; raiders already beaten wait for a decision.
   21: (old) => ({
     ...old,
@@ -286,7 +299,7 @@ const isConnection = (c: unknown): c is Obj =>
       ['open', 'won', 'lost'].includes(c.monitor.echo.result as string)));
 
 const isHardware = (h: unknown) =>
-  isObj(h) && ['cpu', 'storage', 'modem', 'ports', 'rack', 'sensor', 'cooling'].every((slot) => isNum(h[slot]) && Number.isInteger(h[slot]) && (h[slot] as number) >= 0);
+  isObj(h) && ['cpu', 'memory', 'storage', 'modem', 'ports', 'rack', 'sensor', 'cooling'].every((slot) => isNum(h[slot]) && Number.isInteger(h[slot]) && (h[slot] as number) >= 0);
 
 const isJob = (j: unknown): j is Obj =>
   isObj(j) &&
@@ -302,7 +315,7 @@ const isLevel = (value: unknown) => value === undefined || isNum(value);
 const isFitted = (f: unknown): f is Obj => isObj(f) && isText(f.id) && isNum(f.grade);
 const isBuild = (b: unknown): b is Obj => isObj(b) && isText(b.id) && isText(b.base) && isList(b.modules, isFitted);
 
-const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'uploadFile', 'deleteLog', 'build', 'decompile'];
+const TARGET_KINDS = ['password', 'proxy', 'firewall', 'monitor', 'decrypt', 'copyFile', 'deleteFile', 'uploadFile', 'deleteLog', 'build', 'decompile', 'scan'];
 
 const isTask = (t: unknown): t is Obj =>
   isObj(t) &&
@@ -392,7 +405,9 @@ function checkState(raw: Obj): GameState {
     throw damaged;
   }
   if (!isObj(player.parts) || !Object.values(player.parts).every(isNum) || !isList(player.builds, isBuild)) throw damaged;
-  if (!isObj(player.preferred) || !Object.values(player.preferred).every(isText)) throw damaged;
+  if (!isList(player.loadout, isText) || !isList(player.savedLoadouts, (slot): slot is string[] => isList(slot, isText))) throw damaged;
+  const heat = raw.wanted;
+  if (!isObj(heat) || !isNum(heat.heat) || !isNum(heat.level) || !isNum(heat.day)) throw damaged;
   if (!isList(player.contacts, isText) || !isList(player.facts, isText)) throw damaged;
   if (!(player.model === null || (isObj(player.model) && isText(player.model.id) && isNum(player.model.untilMs)))) throw damaged;
   const phish = raw.phish;
