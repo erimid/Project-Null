@@ -23,11 +23,12 @@ export function tierForRating(rating: number, tierRatings: readonly number[]): n
 }
 
 /** Every company a job on the board right now touches, over all of its steps. */
-function touchedServers(state: GameState): Set<string> {
+export function touchedServers(state: GameState): Set<string> {
   const ids = new Set<string>();
   for (const job of state.contracts.jobs) {
     ids.add(job.targetId);
     for (const stage of job.stages ?? []) ids.add(stage.targetId);
+    for (const hold of job.heist?.holds ?? []) ids.add(hold.targetId);
   }
   return ids;
 }
@@ -268,8 +269,8 @@ export function postNewsJob(state: GameState, content: Content, server: ServerDe
 export function refreshJobs(state: GameState, content: Content, stillPossible: (job: Job) => boolean): void {
   const now = state.clock.gameTimeMs;
   const keep = (job: Job) => job.id === state.contracts.activeId || (job.expiresMs > now && stillPossible(job));
-  // Jobs the news opened come on top of the usual number.
-  const usual = () => state.contracts.jobs.filter((job) => !job.news).length;
+  // Jobs the news opened, and heists, come on top of the usual number.
+  const usual = () => state.contracts.jobs.filter((job) => !job.news && !job.heist).length;
   if (usual() >= content.rules.boardJobs && state.contracts.jobs.every(keep)) return;
   state.contracts.jobs = state.contracts.jobs.filter(keep);
   // A few tries per missing job, in case a pick has nothing left to ask for.

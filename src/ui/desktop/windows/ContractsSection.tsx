@@ -9,6 +9,7 @@ import { Icon, objectiveIcon, type IconName } from '../Icon';
 import { useGuide } from '../guide';
 import { deskStore } from '../deskStore';
 import { OBJECTIVE_WORDS, Place, RiskMeter } from './Place';
+import { HeistPlan } from './HeistPlan';
 import type { View } from './serverView';
 
 type Filter = 'all' | 'story' | 'staged' | 'standing';
@@ -41,7 +42,7 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
   const part = contract.part && findModule(content, contract.part.id);
   const minutes = contract.withinMinutes;
   return (
-    <li class={`card jobcard${contract.story ? ' is-story' : ''}${job ? ' is-standing' : ''}`}>
+    <li class={`card jobcard${contract.story ? ' is-story' : ''}${job ? ' is-standing' : ''}${contract.heist ? ' is-heist' : ''}`}>
       <div class="card__head">
         <IconTile icon={contract.story ? 'star' : objectiveIcon(contract.objective.kind)} tone={contract.story ? 'rare' : job ? 'good' : undefined} />
         <div class="card__title">
@@ -53,7 +54,9 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
             <PatronChip contract={contract} />
           </span>
         </div>
-        {contract.story ? (
+        {contract.heist ? (
+          <span class="row__tag row__tag--danger card__tag" data-tip="Several lines at once, several traces. Caught on any of them, the plan burns.">heist</span>
+        ) : contract.story ? (
           <span class="row__tag row__tag--rare card__tag">story</span>
         ) : job && 'news' in contract && contract.news ? (
           <span class="row__tag row__tag--warn card__tag" data-tip="The Wire carried a story about this company. The job is only up for a short while.">in the news</span>
@@ -63,6 +66,7 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
       </div>
       {job && 'news' in contract && contract.news && <p class="jobcard__news">“{contract.news}”</p>}
       <p class="card__blurb">{contract.summary}</p>
+      {contract.heist && <HeistPlan contract={contract} live={false} />}
       {staged ? (
         <p class="jobcard__steps" title="A longer job. Each step comes once the one before is done.">
           <span class="card__fits-label">{stages.length} steps</span>

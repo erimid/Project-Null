@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 23;
+export const STATE_VERSION = 24;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -123,6 +123,18 @@ export interface ContractsState {
   guard: GuardState | null;
   /** Game time a rival on the same job gets there first, for a race. 0 = no race. */
   raceUntilMs: number;
+  /** The heist under way, as it was planned when taken (see heists.ts), or null. */
+  heist: ActiveHeist | null;
+  /** Written heists that were burned: never offered again. */
+  burned: string[];
+  /** The edition day the board last thought about posting a heist. */
+  heistDay: number;
+}
+
+/** A heist being worked on: the vault and who holds which of its layers. */
+export interface ActiveHeist {
+  vaultId: string;
+  holds: { targetId: string; layer: 'firewall' | 'monitor' | 'proxy'; ally?: string }[];
 }
 
 /** A rival breaking into a server the player is guarding: the gateway defence, from the other side. */
@@ -604,7 +616,7 @@ export function createGame(options: NewGameOptions): GameState {
     connections: [],
     tasks: [],
     messages: [],
-    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0, heldMs: 0, guard: null, raceUntilMs: 0 },
+    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0, heldMs: 0, guard: null, raceUntilMs: 0, heist: null, burned: [], heistDay: -1 },
     story: { beat: 0, arrived: false, lastMs: 0, offered: [] },
     phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
     reviews: [],

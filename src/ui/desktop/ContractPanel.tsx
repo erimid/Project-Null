@@ -14,6 +14,7 @@ import { sideWidth } from './desks';
 import { useLayout } from './layout';
 import { useWindows, windows } from './windowStore';
 import { OBJECTIVE_WORDS, Place, RiskMeter, showOnMap } from './windows/Place';
+import { HeistPlan } from './windows/HeistPlan';
 
 /** What has to happen, in one line. */
 function objectiveText(contract: ContractDef): string {
@@ -233,6 +234,7 @@ export function ContractPanel() {
       {minutesLeft !== undefined && !done && (
         <p class="board__warning">This step must be finished within <span class="data">{minutesLeft}</span> game {minutesLeft === 1 ? 'minute' : 'minutes'}.</p>
       )}
+      {contract.heist && <HeistPlan contract={contract} live />}
       {race && contract.race && !done && (
         <div class="race">
           <div class="row__between">

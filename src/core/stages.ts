@@ -5,6 +5,7 @@
  * the client may write with a new brief, and the world may change (a file
  * moves, a target puts its guard up). Only the last step is delivered.
  */
+import { beginHeist } from './heists';
 import type { ContractDef, ObjectiveDef, StageDef, TwistDef } from '../content/schema';
 import { evidenceCount } from './forensics';
 import { CLIENT_FILE, type GameState } from './state';
@@ -185,6 +186,7 @@ function beginStage(state: GameState, content: Content, contract: ContractDef, i
 /** Starts the first step of a contract the player has just taken. */
 export function startContract(state: GameState, content: Content, contract: ContractDef): void {
   beginRace(state, contract);
+  beginHeist(state, contract);
   beginStage(state, content, contract, 0);
 }
 
