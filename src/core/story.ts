@@ -18,7 +18,7 @@
  */
 import { beatFlag, linesOf, MAIN_LINE, type StoryBeat, type StoryLapse, type StoryLine, type StoryMail } from '../content/story';
 import { conditionMet } from './conditions';
-import { shiftStanding, standingWith } from './patrons';
+import { liftStanding, shiftStanding, standingWith } from './patrons';
 import { scheduleRaid } from './raid';
 import { freeServer, noteStoryJob, takeServer } from './chorus';
 import type { GameState, StoryLineState } from './state';
@@ -115,6 +115,7 @@ function arriveBeat(state: GameState, content: Content, beat: StoryBeat): void {
 function passBeat(state: GameState, content: Content, beat: StoryBeat): void {
   if (!state.flags.includes(beatFlag(beat.id))) state.flags.push(beatFlag(beat.id));
   setFlags(state, beat.set, beat.clear);
+  for (const [patronId, least] of Object.entries(beat.floor ?? {})) liftStanding(state, content, patronId, least);
   for (const [patronId, delta] of Object.entries(beat.standing ?? {})) shiftStanding(state, content, patronId, delta);
   for (const id of beat.take ?? []) takeServer(state, content, id);
   for (const id of beat.free ?? []) freeServer(state, content, id);
@@ -141,6 +142,7 @@ function moveOn(state: GameState, at: StoryLineState, beat: StoryBeat): void {
   at.beat += 1;
   at.arrived = false;
   delete at.lapsed;
+  delete at.warned;
   at.lastMs = state.clock.gameTimeMs;
 }
 
@@ -175,6 +177,12 @@ function stepLine(state: GameState, content: Content, line: StoryLine): boolean 
     return true;
   }
   const lapse = beat.lapse;
+  // A turn that is coming says so first, once, unless the job is already in hand.
+  if (lapse?.warn && !at.warned && !at.lapsed && state.clock.gameTimeMs >= at.lastMs + lapse.warn.hours * 3_600_000) {
+    at.warned = true;
+    if (state.contracts.activeId !== beat.contractId) sendStoryMail(state, lapse.warn.mail);
+    return true;
+  }
   if (lapse && state.clock.gameTimeMs >= at.lastMs + lapse.hours * 3_600_000) {
     if (!at.lapsed) {
       at.lapsed = true;

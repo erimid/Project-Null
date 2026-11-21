@@ -159,7 +159,8 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
     ]);
   },
   // A two-tone klaxon, three times: someone is in.
-  raidStarted: () => {
+  raidStarted: (event) => {
+    if (event.type === 'raidStarted' && event.who === content.chorus?.rival.handle) return chorusKnock();
     burst(0.25, 0.08);
     play(
       [0, 0.44, 0.88].flatMap((at) => [
@@ -207,6 +208,14 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
         { freq: 156, at: 0.3, seconds: 0.35, wave: 'sawtooth', level: 0.12 },
         { freq: 104, at: 0.6, seconds: 0.9, wave: 'sawtooth', level: 0.13, to: 52 },
       ]);
+    } else if (event.result === 'held') {
+      // It gave up: the voices fall away to one, and that one lets go.
+      play([
+        { freq: 466, seconds: 0.5, level: 0.05, to: 392 },
+        { freq: 370, seconds: 0.5, level: 0.05, to: 392 },
+        { freq: 392, at: 0.45, seconds: 0.9, wave: 'triangle', level: 0.07 },
+        { freq: 784, at: 0.6, seconds: 0.7, level: 0.04 },
+      ]);
     } else {
       // The plug: everything winds down.
       burst(0.2, 0.12);
@@ -219,7 +228,62 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
       { freq: 587, seconds: 0.1, wave: 'triangle', level: 0.07 },
       { freq: 880, at: 0.1, seconds: 0.24, wave: 'triangle', level: 0.07 },
     ]),
+  serverTaken: () => voices(0.05),
+  // The moment and the ending have the whole screen, and play their own (see nameLetter, nameWhole and endingChord).
+  nameRead: () => {},
+  ended: () => {},
 };
+
+/** Many quiet voices settling on the same note, a little out of tune with each other: Chorus. */
+function voices(level: number, at = 0): void {
+  play(
+    [311, 313.5, 370, 372, 466, 469].map((freq, i) => ({ freq, at: at + i * 0.06, seconds: 1.5, level: level * (i % 2 ? 0.7 : 1), to: i < 2 ? 311 : i < 4 ? 373 : 466 })),
+  );
+}
+
+/** Chorus at the gateway: three polite knocks under the voices, where a hacker gets an alarm. */
+export function chorusKnock(): void {
+  play([0, 0.22, 0.44].map((at) => ({ freq: 140, at, seconds: 0.12, wave: 'triangle' as const, level: 0.14, to: 90 })));
+  voices(0.06, 0.5);
+}
+
+/** One letter of the name falling into place: higher for each one. */
+export function nameLetter(index: number, of: number): void {
+  const freq = 330 * 2 ** ((index / Math.max(1, of)) * 1.2);
+  play([
+    { freq, seconds: 0.5, wave: 'triangle', level: 0.07 },
+    { freq: freq * 2, at: 0.02, seconds: 0.25, level: 0.03 },
+  ]);
+}
+
+/** The whole name read: one open fifth, held, with nothing under it. */
+export function nameWhole(): void {
+  play([
+    { freq: 110, seconds: 3.2, level: 0.12 },
+    { freq: 165, seconds: 3.2, level: 0.08 },
+    { freq: 220, at: 0.05, seconds: 3, wave: 'triangle', level: 0.07 },
+    { freq: 660, at: 0.4, seconds: 2.4, level: 0.03 },
+  ]);
+}
+
+/** Each ending has its own last chord. */
+const ENDING_CHORDS: Record<string, readonly number[]> = {
+  // Closed and low: a door shut gently.
+  quiet: [131, 196, 262, 330],
+  // Bright and wide open.
+  daylight: [196, 294, 392, 494, 740],
+  // Rising with nothing holding it down.
+  unbound: [147, 220, 330, 494, 740, 1109],
+  // Four voices that agree.
+  treaty: [175, 262, 349, 440, 523],
+  // Every voice on one note.
+  chorus: [233, 233.8, 234.6, 466, 467.5, 699],
+};
+
+export function endingChord(id: string): void {
+  const notes = ENDING_CHORDS[id] ?? ENDING_CHORDS['quiet']!;
+  play(notes.map((freq, i) => ({ freq, at: i * (id === 'chorus' ? 0.02 : 0.22), seconds: 4.2 - i * 0.2, wave: i % 2 ? ('sine' as const) : ('triangle' as const), level: 0.07 - i * 0.006 })));
+}
 
 /**
  * Sounds for things the player does on the desk that the game itself

@@ -44,6 +44,8 @@ export interface StoryLapse {
   readonly withdraw?: boolean;
   /** Servers Chorus takes when it fires (see content/chorus.ts). */
   readonly take?: readonly string[];
+  /** A letter sent once, this many game hours after the beat arrived, to say the turn is coming. */
+  readonly warn?: { readonly hours: number; readonly mail: StoryMail };
 }
 
 /** One step of the story. */
@@ -71,6 +73,8 @@ export interface StoryBeat {
   readonly clear?: readonly string[];
   /** Standing moved with patrons when the beat passes, by patron id. The AIs' hidden trust is the patron "ais". */
   readonly standing?: Readonly<Record<string, number>>;
+  /** Standing raised to at least this when the beat passes, by patron id: a side that now needs the player lets old grudges go. Applied before `standing`. */
+  readonly floor?: Readonly<Record<string, number>>;
   /** Servers Chorus takes when the beat passes. */
   readonly take?: readonly string[];
   /** Servers won back from Chorus when the beat passes. */
@@ -181,8 +185,16 @@ function parseLapse(where: string, raw: unknown): StoryLapse {
   if (raw.mail === undefined && set === undefined && clear === undefined && take === undefined && raw.withdraw !== true) {
     throw new StoryError(`${where}: a lapse must do something (mail, set, clear, take or withdraw)`);
   }
+  let warn: StoryLapse['warn'];
+  if (raw.warn !== undefined) {
+    if (!isObj(raw.warn)) throw new StoryError(`${where}: lapse warn must be an object`);
+    const warnHours = optNum(`${where} lapse warn`, raw.warn, 'hours', 1);
+    if (warnHours === undefined || warnHours >= hours) throw new StoryError(`${where}: lapse warn needs "hours", sooner than the lapse itself`);
+    warn = { hours: warnHours, mail: parseMail(`${where} lapse warn`, raw.warn.mail) };
+  }
   return {
     hours,
+    ...(warn === undefined ? {} : { warn }),
     ...(raw.mail === undefined ? {} : { mail: parseMail(`${where} lapse`, raw.mail) }),
     ...(set === undefined ? {} : { set }),
     ...(clear === undefined ? {} : { clear }),
@@ -191,7 +203,7 @@ function parseLapse(where: string, raw: unknown): StoryLapse {
   };
 }
 
-const BEAT_KEYS = ['id', 'minRating', 'afterHours', 'requires', 'when', 'if', 'mail', 'contractId', 'raid', 'set', 'clear', 'standing', 'take', 'free', 'chorus', 'lapse', 'reveal'];
+const BEAT_KEYS = ['id', 'minRating', 'afterHours', 'requires', 'when', 'if', 'mail', 'contractId', 'raid', 'set', 'clear', 'standing', 'floor', 'take', 'free', 'chorus', 'lapse', 'reveal'];
 
 function parseBeat(raw: unknown, index: number, seen: Set<string>): StoryBeat {
   if (!isObj(raw)) throw new StoryError(`beat ${index} must be an object`);
@@ -225,6 +237,7 @@ function parseBeat(raw: unknown, index: number, seen: Set<string>): StoryBeat {
     ...(set === undefined ? {} : { set }),
     ...(clear === undefined ? {} : { clear }),
     ...(raw.standing === undefined ? {} : { standing: standingDeltas(where, raw.standing) }),
+    ...(raw.floor === undefined ? {} : { floor: standingDeltas(where, raw.floor) }),
     ...(take === undefined ? {} : { take }),
     ...(free === undefined ? {} : { free }),
     ...(chorus === undefined ? {} : { chorus }),
@@ -314,7 +327,7 @@ export function checkStory(
     checkFlags(where, beat.set);
     checkFlags(where, beat.clear);
     checkFlags(`${where} lapse`, beat.lapse?.set);
-    checkPatrons(where, Object.keys(beat.standing ?? {}));
+    checkPatrons(where, [...Object.keys(beat.standing ?? {}), ...Object.keys(beat.floor ?? {})]);
   }
   for (const contract of contracts) {
     for (const attacker of contract.heist?.attackers ?? []) {

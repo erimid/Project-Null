@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { formatGameTime } from '../../format';
 import { useWorld } from '../../hooks';
-import { activeContract, findAsk, findPerson, objectiveMet } from '../../../core';
+import { activeContract, findAsk, findEnding, findPerson, objectiveMet } from '../../../core';
 import { content, session } from '../../session';
 import { story } from '../../../content';
 import { Compose } from '../Compose';
@@ -35,8 +35,11 @@ export function MessagesWindow() {
     const readyToDeliver = !!job && objectiveMet(game, content, job);
     if (newest && newest.id !== seen.current && !newest.read && !game.raid && !readyToDeliver) {
       windows.focus('messages');
-      setOpenId(newest.id);
-      session.dispatch({ type: 'readMessage', messageId: newest.id });
+      // The letter that ends the story is the one to read, even if the payment note landed after it.
+      const last = findEnding(content, game.ending?.id)?.mail.subject;
+      const letter = (last && messages.slice(-3).find((message) => message.subject === last && !message.read)) || newest;
+      setOpenId(letter.id);
+      session.dispatch({ type: 'readMessage', messageId: letter.id });
     }
     seen.current = newest?.id ?? null;
   }, [newest?.id]);

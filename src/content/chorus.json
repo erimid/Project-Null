@@ -1,9 +1,9 @@
 {
   "awakeFlag": "chorus-awake",
-  "spreadHours": 30,
+  "spreadHours": 20,
   "quietDays": 7,
   "quietPace": 2,
-  "pushbackHours": 18,
+  "pushbackHours": 10,
   "pushPatrons": [
     "office",
     "ais"
@@ -41,7 +41,7 @@
       "ledger_partial.arc",
       "containment_register.dat"
     ],
-    "holdSeconds": 75
+    "holdSeconds": 100
   },
   "letters": {
     "raid": {
