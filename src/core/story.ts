@@ -203,6 +203,10 @@ export function advanceStory(state: GameState, content: Content): void {
 
 /** Fills in the flags of beats an old save had already passed, before beats set flags. Safe to call on every load. */
 export function backfillStoryFlags(state: GameState, content: Content): void {
+  for (const [rivalId, outcome] of Object.entries(state.ladder.outcomes)) {
+    const flag = `ladder:${rivalId}:${outcome}`;
+    if (!state.flags.includes(flag)) state.flags.push(flag);
+  }
   for (const line of linesOf(content.story)) {
     const at = state.story.lines[line.id];
     if (!at) continue;

@@ -242,6 +242,10 @@ export interface ChoiceDef {
   readonly reply?: { readonly from: string; readonly subject: string; readonly body: string };
   /** Standing it moves with patrons, by patron id (see patrons.json). */
   readonly standing?: Readonly<Record<string, number>>;
+  /** Only offered while this holds: an option the player has earned. */
+  readonly when?: ConditionDef;
+  /** The ending of the story this choice brings (see endings.json). */
+  readonly ending?: string;
 }
 
 export interface ContractDef {
@@ -295,6 +299,8 @@ export interface ContractDef {
   readonly heist?: HeistDef;
   /** Only offered while this holds (see ConditionDef). */
   readonly when?: ConditionDef;
+  /** The ending of the story that finishing it the usual way brings (see endings.json). */
+  readonly ending?: string;
 }
 
 /**
@@ -312,6 +318,12 @@ export interface ConditionDef {
   readonly below?: Readonly<Record<string, number>>;
   /** Choices made on earlier contracts: contract id to choice id ("default" for the usual way). */
   readonly choices?: Readonly<Record<string, string>>;
+  /** Files the player must hold on the gateway, by name. */
+  readonly files?: readonly string[];
+  /** At least one of these must hold. */
+  readonly anyOf?: readonly ConditionDef[];
+  /** At least `count` of these must hold. */
+  readonly atLeast?: { readonly count: number; readonly of: readonly ConditionDef[] };
 }
 
 /** The layers a heist's hold can switch off on the vault. */
@@ -328,8 +340,30 @@ export interface HeistHoldDef {
   readonly ally?: { readonly name: string; readonly when: ConditionDef };
 }
 
+/** Someone sent against the player when the heist is taken, if `when` holds: a rival (or "chorus") at the gateway. */
+export interface HeistAttackerDef {
+  readonly rival: string;
+  readonly when: ConditionDef;
+}
+
+/** Help that slows every trace while the heist is under way, if `when` holds. */
+export interface HeistSlowDef {
+  /** Traces run this many times slower: 1.25 = a quarter longer. */
+  readonly factor: number;
+  readonly when: ConditionDef;
+}
+
 export interface HeistDef {
   readonly holds: readonly HeistHoldDef[];
+  /** The first of these whose condition holds is sent at the gateway as the heist is taken. */
+  readonly attackers?: readonly HeistAttackerDef[];
+  /** Every one whose condition holds slows the traces. */
+  readonly slow?: readonly HeistSlowDef[];
+  /**
+   * For a story heist that must never be lost: failing it costs these
+   * credits and the job stays on the board, instead of being burned.
+   */
+  readonly retryFine?: number;
 }
 
 /** A message the game sends the player. Text in {braces} is filled in when it is sent. */
@@ -798,6 +832,8 @@ function parseChoice(file: string, where: string, value: unknown): ChoiceDef {
     ...(raw['keep'] === undefined ? {} : { keep: flag(file, where, raw, 'keep') }),
     ...(parsedReply ? { reply: parsedReply } : {}),
     ...(raw['standing'] === undefined ? {} : { standing: standingMap(file, where, raw['standing']) }),
+    ...(raw['when'] === undefined ? {} : { when: parseCondition(file, where, raw['when']) }),
+    ...(raw['ending'] === undefined ? {} : { ending: text(file, where, raw, 'ending') }),
   };
 }
 
@@ -811,7 +847,7 @@ function standingMap(file: string, where: string, value: unknown): Record<string
 
 export function parseCondition(file: string, where: string, value: unknown): ConditionDef {
   const raw = entry(file, `${where} when`, value);
-  const known = ['flags', 'notFlags', 'standing', 'below', 'choices'];
+  const known = ['flags', 'notFlags', 'standing', 'below', 'choices', 'files', 'anyOf', 'atLeast'];
   for (const key of Object.keys(raw)) if (!known.includes(key)) throw new ContentError(file, `${where}: "when" has unknown part "${key}"`);
   const texts = (key: string) => list(file, `${where} when`, raw, key).map((item) => {
     if (typeof item !== 'string' || item.trim() === '') throw new ContentError(file, `${where}: "when" ${key} must be text`);
@@ -828,6 +864,16 @@ export function parseCondition(file: string, where: string, value: unknown): Con
     ...(raw['standing'] === undefined ? {} : { standing: standingMap(file, `${where} when`, raw['standing']) }),
     ...(raw['below'] === undefined ? {} : { below: standingMap(file, `${where} when below`, raw['below']) }),
     ...(raw['choices'] === undefined ? {} : { choices: choices(raw['choices']) }),
+    ...(raw['files'] === undefined ? {} : { files: texts('files') }),
+    ...(raw['anyOf'] === undefined ? {} : { anyOf: list(file, `${where} when`, raw, 'anyOf').map((item, i) => parseCondition(file, `${where} anyOf ${i + 1}`, item)) }),
+    ...(raw['atLeast'] === undefined
+      ? {}
+      : (() => {
+          const at = entry(file, `${where} atLeast`, raw['atLeast']);
+          const of = list(file, `${where} atLeast`, at, 'of').map((item, i) => parseCondition(file, `${where} atLeast ${i + 1}`, item));
+          const count = num(file, `${where} atLeast`, at, 'count', 1, Math.max(1, of.length));
+          return { atLeast: { count, of } };
+        })()),
   };
 }
 
@@ -847,7 +893,20 @@ function parseHeist(file: string, where: string, value: unknown): HeistDef {
   });
   if (holds.length === 0) throw new ContentError(file, `${where}: a heist needs at least one server to hold`);
   unique(file, `${where} heist`, 'hold layer', holds.map((hold) => hold.layer));
-  return { holds };
+  const attackers = raw['attackers'] === undefined ? undefined : list(file, `${where} heist`, raw, 'attackers').map((item, i) => {
+    const at = entry(file, `${where} heist attacker ${i + 1}`, item);
+    return { rival: text(file, `${where} heist attacker ${i + 1}`, at, 'rival'), when: parseCondition(file, `${where} heist attacker ${i + 1}`, at['when'] ?? {}) };
+  });
+  const slow = raw['slow'] === undefined ? undefined : list(file, `${where} heist`, raw, 'slow').map((item, i) => {
+    const at = entry(file, `${where} heist slow ${i + 1}`, item);
+    return { factor: num(file, `${where} heist slow ${i + 1}`, at, 'factor', 1, 3), when: parseCondition(file, `${where} heist slow ${i + 1}`, at['when'] ?? {}) };
+  });
+  return {
+    holds,
+    ...(attackers ? { attackers } : {}),
+    ...(slow ? { slow } : {}),
+    ...(raw['retryFine'] === undefined ? {} : { retryFine: num(file, `${where} heist`, raw, 'retryFine', 0, 10_000_000) }),
+  };
 }
 
 export function parseContracts(data: unknown, file = 'contracts.json'): ContractDef[] {
@@ -886,6 +945,7 @@ export function parseContracts(data: unknown, file = 'contracts.json'): Contract
           })()),
       ...(raw['heist'] === undefined ? {} : { heist: parseHeist(file, where, raw['heist']) }),
       ...(raw['when'] === undefined ? {} : { when: parseCondition(file, where, raw['when']) }),
+      ...(raw['ending'] === undefined ? {} : { ending: text(file, where, raw, 'ending') }),
     };
   });
   unique(file, 'contracts', 'id', contracts.map((contract) => contract.id));

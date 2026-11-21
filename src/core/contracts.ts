@@ -18,6 +18,7 @@ import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
 import { advanceStory } from './story';
 import { advanceChorus } from './chorus';
+import { reachEnding } from './endings';
 import { printEditions, reportContract } from './news';
 import { advanceLadder } from './ladder';
 import { FAVOUR_CUT, hasFavour, noteDelivery, noteFailure } from './patrons';
@@ -192,6 +193,7 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   if (!objectiveMet(state, content, contract)) return 'The job is not done yet.';
   const choice = choiceId === undefined ? undefined : contract.choices?.find((item) => item.id === choiceId);
   if (choiceId !== undefined && !choice) return 'That is not one of the ways to finish this job.';
+  if (choice && !conditionMet(state, choice.when)) return 'You have not earned that way to finish this job.';
   // Every stolen file goes to whoever is paid for it, unless the player keeps them.
   if (!choice?.keep) {
     const handed = stagesOf(contract).flatMap((stage) => (stage.objective.kind === 'steal' ? [{ name: stage.objective.file, from: stage.targetId }] : []));
@@ -213,6 +215,9 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   reportContract(state, content, contract);
   // Whoever paid remembers, and so does anyone whose companies were hurt.
   noteDelivery(state, content, contract, choice);
+  // The final job ends the story the way it was finished.
+  const ending = choice ? choice.ending : contract.ending;
+  if (ending) reachEnding(state, content, ending);
   // A delivered job comes off the board and another takes its place.
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
   postJobs(state, content);

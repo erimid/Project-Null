@@ -137,6 +137,7 @@ export { ALERT_HOURS, currentStage, goalMet, goalPossible, stageDeadline, stageI
 export { applyAction } from './actions';
 export { beginRaid, findRival, holdOffMs, untraceable, raidBarrier, raidPortAngle, raidReport, raidRival, raidSetbackMs, scheduleRaid } from './raid';
 export type { RaidReport } from './raid';
+export { endingOf, findEnding, offeredChoices, patronGone, reachEnding } from './endings';
 export { advanceChorus, chorusAwake, chorusTargets, freeServer, isTaken, storyQuietMs, takeServer } from './chorus';
 export { AI_TRUST, advanceStory, aiTrust, beatPassed, beatsSeen, currentBeat, storyComplete, storyOffered } from './story';
 export { REGIONS, fill, generateCompanies, regionOf, worldFor } from './generate';
@@ -150,7 +151,7 @@ export type { Action, ActionResult } from './actions';
 export { SAVE_FORMAT, SaveError, deserializeGame, readSummary, serializeGame, summarize } from './save';
 export type { LoadedGame, Migration, SaveFile, SaveSummary } from './save';
 export { GUARD_RINGS, foundFlag, guardRingAngle, guardSetbackMs, holdNeedMs, raceProgress } from './kinds';
-export { HEIST_PAY, HEIST_TIER, LOCKDOWN, burnHeist, conditionMet, heistLines, heistRefusal, heistStatus, planHeist } from './heists';
+export { HEIST_PAY, HEIST_TIER, LOCKDOWN, burnHeist, conditionMet, heistAttacker, heistLines, heistRefusal, heistStatus, planHeist } from './heists';
 export { CLIENT_PREMIUM, DATA_BOARD, dataKind, priceBoard, quote } from './data';
 export type { Quote } from './data';
 export {

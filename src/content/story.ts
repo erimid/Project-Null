@@ -316,6 +316,13 @@ export function checkStory(
     checkFlags(`${where} lapse`, beat.lapse?.set);
     checkPatrons(where, Object.keys(beat.standing ?? {}));
   }
+  for (const contract of contracts) {
+    for (const attacker of contract.heist?.attackers ?? []) {
+      if (attacker.rival !== 'chorus' && !rivals.some((rival) => rival.id === attacker.rival)) {
+        throw new StoryError(`contract "${contract.id}": heist attacker "${attacker.rival}" is not a rival`);
+      }
+    }
+  }
   for (const { where, condition } of conditionsOf(story)) {
     checkFlags(where, condition.flags);
     checkFlags(where, condition.notFlags);

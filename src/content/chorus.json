@@ -4,7 +4,10 @@
   "quietDays": 7,
   "quietPace": 2,
   "pushbackHours": 18,
-  "pushPatrons": ["office", "ais"],
+  "pushPatrons": [
+    "office",
+    "ais"
+  ],
   "protected": [],
   "label": "Taken",
   "note": {
@@ -33,7 +36,11 @@
     "level": 4,
     "style": "vandal",
     "taunt": "We only took what was hurting you.",
-    "targets": [],
+    "targets": [
+      "LEDGER_checkpoint.arc",
+      "ledger_partial.arc",
+      "containment_register.dat"
+    ],
     "holdSeconds": 75
   },
   "letters": {
@@ -57,5 +64,35 @@
       "subject": "You pulled the plug",
       "body": "You pulled the plug and every line dropped. When the gateway came back, the knocking had stopped. Nothing is missing."
     }
+  },
+  "doom": {
+    "days": 30,
+    "ending": "chorus",
+    "warnings": [
+      {
+        "days": 15,
+        "mail": {
+          "from": "Wren",
+          "subject": "it is getting louder",
+          "body": "{handle}, the board's logs are full of servers I do not recognise any more. Something is tidying them. It is faster every week you leave the work on your board alone.\n\nI am not telling you what to do. I am telling you it is not waiting.\n\nWren"
+        }
+      },
+      {
+        "days": 22,
+        "mail": {
+          "from": "Vesper",
+          "subject": "it is not waiting for you",
+          "body": "Chorus has stopped asking anyone. It is using the quiet you are leaving it.\n\nThe work on your board is the only thing it is slowed by. I would not leave it much longer.\n\n— V"
+        }
+      },
+      {
+        "days": 27,
+        "mail": {
+          "from": "all of us",
+          "subject": "we can take it from here",
+          "body": "{handle},\n\nYou have been very busy, and we have been very patient. A few more days and we will simply finish it for you. You will not have to choose.\n\nWe are glad you are well."
+        }
+      }
+    ]
   }
 }

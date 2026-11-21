@@ -19,6 +19,7 @@ import { scheduleRaid } from './raid';
 import { stream } from './streams';
 import type { GameState } from './state';
 import { findServer, type Content } from './world';
+import { reachEnding, sendLetter } from './endings';
 
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
@@ -32,9 +33,14 @@ export function isTaken(state: GameState, serverId: string): boolean {
   return state.chorus.taken.includes(serverId);
 }
 
-/** Game time since the player last delivered a story job (or since Chorus woke). */
+/** Game time the story has been left waiting since the player last delivered a story job (see ChorusState.ignoredMs). */
 export function storyQuietMs(state: GameState): number {
-  return Math.max(0, state.clock.gameTimeMs - state.chorus.lastStoryMs);
+  return state.chorus.ignoredMs;
+}
+
+/** True while a story job is on the board and nobody is working on it: the story is waiting for the player. */
+function storyWaiting(state: GameState): boolean {
+  return state.story.offered.some((id) => id !== state.contracts.activeId);
 }
 
 /** Game ms until the next server is taken at the pace right now. */
@@ -60,7 +66,7 @@ export function chorusTargets(state: GameState, content: Content): string[] {
 }
 
 /** Chorus takes a server: marked, a note left, the Wire told. Every few, it comes to the gateway. */
-export function takeServer(state: GameState, content: Content, serverId: string): void {
+export function takeServer(state: GameState, content: Content, serverId: string, quietly = false): void {
   const chorus = content.chorus;
   const server = findServer(content, serverId);
   if (!chorus || !server || isTaken(state, serverId)) return;
@@ -72,6 +78,8 @@ export function takeServer(state: GameState, content: Content, serverId: string)
   if (files && !files.some((file) => file.name === name)) {
     files.push({ name, sizeGq: 1, access: 'guest', text: fill(chorus.note.text, { handle: state.player.handle }) });
   }
+  // Taken all at once (the Chorus ending), it is one story, not a hundred.
+  if (quietly) return;
   const rng = stream(state, 'chorus');
   const item = rng.pick(chorus.news);
   state.news.pending.push({
@@ -98,7 +106,10 @@ export function freeServer(state: GameState, content: Content, serverId: string)
 /** A delivered story job: the quiet ends, and one for the Office or the AIs sets the clock back. */
 export function noteStoryJob(state: GameState, content: Content, patronId: string | undefined, extraHours = 0, delivered = true): void {
   const chorus = content.chorus;
-  if (delivered) state.chorus.lastStoryMs = state.clock.gameTimeMs;
+  if (delivered) {
+    state.chorus.ignoredMs = 0;
+    state.chorus.warned = 0;
+  }
   if (!chorus || state.chorus.nextMs === 0) return;
   const push = (patronId && chorus.pushPatrons.includes(patronId) ? chorus.pushbackHours : 0) + extraHours;
   if (push > 0) state.chorus.nextMs += push * HOUR;
@@ -124,10 +135,15 @@ export function advanceChorus(state: GameState, content: Content): void {
   const chorus = content.chorus;
   if (!chorus || !chorusAwake(state, content)) return;
   const now = state.clock.gameTimeMs;
-  if (state.chorus.nextMs === 0) {
-    if (state.chorus.lastStoryMs === 0) state.chorus.lastStoryMs = now;
-    state.chorus.nextMs = now + spreadMs(state, chorus);
+  // After the ending the clock stops; what it already holds it keeps tidy.
+  if (state.ending) {
+    if (state.chorus.taken.length > 0) tidy(state, content, chorus);
+    return;
   }
+  if (state.chorus.checkedMs > 0 && storyWaiting(state)) state.chorus.ignoredMs += Math.max(0, now - state.chorus.checkedMs);
+  state.chorus.checkedMs = now;
+  if (chorus.doom && doom(state, content, chorus.doom)) return;
+  if (state.chorus.nextMs === 0) state.chorus.nextMs = now + spreadMs(state, chorus);
   // A long jump in time (a save loaded days later) takes a few at most, not a flood.
   for (let guard = 0; guard < 5 && now >= state.chorus.nextMs; guard++) {
     const targets = chorusTargets(state, content);
@@ -136,6 +152,20 @@ export function advanceChorus(state: GameState, content: Content): void {
   }
   if (now >= state.chorus.nextMs) state.chorus.nextMs = now + spreadMs(state, chorus);
   if (state.chorus.taken.length > 0) tidy(state, content, chorus);
+}
+
+/** Warns of the long silence, then ends it. True if the story has just ended. */
+function doom(state: GameState, content: Content, rule: NonNullable<ChorusDef['doom']>): boolean {
+  const days = state.chorus.ignoredMs / DAY;
+  const before = state.chorus.warned;
+  while (state.chorus.warned < rule.warnings.length && days >= rule.warnings[state.chorus.warned]!.days) {
+    sendLetter(state, rule.warnings[state.chorus.warned]!.mail);
+    state.chorus.warned += 1;
+  }
+  // Every warning is always seen before the end, even after a long jump in time.
+  if (days < rule.days || state.chorus.warned < rule.warnings.length || state.chorus.warned !== before) return false;
+  reachEnding(state, content, rule.ending);
+  return true;
 }
 
 /** Servers the player knows come first, so they see it happen. */

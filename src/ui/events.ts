@@ -40,7 +40,7 @@ export type GameEvent =
   /** Every ring locked: the port is shut and the intruder set back. */
   | { readonly type: 'portShut' }
   /** The attack is over: the intruder was traced home, got in, or the plug was pulled. */
-  | { readonly type: 'raidEnded'; readonly who: string; readonly result: 'won' | 'lost' | 'fled' }
+  | { readonly type: 'raidEnded'; readonly who: string; readonly result: 'won' | 'lost' | 'fled' | 'held' }
   /** A staged contract moved on to its next step. */
   | { readonly type: 'stepDone'; readonly step: number; readonly of: number };
 
@@ -162,7 +162,14 @@ export function diff(before: Snapshot, after: Snapshot, content: Content, byCloc
     if (after.raid.shut > before.raid.shut) events.push({ type: 'portShut' });
     else if (after.raid.rings > before.raid.rings) events.push({ type: 'ringLocked' });
   } else if (before.raid && !after.raid) {
-    const result = after.lastSubject.startsWith(subjectStem('raidWon')) ? 'won' : after.lastSubject.startsWith(subjectStem('raidLost')) ? 'lost' : 'fled';
+    const letters = content.chorus?.letters;
+    const result = after.lastSubject.startsWith(subjectStem('raidWon'))
+      ? 'won'
+      : after.lastSubject.startsWith(subjectStem('raidLost')) || after.lastSubject === letters?.lost.subject
+        ? 'lost'
+        : after.lastSubject === letters?.held.subject
+          ? 'held'
+          : 'fled';
     events.push({ type: 'raidEnded', who: before.raid.who, result });
   }
   // A staged job moving on: same contract, a later step.

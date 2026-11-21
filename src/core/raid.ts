@@ -44,7 +44,7 @@ export function untraceable(raid: { readonly attackerId: string }): boolean {
 export function holdOffMs(state: GameState, content: Content): number | undefined {
   const raid = state.raid;
   if (!raid || !untraceable(raid) || !content.chorus) return undefined;
-  return Math.max(0, content.chorus.rival.holdSeconds * 1000 - (state.clock.gameTimeMs - raid.startedAtMs));
+  return Math.max(0, content.chorus.rival.holdSeconds * 1000 - (raid.ranMs ?? 0));
 }
 
 function chorusLetter(state: GameState, mail: StoryMail, values: Record<string, string> = {}): void {
@@ -140,7 +140,7 @@ export function maybeScheduleRaid(state: GameState, content: Content, pay: numbe
   const bounty = wanted(state).raids;
   if (!rng.chance(Math.min(1, rules.raidChance * bounty))) return;
   // A raider whose address was sold, or who has a truce with the player, stays away.
-  const able = content.rivals.filter((rival) => rival.minRating <= state.player.rating && !outOfRaids(state, rival.id));
+  const able = content.rivals.filter((rival) => !rival.storyOnly && rival.minRating <= state.player.rating && !outOfRaids(state, rival.id));
   if (able.length === 0) return;
   const rival = rng.pick(able);
   state.raidPending = { attackerId: rival.id, story: false };
@@ -173,6 +173,7 @@ export function advanceRaid(state: GameState, content: Content, simMs: number): 
   }
   raid.breachMs += simMs;
   if (raid.breachMs >= raid.breachTotalMs) return loseRaid(state, content);
+  if (untraceable(raid)) raid.ranMs = (raid.ranMs ?? 0) + simMs;
   // Nobody behind it to trace: kept out long enough, it gives up.
   if (holdOffMs(state, content) === 0) {
     state.raid = null;

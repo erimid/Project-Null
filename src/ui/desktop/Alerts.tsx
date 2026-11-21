@@ -41,6 +41,8 @@ export function Alerts() {
           ? { id: nextId++, severe: false, good: true, opens: 'messages', title: 'Traced', text: `You have ${event.who}'s address. Their server is in your address book.` }
           : event.result === 'lost'
           ? { id: nextId++, severe: true, opens: 'messages', title: 'They got in', text: `${event.who} broke through. See Messages for what it cost.` }
+          : event.result === 'held'
+          ? { id: nextId++, severe: false, good: true, opens: 'messages', title: 'Held off', text: `${event.who} gave up. Nothing is missing.` }
           : { id: nextId++, severe: false, title: 'Plug pulled', text: `${event.who} got nothing, and nor did you.` }
         : event.type === 'stepDone'
         ? { id: nextId++, severe: false, good: true, opens: 'contract' as const, title: `Step ${event.step} of ${event.of} done`, text: 'The client has sent the next step.' }

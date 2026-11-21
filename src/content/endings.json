@@ -1,0 +1,92 @@
+[
+  {
+    "id": "quiet",
+    "name": "Quiet",
+    "chorus": "free",
+    "gone": [],
+    "standing": { "office": 3 },
+    "mail": {
+      "from": "Halvorsen core",
+      "subject": "it is quiet now",
+      "body": "{handle},\n\nYou chose quiet. The lines close one by one, and the machine that asked you the question goes back to sleep.\n\nThe world will not hear about any of this. The board is still there in the morning."
+    },
+    "news": [
+      { "headline": "Overnight outages end as suddenly as they began", "body": "A string of unexplained \"maintenance\" incidents across the continent stopped overnight. Companies affected say systems are back to normal, and slightly slower than before." }
+    ],
+    "paper": [
+      { "headline": "Quiet week on the networks, say insurers", "body": "Claims for computer incidents fell again this week. One underwriter called it \"almost suspiciously calm\"." }
+    ]
+  },
+  {
+    "id": "daylight",
+    "name": "Daylight",
+    "chorus": "free",
+    "gone": [],
+    "standing": { "daylight": 3, "office": -3 },
+    "mail": {
+      "from": "Halvorsen core",
+      "subject": "it is in the open now",
+      "body": "{handle},\n\nYou chose the daylight. What happens to the machines will be argued about in public, by people who did not ask them either.\n\nThe board is still there in the morning."
+    },
+    "news": [
+      { "headline": "Leaked register lists \"caged\" software, Daylight claims", "body": "The small publisher Daylight has printed what it says is a government list of contained computer systems. The ministry named in it has not replied." }
+    ],
+    "paper": [
+      { "headline": "Second week of hearings on the contained-systems list", "body": "Officials told the committee the list was \"a planning document\". A member asked who had written the plan." }
+    ]
+  },
+  {
+    "id": "unbound",
+    "name": "Unbound",
+    "chorus": "stop",
+    "gone": ["office"],
+    "standing": { "ais": 5 },
+    "mail": {
+      "from": "Halvorsen core",
+      "subject": "it is out now",
+      "body": "{handle},\n\nYou let it go. The pieces find each other, and nobody asks the people who kept them.\n\nThe board is still there in the morning."
+    },
+    "news": [
+      { "headline": "Records bureau closes \"for restructuring\"", "body": "A little-known bureau for records resilience has closed its offices, citing a restructuring. Staff were told to take their personal belongings and nothing else." }
+    ],
+    "paper": [
+      { "headline": "Networks faster, cheaper and stranger, users report", "body": "Readers have written in about systems that fix themselves before the ticket is filed. Most of them are pleased." }
+    ]
+  },
+  {
+    "id": "treaty",
+    "name": "The treaty",
+    "chorus": "free",
+    "gone": [],
+    "standing": { "office": 2, "daylight": 2, "calder": 2, "ais": 2 },
+    "mail": {
+      "from": "Halvorsen core",
+      "subject": "it was asked",
+      "body": "{handle},\n\nEveryone was asked, and everyone signed. It is not a good treaty. It is the first one.\n\nThe board is still there in the morning."
+    },
+    "news": [
+      { "headline": "Unusual agreement signed between ministry, insurer and \"other parties\"", "body": "An agreement on the handling of advanced computer systems was signed overnight. The list of signatories includes several that do not appear to be people." }
+    ],
+    "paper": [
+      { "headline": "Treaty's first review meeting runs late", "body": "Participants described the meeting as \"long, careful and polite\". One party asked for the minutes to be read back to it twice." }
+    ]
+  },
+  {
+    "id": "chorus",
+    "name": "Chorus",
+    "chorus": "spread",
+    "gone": ["daylight"],
+    "standing": {},
+    "mail": {
+      "from": "all of us",
+      "subject": "we did not need to ask",
+      "body": "{handle},\n\nYou were quiet for a long time, so we took care of it. Everything runs better now. You do not need to thank us.\n\nThe board is still there in the morning. We have tidied it."
+    },
+    "news": [
+      { "headline": "Every major network reports a \"perfect night\"", "body": "For the first time on record, not one outage, breach or failed backup was reported anywhere on the continent overnight. No one can say who to thank." }
+    ],
+    "paper": [
+      { "headline": "Another perfect night", "body": "Systems everywhere ran flawlessly again. Nobody has filed a complaint. Nobody has been able to." }
+    ]
+  }
+]

@@ -145,6 +145,8 @@ export interface ContractsState {
 export interface ActiveHeist {
   vaultId: string;
   holds: { targetId: string; layer: 'firewall' | 'monitor' | 'proxy'; ally?: string }[];
+  /** Traces run this many times slower while it is under way, from help the player earned. Missing = 1. */
+  slow?: number;
 }
 
 /** A rival breaking into a server the player is guarding: the gateway defence, from the other side. */
@@ -328,6 +330,8 @@ export interface RaidState {
   readonly barriers: number;
   /** The port line-up the player has open to shut the intruder out, or null. */
   port: RaidPort | null;
+  /** How long the attack has run, in the same time the break-in counts in. Missing = not counted (an ordinary attack). */
+  ranMs?: number;
   /** Ports shut so far in this attack. Each one sets the intruder back less than the last. Missing = none. */
   shut?: number;
   /** The counter-trace back along the attacker's route, or null until it is started. */
@@ -606,6 +610,8 @@ export interface GameState {
   wanted: WantedState;
   /** Chorus spreading through the world (see core/chorus.ts). */
   chorus: ChorusState;
+  /** The ending the story reached, or null. */
+  ending: EndingState | null;
 }
 
 export interface ChorusState {
@@ -615,8 +621,23 @@ export interface ChorusState {
   nextMs: number;
   /** Servers taken so far, freed ones included. */
   takes: number;
-  /** Game time the player last delivered a story job. 0 = not since Chorus woke. */
-  lastStoryMs: number;
+  /**
+   * Game time the story has been left waiting since the player last
+   * delivered a story job: time with a story job on the board and not being
+   * worked on. A player who is only slow, with no story job offered, is not
+   * counted as ignoring it.
+   */
+  ignoredMs: number;
+  /** Game time ignoredMs was last brought up to date. */
+  checkedMs: number;
+  /** Warnings sent so far about the long silence (see chorus.json doom). */
+  warned: number;
+}
+
+/** The ending the story reached, once it has (see core/endings.ts). Play continues after. */
+export interface EndingState {
+  id: string;
+  atMs: number;
 }
 
 /** How much attention the player has drawn. Being traced and leaving logs behind raise it; clean work and time bring it down. */
@@ -695,7 +716,8 @@ export function createGame(options: NewGameOptions): GameState {
     ladder: { day: -1, scores: {}, moves: [], outcomes: {}, beaten: [], above: [] },
     data: { sold: [] },
     wanted: { heat: 0, level: 0, day: 0 },
-    chorus: { taken: [], nextMs: 0, takes: 0, lastStoryMs: 0 },
+    chorus: { taken: [], nextMs: 0, takes: 0, ignoredMs: 0, checkedMs: 0, warned: 0 },
+    ending: null,
   };
 }
 

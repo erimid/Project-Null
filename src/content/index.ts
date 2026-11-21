@@ -60,6 +60,8 @@ import rivalsJson from './rivals.json';
 import { checkRivals, parseRivals } from './rivals';
 import storyJson from './story.json';
 import chorusJson from './chorus.json';
+import endingsJson from './endings.json';
+import { checkEndings, parseEndings } from './endings';
 import { checkChorus, parseChorus } from './chorus';
 import newsJson from './news.json';
 import patronsJson from './patrons.json';
@@ -106,6 +108,8 @@ export type { RivalDef, RivalStyle } from './rivals';
 export type { StoryBeat, StoryDef, StoryLapse, StoryLine, StoryMail } from './story';
 export { MAIN_LINE, beatFlag, linesOf, storyOf } from './story';
 export type { ChorusDef } from './chorus';
+export type { EndingDef } from './endings';
+export { endingFlag } from './endings';
 export { CHORUS_ID } from './chorus';
 export type { CompanyPools } from './companies';
 export type { NewsDef, NewsEventDef, NewsTemplate } from './news';
@@ -147,6 +151,8 @@ checkPatrons(patrons, servers, companies.sectors.map((sector) => sector.id), con
 checkStory(story, servers, contracts, rivals, patrons.map((patron) => patron.id));
 export const chorus = parseChorus(chorusJson);
 checkChorus(chorus, servers, patrons.map((patron) => patron.id));
+export const endings = parseEndings(endingsJson);
+checkEndings(endings, contracts, patrons.map((patron) => patron.id), chorus.doom?.ending);
 checkNews(news, story.beats.map((beat) => beat.id), companies.sectors.map((sector) => sector.id));
 
 /**

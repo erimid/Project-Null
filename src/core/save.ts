@@ -215,7 +215,7 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     };
   },
   // 28 -> 29: Chorus. It has not woken in any save from before it existed.
-  28: (old) => ({ ...old, chorus: { taken: [], nextMs: 0, takes: 0, lastStoryMs: 0 } }),
+  28: (old) => ({ ...old, chorus: { taken: [], nextMs: 0, takes: 0, ignoredMs: 0, checkedMs: 0, warned: 0 }, ending: null }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -535,6 +535,8 @@ function checkState(raw: Obj): GameState {
     throw damaged;
   }
   const chorus = raw.chorus;
-  if (!isObj(chorus) || !isList(chorus.taken, isText) || !isNum(chorus.nextMs) || !isNum(chorus.takes) || !isNum(chorus.lastStoryMs)) throw damaged;
+  if (!isObj(chorus) || !isList(chorus.taken, isText) || !isNum(chorus.nextMs) || !isNum(chorus.takes) || !isNum(chorus.ignoredMs) || !isNum(chorus.checkedMs) || !isNum(chorus.warned)) throw damaged;
+  const ending = raw.ending;
+  if (!(ending === null || (isObj(ending) && isText(ending.id) && isNum(ending.atMs)))) throw damaged;
   return raw as unknown as GameState;
 }

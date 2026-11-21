@@ -1,4 +1,4 @@
-import { TWISTS, activeContract, activeLegend, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
+import { TWISTS, activeContract, offeredChoices, activeLegend, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
 import { findServer, type ContractDef } from '../../core/content';
 import { formatMoney } from '../format';
 import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
@@ -272,7 +272,7 @@ export function ContractPanel() {
           Deliver{contract.choices && contract.choices.length > 0 ? ` for ${formatMoney(contract.pay)}` : ''}
         </button>
         {done &&
-          (contract.choices ?? []).map((choice) => (
+          offeredChoices(game, contract).map((choice) => (
             <button
               key={choice.id}
               type="button"

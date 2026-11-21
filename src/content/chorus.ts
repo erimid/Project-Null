@@ -57,6 +57,12 @@ export interface ChorusDef {
   readonly raidEvery: number;
   readonly rival: ChorusRival;
   readonly letters: { readonly raid: StoryMail; readonly held: StoryMail; readonly lost: StoryMail; readonly fled: StoryMail };
+  /**
+   * The fifth ending: if the story is left waiting this many game days
+   * (see ChorusState.ignoredMs), Chorus finishes it. Warnings come first,
+   * each at its own day.
+   */
+  readonly doom?: { readonly days: number; readonly ending: string; readonly warnings: readonly { readonly days: number; readonly mail: StoryMail }[] };
 }
 
 /** The id a Chorus attack goes by, in place of a rival's. A story beat can send one with raid: "chorus". */
@@ -134,7 +140,23 @@ export function parseChorus(data: unknown): ChorusDef {
       holdSeconds: num('rival ', rival, 'holdSeconds', 5),
     },
     letters: { raid: letter('letters raid', letters.raid), held: letter('letters held', letters.held), lost: letter('letters lost', letters.lost), fled: letter('letters fled', letters.fled) },
+    ...(data.doom === undefined ? {} : { doom: parseDoom(data.doom) }),
   };
+}
+
+function parseDoom(raw: unknown): NonNullable<ChorusDef['doom']> {
+  if (!isObj(raw)) throw new ChorusError('"doom" must be an object');
+  const days = num('doom ', raw, 'days', 1);
+  if (!Array.isArray(raw.warnings)) throw new ChorusError('doom "warnings" must be a list');
+  let last = 0;
+  const warnings = raw.warnings.map((item, index) => {
+    if (!isObj(item)) throw new ChorusError(`doom warning ${index} must be an object`);
+    const at = num(`doom warning ${index} `, item, 'days', 0, days - 0.01);
+    if (at <= last && index > 0) throw new ChorusError('doom warnings must come in order of days');
+    last = at;
+    return { days: at, mail: letter(`doom warning ${index} mail`, item.mail) };
+  });
+  return { days, ending: text('doom ', raw, 'ending'), warnings };
 }
 
 /** Checks Chorus's references against the rest of the content. */

@@ -16,6 +16,7 @@ import type { ChoiceDef, ContractDef, ServerDef } from '../content/schema';
 import { fill } from './generate';
 import type { Rng } from './rng';
 import { stagesOf } from './stages';
+import { patronGone } from './endings';
 import type { GameState } from './state';
 import { findServer, type Content } from './world';
 
@@ -175,7 +176,13 @@ export function noteFailure(state: GameState, content: Content, contract: Contra
 export function assignPatron(state: GameState, content: Content, job: ContractDef & { expiresMs: number }, server: ServerDef, rng: Rng): typeof job {
   const sector = server.generated?.sector;
   const able = patronsOf(content).filter(
-    (patron) => !patron.hidden && sector !== undefined && patron.targets.includes(sector) && state.player.rating >= patron.minRating && standingWith(state, patron.id) >= 0,
+    (patron) =>
+      !patron.hidden &&
+      sector !== undefined &&
+      patron.targets.includes(sector) &&
+      state.player.rating >= patron.minRating &&
+      standingWith(state, patron.id) >= 0 &&
+      !patronGone(state, content, patron.id),
   );
   if (able.length === 0 || !rng.chance(PATRON_SHARE)) return job;
   const patron = rng.pick(able);

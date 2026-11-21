@@ -174,7 +174,7 @@ export const canReadTrace = (state: GameState, content: Content): boolean =>
   !twistOn(state, 'blindRun') && (traceSense(state, content) > 0 || ownedProgram(state, content, 'traceTracker') !== undefined);
 
 /** How much longer each step of a trace takes, from the Long way round skill. */
-export const traceSlow = (state: GameState, content: Content): number => 1 + effect(state, content, 'traceSlow');
+export const traceSlow = (state: GameState, content: Content): number => (1 + effect(state, content, 'traceSlow')) * (state.contracts.heist?.slow ?? 1);
 
 /** Most relays one route may pass through, with the player's skills. */
 export const maxHops = (state: GameState, content: Content): number => MAX_HOPS + effect(state, content, 'ninthRelay');

@@ -5,7 +5,7 @@ import { beginRaid, holdOffMs, pullPlug, advanceRaid } from './raid';
 import { createGame, deserializeGame, serializeGame, STATE_VERSION, syncWithContent, type Content, type GameState } from './index';
 import { serverMark } from './news';
 import { content as base, testServers } from './testWorld';
-import { chorus as chorusDef, patrons } from '../content/index';
+import { chorus as chorusDef, endings, patrons } from '../content/index';
 import { CHORUS_ID, type ChorusDef } from '../content/chorus';
 import { storyOf, type StoryLine } from '../content/story';
 import type { ContractDef } from '../content/schema';
@@ -18,6 +18,7 @@ function world(chorus: Partial<ChorusDef> = {}, lines?: StoryLine[], contracts: 
     servers: [...testServers],
     contracts: [...base.contracts, ...contracts],
     patrons,
+    endings,
     chorus: { ...chorusDef, protected: [], raidEvery: 0, ...chorus },
     ...(lines ? { story: storyOf(lines) } : {}),
   };
@@ -95,8 +96,10 @@ describe('Chorus spreading', () => {
     expect(h.chorus.nextMs).toBe(first + 15 * HOUR);
     noteStoryJob(h, content, 'calder');
     expect(h.chorus.nextMs).toBe(first + 15 * HOUR);
-    // Two quiet days: from then on it comes every ten hours.
+    // Two days with a story job waiting and nobody on it: from then on it comes every ten hours.
+    h.story.offered.push('story-waiting');
     pass(h, 49);
+    advanceChorus(h, content);
     expect(storyQuietMs(h)).toBe(49 * HOUR);
     advanceChorus(h, content);
     const taken = h.chorus.taken.length;
@@ -161,7 +164,7 @@ describe('Chorus spreading', () => {
     expect(h.servers['tower']!.files.some((file) => file.name === 'for_Ghost.txt')).toBe(false);
     // An Office job plus the beat's own five hours.
     expect(h.chorus.nextMs).toBe(next + (content.chorus!.pushbackHours + 5) * HOUR);
-    expect(h.chorus.lastStoryMs).toBe(h.clock.gameTimeMs);
+    expect(h.chorus.ignoredMs).toBe(0);
   });
 
   it('frees nothing it never took', () => {
@@ -192,7 +195,8 @@ describe('Chorus at the gateway', () => {
     (h.raid as { breachTotalMs: number }).breachTotalMs = 10_000_000;
     const hold = holdOffMs(h, content)!;
     expect(hold).toBe(content.chorus!.rival.holdSeconds * 1000);
-    h.clock.gameTimeMs += hold;
+    advanceRaid(h, content, hold - 1000);
+    expect(h.raid).not.toBeNull();
     advanceRaid(h, content, 1000);
     expect(h.raid).toBeNull();
     expect(h.messages.at(-1)!.subject).toBe(content.chorus!.letters.held.subject);
@@ -225,6 +229,64 @@ describe('Chorus at the gateway', () => {
   });
 });
 
+describe('The long silence', () => {
+  it('does not count time with no story job waiting, or while one is being worked on', () => {
+    const content = world();
+    const h = game(content);
+    wake(h, content);
+    pass(h, 24 * 40);
+    advanceChorus(h, content);
+    expect(storyQuietMs(h)).toBe(0);
+    h.story.offered.push('story-x');
+    h.contracts.activeId = 'story-x';
+    pass(h, 24 * 40);
+    advanceChorus(h, content);
+    expect(storyQuietMs(h)).toBe(0);
+    expect(h.ending).toBeNull();
+  });
+
+  it('warns three times and then ends the story the Chorus way; a story job delivered resets it', () => {
+    const content = world();
+    const doom = content.chorus!.doom!;
+    const h = game(content);
+    wake(h, content);
+    h.story.offered.push('story-x');
+    const step = (days: number) => {
+      pass(h, days * 24);
+      advanceChorus(h, content);
+    };
+    step(doom.warnings[0]!.days);
+    expect(h.messages.at(-1)!.subject).toBe(doom.warnings[0]!.mail.subject);
+    // Delivering a story job starts the silence again.
+    noteStoryJob(h, content, undefined);
+    expect(storyQuietMs(h)).toBe(0);
+    let day = 0;
+    while (!h.ending && day < doom.days + 5) {
+      step(1);
+      day++;
+    }
+    expect(h.ending?.id).toBe(doom.ending);
+    expect(day).toBeGreaterThanOrEqual(doom.days);
+    for (const warning of doom.warnings) expect(h.messages.some((m) => m.subject === warning.mail.subject)).toBe(true);
+    expect(h.flags).toContain(`ending:${doom.ending}`);
+  });
+
+  it('a long jump in time still shows every warning before the end', () => {
+    const content = world();
+    const doom = content.chorus!.doom!;
+    const h = game(content);
+    wake(h, content);
+    h.story.offered.push('story-x');
+    pass(h, (doom.days + 10) * 24);
+    advanceChorus(h, content);
+    expect(h.ending).toBeNull();
+    expect(h.chorus.warned).toBe(doom.warnings.length);
+    pass(h, 0.02);
+    advanceChorus(h, content);
+    expect(h.ending?.id).toBe(doom.ending);
+  });
+});
+
 describe('Chorus in saves', () => {
   it('starts asleep in an old save and round-trips', () => {
     const content = world();
@@ -235,7 +297,8 @@ describe('Chorus in saves', () => {
     delete file.state.chorus;
     const loaded = deserializeGame(JSON.stringify(file)).state;
     expect(loaded.version).toBe(STATE_VERSION);
-    expect(loaded.chorus).toEqual({ taken: [], nextMs: 0, takes: 0, lastStoryMs: 0 });
+    expect(loaded.chorus).toEqual({ taken: [], nextMs: 0, takes: 0, ignoredMs: 0, checkedMs: 0, warned: 0 });
+    expect(loaded.ending).toBeNull();
     wake(h, content);
     takeServer(h, content, 'corp');
     expect(deserializeGame(serializeGame(h, '2030-01-01T00:00:00Z')).state.chorus).toEqual(h.chorus);
