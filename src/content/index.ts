@@ -58,6 +58,8 @@ import { checkRivals, parseRivals } from './rivals';
 import storyJson from './story.json';
 import newsJson from './news.json';
 import patronsJson from './patrons.json';
+import ladderJson from './ladder.json';
+import { parseLadder } from './ladder';
 import { checkPatrons, parsePatrons } from './patrons';
 import { checkNews, parseNews } from './news';
 import { checkStory, parseStory } from './story';
@@ -98,6 +100,7 @@ export type { StoryBeat, StoryDef, StoryMail } from './story';
 export type { CompanyPools } from './companies';
 export type { NewsDef, NewsEventDef, NewsTemplate } from './news';
 export type { Favour, PatronDef } from './patrons';
+export type { LadderDef, LadderRivalDef } from './ladder';
 export type { AskDef, FactDef, FileRef, PeopleDef, PersonDef, RewardDef } from './people';
 export type { BlockDef, LinkDef, Net, PageDef, SiteDef } from './sites';
 
@@ -126,6 +129,7 @@ checkRivals(rivals, servers);
 checkStory(story, servers, contracts, rivals);
 export const news = parseNews(newsJson);
 export const patrons = parsePatrons(patronsJson);
+export const ladder = parseLadder(ladderJson, rivals);
 checkPatrons(patrons, servers, companies.sectors.map((sector) => sector.id), contracts);
 checkNews(news, story.beats.map((beat) => beat.id), companies.sectors.map((sector) => sector.id));
 

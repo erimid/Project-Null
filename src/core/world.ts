@@ -16,6 +16,7 @@ import type { RivalDef } from '../content/rivals';
 import type { StoryDef } from '../content/story';
 import type { NewsDef } from '../content/news';
 import type { PatronDef } from '../content/patrons';
+import type { LadderDef } from '../content/ladder';
 import { backfillChoices } from './patrons';
 import { builtProgram } from './builds';
 import type { Connection, GameState, ServerState } from './state';
@@ -166,6 +167,8 @@ export interface Content {
   readonly news?: NewsDef;
   /** Named clients with standing (see core/patrons.ts). Missing = none. */
   readonly patrons?: readonly PatronDef[];
+  /** The rivals ladder at the Backroom (see core/ladder.ts). Missing = no ladder. */
+  readonly ladder?: LadderDef;
   readonly rules: Rules;
 }
 

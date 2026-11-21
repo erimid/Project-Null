@@ -80,3 +80,21 @@
 .contacts__choice-title { color: var(--text); }
 .contacts__choice { color: var(--text-dim); white-space: nowrap; }
 .contacts__choice.is-own { color: var(--mint); }
+
+/* The rivals ladder on the Backroom. */
+.ladder { display: flex; flex-direction: column; gap: 10px; }
+.ladder__decide { padding: 10px 12px; border: 1px solid rgba(78, 230, 200, 0.55); border-radius: 10px; background: rgba(78, 230, 200, 0.06); }
+.ladder__decide p { margin: 4px 0 8px; color: var(--text); }
+.ladder__choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.ladder__list { margin: 0; padding: 0; list-style: none; counter-reset: none; }
+.ladder__row { display: flex; align-items: center; gap: 10px; padding: 5px 8px; border-bottom: 1px solid var(--line-soft); font-size: 15px; color: var(--text); }
+.ladder__row.is-you { border: 1px solid var(--cyan); border-radius: 6px; background: rgba(95, 212, 255, 0.08); color: var(--text-bright); font-weight: 700; }
+.ladder__row.is-sold { color: var(--text-dim); }
+.ladder__place { width: 24px; text-align: right; color: var(--text-dim); }
+.ladder__handle { flex: 1; }
+.ladder__outcome { padding: 0 6px; border: 1px solid var(--line); border-radius: var(--radius-pill); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.ladder__row.is-truce .ladder__outcome, .ladder__row.is-relay .ladder__outcome { border-color: rgba(78, 230, 200, 0.5); color: var(--mint); }
+.ladder__score { min-width: 36px; text-align: right; color: var(--cyan); }
+.ladder__moves { margin: 0; padding: 0; list-style: none; font-size: 14px; color: var(--text); }
+.ladder__moves li { padding: 3px 0; }
+.ladder__when { color: var(--text-dim); font-size: 12px; margin-right: 6px; }

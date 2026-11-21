@@ -16,6 +16,7 @@ import { stream } from './streams';
 import { gatewayOf, findServer, sendMail, type Content } from './world';
 import { isConnected } from './state';
 import { WARNED_BREACH, hasFavour, warnOfRaid } from './patrons';
+import { noteBeaten, outOfRaids } from './ladder';
 import { ringTolerance } from './tasks';
 import { totalTraceMs, traceReport } from './trace';
 import type { GameState, RaidPort, RaidState, TraceState } from './state';
@@ -107,7 +108,8 @@ export function maybeScheduleRaid(state: GameState, content: Content, pay: numbe
   if (pay < rules.raidProfilePay) return;
   const rng = stream(state, 'raid');
   if (!rng.chance(rules.raidChance)) return;
-  const able = content.rivals.filter((rival) => rival.minRating <= state.player.rating);
+  // A raider whose address was sold, or who has a truce with the player, stays away.
+  const able = content.rivals.filter((rival) => rival.minRating <= state.player.rating && !outOfRaids(state, rival.id));
   if (able.length === 0) return;
   const rival = rng.pick(able);
   state.raidPending = { attackerId: rival.id, story: false };
@@ -265,6 +267,10 @@ function winRaid(state: GameState, content: Content): void {
   const home = findServer(content, rival.homeId);
   state.raid = null;
   sendMail(state, content, 'raidWon', { who: rival.handle, home: home?.name ?? 'their server', address: home?.address ?? '' });
+  if (content.ladder?.rivals.some((entry) => entry.id === rival.id) && !state.ladder.outcomes[rival.id]) {
+    noteBeaten(state, content, rival.id);
+    state.messages[state.messages.length - 1]!.body += `\n\nWhat you do about ${rival.handle} is up to you: sell the address, keep the rig as your own relay, or call a truce. The Ladder at the Backroom has the choices.`;
+  }
 }
 
 /** The intruder broke in: apply what their style costs, then clear the attack. */

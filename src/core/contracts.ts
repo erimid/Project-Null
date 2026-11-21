@@ -14,6 +14,7 @@ import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
 import { advanceStory } from './story';
 import { printEditions, reportContract } from './news';
+import { advanceLadder } from './ladder';
 import { FAVOUR_CUT, hasFavour, noteDelivery, noteFailure } from './patrons';
 import { sellsOnly, sellsProgram, shopFor, shopPrice } from './market';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
@@ -38,6 +39,7 @@ export function activeContract(state: GameState, content: Content): ContractDef 
 export function postJobs(state: GameState, content: Content): void {
   refreshJobs(state, content, (job) => objectivePossible(state, content, job));
   advanceStory(state, content);
+  advanceLadder(state, content);
   printEditions(state, content);
 }
 

@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 21;
+export const STATE_VERSION = 22;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -463,6 +463,25 @@ export interface PatronsState {
   choices: Record<string, string>;
 }
 
+/** What the player did with a raider they beat: sold their address, kept their rig as a relay, or called a truce. */
+export type LadderOutcome = 'sold' | 'relay' | 'truce';
+
+/** The rivals ladder (see core/ladder.ts). */
+export interface LadderState {
+  /** The paper's day the ladder last moved on. -1 = never. */
+  day: number;
+  /** Each rival's score, by id, on the scale of the player's rating. */
+  scores: Record<string, number>;
+  /** What happened lately, newest first. */
+  moves: { timeMs: number; text: string }[];
+  /** What the player did with each raider they beat, by rival id. */
+  outcomes: Record<string, LadderOutcome>;
+  /** Raiders beaten and waiting for the player to decide. */
+  beaten: string[];
+  /** Rivals above the player at the last move, to notice who passed whom. */
+  above: string[];
+}
+
 export interface GameState {
   version: typeof STATE_VERSION;
   /** Seed every random stream is derived from. */
@@ -509,6 +528,7 @@ export interface GameState {
   /** The daily paper and how the world has reacted to the player (see core/news.ts). */
   news: NewsState;
   patrons: PatronsState;
+  ladder: LadderState;
 }
 
 /** Settings a new game needs. The UI fills these from the content files. */
@@ -571,6 +591,7 @@ export function createGame(options: NewGameOptions): GameState {
     raidQuietUntilMs: 0,
     news: { editions: [], pending: [], hits: {}, firms: [], marks: {} },
     patrons: { standing: {}, met: [], choices: {} },
+    ladder: { day: -1, scores: {}, moves: [], outcomes: {}, beaten: [], above: [] },
   };
 }
 
