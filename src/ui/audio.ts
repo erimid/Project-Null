@@ -9,21 +9,30 @@ export interface SoundSettings {
   readonly on: boolean;
   /** 0 to 1. */
   readonly volume: number;
+  /** The soundtrack, which can be turned off on its own. */
+  readonly music: boolean;
+  /** 0 to 1, under the main volume. */
+  readonly musicVolume: number;
 }
 
 const STORAGE_KEY = 'project-null.sound.v1';
+const DEFAULTS: SoundSettings = { on: true, volume: 0.6, music: true, musicVolume: 0.5 };
 
 function load(): SoundSettings {
   try {
     const saved: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
     if (typeof saved === 'object' && saved !== null) {
-      const { on, volume } = saved as { on?: unknown; volume?: unknown };
-      if (typeof on === 'boolean' && typeof volume === 'number' && volume >= 0 && volume <= 1) return { on, volume };
+      const { on, volume, music, musicVolume } = saved as { on?: unknown; volume?: unknown; music?: unknown; musicVolume?: unknown };
+      if (typeof on === 'boolean' && typeof volume === 'number' && volume >= 0 && volume <= 1) {
+        // Settings saved before there was a soundtrack have it on.
+        const loud = typeof musicVolume === 'number' && musicVolume >= 0 && musicVolume <= 1 ? musicVolume : DEFAULTS.musicVolume;
+        return { on, volume, music: typeof music === 'boolean' ? music : true, musicVolume: loud };
+      }
     }
   } catch {
     // Unreadable or blocked storage: use the defaults.
   }
-  return { on: true, volume: 0.6 };
+  return DEFAULTS;
 }
 
 let settings = load();
@@ -63,6 +72,15 @@ export const sound = {
     }
   },
 };
+
+/** Calls back whenever the sound settings change. */
+export function onSoundChange(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+}
+
+/** True once the browser has let the synthesiser start (after the player's first click or key). */
+export const soundAwake = (): boolean => context?.state === 'running';
 
 export function useSound(): SoundSettings {
   const [value, setValue] = useState(settings);

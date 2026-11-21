@@ -68,11 +68,9 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
     ]),
   disconnected: (event) => {
     if (event.type === 'disconnected' && event.traced) {
-      burst(0.7, 0.2);
-      play([
-        { freq: 220, seconds: 0.9, wave: 'sawtooth', level: 0.14, to: 55 },
-        { freq: 233, seconds: 0.9, wave: 'sawtooth', level: 0.1, to: 58 },
-      ]);
+      // The line going: a crack of static. The "caught" screen plays the rest (see caughtFall and caughtHit).
+      burst(0.25, 0.16);
+      play([{ freq: 1800, seconds: 0.12, wave: 'square', level: 0.07, to: 300 }]);
     } else {
       burst(0.12, 0.06);
       play([{ freq: 520, seconds: 0.22, wave: 'triangle', to: 180 }]);
@@ -334,6 +332,25 @@ export function startSfx(): void {
       ]);
     } else play([{ freq: 990, seconds: 0.06, wave: 'square', level: 0.045 }]);
   });
+}
+
+/** The trace running home along the route: one falling blip for each hop it takes, lower each time. */
+export function caughtFall(hop: number, hops: number): void {
+  const freq = 1400 * 0.5 ** ((hop / Math.max(1, hops)) * 2.2);
+  play([
+    { freq, seconds: 0.16, wave: 'square', level: 0.06, to: freq * 0.7 },
+    { freq: freq * 1.5, at: 0.02, seconds: 0.08, wave: 'triangle', level: 0.04 },
+  ]);
+}
+
+/** The trace arriving: the line cut dead, and a long low note going down under it. */
+export function caughtHit(): void {
+  burst(0.9, 0.2);
+  play([
+    { freq: 220, seconds: 1.3, wave: 'sawtooth', level: 0.14, to: 41 },
+    { freq: 233, seconds: 1.3, wave: 'sawtooth', level: 0.1, to: 43 },
+    { freq: 55, seconds: 1.6, wave: 'sine', level: 0.18, to: 36 },
+  ]);
 }
 
 /** A soft rising pair of notes: the tour moving on to its next stop. */
