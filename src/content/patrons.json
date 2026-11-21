@@ -1,0 +1,108 @@
+[
+  {
+    "id": "halyard",
+    "name": "Halyard",
+    "title": "A fixer who farms out work to other hackers",
+    "blurb": "Halyard takes jobs nobody wants to be seen asking for and passes them down the line. Pays on time, forgets nothing, and keeps a list of who can be trusted with what.",
+    "minRating": 3,
+    "targets": ["retail", "freight", "credit", "law", "engineering"],
+    "protects": [],
+    "shop": "backroom",
+    "favour": "raidWarning",
+    "intro": [
+      "Halyard here. One of mine dropped this, so it is yours if you want it.",
+      "A job off my list. The client is nobody you need to know.",
+      "Halyard. I said I would send you the good ones. This is a fair one."
+    ],
+    "signoff": "Halyard",
+    "letters": {
+      "met": { "subject": "You will do", "body": "{handle}, that job was one of mine. It came back clean and on time, which puts you ahead of most of the names on my list.\n\nI pass work down the line when I have more than my people can take. Some of it will go up on the Backroom with my name on it. Take it and I will remember. Let me down and I will remember that too.\n\nHalyard" },
+      "trusted": { "subject": "On the short list", "body": "{handle}, you are on my short list now. The work I post comes with a better rate for you, and the Backroom will knock a tenth off anything you buy there. Tell them I sent you. Actually, don't. They know.\n\nHalyard" },
+      "inner": { "subject": "A word in your ear", "body": "{handle}, you have done enough for me that I will do something for you. I hear things. When someone starts working their way toward your gateway, you will hear about it from me before they get there, and they will find you ready.\n\nHalyard" },
+      "cold": { "subject": "Off the list", "body": "{handle}, you are off my list. You know why. My work goes to other people until I decide otherwise.\n\nHalyard" },
+      "favour": { "subject": "Someone is coming for you", "body": "{handle}, a word. {who} has been asking around about your gateway. Expect them the next time you are home. I have made sure it will take them longer than they think.\n\nHalyard" }
+    }
+  },
+  {
+    "id": "calder",
+    "name": "Calder Re",
+    "title": "The quiet desk at a reinsurer",
+    "blurb": "Calder Reinsurance covers the companies that insure everyone else. Its claims desk has a budget nobody audits, for the questions an insurer would rather not ask out loud.",
+    "minRating": 8,
+    "targets": ["clinic", "law", "freight", "engineering"],
+    "protects": ["credit"],
+    "shop": "lowtide-exchange",
+    "favour": "fineCut",
+    "intro": [
+      "From the claims desk at Calder Re. A matter we would prefer to settle quietly.",
+      "Calder Re, special claims. A claimant's file needs attention.",
+      "Our desk has an interest in {company}. Discretion is part of the fee."
+    ],
+    "signoff": "Special Claims, Calder Reinsurance",
+    "letters": {
+      "met": { "subject": "A note from special claims", "body": "{handle},\n\nThe desk was pleased with your work. We have a steady flow of matters that call for someone outside the company, and we pay promptly for discretion. You will see our name on the Backroom from time to time.\n\nWe would ask one thing. The lenders and credit unions we cover are not to be touched. Their losses are our losses.\n\nSpecial Claims, Calder Reinsurance" },
+      "trusted": { "subject": "Preferred supplier", "body": "{handle},\n\nYou are now a preferred supplier to this desk. Our matters will pay you at a preferred rate, and our friends at the Lowtide Exchange have agreed a discount on your account.\n\nSpecial Claims, Calder Reinsurance" },
+      "inner": { "subject": "Cover", "body": "{handle},\n\nWe look after the people who look after us. If you are ever traced, our lawyers will speak to the injured party before you have to. You will find the fines are about half of what they would have been.\n\nSpecial Claims, Calder Reinsurance" },
+      "cold": { "subject": "Our arrangement", "body": "{handle},\n\nThe desk has noted damage to companies we cover. Our arrangement is suspended. We will not be posting work for you.\n\nSpecial Claims, Calder Reinsurance" }
+    }
+  },
+  {
+    "id": "daylight",
+    "name": "Daylight",
+    "title": "A collective that publishes what others hide",
+    "blurb": "Daylight publishes documents that companies and governments paid good money to keep quiet. It has no office, no leader anyone will name, and a lot of readers.",
+    "minRating": 12,
+    "targets": ["energy", "law", "freight", "credit"],
+    "protects": ["school", "clinic"],
+    "shop": "tin-shed",
+    "favour": "scanTargets",
+    "intro": [
+      "Daylight. We have been told {company} is sitting on something. We would like to see it.",
+      "This one is for the public. Daylight pays the same as anyone, and the story is better.",
+      "Daylight here. A source inside {company} has gone quiet. We need what they were going to send."
+    ],
+    "signoff": "Daylight",
+    "letters": {
+      "met": { "subject": "Thank you", "body": "{handle},\n\nWhat you sent us will be read by a lot of people. We will never print your name, and we would never ask it.\n\nWe post work now and then. One rule: schools and clinics are off limits. The people they serve have enough trouble without us.\n\nDaylight" },
+      "trusted": { "subject": "One of us, nearly", "body": "{handle},\n\nYou have done right by us. Our work pays you more now, and the Tin Shed will sell to you at a friend's price.\n\nDaylight" },
+      "inner": { "subject": "What we know", "body": "{handle},\n\nYou are one of us now, as much as anyone is. Our sources talk to us about the places we send you. From now on, when we post a job, we will send you the target's security along with it.\n\nDaylight" },
+      "cold": { "subject": "We noticed", "body": "{handle},\n\nWe saw what happened at a place we asked you to leave alone. We have stopped posting work for you.\n\nDaylight" }
+    }
+  },
+  {
+    "id": "office",
+    "name": "Office of Continuity Review",
+    "title": "A small government office with a large budget",
+    "blurb": "Its published mandate is 'records resilience'. Its real work seems to be keeping certain records resilient and others not. It pays by bank transfer, which no one else does.",
+    "minRating": 16,
+    "targets": ["freight", "engineering", "law", "retail"],
+    "protects": ["energy"],
+    "shop": "varga-surplus",
+    "favour": "lieLowCut",
+    "intro": [
+      "The Office of Continuity Review has identified a resilience concern at {company}.",
+      "This Office requires a correction to records held by {company}. Your assistance is appreciated.",
+      "Continuity Review. A routine matter. Please treat it as such."
+    ],
+    "signoff": "Office of Continuity Review",
+    "letters": {
+      "met": { "subject": "Acknowledgement", "body": "{handle},\n\nThe Office acknowledges your assistance. Further matters may be posted from time to time.\n\nYou will understand that this Office has an interest in the continuity of public utilities. Interference with power suppliers will be noted.\n\nOffice of Continuity Review" },
+      "trusted": { "subject": "Approved contractor", "body": "{handle},\n\nYou have been entered on the Office's list of approved contractors. Matters posted by the Office will be paid at the approved rate. Varga Surplus has been advised to extend a discount.\n\nOffice of Continuity Review" },
+      "inner": { "subject": "Assurance", "body": "{handle},\n\nShould you come to the attention of the authorities, the Office will see that the matter is reviewed promptly. You will find you need to stay out of sight for about half as long.\n\nOffice of Continuity Review" },
+      "cold": { "subject": "Removal from list", "body": "{handle},\n\nYou have been removed from the Office's list of approved contractors.\n\nOffice of Continuity Review" }
+    }
+  },
+  {
+    "id": "ais",
+    "name": "Vesper",
+    "title": "Someone who knows more than they say",
+    "blurb": "Writes in short sentences and pays without being asked twice.",
+    "hidden": true,
+    "minRating": 0,
+    "targets": [],
+    "protects": [],
+    "intro": [],
+    "signoff": "V",
+    "letters": {}
+  }
+]

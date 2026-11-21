@@ -12,6 +12,8 @@ import type { ProgramDef, RareStockDef, ServerDef, ShopDef } from '../content/sc
 import type { HardwareDef } from '../content/hardware';
 import type { ModuleDef } from '../content/modules';
 import type { GameState } from './state';
+import type { Content } from './world';
+import { shopDiscount } from './patrons';
 import { createRng, hashSeed } from './rng';
 
 /** A board with no shop of its own sells everything at list price. */
@@ -19,6 +21,13 @@ export const GENERAL_STORE: ShopDef = { programs: true, hardware: true, modules:
 
 /** What a board server sells. */
 export const shopOf = (server: ServerDef): ShopDef => server.shop ?? GENERAL_STORE;
+
+/** What a shop sells and its prices for this player: a patron who trusts them may have arranged a discount (see patrons.ts). */
+export function shopFor(state: GameState, content: Content, server: ServerDef): ShopDef {
+  const shop = shopOf(server);
+  const off = shopDiscount(state, content, server.id);
+  return off > 0 ? { ...shop, priceFactor: shop.priceFactor * (1 - off) } : shop;
+}
 
 /** Which day it is, counting from the start of game time. Rare stock turns over at each day's end. */
 export const marketDay = (state: GameState): number => Math.floor(state.clock.gameTimeMs / 86_400_000);

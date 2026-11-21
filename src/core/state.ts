@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 20;
+export const STATE_VERSION = 21;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -453,6 +453,16 @@ export interface NewsState {
   marks: Record<string, ServerMark>;
 }
 
+/** Standing with each patron, and the record of how contracts with a choice were finished (see core/patrons.ts). */
+export interface PatronsState {
+  /** Standing by patron id. Missing = 0. */
+  standing: Record<string, number>;
+  /** Patrons the player has worked for under their own name, in the order met. */
+  met: string[];
+  /** How each contract that offered a choice was finished: choice id, or 'default' for the usual way. By contract id. */
+  choices: Record<string, string>;
+}
+
 export interface GameState {
   version: typeof STATE_VERSION;
   /** Seed every random stream is derived from. */
@@ -498,6 +508,7 @@ export interface GameState {
   raidQuietUntilMs: number;
   /** The daily paper and how the world has reacted to the player (see core/news.ts). */
   news: NewsState;
+  patrons: PatronsState;
 }
 
 /** Settings a new game needs. The UI fills these from the content files. */
@@ -559,6 +570,7 @@ export function createGame(options: NewGameOptions): GameState {
     raidPending: null,
     raidQuietUntilMs: 0,
     news: { editions: [], pending: [], hits: {}, firms: [], marks: {} },
+    patrons: { standing: {}, met: [], choices: {} },
   };
 }
 

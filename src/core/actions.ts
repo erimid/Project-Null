@@ -379,7 +379,7 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
     case 'acceptContract':
       return answer(acceptContract(state, content, action.connectionId, action.contractId));
     case 'abandonContract':
-      return answer(abandonContract(state));
+      return answer(abandonContract(state, content));
     case 'deliverContract':
       return answer(deliverContract(state, content, action.choiceId));
     case 'frameLog':

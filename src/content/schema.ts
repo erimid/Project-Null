@@ -224,6 +224,8 @@ export interface ChoiceDef {
   readonly keep?: boolean;
   /** The message that comes back, if not the usual one. */
   readonly reply?: { readonly from: string; readonly subject: string; readonly body: string };
+  /** Standing it moves with patrons, by patron id (see patrons.json). */
+  readonly standing?: Readonly<Record<string, number>>;
 }
 
 export interface ContractDef {
@@ -255,6 +257,13 @@ export interface ContractDef {
   readonly part?: PartDef;
   /** True for a story mission. The board never offers it on its own; the story director does (see core/story.ts). */
   readonly story?: boolean;
+  /**
+   * Id of the patron behind it (see patrons.json). Delivering it raises
+   * standing with them. When `client` is not the patron's own name the
+   * client is a front: standing still moves, but the player is not shown
+   * who is really paying.
+   */
+  readonly patron?: string;
 }
 
 /** A message the game sends the player. Text in {braces} is filled in when it is sent. */
@@ -704,7 +713,16 @@ function parseChoice(file: string, where: string, value: unknown): ChoiceDef {
     rating: num(file, where, raw, 'rating', -100, 100),
     ...(raw['keep'] === undefined ? {} : { keep: flag(file, where, raw, 'keep') }),
     ...(parsedReply ? { reply: parsedReply } : {}),
+    ...(raw['standing'] === undefined ? {} : { standing: standingMap(file, where, raw['standing']) }),
   };
+}
+
+function standingMap(file: string, where: string, value: unknown): Record<string, number> {
+  const raw = entry(file, `${where} standing`, value);
+  for (const [id, delta] of Object.entries(raw)) {
+    if (typeof delta !== 'number' || !Number.isInteger(delta) || Math.abs(delta) > 20) throw new ContentError(file, `${where}: standing for "${id}" must be a whole number from -20 to 20`);
+  }
+  return raw as Record<string, number>;
 }
 
 export function parseContracts(data: unknown, file = 'contracts.json'): ContractDef[] {
@@ -734,6 +752,7 @@ export function parseContracts(data: unknown, file = 'contracts.json'): Contract
       ...(choices && choices.length > 0 ? { choices } : {}),
       ...(raw['part'] === undefined ? {} : { part: parsePart(file, where, raw['part']) }),
       ...(raw['story'] === undefined ? {} : { story: flag(file, where, raw, 'story') }),
+      ...(raw['patron'] === undefined ? {} : { patron: text(file, where, raw, 'patron') }),
     };
   });
   unique(file, 'contracts', 'id', contracts.map((contract) => contract.id));

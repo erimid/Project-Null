@@ -57,6 +57,8 @@ import rivalsJson from './rivals.json';
 import { checkRivals, parseRivals } from './rivals';
 import storyJson from './story.json';
 import newsJson from './news.json';
+import patronsJson from './patrons.json';
+import { checkPatrons, parsePatrons } from './patrons';
 import { checkNews, parseNews } from './news';
 import { checkStory, parseStory } from './story';
 import { parseSkills } from './skills';
@@ -95,6 +97,7 @@ export type { RivalDef, RivalStyle } from './rivals';
 export type { StoryBeat, StoryDef, StoryMail } from './story';
 export type { CompanyPools } from './companies';
 export type { NewsDef, NewsEventDef, NewsTemplate } from './news';
+export type { Favour, PatronDef } from './patrons';
 export type { AskDef, FactDef, FileRef, PeopleDef, PersonDef, RewardDef } from './people';
 export type { BlockDef, LinkDef, Net, PageDef, SiteDef } from './sites';
 
@@ -122,6 +125,8 @@ checkPeople(people, servers, tuning.phishMaxDetails);
 checkRivals(rivals, servers);
 checkStory(story, servers, contracts, rivals);
 export const news = parseNews(newsJson);
+export const patrons = parsePatrons(patronsJson);
+checkPatrons(patrons, servers, companies.sectors.map((sector) => sector.id), contracts);
 checkNews(news, story.beats.map((beat) => beat.id), companies.sectors.map((sector) => sector.id));
 
 /**

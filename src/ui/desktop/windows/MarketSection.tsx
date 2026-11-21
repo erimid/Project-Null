@@ -8,6 +8,7 @@ import {
   rentedModel,
   sellsModule,
   sellsProgram,
+  shopFor,
   shopOf,
   shopPrice,
   speedShare,
@@ -67,7 +68,7 @@ const biggestProgram = (): number => Math.max(1, ...content.programs.map((progra
 
 function ProgramCard({ program, rare, view }: { program: ProgramDef; rare: boolean; view: View }) {
   const { game, server, connection, act } = view;
-  const shop = shopOf(server);
+  const shop = shopFor(game, content, server);
   const compare = compareProgram(game, content, program);
   const price = shopPrice(shop, program.price);
   const free = freeStorageGb(game, content);
@@ -145,7 +146,7 @@ function ProgramCard({ program, rare, view }: { program: ProgramDef; rare: boole
 /** A module on the shelf: what it does, what it fits, and a button for each grade in stock. `only` = just that grade (a rare line). */
 function ModuleCard({ module, only, view }: { module: ModuleDef; only?: number; view: View }) {
   const { game, server, connection, act } = view;
-  const shop = shopOf(server);
+  const shop = shopFor(game, content, server);
   const best = marketGrade(game, content);
   const nextAt = content.rules.moduleGradeRatings[best];
   const grades = module.grades
@@ -212,7 +213,7 @@ function sellsModuleLater({ server }: View, _module: ModuleDef, grade: number): 
 
 function ModelCard({ model, view }: { model: (typeof content.models)[number]; view: View }) {
   const { game, server, connection, act } = view;
-  const price = shopPrice(shopOf(server), model.price);
+  const price = shopPrice(shopFor(game, content, server), model.price);
   const mine = rentedModel(game, content)?.id === model.id;
   return (
     <li class={`card card--model${mine ? ' is-owned' : ''}`}>
@@ -263,7 +264,7 @@ export function Market(view: View) {
     kept = { ...filters, ...next };
     setFilters(kept);
   };
-  const shop = shopOf(server);
+  const shop = shopFor(game, content, server);
   const rareLines = rareToday(game, server);
   const rareIds = new Set(rareLines.map((line) => `${line.kind}:${line.id}`));
 

@@ -29,6 +29,7 @@ export type {
   NewsItem,
   NewsState,
   ServerMark,
+  PatronsState,
   PendingRaid,
   PlayerState,
   RaidPort,
@@ -113,7 +114,7 @@ export {
   storageGb,
 } from './hardware';
 export { PLANNER_HOPS, bestRoute, canReadTrace, coverShortfall, holdsLogin, jamTrace, relayCover, relayHeat, relayWorth, stepFade, hopUnderTrace, legFactor, legKind, maxReroutes, mostUrgentTrace, totalTraceMs, traceHeld, traceHopMs, traceLegs, traceReport, traceSense, traceSlow, tracesByUrgency } from './trace';
-export { GENERAL_STORE, marketDay, rareShown, rareToday, sellsHardware, sellsModule, sellsOnly, sellsProgram, shopOf, shopPrice } from './market';
+export { GENERAL_STORE, marketDay, rareShown, rareToday, sellsHardware, sellsModule, sellsOnly, sellsProgram, shopFor, shopOf, shopPrice } from './market';
 export { heldBy, holding, monitorHeld } from './link';
 export type { LegKind, TraceLeg, TraceReport } from './trace';
 export {
@@ -134,6 +135,7 @@ export { advanceStory, currentBeat, storyComplete, storyOffered } from './story'
 export { REGIONS, fill, generateCompanies, regionOf, worldFor } from './generate';
 export type { Region } from './generate';
 export { isJob, tierForRating } from './jobs';
+export { DEFAULT_CHOICE, INNER, SHOP_DISCOUNT, STANDING_RANGE, TRUSTED, TRUSTED_PAY, findPatron, hasFavour, knownPatrons, openPatron, shopDiscount, standingName, standingWith } from './patrons';
 export { EDITION_HOUR, editionDay, editionTimeMs, hasFirm, inTheNews, latestEdition, markServer, serverMark } from './news';
 export type { Action, ActionResult } from './actions';
 export { SAVE_FORMAT, SaveError, deserializeGame, readSummary, serializeGame, summarize } from './save';

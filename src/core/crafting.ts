@@ -16,7 +16,7 @@ import { describeBuild, type BuiltProgram } from './builds';
 import { effect } from './skills';
 import type { Fitted, GameState, Task } from './state';
 import { fileDef, findConnection, findProgram, findServer, type Content } from './world';
-import { sellsModule, shopOf, shopPrice } from './market';
+import { sellsModule, shopFor, shopPrice } from './market';
 
 export const findModule = (content: Content, id: string): ModuleDef | undefined => content.modules.find((module) => module.id === id);
 
@@ -147,7 +147,7 @@ export function buyModule(state: GameState, content: Content, connectionId: stri
   if (!module || base === undefined) return 'That is not for sale.';
   if (!sellsModule(state, shop, module, grade)) return 'This shop does not stock that.';
   if (grade > marketGrade(state, content)) return `The market sells ${module.name} ${grade} to people with a better rating.`;
-  const price = shopPrice(shopOf(shop), base);
+  const price = shopPrice(shopFor(state, content, shop), base);
   if (state.player.balance < price) return 'You cannot afford that.';
   state.player.balance -= price;
   addParts(state, id, grade);

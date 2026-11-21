@@ -152,6 +152,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   }),
   // 19 -> 20: the daily news. The first edition is printed when the game next looks at the clock.
   19: (old) => ({ ...old, news: { editions: [], pending: [], hits: {}, firms: [], marks: {} } }),
+  // 20 -> 21: patrons and the record of choices. The choices already made are filled in on load (see backfillChoices).
+  20: (old) => ({ ...old, patrons: { standing: {}, met: [], choices: {} } }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -421,6 +423,17 @@ function checkState(raw: Obj): GameState {
     !isList(news.firms, isText) ||
     !isObj(news.marks) ||
     !Object.values(news.marks).every((mark) => isObj(mark) && isText(mark.label) && (mark.untilMs === undefined || isNum(mark.untilMs)))
+  ) {
+    throw damaged;
+  }
+  const patrons = raw.patrons;
+  if (
+    !isObj(patrons) ||
+    !isObj(patrons.standing) ||
+    !Object.values(patrons.standing).every(isNum) ||
+    !isList(patrons.met, isText) ||
+    !isObj(patrons.choices) ||
+    !Object.values(patrons.choices).every(isText)
   ) {
     throw damaged;
   }
