@@ -193,7 +193,7 @@ describe('encrypted files', () => {
 
   it('stay encrypted when copied, and do not finish a job until decrypted', () => {
     const h = stolen();
-    expect(h.state.player.files).toEqual([{ name: 'sealed.dat', sizeGq: 2, from: 'vault', encrypted: 1 }]);
+    expect(h.state.player.files).toEqual([{ name: 'sealed.dat', sizeGq: 2, from: 'vault', encrypted: 1, takenMs: expect.any(Number) }]);
     expect(objectiveMet(h.state, world, job)).toBe(false);
 
     h.ok({ type: 'decryptFile', name: 'sealed.dat' });
@@ -202,7 +202,7 @@ describe('encrypted files', () => {
     h.refused({ type: 'deleteStoredFile', name: 'sealed.dat' }, /being decrypted/);
     h.wait(8);
     expect(h.state.tasks).toEqual([]);
-    expect(h.state.player.files).toEqual([{ name: 'sealed.dat', sizeGq: 2, from: 'vault' }]);
+    expect(h.state.player.files).toEqual([{ name: 'sealed.dat', sizeGq: 2, from: 'vault', takenMs: expect.any(Number) }]);
     expect(objectiveMet(h.state, world, job)).toBe(true);
     h.refused({ type: 'decryptFile', name: 'sealed.dat' }, /not encrypted/);
   });

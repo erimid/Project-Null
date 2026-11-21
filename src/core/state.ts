@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 24;
+export const STATE_VERSION = 25;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -182,6 +182,8 @@ export interface StoredFile {
   folder?: string;
   /** True for a doctored copy a client sent for a swap job. */
   doctored?: boolean;
+  /** Game time it was copied to the gateway. Stolen data loses value as it ages (see data.ts). */
+  takenMs?: number;
 }
 
 /** `from` of a file a client sent to the gateway to be planted somewhere. */
@@ -565,6 +567,8 @@ export interface GameState {
   news: NewsState;
   patrons: PatronsState;
   ladder: LadderState;
+  /** The data market at Lowtide: files it has already bought, as "server:name". */
+  data: { sold: string[] };
 }
 
 /** Settings a new game needs. The UI fills these from the content files. */
@@ -628,6 +632,7 @@ export function createGame(options: NewGameOptions): GameState {
     news: { editions: [], pending: [], hits: {}, firms: [], marks: {} },
     patrons: { standing: {}, met: [], choices: {} },
     ladder: { day: -1, scores: {}, moves: [], outcomes: {}, beaten: [], above: [] },
+    data: { sold: [] },
   };
 }
 

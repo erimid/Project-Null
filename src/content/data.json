@@ -1,0 +1,47 @@
+{
+  "buyer": "Lowtide",
+  "kinds": [
+    {
+      "id": "keys",
+      "name": "Keys and logins",
+      "base": 1300,
+      "words": ["key", "password", "credential", "login", "access", "cert", "token"],
+      "blurb": "Ways into somewhere else. Worth most while nobody has changed the locks."
+    },
+    {
+      "id": "research",
+      "name": "Research",
+      "base": 1100,
+      "words": ["research", "design", "schematic", "prototype", "patent", "formula", "feed", "survey", "trial", "model", "spec", "blueprint"],
+      "blurb": "Plans, results and drawings. Competitors pay; so do people who sell to competitors."
+    },
+    {
+      "id": "ledgers",
+      "name": "Ledgers",
+      "base": 900,
+      "words": ["ledger", "account", "payroll", "billing", "invoice", "tax", "audit", "budget", "settlement", "loan", "fund", "price", "tariff"],
+      "blurb": "Money, written down. Buyers want it fresh, before the books are closed."
+    },
+    {
+      "id": "records",
+      "name": "Records",
+      "base": 700,
+      "words": ["record", "patient", "client", "member", "roster", "index", "register", "staff", "personnel", "case", "file", "matter", "list"],
+      "blurb": "People and what is known about them. Steady demand, rarely exciting."
+    },
+    {
+      "id": "mail",
+      "name": "Correspondence",
+      "base": 500,
+      "words": ["mail", "memo", "letter", "minutes", "notes", "message", "chat", "transcript", "brief"],
+      "blurb": "What people said when they thought nobody else would read it."
+    }
+  ],
+  "other": {
+    "id": "other",
+    "name": "Odds and ends",
+    "base": 300,
+    "words": [],
+    "blurb": "Everything else. Lowtide buys it by the kilo."
+  }
+}

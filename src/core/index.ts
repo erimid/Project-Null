@@ -148,3 +148,5 @@ export { SAVE_FORMAT, SaveError, deserializeGame, readSummary, serializeGame, su
 export type { LoadedGame, Migration, SaveFile, SaveSummary } from './save';
 export { GUARD_RINGS, foundFlag, guardRingAngle, guardSetbackMs, holdNeedMs, raceProgress } from './kinds';
 export { HEIST_PAY, HEIST_TIER, LOCKDOWN, burnHeist, conditionMet, heistLines, heistRefusal, heistStatus, planHeist } from './heists';
+export { CLIENT_PREMIUM, DATA_BOARD, dataKind, priceBoard, quote } from './data';
+export type { Quote } from './data';
