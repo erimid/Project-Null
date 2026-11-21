@@ -4,9 +4,9 @@ import { abandonContract, punish } from '../core/contracts';
 import { HEIST_PAY, HEIST_TIER, LOCKDOWN, heistLines, heistRefusal, postHeist } from '../core/heists';
 import { startContract } from '../core/stages';
 import { ContentError, checkContent, parseContracts } from './schema';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, type ContractDef } from './index';
+import { assets, companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, type ContractDef } from './index';
 
-const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, rules: tuning };
+const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, assets, rules: tuning };
 const SEED = 41;
 const world = worldFor(written, SEED);
 const admins = world.servers.filter((server) => server.generated && server.accounts.some((account) => account.role === 'admin'));

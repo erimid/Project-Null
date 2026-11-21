@@ -19,11 +19,15 @@ import { editionDay } from './news';
 import type { GameState, LadderOutcome } from './state';
 import { stream } from './streams';
 import { findServer, type Content } from './world';
+import { ownRelay } from './assets';
 
 /** Most moves kept in the ladder's recent list. */
 export const KEEP_MOVES = 8;
 /** Chance each day that a rival takes a job off the board. */
 export const SNIPE_CHANCE = 0.3;
+/** From this score up a rival climbs `LATE_PACE` times as fast. */
+export const LATE_RATING = 25;
+export const LATE_PACE = 2;
 /** A rival takes jobs only if they are within this much of the player's rating. */
 export const SNIPE_REACH = 15;
 /** Credits for a beaten rival's address, per level of the rival. */
@@ -104,13 +108,15 @@ export function advanceLadder(state: GameState, content: Content): void {
   }
 
   for (const rival of ladder.rivals) {
-    const pace = rival.pace * (state.ladder.outcomes[rival.id] === 'sold' ? SOLD_PACE : 1);
+    // The upper titles are twice as long as the early ones, so a rival up there climbs twice as fast to keep their place.
+    const late = rivalScore(state, content, rival.id) >= LATE_RATING ? LATE_PACE : 1;
+    const pace = rival.pace * late * (state.ladder.outcomes[rival.id] === 'sold' ? SOLD_PACE : 1);
     state.ladder.scores[rival.id] = rivalScore(state, content, rival.id) + pace * rng.range(0.4, 1.6);
   }
 
   // A rival near the player's level takes a job off the board.
   const near = ladder.rivals.filter((rival) => Math.abs(rivalScore(state, content, rival.id) - state.player.rating) <= SNIPE_REACH);
-  const open = state.contracts.jobs.filter((job) => isJob(job) && job.id !== state.contracts.activeId && !job.news && !job.heist);
+  const open = state.contracts.jobs.filter((job) => isJob(job) && job.id !== state.contracts.activeId && !job.news && !job.heist && !job.legend);
   if (near.length > 0 && open.length > 2 && rng.chance(SNIPE_CHANCE)) {
     const rival = rng.pick(near);
     const job = rng.pick(open);
@@ -163,8 +169,9 @@ export function outOfRaids(state: GameState, rivalId: string): boolean {
   return outcome === 'sold' || outcome === 'truce';
 }
 
-/** True for a relay that is the player's own: a beaten rival's rig, kept. It never warms up. */
+/** True for a relay that is the player's own: a beaten rival's rig, kept, or a rack they bought (see assets.ts). It never warms up. */
 export function privateRelay(state: GameState, content: Content, serverId: string): boolean {
+  if (ownRelay(state, content, serverId)) return true;
   return Object.entries(state.ladder.outcomes).some(([id, outcome]) => outcome === 'relay' && content.rivals.find((rival) => rival.id === id)?.homeId === serverId);
 }
 

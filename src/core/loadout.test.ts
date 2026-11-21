@@ -297,13 +297,13 @@ describe('the wanted level', () => {
     const { state, enter } = game();
     caught(state, content, enter());
     expect(state.wanted.heat).toBe(2);
-    coolHeat(state, 0.5);
+    coolHeat(state, content, 0.5);
     expect(state.wanted.heat).toBe(1.5);
     expect(wantedLevel(state)).toBe(0);
     // Two days later the rest has gone.
-    coolWithTime(state);
+    coolWithTime(state, content);
     state.clock.gameTimeMs += 3 * 86_400_000;
-    coolWithTime(state);
+    coolWithTime(state, content);
     expect(state.wanted.heat).toBe(0);
   });
 });

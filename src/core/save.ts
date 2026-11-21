@@ -177,6 +177,19 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
       flags: [...(Array.isArray(old.flags) ? old.flags : []), 'beforeLoadouts'],
     };
   },
+  // 26 -> 27: the upper titles grew twice as long, so a rating above 25 moves to where it now stands
+  // (25 + twice what was above it), the player's and every rival's. Property and legend contracts start empty.
+  26: (old) => {
+    const stretch = (value: unknown): unknown => (typeof value === 'number' && value > 25 ? 25 + 2 * (value - 25) : value);
+    const player = old.player as Record<string, unknown>;
+    const ladder = old.ladder as { scores?: Record<string, unknown> } | undefined;
+    return {
+      ...old,
+      player: { ...player, rating: stretch(player.rating), bestRating: stretch(player.bestRating), assets: [], legends: 0 },
+      contracts: { ...(old.contracts as object), legendDay: -1 },
+      ...(ladder ? { ladder: { ...ladder, scores: Object.fromEntries(Object.entries(ladder.scores ?? {}).map(([id, score]) => [id, stretch(score)])) } } : {}),
+    };
+  },
   // 21 -> 22: the rivals ladder. It sets itself up on the next clock check; raiders already beaten wait for a decision.
   21: (old) => ({
     ...old,
@@ -406,6 +419,7 @@ function checkState(raw: Obj): GameState {
   }
   if (!isObj(player.parts) || !Object.values(player.parts).every(isNum) || !isList(player.builds, isBuild)) throw damaged;
   if (!isList(player.loadout, isText) || !isList(player.savedLoadouts, (slot): slot is string[] => isList(slot, isText))) throw damaged;
+  if (!isList(player.assets, isText) || !isNum(player.legends)) throw damaged;
   const heat = raw.wanted;
   if (!isObj(heat) || !isNum(heat.heat) || !isNum(heat.level) || !isNum(heat.day)) throw damaged;
   if (!isList(player.contacts, isText) || !isList(player.facts, isText)) throw damaged;
@@ -433,6 +447,7 @@ function checkState(raw: Obj): GameState {
     !isNum(contracts.heldMs) ||
     !isNum(contracts.raceUntilMs) ||
     !isNum(contracts.heistDay) ||
+    !isNum(contracts.legendDay) ||
     !isList(contracts.burned, isText) ||
     !(
       contracts.heist === null ||

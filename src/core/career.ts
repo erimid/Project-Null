@@ -577,6 +577,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       act({ type: 'readFile', serverId: server.id, name: goal.file });
       return;
     }
+    // A false trail already laid on an earlier visit stays: what is left is the cleaning up.
+    if (goal.kind === 'frame' && state.servers[server.id]?.logs.some((entry) => entry.framed === goal.who)) return;
     if (goal.kind === 'record' || goal.kind === 'frame') {
       if (securityOf(state, server).proxy > 0 && !connection.bypassed.proxy) run(connection, { kind: 'proxy' });
       checkTime(connection, 0, true);

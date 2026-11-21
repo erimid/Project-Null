@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROFILES, formatCareer, playCareer, type CareerOptions, type CareerReport, type Profile } from '../core/career';
 import type { Content } from '../core';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, data } from './index';
+import { assets, companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, data } from './index';
 
 const content: Content = {
   servers,
@@ -30,6 +30,7 @@ const content: Content = {
   patrons,
   ladder,
   data,
+  assets,
   rules: tuning,
 };
 
@@ -102,9 +103,10 @@ describe('a whole career', () => {
   it.each(SEEDS)('the climb needs a few standing jobs between the written contracts (seed %i)', (seed) => {
     const report = career(PROFILES.typical, seed);
     const standing = report.jobs.filter((job) => job.job).length;
-    // The written contracts carry most of the climb now; the standing jobs fill the gaps between them.
-    expect(standing).toBeGreaterThanOrEqual(2);
-    expect(standing).toBeLessThanOrEqual(16);
+    // The written contracts carry the first half of the climb. Through the long upper titles the standing jobs
+    // do about half the work: two or three between one written contract and the next.
+    expect(standing).toBeGreaterThanOrEqual(30);
+    expect(standing).toBeLessThanOrEqual(48);
     // No stretch of more than three standing jobs between two written contracts.
     let run = 0;
     for (const job of report.jobs.slice(0, report.jobs.findLastIndex((item) => !item.job))) {
@@ -180,7 +182,7 @@ describe('a whole career', () => {
     // An ordinary player past the opening leaves with well under a minute in hand, most times a trace runs.
     const spare = settled(career(PROFILES.typical, seed)).flatMap((job) => (job.closest === null ? [] : [job.closest]));
     expect(spare.length).toBeGreaterThanOrEqual(15);
-    expect(median(spare)).toBeLessThanOrEqual(50);
+    expect(median(spare)).toBeLessThanOrEqual(55);
   });
 
   it.each(SEEDS)('jobs with steps pay for their length (seed %i)', (seed) => {
@@ -200,7 +202,7 @@ describe('a whole career', () => {
       expect(report.story.map((beat) => beat.id), profile.name).toEqual(story.beats.map((beat) => beat.id));
       // It starts before the Wraith title and, with Act 2, ends past the Spectre one, close to the top.
       expect(report.story[0]!.rating, profile.name).toBeLessThan(gameInfo.ratings[6]!.min);
-      expect(report.story.at(-1)!.rating, profile.name).toBeGreaterThanOrEqual(gameInfo.ratings[8]!.min);
+      expect(report.story.at(-1)!.rating, profile.name).toBeGreaterThanOrEqual(gameInfo.ratings[10]!.min);
       // A scripted player keeps climbing on standing jobs while the story waits, so allow a little past the top.
       expect(report.story.at(-1)!.rating, profile.name).toBeLessThan(top.min + 6);
     }
@@ -212,7 +214,7 @@ describe('a whole career', () => {
       // The story sends two (one in each act). The rest are a handful over a whole career.
       expect(report.raids.filter((raid) => raid.story).length, profile.name).toBe(2);
       expect(report.raids.length, profile.name).toBeGreaterThanOrEqual(2);
-      expect(report.raids.length, profile.name).toBeLessThanOrEqual(5);
+      expect(report.raids.length, profile.name).toBeLessThanOrEqual(7);
       for (const raid of report.raids) expect(raid.rating, profile.name).toBeGreaterThanOrEqual(tuning.raidMinRating);
       // Someone who traces back and shuts ports wins nearly every time.
       expect(report.raids.filter((raid) => raid.result === 'lost').length, profile.name).toBeLessThanOrEqual(1);

@@ -10,6 +10,7 @@
 import { shiftStanding, standingWith } from './patrons';
 import type { GameState } from './state';
 import type { Content } from './world';
+import { SAFE_HOUSE, hasAsset } from './assets';
 
 export interface WantedLevel {
   /** Heat at which the level begins. */
@@ -104,17 +105,19 @@ export function raiseHeat(state: GameState, content: Content, amount: number): v
 }
 
 /** Lets attention fade: a job delivered, or a day gone by. */
-export function coolHeat(state: GameState, amount: number): void {
-  state.wanted.heat = Math.max(0, state.wanted.heat - amount);
+export function coolHeat(state: GameState, content: Content, amount: number): void {
+  // From a safe house it fades faster.
+  const rate = hasAsset(state, content, 'safeHouse') ? SAFE_HOUSE.cool : 1;
+  state.wanted.heat = Math.max(0, state.wanted.heat - amount * rate);
   state.wanted.level = wantedLevel(state);
 }
 
 /** Cools a little for every day that has passed since it last did. Called with the board's daily round. */
-export function coolWithTime(state: GameState): void {
+export function coolWithTime(state: GameState, content: Content): void {
   const day = Math.floor(state.clock.gameTimeMs / DAY_MS);
   if (state.wanted.day === 0 || day < state.wanted.day) state.wanted.day = day;
   const days = day - state.wanted.day;
   if (days <= 0) return;
   state.wanted.day = day;
-  if (state.wanted.heat > 0) coolHeat(state, days * DAY_COOL);
+  if (state.wanted.heat > 0) coolHeat(state, content, days * DAY_COOL);
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyAction, createGame, guideStep, syncWithContent, tick, type Action, type Content, type GameState } from '../core';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, data } from './index';
+import { assets, companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, data } from './index';
 
 const content: Content = {
   servers,
@@ -21,6 +21,7 @@ const content: Content = {
   patrons,
   ladder,
   data,
+  assets,
   rules: tuning,
 };
 

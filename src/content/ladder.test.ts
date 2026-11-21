@@ -3,9 +3,9 @@ import { applyAction, createGame, deserializeGame, ladderPlace, ladderRows, post
 import { beginRaid, scheduleRaid } from '../core/raid';
 import { advanceLadder, noteBeaten, outOfRaids } from '../core/ladder';
 import { relayHeat, warmRelay } from '../core/trace';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder } from './index';
+import { assets, companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder } from './index';
 
-const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, rules: tuning };
+const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, assets, rules: tuning };
 const SEED = 31;
 const content = worldFor(written, SEED);
 

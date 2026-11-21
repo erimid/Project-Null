@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 26;
+export const STATE_VERSION = 27;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -51,6 +51,10 @@ export interface PlayerState {
   savedLoadouts: string[][];
   /** Game time until which the board gives the player no work. 0 = never traced. */
   lieLowUntilMs: number;
+  /** Ids of the property the player has bought (see assets.ts). */
+  assets: string[];
+  /** Legend contracts delivered. */
+  legends: number;
   /** Ids of people the player has come across in files. */
   contacts: string[];
   /** Ids of details the player has read in files. */
@@ -133,6 +137,8 @@ export interface ContractsState {
   burned: string[];
   /** The edition day the board last thought about posting a heist. */
   heistDay: number;
+  /** The game day the board last posted a legend contract (see legend.ts). */
+  legendDay: number;
 }
 
 /** A heist being worked on: the vault and who holds which of its layers. */
@@ -171,6 +177,8 @@ export interface Job extends ContractDef {
   readonly expiresMs: number;
   /** The headline that brought it, for a job a news story opened (see news.ts). */
   readonly news?: string;
+  /** For a legend contract (see legend.ts): the twist it carries and the game week it was posted in. */
+  readonly legend?: { readonly twist: 'shortFuse' | 'onGuard' | 'travelLight' | 'blindRun'; readonly week: number };
 }
 
 export interface StoredFile {
@@ -637,6 +645,8 @@ export function createGame(options: NewGameOptions): GameState {
       loadout: [],
       savedLoadouts: Array.from({ length: LOADOUT_SLOTS }, () => []),
       lieLowUntilMs: 0,
+      assets: [],
+      legends: 0,
       contacts: [],
       facts: [],
       model: null,
@@ -650,7 +660,7 @@ export function createGame(options: NewGameOptions): GameState {
     connections: [],
     tasks: [],
     messages: [],
-    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0, heldMs: 0, guard: null, raceUntilMs: 0, heist: null, burned: [], heistDay: -1 },
+    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0, heldMs: 0, guard: null, raceUntilMs: 0, heist: null, burned: [], heistDay: -1, legendDay: -1 },
     story: { beat: 0, arrived: false, lastMs: 0, offered: [] },
     phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
     reviews: [],

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "private-relay",
+    "name": "Private relay",
+    "where": "Reykjavik",
+    "effect": "relay",
+    "serverId": "harbour-relay",
+    "price": 22000,
+    "minRating": 49,
+    "blurb": "A rack in a harbour data hall, leased under a name that is not yours. It goes into your address book as a relay that slows a trace more than any open one, and it never warms up however often you use it."
+  },
+  {
+    "id": "safe-house",
+    "name": "Safe house",
+    "where": "Porto",
+    "effect": "safeHouse",
+    "price": 36000,
+    "minRating": 64,
+    "blurb": "A second address with a line of its own. A trace that gets home finds this one: you lie low half as long, the heat on you fades twice as fast, and no trace burns a part out of your gateway again."
+  },
+  {
+    "id": "second-gateway",
+    "name": "Second gateway",
+    "where": "Tallinn",
+    "effect": "secondGateway",
+    "price": 60000,
+    "minRating": 79,
+    "blurb": "A second rig racked beside the first and wired to share the load: one more connection at a time, two more programs running at once, and 16 GB more memory to load."
+  }
+]

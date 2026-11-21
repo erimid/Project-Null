@@ -25,6 +25,7 @@ export type {
 } from '../content/schema';
 export type { ModelDef, ModelSkill } from '../content/models';
 export type { HardwareDef, HardwareSlot } from '../content/hardware';
+export type { AssetDef, AssetEffect } from '../content/assets';
 export type { SkillBranch, SkillDef, SkillEffect } from '../content/skills';
 export type { ModuleDef, ModuleGrade, ModuleTrait } from '../content/modules';
 export type { AskDef, FactDef, PeopleDef, PersonDef, RewardDef } from '../content/people';

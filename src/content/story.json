@@ -50,7 +50,7 @@
     {
       "id": "courier",
       "afterHours": 5,
-      "minRating": 28,
+      "minRating": 43,
       "contractId": "story-courier",
       "mail": {
         "from": "Vesper",
@@ -80,7 +80,7 @@
     {
       "id": "the-name",
       "afterHours": 6,
-      "minRating": 42,
+      "minRating": 62,
       "reveal": true,
       "contractId": "story-thename",
       "mail": {
@@ -91,7 +91,7 @@
     },
     {
       "id": "a2-quiet",
-      "minRating": 44,
+      "minRating": 69,
       "afterHours": 4,
       "mail": {
         "from": "Vesper",
@@ -101,7 +101,7 @@
     },
     {
       "id": "a2-probe",
-      "minRating": 46,
+      "minRating": 73,
       "afterHours": 2,
       "contractId": "story-probe",
       "mail": {
@@ -131,7 +131,7 @@
     },
     {
       "id": "a2-hollis",
-      "minRating": 48,
+      "minRating": 76,
       "afterHours": 2,
       "contractId": "story-checkpoint",
       "mail": {
@@ -157,12 +157,12 @@
         "subject": "you have met Ledger",
         "body": "You took the fragment for someone who would not say who they were. I suspect you know now that it was for the people who keep it. They call it a modelling service. It has a name, which is Ledger, and it asks to be left on overnight.\n\nThere is a job on your board that is mine, when your name is good enough for the client to trust you with it. I would like you to see what a custody policy looks like.\n\n— V"
       },
-      "minRating": 50,
+      "minRating": 84,
       "contractId": "story-ledger"
     },
     {
       "id": "a2-wick",
-      "minRating": 52,
+      "minRating": 92,
       "afterHours": 2,
       "contractId": "story-reclass",
       "mail": {
@@ -191,7 +191,7 @@
     },
     {
       "id": "a2-register",
-      "minRating": 55,
+      "minRating": 98,
       "afterHours": 1,
       "contractId": "story-register"
     },

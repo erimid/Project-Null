@@ -3,9 +3,9 @@ import { applyAction, createGame, deserializeGame, objectiveMet, postJobs, seria
 import { startContract } from '../core/stages';
 import { GUARD_BREACH_SHARE, advanceKinds, foundFlag, guardRingAngle, raceProgress } from '../core/kinds';
 import { advanceContract } from '../core/stages';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, type ContractDef } from './index';
+import { assets, companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, type ContractDef } from './index';
 
-const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, rules: tuning };
+const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, assets, rules: tuning };
 const SEED = 31;
 const content = worldFor(written, SEED);
 

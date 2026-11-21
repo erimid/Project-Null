@@ -18,6 +18,8 @@ import type { NewsDef } from '../content/news';
 import type { PatronDef } from '../content/patrons';
 import type { LadderDef } from '../content/ladder';
 import type { DataMarketDef } from '../content/data';
+import type { AssetDef } from '../content/assets';
+import { twistOn } from './legend';
 import { backfillChoices } from './patrons';
 import { builtProgram } from './builds';
 import { autoPack, dropFromMemory, loadedOfKind, memoryGb, needsMemory, trimLoadout } from './loadout';
@@ -108,6 +110,11 @@ export interface Rules {
   readonly gearAfterRating: number;
   /** Each time the best rating passes another multiple of this, the player earns a skill point. */
   readonly skillPointRating: number;
+  /** Past this best rating a point takes `skillPointSlowRating` rating. Left out: the same pace all the way up. */
+  readonly skillPointSlowAfter?: number;
+  readonly skillPointSlowRating?: number;
+  /** The rating from which the board posts legend contracts (see legend.ts). Left out: never. */
+  readonly legendRating?: number;
   /** Credits to unlearn every skill the first time; each time after costs this much more. */
   readonly unlearnPrice: number;
   /** Seconds the Workbench takes to fit one module, on a stock processor. */
@@ -175,6 +182,8 @@ export interface Content {
   readonly ladder?: LadderDef;
   /** What the data market at Lowtide buys (see core/data.ts). Missing = it buys nothing. */
   readonly data?: DataMarketDef;
+  /** Property for sale late in a career (see core/assets.ts). Missing = none. */
+  readonly assets?: readonly AssetDef[];
   readonly rules: Rules;
 }
 
@@ -218,6 +227,12 @@ export function noteProgress(state: GameState, content: Content): void {
   }
   if (state.player.rating >= content.rules.gearAfterRating) {
     once(state, 'gear', () => sendMail(state, content, 'gear'));
+  }
+  // The broker writes once the first property is within reach, and the board once legend contracts start.
+  const firstAsset = Math.min(...(content.assets ?? []).map((asset) => asset.minRating));
+  if (state.player.rating >= firstAsset) once(state, 'property', () => sendMail(state, content, 'property'));
+  if (content.rules.legendRating !== undefined && state.player.rating >= content.rules.legendRating) {
+    once(state, 'legend', () => sendMail(state, content, 'legend'));
   }
   // At the rating where enemy hackers start to take an interest, the fixer gives warning.
   if (state.player.rating >= content.rules.raidMinRating && content.rivals.length > 0) {
@@ -303,8 +318,10 @@ export function securityOf(state: GameState, server: ServerDef): SecurityDef {
   const firm = state.news?.firms.includes(server.id) ? { firewall: 1, monitor: 1 } : undefined;
   // The vault of a heist under way: each layer a hold controls is shut tight, or off while its desk is held (see heists.ts).
   const heist = state.contracts?.heist?.vaultId === server.id ? state.contracts.heist : undefined;
-  if (!alert && !firm && !heist) return server.security;
-  const raise = (layer: keyof SecurityDef) => (alert?.[layer] ?? 0) + (firm?.[layer as 'firewall'] ?? 0);
+  // A legend contract with the On guard twist: every lock on its servers is a level up while it is being worked on (see legend.ts).
+  const guard = state.contracts && twistOn(state, 'onGuard', server.id) ? 1 : 0;
+  if (!alert && !firm && !heist && !guard) return server.security;
+  const raise = (layer: keyof SecurityDef) => (alert?.[layer] ?? 0) + (firm?.[layer as 'firewall'] ?? 0) + guard;
   const up = (layer: keyof SecurityDef) => {
     const hold = heist?.holds.find((item) => item.layer === layer);
     if (hold) return heistHeld(state, hold) ? 0 : MAX_LAYER_LEVEL;

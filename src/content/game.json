@@ -45,14 +45,26 @@
     },
     {
       "min": 37,
+      "title": "Revenant"
+    },
+    {
+      "min": 49,
       "title": "Phantom"
     },
     {
-      "min": 52,
+      "min": 64,
+      "title": "Apparition"
+    },
+    {
+      "min": 79,
       "title": "Spectre"
     },
     {
-      "min": 68,
+      "min": 95,
+      "title": "Eidolon"
+    },
+    {
+      "min": 111,
       "title": "Legend"
     }
   ]

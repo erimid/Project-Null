@@ -57,28 +57,30 @@
     400,
     800,
     1300,
-    1900,
-    2600
+    2200,
+    3200
   ],
   "tierRatings": [
     0,
     3,
     8,
     15,
-    24
+    60
   ],
   "jobRatings": [
     1,
     1,
     1,
-    2,
-    2
+    1,
+    1
   ],
   "jobsAfter": 1,
   "linksAfterRating": 4,
   "shopsAfterRating": 8,
   "gearAfterRating": 13,
   "skillPointRating": 3,
+  "skillPointSlowAfter": 24,
+  "skillPointSlowRating": 6,
   "unlearnPrice": 1500,
   "buildSeconds": 8,
   "workbenchAfter": 2,
@@ -88,7 +90,7 @@
     20
   ],
   "raidMinRating": 10,
-  "raidProfilePay": 3000,
+  "raidProfilePay": 4000,
   "raidChance": 0.25,
   "raidCooldownHours": 72,
   "raidBreachSeconds": [
@@ -116,5 +118,6 @@
   "raidPortFade": 0.7,
   "raidMaxLocks": 2,
   "raidLossCredits": 0.15,
-  "signatureRating": 68
+  "signatureRating": 111,
+  "legendRating": 111
 }

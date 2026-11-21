@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { GUIDED_JOB, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, openPatron, standingName, standingWith, stagesOf } from '../../../core';
+import { GUIDED_JOB, TWISTS, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, openPatron, standingName, standingWith, stagesOf } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatGameTime, formatMoney, formatRating } from '../../format';
 import { useGame } from '../../hooks';
@@ -41,10 +41,11 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
   const staged = stages.length > 1;
   const part = contract.part && findModule(content, contract.part.id);
   const minutes = contract.withinMinutes;
+  const legend = job ? contract.legend : undefined;
   return (
-    <li class={`card jobcard${contract.story ? ' is-story' : ''}${job ? ' is-standing' : ''}${contract.heist ? ' is-heist' : ''}`}>
+    <li class={`card jobcard${contract.story ? ' is-story' : ''}${job ? ' is-standing' : ''}${contract.heist ? ' is-heist' : ''}${legend ? ' is-legend' : ''}`}>
       <div class="card__head">
-        <IconTile icon={contract.story ? 'star' : objectiveIcon(contract.objective.kind)} tone={contract.story ? 'rare' : job ? 'good' : undefined} />
+        <IconTile icon={contract.story ? 'star' : legend ? 'sparkle' : objectiveIcon(contract.objective.kind)} tone={contract.story ? 'rare' : job ? 'good' : undefined} />
         <div class="card__title">
           <strong>{contract.title}</strong>
           <span class="card__sub">
@@ -58,6 +59,8 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
           <span class="row__tag row__tag--danger card__tag" data-tip="Several lines at once, several traces. Caught on any of them, the plan burns.">heist</span>
         ) : contract.story ? (
           <span class="row__tag row__tag--rare card__tag">story</span>
+        ) : legend ? (
+          <span class="row__tag row__tag--legend card__tag" data-tip="One a day, for those at the top: two steps against the hardest companies, three times the pay, and a condition that holds while the job is open.">legend</span>
         ) : job && 'news' in contract && contract.news ? (
           <span class="row__tag row__tag--warn card__tag" data-tip="The Wire carried a story about this company. The job is only up for a short while.">in the news</span>
         ) : job ? (
@@ -65,6 +68,12 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
         ) : null}
       </div>
       {job && 'news' in contract && contract.news && <p class="jobcard__news">“{contract.news}”</p>}
+      {legend && (
+        <p class="jobcard__twist" data-tip="This week's condition. It holds from the moment you accept until the job is delivered or given up.">
+          <strong>{TWISTS[legend.twist].name}</strong>
+          {TWISTS[legend.twist].line}
+        </p>
+      )}
       <p class="card__blurb">{contract.summary}</p>
       {contract.heist && <HeistPlan contract={contract} live={false} />}
       {staged ? (

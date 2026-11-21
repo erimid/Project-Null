@@ -5,9 +5,9 @@ import { startContract } from '../core/stages';
 import { standingWith } from '../core/patrons';
 import { parseData } from './data';
 import { ContentError } from './schema';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, data, type ContractDef } from './index';
+import { assets, companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, data, type ContractDef } from './index';
 
-const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, data, rules: tuning };
+const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, data, assets, rules: tuning };
 const SEED = 51;
 const content = worldFor(written, SEED);
 const company = (tier: number) => content.servers.find((server) => server.generated?.tier === tier)!;

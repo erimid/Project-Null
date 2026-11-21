@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { HARDWARE_SLOT_LABELS, findPart, freeStorageGb, rackStorageGb, rareToday, sellsHardware, shopFor, shopPrice } from '../../../core';
-import type { HardwareDef, HardwareSlot } from '../../../core/content';
+import { HARDWARE_SLOT_LABELS, assetPrice, findPart, freeStorageGb, rackStorageGb, rareToday, sellsHardware, shopFor, shopPrice } from '../../../core';
+import type { AssetDef, HardwareDef, HardwareSlot } from '../../../core/content';
 import { content } from '../../session';
 import { GatewayBoard, SLOT_BLURBS, partStats, slotLabel, type SlotMark } from '../GatewayBoard';
 import { IconTile, Pips, StatBar } from '../Gear';
-import { Icon, slotIcon } from '../Icon';
+import { Icon, slotIcon, type IconName } from '../Icon';
 import { uiSound } from '../../sfx';
 import type { View } from './serverView';
 import { Price, ShopSign } from './Shop';
@@ -72,6 +72,80 @@ function PartCard({ part, fitted, scale, rare, view, onFitted }: { part: Hardwar
         </button>
       </div>
     </li>
+  );
+}
+
+const ASSET_ICONS: Readonly<Record<AssetDef['effect'], IconName>> = { relay: 'route', safeHouse: 'shield', secondGateway: 'twin' };
+
+/** One property on the broker's list: bought once, kept for good. */
+function AssetCard({ asset, view }: { asset: AssetDef; view: View }) {
+  const { game, server, connection, act } = view;
+  const owned = game.player.assets.includes(asset.id);
+  const price = assetPrice(game, content, server.id, asset.id);
+  const locked = game.player.rating < asset.minRating;
+  const poor = game.player.balance < price;
+  return (
+    <li class={`card card--asset${owned ? ' is-owned' : ''}${locked && !owned ? ' is-locked' : ''}`}>
+      <div class="card__head">
+        <IconTile icon={ASSET_ICONS[asset.effect]!} tone={owned ? 'good' : 'rare'} />
+        <div class="card__title">
+          <strong>{asset.name}</strong>
+          <span class="card__sub">
+            <Icon name="pin" size={13} /> {asset.where}
+          </span>
+        </div>
+        {locked && !owned && (
+          <span class="row__tag card__tag" data-tip="The broker sells to names they know. Your rating has to reach this first.">
+            rating <span class="data">{asset.minRating}</span>+
+          </span>
+        )}
+      </div>
+      <p class="card__blurb">{asset.blurb}</p>
+      <div class="card__foot">
+        {owned ? (
+          <span class="card__owned">
+            <Icon name="check" size={15} /> Yours
+          </span>
+        ) : (
+          <>
+            <Price base={asset.price} price={price} />
+            <button
+              type="button"
+              class="btn btn--go card__buy"
+              disabled={locked || poor}
+              title={locked ? `Needs a rating of ${asset.minRating}` : poor ? 'You cannot afford this yet' : undefined}
+              data-tip="Pay once. It is yours from then on."
+              onClick={() => {
+                if (act({ type: 'buyAsset', connectionId: connection.id, assetId: asset.id })) uiSound('fitted');
+              }}
+            >
+              Buy
+            </button>
+          </>
+        )}
+      </div>
+    </li>
+  );
+}
+
+/** The broker's list, under the parts: shown once the first of it is within reach, or anything on it is owned. */
+function Property({ view }: { view: View }) {
+  const assets = content.assets ?? [];
+  const { game } = view;
+  const first = Math.min(...assets.map((asset) => asset.minRating));
+  if (assets.length === 0 || (game.player.rating < first && game.player.assets.length === 0)) return null;
+  return (
+    <section class="property" aria-label="Property">
+      <h3 class="map__heading">Property</h3>
+      <p class="slotpanel__note">
+        <Icon name="person" size={15} /> Placed by Ilse Maran, under names that are not yours. Each is bought once and kept.
+      </p>
+      <ul class="cards">
+        {assets.map((asset) => (
+          <AssetCard key={asset.id} asset={asset} view={view} />
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -171,6 +245,7 @@ export function Hardware(view: View) {
           </>
         )}
       </section>
+      <Property view={view} />
     </div>
   );
 }

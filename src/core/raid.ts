@@ -92,7 +92,9 @@ export function beginRaid(state: GameState, content: Content, attackerId: string
 
 /** Schedules an attack to land when the moment is right (offline, or at once for a story beat). */
 export function scheduleRaid(state: GameState, content: Content, attackerId: string, story = false): void {
-  if (!findRival(content, attackerId) || state.raid || state.raidPending) return;
+  if (!findRival(content, attackerId) || state.raid) return;
+  // A story attack takes the place of a chance one that was waiting; nothing takes the place of a story attack.
+  if (state.raidPending && (state.raidPending.story || !story)) return;
   state.raidPending = { attackerId, story };
 }
 
