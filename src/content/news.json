@@ -21,6 +21,48 @@
           "clinic"
         ],
         "body": "{CITY}. {company} has told the regulator that a copy of a confidential ledger left its network without permission. It is the second notice of its kind filed in {city} this quarter.\n\nCustomers are being advised to watch their statements."
+      },
+      {
+        "headline": "{company} confirms files 'accessed without permission'",
+        "body": "{CITY}. {company} confirmed on {weekday} that files were opened by someone with no right to them. It said the matter was in the hands of its lawyers.\n\n'We take the privacy of our work extremely seriously,' a spokesperson said, in the tone of a person who has said it before."
+      },
+      {
+        "headline": "Staff at {company} told to change every password",
+        "body": "{CITY}. An email seen by the Wire tells employees of {company} to change every password by the end of the day and not to say why. Several said they had heard rumours of a copy of internal files going elsewhere."
+      },
+      {
+        "headline": "What did the intruder take from {company}?",
+        "body": "{CITY}. Nobody at {company} can say what left the building this week, only that something did. 'The logs are very polite,' one engineer said. 'They show exactly who looked, and it was nobody.'"
+      },
+      {
+        "headline": "Patient lists copied at {company}, clinic confirms",
+        "sectors": [
+          "clinic"
+        ],
+        "body": "{CITY}. {company} has written to patients to say that a list of names was copied from its systems. No treatment records are thought to be involved, though the clinic said it could not be sure.\n\nA helpline has been opened."
+      },
+      {
+        "headline": "Pupil records copied from {company}",
+        "sectors": [
+          "school"
+        ],
+        "body": "{CITY}. Parents of children at {company} are being told that a copy of its register was taken from the school's network. The head said the school was 'working with the authorities and with our own IT volunteer'."
+      },
+      {
+        "headline": "Designs leaked from {company}, rivals circle",
+        "sectors": [
+          "engineering",
+          "energy"
+        ],
+        "body": "{CITY}. Drawings that look like they come from {company} are said to be in the hands of at least two competitors. The company says its designs are 'protected in many ways' and declined to list them."
+      },
+      {
+        "headline": "Customer list from {company} said to be on sale",
+        "sectors": [
+          "retail",
+          "freight"
+        ],
+        "body": "{CITY}. A list of customers of {company} is being offered for sale, according to a post that vanished within the hour. The firm said it had no comment 'at this time', which analysts took to mean 'later'."
       }
     ],
     "destroy": [
@@ -41,6 +83,33 @@
           "school"
         ],
         "body": "{CITY}. {company} says a year of billing records has been erased, leaving it unable to say who owes what. Customers have been asked to keep their receipts.\n\nThe local council has offered help with the paperwork."
+      },
+      {
+        "headline": "{company} 'rebuilding from scratch' after data loss",
+        "body": "{CITY}. {company} says it is restoring its {records} by hand after a deletion it cannot yet explain. Customers have been asked for patience and, in some cases, for copies of their own paperwork."
+      },
+      {
+        "headline": "Backups failed too, {company} admits",
+        "body": "{CITY}. When {company} lost a file this week, staff reached for the backup. It was damaged as well. 'Not by accident,' said a source, 'someone had been through it first.'"
+      },
+      {
+        "headline": "Fire drill or sabotage? {company} cannot say",
+        "body": "{CITY}. {company} said on {weekday} that a file central to its work was deleted overnight. An internal memo calls the loss 'significant but recoverable'. Staff say it is neither."
+      },
+      {
+        "headline": "Case files gone at {company}",
+        "sectors": [
+          "law",
+          "credit"
+        ],
+        "body": "{CITY}. {company} is asking clients to resend documents after a set of case files vanished from its network. A partner said the firm had 'not yet established' whether the loss was deliberate."
+      },
+      {
+        "headline": "Clinic loses appointment book",
+        "sectors": [
+          "clinic"
+        ],
+        "body": "{CITY}. {company} has gone back to pen and paper after its appointment records were wiped. Patients are being phoned one by one. Urgent cases are being seen first."
       }
     ],
     "record": [
@@ -51,24 +120,56 @@
       {
         "headline": "Questions over figures at {company}",
         "body": "{CITY}. {company} has paused a review of its {records} after an auditor noticed a change nobody could explain. The company called it 'a clerical error under investigation'."
+      },
+      {
+        "headline": "{company} corrects 'a small error' in its {records}",
+        "body": "{CITY}. {company} has issued a correction to its {records}, saying a figure had been 'entered wrongly'. Two former employees told the Wire that the figure was right until Tuesday."
+      },
+      {
+        "headline": "Who changed the figures at {company}?",
+        "body": "{CITY}. An account at {company} edited a record at three in the morning, then logged out. The account belongs to someone who was on holiday. 'Someone borrowed them,' a colleague said."
       }
     ],
     "read": [
       {
         "headline": "{company} reports 'unusual activity' on its network",
         "body": "{CITY}. {company} said someone spent time inside its network this week, but that as far as it could tell nothing was taken or changed.\n\n'They looked,' said one technician. 'That is somehow worse.'"
+      },
+      {
+        "headline": "{company} finds someone read its files, took nothing",
+        "body": "{CITY}. An audit at {company} shows an outside party opened a long list of files this week and changed none of them. 'It was a visit, not a robbery,' the firm said, and asked that nobody read anything into it."
+      },
+      {
+        "headline": "Quiet visitor in {company}'s network",
+        "body": "{CITY}. For the better part of an afternoon, someone moved through the systems of {company} without disturbing a thing. Staff only noticed when a log was read back to front. 'Considerate,' said one, dryly."
       }
     ],
     "plant": [
       {
         "headline": "Mystery file found on {company} server",
         "body": "{CITY}. Staff at {company} have found a file on the company's server that none of them put there. The firm has handed it to its lawyers and will not say what it contains."
+      },
+      {
+        "headline": "{company} finds file it did not write",
+        "body": "{CITY}. An unfamiliar file was found on a server at {company} this week. The firm's security staff said it was 'being examined'. One technician said it was 'oddly neat'."
+      },
+      {
+        "headline": "Strange upload at {company} baffles IT",
+        "body": "{CITY}. IT staff at {company} are trying to work out how a new file reached their server, and why. 'Nobody has asked for it, nobody will claim it,' the head of IT said."
       }
     ],
     "frame": [
       {
         "headline": "{company} names suspect after break-in",
         "body": "{CITY}. {company} says its logs point at a single address, and that it has passed the details to the police. Friends of the person named say they have never heard of the company."
+      },
+      {
+        "headline": "Police question man over {company} break-in",
+        "body": "{CITY}. A man has been questioned about a break-in at {company}, after its logs showed a connection from his address. His lawyer said he 'does not own a computer that works'."
+      },
+      {
+        "headline": "Break-in at {company}: logs 'point one way'",
+        "body": "{CITY}. {company} says there is no doubt who is responsible. A neighbour of the man named said he is 'a quiet type, mostly interested in fishing'."
       }
     ],
     "caught": [
@@ -79,30 +180,66 @@
       {
         "headline": "{company} says it 'saw off' an attack",
         "body": "{CITY}. {company} claims its systems detected and traced a break-in attempt within minutes. It is not known whether anyone has been identified."
+      },
+      {
+        "headline": "{company} traces intruder to a relay in {country}",
+        "body": "{CITY}. {company} said its security staff followed a connection through four servers before it dropped. 'We know where to look now,' said the head of security. 'That is half of knowing who.'"
+      },
+      {
+        "headline": "Security team at {company} 'won the race'",
+        "body": "{CITY}. {company} says its monitoring cut off an intruder this week with seconds to spare. The firm is expected to use the episode in its next advertising."
+      },
+      {
+        "headline": "Hackers 'do not get a second chance' at {company}",
+        "body": "{CITY}. After an intrusion was traced and cut off, {company} announced a review of its security. 'Everyone makes mistakes,' its director said. 'We do not plan to make this one again.'"
       }
     ],
     "guard": [
       {
         "headline": "{company} says it fought off a determined attack",
         "body": "{CITY}. {company} says an intruder spent the best part of an hour trying to break into its network this week, and failed. 'Someone was watching the door,' a manager said, without saying who."
+      },
+      {
+        "headline": "Night attack on {company} 'went nowhere'",
+        "body": "{CITY}. {company} confirmed that someone tried the doors of its network for most of an evening and got nothing. A technician credited 'a very lucky coincidence' that a hand was on the switch."
+      },
+      {
+        "headline": "{company} thanks a stranger",
+        "body": "{CITY}. A message from a stranger warned {company} an attack was coming, and then, according to one source, helped to repel it. The company said it did not know who to thank."
       }
     ],
     "hold": [
       {
         "headline": "Long intrusion at {company} puzzles staff",
         "body": "{CITY}. Staff at {company} watched an unknown connection sit inside their network for several minutes this week, doing nothing they could see. 'It was like someone holding a door,' said one."
+      },
+      {
+        "headline": "Unknown session sits in {company}'s systems for minutes",
+        "body": "{CITY}. {company} reported an unknown session that stayed connected, silent and apparently idle, until it was cut off. 'Whatever it was waiting for, it got it,' a manager said."
       }
     ],
     "hunt": [
       {
         "headline": "Trail through {company} leads to a hacker's machine",
         "body": "{CITY}. Logs at {company} have helped someone follow a hacker's route back to the machine it came from, according to a post on an underground board. The company says it was not consulted."
+      },
+      {
+        "headline": "Trail from {company} 'led all the way home', hacker claims",
+        "body": "{CITY}. Someone has posted a screenshot suggesting that logs at {company} were used to follow a hacker's connection back to its source. Police said they were 'not part of that exercise'."
       }
     ],
     "swap": [
       {
         "headline": "Doubts over figures held by {company}",
         "body": "{CITY}. A document held by {company} says something different this week from what several people remember it saying. The company insists the file has not been touched."
+      },
+      {
+        "headline": "Which version is real? Document dispute at {company}",
+        "body": "{CITY}. Two people at {company} remember a document saying different things. The file on the server is the only record, and it says what the newer person remembers. The older person has been moved to another department."
+      },
+      {
+        "headline": "{company} 'stands by' its paperwork",
+        "body": "{CITY}. {company} rejected suggestions that a file in its records had been replaced, calling the claims 'fantasy'. It declined to let anyone compare the file with an earlier copy."
       }
     ]
   },
@@ -115,12 +252,24 @@
       {
         "headline": "{company} on alert",
         "body": "{CITY}. Following recent trouble, {company} has put extra watch on its network. 'We are taking no chances,' a spokesperson said."
+      },
+      {
+        "headline": "{company} puts extra eyes on the {layer}",
+        "body": "{CITY}. After a recent intrusion, {company} has doubled the watch on its {layer}. Staff described the change as 'sensible', and also as 'a lot of paperwork'."
+      },
+      {
+        "headline": "Week of 'heightened vigilance' at {company}",
+        "body": "{CITY}. {company} told staff it will treat every odd connection as an attack for the next few days. It has also asked them to stop plugging in things they find in the car park."
       }
     ],
     "firm": [
       {
         "headline": "{company} hires security firm after third breach",
         "body": "{CITY}. After a third incident in a short space of time, {company} has signed a contract with an outside security firm. Its network will be watched around the clock.\n\n'Enough is enough,' said the managing director."
+      },
+      {
+        "headline": "{company} brings in outside guards for its network",
+        "body": "{CITY}. Three breaches in quick succession have convinced {company} to hire a security firm to watch its systems night and day. 'We should have done it years ago,' a director said. 'We were told, often.'"
       }
     ]
   },
@@ -186,6 +335,68 @@
       "id": "cables",
       "headline": "Undersea cable repair slows traffic across the {ocean}",
       "body": "A repair ship is working on a damaged cable on the floor of the {ocean}. Engineers expect traffic between the continents to be slow, and some routes to be watched more closely, until the work is finished."
+    },
+    {
+      "id": "strike",
+      "headline": "Night shift at {company} walks out",
+      "body": "{CITY}. The night shift at {company} stopped work on {weekday}, citing pay and conditions. Managers are covering the network themselves, which is not what they were hired for."
+    },
+    {
+      "id": "upgrade",
+      "headline": "{company} rushes a software upgrade",
+      "body": "{CITY}. {company} installed a new system this week, ahead of schedule and, according to staff, ahead of testing. Some checks are said to be disabled 'until the bugs are out'.",
+      "job": {
+        "hours": 20,
+        "pay": 1.4
+      }
+    },
+    {
+      "id": "ceo",
+      "headline": "Head of {company} steps down 'to spend time elsewhere'",
+      "body": "{CITY}. The director of {company} resigned on {weekday}, with immediate effect and no explanation. Staff were told to expect 'continuity'. Three of them said they expected an inquiry."
+    },
+    {
+      "id": "move",
+      "headline": "{company} moves offices, and servers",
+      "body": "{CITY}. {company} is moving to new premises in {city}. During the move its records are being copied to a temporary system that, one engineer admitted, 'has a lock, in principle'.",
+      "job": {
+        "hours": 24,
+        "pay": 1.35
+      }
+    },
+    {
+      "id": "profit",
+      "headline": "{company} reports record profits",
+      "body": "{CITY}. {company} announced its best year on record on {weekday}. Its director put the result down to 'hard work and, frankly, discretion'."
+    },
+    {
+      "id": "recall",
+      "headline": "{company} recalls a product after complaints",
+      "body": "{CITY}. {company} has recalled one of its products. A leaked memo suggests the firm knew about the fault long before the first complaint, which the company called 'a misreading'."
+    },
+    {
+      "id": "outage-rival",
+      "headline": "Power cut in {city} knocks out {company}",
+      "body": "{CITY}. A power failure left {company} on backup supplies for most of {weekday}. Its monitoring system, according to a staff member, 'was one of the things we turned off to save the batteries'.",
+      "job": {
+        "hours": 16,
+        "pay": 1.5
+      }
+    },
+    {
+      "id": "law",
+      "headline": "New data rules in {country} 'unworkable', say firms",
+      "body": "{CITY}. Companies in {country} complained this week about a new law requiring them to report every break-in within three days. {company} called it 'a paperwork tax'. Security researchers said it would make firms more honest, in time."
+    },
+    {
+      "id": "hire",
+      "headline": "{company} advertises for a 'security analyst, junior'",
+      "body": "{CITY}. {company} is looking for a junior security analyst, and the advertisement is unusually long. Industry watchers say it reads like a list of things the firm has recently lost."
+    },
+    {
+      "id": "fine",
+      "headline": "{company} fined over lost data",
+      "body": "{CITY}. A regulator fined {company} this week for losing customer data last year, a case that took two years and one change of lawyers to settle. The company said it 'has learned from the experience'."
     }
   ],
   "story": [
@@ -203,6 +414,31 @@
       "after": "a2-quiet",
       "headline": "Night traffic on public relays doubles, nobody knows why",
       "body": "The Open Relay Foundation says traffic through public relays between two and five in the morning has doubled in a month. Most of it goes nowhere at all. 'It looks like someone testing every door in the building,' its chair said."
+    },
+    {
+      "after": "look",
+      "headline": "Unscheduled network test puzzles telecoms firm",
+      "body": "A telecoms operator reported a burst of traffic with no source and no purpose on Thursday. 'It tested the same fifty doors, politely, and left,' an engineer said. The company is treating it as 'a fault'."
+    },
+    {
+      "after": "wren-doubts",
+      "headline": "Records clerk's complaint 'went missing', union says",
+      "body": "A union representative says a clerk filed a complaint about a research project last spring, and that the complaint has since disappeared from the files. The clerk could not be reached."
+    },
+    {
+      "after": "noticed",
+      "headline": "Gateway makers warn of 'curious customers'",
+      "body": "A manufacturer of home gateways has told retailers to expect a rise in returns from customers who say their hardware 'knows when it is being watched'. The company said it was a software matter."
+    },
+    {
+      "after": "a2-dark",
+      "headline": "Radio hams report voices on a dead frequency",
+      "body": "Amateur radio operators in three countries say they heard something like speech on a frequency nobody has used for years. A regulator said it was 'almost certainly interference'."
+    },
+    {
+      "after": "a2-hollis",
+      "headline": "Reinsurer denies 'claims desk for special cases'",
+      "body": "Calder Reinsurance has rejected claims that it keeps a desk for matters it would rather not discuss. 'We keep many desks,' a spokesperson said. 'Each of them is for ordinary business.'"
     }
   ],
   "handles": [
@@ -215,7 +451,15 @@
     "Saltmarsh",
     "Glassjaw",
     "Copperhead",
-    "Wrenfield"
+    "Wrenfield",
+    "Brasswire",
+    "Lowlight",
+    "Pennywhistle",
+    "Sleeper",
+    "Ferrule",
+    "Hollow Point",
+    "Moth Eaten",
+    "Tidewater"
   ],
   "weather": [
     "Rain over the North Sea, clearing by evening.",
@@ -225,6 +469,14 @@
     "Storms in the Bay of Bengal. Shipping told to stay in port.",
     "Clear skies over most of the Americas.",
     "Monsoon rain in Mumbai, flooding in low streets.",
-    "A dry, windy day across the Cape."
+    "A dry, windy day across the Cape.",
+    "Thunder over the Alps, with rain by nightfall in {city}.",
+    "A warm, windy morning in {city}, turning grey by afternoon.",
+    "Sleet in northern Canada, mild elsewhere.",
+    "Dust over the Sahel; flights delayed at several airports.",
+    "A bright, still day across the Pacific coast.",
+    "Cool and wet in {city}. Nothing much expected from the sky or the markets.",
+    "Smog warning in several southern Asian cities.",
+    "Light snow in Scandinavia, heavier by the weekend."
   ]
 }

@@ -1,36 +1,126 @@
 {
   "rivals": [
-    { "id": "mirrorjack", "start": 8, "pace": 1.4 },
-    { "id": "halftone", "start": 16, "pace": 1.8 },
-    { "id": "sable", "start": 26, "pace": 2.0 },
-    { "id": "oxbow", "handle": "Oxbow", "blurb": "Slow, patient and very hard to rattle. Takes the jobs nobody else will wait for.", "start": 2, "pace": 1.0 },
-    { "id": "pilot-whale", "handle": "Pilot Whale", "blurb": "A crew of three who post as one. Loud on the boards, quieter at work.", "start": 5, "pace": 1.3 },
-    { "id": "ninefold", "handle": "Ninefold", "blurb": "Never uses fewer than nine relays. Nobody has ever traced them, and nobody has ever seen them finish quickly.", "start": 11, "pace": 1.5 },
-    { "id": "tamsin", "handle": "Tamsin Grey", "blurb": "Says it is her real name. Nobody believes her, which is the point.", "start": 14, "pace": 1.6 },
-    { "id": "latchkey", "handle": "Latchkey", "blurb": "Young, fast and careless. Climbing quickly, falling sometimes.", "start": 1, "pace": 2.1 },
-    { "id": "cormorant", "handle": "Cormorant", "blurb": "Dives deep and comes back with records. A favourite of the leak sites.", "start": 20, "pace": 1.7 },
-    { "id": "hush", "handle": "Hush", "blurb": "Works for one client at a time and never says who. Has been near the top for years.", "start": 34, "pace": 1.6 },
-    { "id": "drover", "handle": "Drover", "blurb": "Old hand, older habits. Moves whole herds of data and sells it by the head.", "start": 40, "pace": 1.2 },
-    { "id": "kettle", "handle": "Kettle", "blurb": "Talks constantly on the boards. Some of it is even true.", "start": 6, "pace": 1.1 }
+    {
+      "id": "mirrorjack",
+      "start": 8,
+      "pace": 1.4
+    },
+    {
+      "id": "halftone",
+      "start": 16,
+      "pace": 1.8
+    },
+    {
+      "id": "sable",
+      "start": 26,
+      "pace": 2.0
+    },
+    {
+      "id": "oxbow",
+      "handle": "Oxbow",
+      "blurb": "Slow, patient and very hard to rattle. Takes the jobs nobody else will wait for.",
+      "start": 2,
+      "pace": 1.0
+    },
+    {
+      "id": "pilot-whale",
+      "handle": "Pilot Whale",
+      "blurb": "A crew of three who post as one. Loud on the boards, quieter at work.",
+      "start": 5,
+      "pace": 1.3
+    },
+    {
+      "id": "ninefold",
+      "handle": "Ninefold",
+      "blurb": "Never uses fewer than nine relays. Nobody has ever traced them, and nobody has ever seen them finish quickly.",
+      "start": 11,
+      "pace": 1.5
+    },
+    {
+      "id": "tamsin",
+      "handle": "Tamsin Grey",
+      "blurb": "Says it is her real name. Nobody believes her, which is the point.",
+      "start": 14,
+      "pace": 1.6
+    },
+    {
+      "id": "latchkey",
+      "handle": "Latchkey",
+      "blurb": "Young, fast and careless. Climbing quickly, falling sometimes.",
+      "start": 1,
+      "pace": 2.1
+    },
+    {
+      "id": "cormorant",
+      "handle": "Cormorant",
+      "blurb": "Dives deep and comes back with records. A favourite of the leak sites.",
+      "start": 20,
+      "pace": 1.7
+    },
+    {
+      "id": "hush",
+      "handle": "Hush",
+      "blurb": "Works for one client at a time and never says who. Has been near the top for years.",
+      "start": 34,
+      "pace": 1.6
+    },
+    {
+      "id": "drover",
+      "handle": "Drover",
+      "blurb": "Old hand, older habits. Moves whole herds of data and sells it by the head.",
+      "start": 40,
+      "pace": 1.2
+    },
+    {
+      "id": "kettle",
+      "handle": "Kettle",
+      "blurb": "Talks constantly on the boards. Some of it is even true.",
+      "start": 6,
+      "pace": 1.1
+    }
   ],
   "taunts": [
     "Saw you on the ladder, {handle}. Enjoy the view from down there.",
     "{handle}. You are going to have to move faster than that.",
     "Took that job you were looking at. Hope you don't mind.",
-    "Nice climb, {handle}. Don't look down."
+    "Nice climb, {handle}. Don't look down.",
+    "{handle}. Funny how the board always seems to move when you look away.",
+    "Somebody told me you were good. Somebody exaggerates.",
+    "Lovely work, {handle}. I'd hate for it to be the best thing you do.",
+    "You're on my list now, {handle}. Don't flatter yourself. It's a long list."
   ],
   "overtaken": [
     "Fine. Enjoy it while it lasts, {handle}.",
     "So you passed me. I've been passed before.",
-    "Well done. Now everyone knows your handle, {handle}. Including the people you don't want to."
+    "Well done. Now everyone knows your handle, {handle}. Including the people you don't want to.",
+    "That was luck, {handle}. Luck runs out.",
+    "I'll say it once: well played. Don't expect me to say it twice.",
+    "All right, {handle}. You're ahead. For now."
   ],
   "tips": [
     "{handle}, a peace offering, as agreed. Someone left the door open at {server}. The address is in your book now.",
     "A tip from your new friend. {server} is a quiet place to pass through. Added to your book.",
-    "{handle}: {server}. Don't ask how I know. It's in your book."
+    "{handle}: {server}. Don't ask how I know. It's in your book.",
+    "{handle}, from one name on the ladder to another. {server} is worth a look. Added to your book.",
+    "I owe you, so here is {server}. Nobody has been watching it. It's in your book.",
+    "{handle}: they've left {server} half-open. I'm too busy to take it. It's yours."
   ],
   "sniped": [
-    { "headline": "Hacker '{rival}' claims break-in at {company}", "body": "{CITY}. A handle known on underground boards as '{rival}' has claimed responsibility for a break-in at {company} this week, posting a screenshot of the company's file list as proof.\n\nThe company said it was 'aware of the claim'." },
-    { "headline": "{company} hit; online boast points to '{rival}'", "body": "{CITY}. {company} confirmed an intrusion after a post signed '{rival}' described its network in some detail. Police said they were 'following several lines of inquiry'." }
+    {
+      "headline": "Hacker '{rival}' claims break-in at {company}",
+      "body": "{CITY}. A handle known on underground boards as '{rival}' has claimed responsibility for a break-in at {company} this week, posting a screenshot of the company's file list as proof.\n\nThe company said it was 'aware of the claim'."
+    },
+    {
+      "headline": "{company} hit; online boast points to '{rival}'",
+      "body": "{CITY}. {company} confirmed an intrusion after a post signed '{rival}' described its network in some detail. Police said they were 'following several lines of inquiry'."
+    },
+    {
+      "headline": "'{rival}' posts proof of break-in at {company}",
+      "body": "{CITY}. A handle that calls itself '{rival}' posted what it said was a list of files from {company} on an underground board on {weekday}. {company} would say only that it was 'looking into it'."
+    },
+    {
+      "headline": "{company}: 'another name' behind latest break-in",
+      "body": "{CITY}. {company} has been named in a boast by a hacker calling itself '{rival}'. Police believe the account is genuine. 'These people like their reputations,' an officer said."
+    }
   ]
 }
