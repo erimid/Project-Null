@@ -9,7 +9,7 @@ import type { Connection, GameState } from './state';
 import { payPart } from './crafting';
 import { noteRating } from './skills';
 import { freeStorageGb } from './tasks';
-import { refreshJobs } from './jobs';
+import { isJob, refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
 import { advanceStory } from './story';
@@ -93,6 +93,8 @@ export function availableContracts(state: GameState, content: Content): Contract
   );
   // Story missions the director has put on the board, shown whatever the rating ladder is doing.
   const story = content.contracts.filter((contract) => contract.story && state.story.offered.includes(contract.id) && !taken(contract));
+  // Lying low is a state, not a wait: only the standing jobs are offered, and they pay less (see deliverContract).
+  if (isLyingLow(state)) return jobs;
   const offered = open.filter((contract) => contract.minRating <= state.player.rating);
   if (offered.length > 0 || jobs.length > 0 || story.length > 0 || state.contracts.activeId !== null) return [...offered, ...jobs, ...story];
   const easiest = [...open].sort((a, b) => a.minRating - b.minRating)[0];
@@ -122,7 +124,6 @@ export function acceptContract(state: GameState, content: Content, connectionId:
   const board = atBoard(state, content, connectionId);
   if (typeof board === 'string') return board;
   if (state.contracts.activeId !== null) return 'You already have a contract. Deliver it or give it up first.';
-  if (isLyingLow(state)) return 'The board has no work for you while you are lying low.';
   const contract = availableContracts(state, content).find((item) => item.id === contractId);
   if (!contract) return 'That contract is not on offer.';
   state.contracts.activeId = contract.id;
@@ -158,7 +159,8 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
     state.player.files = state.player.files.filter((file) => !handed.some((item) => item.name === file.name && item.from === file.from));
   }
   clearClientFiles(state);
-  const pay = choice?.pay ?? contract.pay;
+  const lowPay = isLyingLow(state) && isJob(contract) ? content.rules.lieLowPayFactor : 1;
+  const pay = Math.round((choice?.pay ?? contract.pay) * lowPay);
   state.player.balance += pay;
   state.player.rating = Math.max(0, state.player.rating + (choice?.rating ?? contract.rating));
   noteRating(state);

@@ -30,6 +30,8 @@ export interface ServerDef {
   readonly hostname: string;
   /** True if the Open Relay Registry lists this server's address. */
   readonly listed: boolean;
+  /** True if nobody here ever traces anyone. Only the first job's library has it. */
+  readonly untraced?: boolean;
   /** Strength of each security layer; 0 means the server doesn't have it. */
   readonly security: SecurityDef;
   /** How long this server's trace needs to get past one average relay, in seconds. */
@@ -393,6 +395,8 @@ export interface Tuning {
   readonly coverShort: readonly number[];
   /** In-game hours you can't take contracts after being traced. */
   readonly lieLowHours: number;
+  /** Share of its pay a standing job gives while the player is lying low. */
+  readonly lieLowPayFactor: number;
   /** Fine for being traced, per level of security on the server that caught you. */
   readonly finePerSecurityLevel: number;
   /** Rating lost for being traced. */
@@ -951,6 +955,7 @@ export function parseServers(data: unknown, file = 'servers.json'): ServerDef[] 
       blurb: text(file, where, raw, 'blurb'),
       hostname: text(file, where, raw, 'hostname'),
       listed: flag(file, where, raw, 'listed'),
+      ...(raw.untraced === undefined ? {} : { untraced: flag(file, where, raw, 'untraced') }),
       security: parseSecurity(file, where, raw.security),
       traceSecondsPerHop: num(file, where, raw, 'traceSecondsPerHop', 1, 600),
       relayDelay: num(file, where, raw, 'relayDelay', 0.1, 10),
@@ -1096,6 +1101,7 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     relayCoolHours: num(file, 'tuning', data, 'relayCoolHours', 0.01, 24 * 365),
     coverShort: fractions(file, data, 'coverShort'),
     lieLowHours: num(file, 'tuning', data, 'lieLowHours', 0, 24 * 365),
+    lieLowPayFactor: num(file, 'tuning', data, 'lieLowPayFactor', 0.1, 1),
     finePerSecurityLevel: num(file, 'tuning', data, 'finePerSecurityLevel', 0, 1_000_000),
     caughtRatingLoss: num(file, 'tuning', data, 'caughtRatingLoss', 0, 100),
     maxReroutes: num(file, 'tuning', data, 'maxReroutes', 0, 20),

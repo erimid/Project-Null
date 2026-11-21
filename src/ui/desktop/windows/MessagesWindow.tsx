@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { formatGameTime } from '../../format';
 import { useWorld } from '../../hooks';
-import { findAsk, findPerson } from '../../../core';
+import { activeContract, findAsk, findPerson, objectiveMet } from '../../../core';
 import { content, session } from '../../session';
 import { story } from '../../../content';
 import { Compose } from '../Compose';
@@ -14,7 +14,7 @@ const VOICES = new Set(story.beats.map((beat) => beat.mail?.from).filter((from):
 /** How a message is dressed: a gateway alarm, a personal letter, or ordinary mail. */
 const toneOf = (from: string): string => (from === 'Gateway' ? ' is-alert' : VOICES.has(from) ? ' is-voice' : '');
 
-/** The player's inbox. A new message brings the window to the front, unless the gateway is under attack. */
+/** The player's inbox. A new message brings the window to the front, unless the gateway is under attack or a job is ready to deliver. */
 export function MessagesWindow() {
   const game = useWorld((state) => state);
   const messages = game.messages;
@@ -30,7 +30,10 @@ export function MessagesWindow() {
   const seen = useRef<string | null>(null);
   useEffect(() => {
     // Not during an attack: the Defence window keeps the front until it is over.
-    if (newest && newest.id !== seen.current && !newest.read && !game.raid) {
+    // Nor over a finished job: the player is about to press Deliver, and the tab's count says there is mail.
+    const job = activeContract(game, content);
+    const readyToDeliver = !!job && objectiveMet(game, content, job);
+    if (newest && newest.id !== seen.current && !newest.read && !game.raid && !readyToDeliver) {
       windows.focus('messages');
       setOpenId(newest.id);
       session.dispatch({ type: 'readMessage', messageId: newest.id });

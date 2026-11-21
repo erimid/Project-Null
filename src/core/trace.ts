@@ -178,6 +178,7 @@ export const maxReroutes = (state: GameState, content: Content): number => conte
 export function newTrace(state: GameState, content: Content, target: ServerDef, route: readonly string[]): TraceState {
   const hopMs = traceHopMs(content, target, route, traceSlow(state, content), undefined, state);
   const trace: TraceState = { status: 'none', graceMs: 0, elapsedMs: 0, hopMs };
+  if (target.untraced) return trace;
   // The strongest monitors start tracing the moment a connection opens.
   if (securityOf(state, target).monitor >= content.rules.monitorGraceSeconds.length) trace.status = 'active';
   return trace;
@@ -190,6 +191,7 @@ export function newTrace(state: GameState, content: Content, target: ServerDef, 
  */
 export function noteIntrusion(state: GameState, content: Content, connection: Connection): void {
   if (connection.trace.status !== 'none' || connection.monitor.blindMs > 0) return;
+  if (findServer(content, connection.serverId)?.untraced) return;
   // A monitor whose alerts wait on a console the player is sitting at notices nothing.
   if (monitorHeld(state, content, connection)) return;
   const at = findServer(content, connection.serverId);

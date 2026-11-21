@@ -26,6 +26,11 @@ export function formatGameTime(gameTimeMs: number): string {
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()} ${two(d.getUTCHours())}:${two(d.getUTCMinutes())}`;
 }
 
+/** "Tuesday 14 March 2034", from a game time in milliseconds. */
+export function formatLongDay(gameTimeMs: number): string {
+  return new Date(gameTimeMs).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).replace(',', '');
+}
+
 /** When a save was made, in the player's own time zone: "17 Nov, 22:14". */
 export function formatSavedAt(iso: string): string {
   const d = new Date(iso);

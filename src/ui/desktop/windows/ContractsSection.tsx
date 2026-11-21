@@ -1,10 +1,11 @@
 import { useState } from 'preact/hooks';
-import { activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, stagesOf } from '../../../core';
+import { GUIDED_JOB, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, stagesOf } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatGameTime, formatMoney, formatRating } from '../../format';
 import { content } from '../../session';
 import { IconTile, ModulePlate } from '../Gear';
 import { Icon, objectiveIcon, type IconName } from '../Icon';
+import { useGuide } from '../guide';
 import { windows } from '../windowStore';
 import { OBJECTIVE_WORDS, Place, RiskMeter } from './Place';
 import type { View } from './serverView';
@@ -19,6 +20,7 @@ const isStaged = (contract: ContractDef) => stagesOf(contract).length > 1;
 
 /** One job on the board: what kind it is, where, what it pays and how dangerous it looks. */
 function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef; risk: number; blocked: string | undefined; onAccept: () => void }) {
+  const guide = useGuide();
   const stages = stagesOf(contract);
   const target = findServer(content, contract.targetId);
   const job = isJob(contract);
@@ -96,7 +98,7 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
           )}
           {part && contract.part && <ModulePlate module={part} grade={contract.part.grade} />}
         </span>
-        <button type="button" class="btn btn--go card__buy" disabled={!!blocked} title={blocked} data-tip="Take this job. It shows in your Contract window." data-sfx="accepted" onClick={onAccept}>
+        <button type="button" class={`btn btn--go card__buy${guide?.id === 'accept' && contract.id === GUIDED_JOB ? ' is-guided' : ''}`} disabled={!!blocked} title={blocked} data-tip="Take this job. It shows in your Contract window." data-sfx="accepted" onClick={onAccept}>
           Accept
         </button>
       </div>
@@ -115,7 +117,7 @@ export function Contracts({ game, connection, act }: View) {
   const offers = availableContracts(game, content);
   const lyingLow = isLyingLow(game);
   const nextAt = nextContractRating(game, content);
-  const blocked = active ? 'Finish or give up the contract you have first' : lyingLow ? 'The Backroom will not give you work while you lie low' : undefined;
+  const blocked = active ? 'Finish or give up the contract you have first' : undefined;
 
   const risks = new Map(offers.map((contract) => [contract.id, contractRisk(game, content, contract)]));
   const counts: Record<Filter, number> = {
@@ -154,7 +156,7 @@ export function Contracts({ game, connection, act }: View) {
     <div class="jobboard">
       {lyingLow && (
         <p class="board__warning">
-          No work for you until <span class="data">{formatGameTime(game.player.lieLowUntilMs)}</span>. You were traced. Lie low and let the clock run.
+          You are lying low until <span class="data">{formatGameTime(game.player.lieLowUntilMs)}</span>. You were traced, so only standing work is offered, and it pays less.
         </p>
       )}
       {active && (

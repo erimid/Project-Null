@@ -2,7 +2,7 @@
   "welcome": {
     "from": "Wren",
     "subject": "You're in",
-    "body": "{handle}, your invite to the Backroom went through. That is where the work is posted and where it is paid.\n\nOpen the Route map, pick The Backroom in your address book and connect. Log in with your invite and look at Contracts. Take the library job first. It is small and nobody is watching that machine.\n\nI vouched for you. Don't make me regret it.\n\nWren"
+    "body": "{handle}, your invite to the Backroom went through. That is where the work is posted and where it is paid.\n\nOpen the Route map, pick The Backroom in your address book and connect. Log in with your invite and look at Contracts. Take the library job first. It is small, and nobody there is watching or tracing anything. I will point at what to press.\n\nI vouched for you. Don't make me regret it.\n\nWren"
   },
   "firstAccept": {
     "from": "Wren",
@@ -12,7 +12,7 @@
   "firstDelivery": {
     "from": "Wren",
     "subject": "First one done",
-    "body": "That is a first job delivered. More work shows on the board as your rating goes up.\n\nSome systems put a proxy or a firewall in your way. A proxy stops you changing records and logs. A firewall stops you copying and deleting files. The Backroom's Market sells a bypass for each. Buy them when a job needs them, not before.\n\nTwo more things worth knowing. While a firewall bypass runs you can line up its ports by hand, which is much faster than waiting. And if a trace is closing in, pick a spare server on the Route map and reroute through it. That makes the trace start that step again.\n\nWren"
+    "body": "That is a first job delivered. The library was the easy one: nobody there ever traces anyone. Everywhere else somebody does. The next job's target is slow about it, so use it to learn. Put a relay or two on the route before you connect. If you go in direct, the Route map tells you how long they need.\n\nMore work shows on the board as your rating goes up.\n\nSome systems put a proxy or a firewall in your way. A proxy stops you changing records and logs. A firewall stops you copying and deleting files. The Backroom's Market sells a bypass for each. Buy them when a job needs them, not before.\n\nTwo more things worth knowing. While a firewall bypass runs you can line up its ports by hand, which is much faster than waiting. And if a trace is closing in, pick a spare server on the Route map and reroute through it. That makes the trace start that step again.\n\nWren"
   },
   "paid": {
     "from": "{client}",
@@ -27,7 +27,7 @@
   "caught": {
     "from": "Wren",
     "subject": "Heard you got traced",
-    "body": "{target} followed you home. Word gets around.\n\nThey have fined you {fine} credits and changed their passwords, so whatever you had broken there is gone. The Backroom will not give you work for {hours} hours. Lie low, let the clock run, and come back.\n\nNext time use more relays, and leave before the timer says you have to.\n\nWren"
+    "body": "{target} followed you home. Word gets around.\n\nThey have fined you {fine} credits and changed their passwords, so whatever you had broken there is gone. For {hours} hours the Backroom will only offer you standing work, and it pays less. Lie low, take the small jobs or let the clock run, and come back.\n\nNext time use more relays, and leave before the timer says you have to.\n\nWren"
   },
   "review": {
     "from": "Wren",
@@ -57,7 +57,7 @@
   "models": {
     "from": "Wren",
     "subject": "Hire some help",
-    "body": "{handle}, you are doing enough work now that some of it is not worth your own time.\n\nThe Backroom's Market rents language models by the day, from a compute farm that does not ask what they are for. A model lives on their hardware and works through your gateway.\n\nMagpie is small and cheap. Log in somewhere, open Files, and it will read every file there in one go and note the people and details for you. In Logs it will pick out the lines that point at you.\n\nHeron is large and costs three times as much. It does the same, and it will read a message over before you send it and tell you if the name or the details are wrong. It also watches your traces. If one is about to reach you, Heron cuts the line first. You lose the connection, not the fine.\n\nA rental lasts a day. Rent one when you have a day's work lined up.\n\nWren"
+    "body": "{handle}, you are doing enough work now that some of it is not worth your own time.\n\nThe Backroom's Market rents language models by the day, from a compute farm that does not ask what they are for. A model lives on their hardware and works through your gateway.\n\nMagpie is small and cheap. Log in somewhere, open Files, and it will read every file there in one go and note the people and details for you. In Logs it will pick out the lines that point at you.\n\nKestrel only watches. If a trace is about to reach you, Kestrel cuts the line first. You lose the connection, not the fine.\n\nHeron is large and costs three times what Magpie does. It does both jobs, and it will also read a message over before you send it and tell you if the name or the details are wrong.\n\nA rental lasts a day. Rent one when you have a day's work lined up.\n\nWren"
   },
   "modelExpired": {
     "from": "Lowlight Compute",

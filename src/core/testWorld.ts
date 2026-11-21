@@ -198,6 +198,7 @@ export const testRules: Rules = {
   relayCoolHours: 8,
   coverShort: [1],
   lieLowHours: 6,
+  lieLowPayFactor: 0.7,
   finePerSecurityLevel: 20,
   caughtRatingLoss: 1,
   maxReroutes: 2,

@@ -11,6 +11,7 @@
   "lon": -9.14,
   "blurb": "Public library catalogue. Old hardware, guest access, few questions.",
   "listed": true,
+  "untraced": true,
   "security": {
     "password": 1,
     "proxy": 0,

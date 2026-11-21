@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { findPage, sites, type BlockDef, type Net } from '../../../content';
+import { useGame } from '../../hooks';
+import { formatLongDay } from '../../format';
 import { Window } from '../Window';
 import type { WindowId } from '../windowStore';
 
@@ -22,6 +24,7 @@ export function BrowserWindow({ net }: { net: Net }) {
   const body = useRef<HTMLDivElement>(null);
   const address = trail[at] ?? browser.home;
   const found = findPage(sites, net, address);
+  const today = useGame((game) => formatLongDay(game.clock.gameTimeMs));
 
   const go = (to: string) => {
     if (to === address) return;
@@ -57,7 +60,7 @@ export function BrowserWindow({ net }: { net: Net }) {
         </div>
         <div class="browser__page" ref={body} key={address}>
           {found ? (
-            found.page.blocks.map((block, index) => <Block key={index} block={block} go={go} />)
+            found.page.blocks.map((block, index) => <Block key={index} block={block} go={go} today={today} />)
           ) : (
             <p class="empty">Nothing answers at this address.</p>
           )}
@@ -67,9 +70,9 @@ export function BrowserWindow({ net }: { net: Net }) {
   );
 }
 
-function Block({ block, go }: { block: BlockDef; go: (to: string) => void }) {
+function Block({ block, go, today }: { block: BlockDef; go: (to: string) => void; today: string }) {
   if ('h' in block) return <h2 class="page__heading">{block.h}</h2>;
-  if ('p' in block) return <p class="page__text">{block.p}</p>;
+  if ('p' in block) return <p class="page__text">{block.p.replace('{date}', today)}</p>;
   if ('quote' in block) {
     return (
       <blockquote class="page__quote">

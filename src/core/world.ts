@@ -41,6 +41,7 @@ export interface Rules {
   readonly coverShort: readonly number[];
   /** In-game hours without contracts after being traced. */
   readonly lieLowHours: number;
+  readonly lieLowPayFactor: number;
   readonly finePerSecurityLevel: number;
   readonly caughtRatingLoss: number;
   /** How many times one connection can be rerouted around a trace. */

@@ -326,7 +326,9 @@ describe('being traced', () => {
     expect(h.state.messages.at(-1)).toMatchObject({ subject: 'Traced by Test Corp', body: 'fine 80, 6 hours' });
 
     h.visit('hidden', 'member');
-    h.refused({ type: 'acceptContract', connectionId: h.here(), contractId: 'steal' }, /lying low/);
+    h.refused({ type: 'acceptContract', connectionId: h.here(), contractId: 'steal' }, /not on offer/);
+    // Written work is held back while lying low; only standing jobs would show.
+    expect(offered(h.state)).toEqual([]);
     h.ok({ type: 'disconnectAll' });
     h.wait(6 * 60 * 60);
     expect(isLyingLow(h.state)).toBe(false);
@@ -347,6 +349,7 @@ describe('being traced', () => {
     getCaught(h);
     expect(h.state.contracts.activeId).toBeNull();
     expect(h.subjects().slice(-2)).toEqual(['Withdrawn: Steal it', 'Traced by Test Corp']);
+    h.wait(6 * 60 * 60);
     expect(offered(h.state)).toContain('steal');
   });
 

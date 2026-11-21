@@ -6,6 +6,7 @@ import { content, session } from '../session';
 import { ON_DEMAND, TraceAlarm } from './BottomBar';
 import { activeConnection, useDesk } from './deskStore';
 import { GameMenu } from './GameMenu';
+import { lit, useGuide } from './guide';
 import { WINDOW_HELP } from './help';
 import { useLayout } from './layout';
 import { usePanes } from './panes';
@@ -44,6 +45,7 @@ export function PhoneDock() {
   const connections = useGame((game) => game.connections.length);
   const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
   const desk = useDesk();
+  const guide = useGuide();
   const active = useWorld((game) => activeConnection(game, desk));
 
   // On a tablet two windows are on show, and the dock lights both.
@@ -121,7 +123,7 @@ export function PhoneDock() {
         <span class="dock__spacer" />
         {connected ? (
           <button
-            class="dock__cut"
+            class={`dock__cut${lit(guide, ['leave-board', 'leave-target'])}`}
             type="button"
             disabled={!active}
             onClick={() => active && session.dispatch({ type: 'disconnect', connectionId: active.id })}

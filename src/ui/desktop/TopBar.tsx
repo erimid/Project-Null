@@ -3,6 +3,7 @@ import { findServer } from '../../core/content';
 import { useWorld } from '../hooks';
 import { content, session } from '../session';
 import { activeConnection, deskStore, useDesk } from './deskStore';
+import { lit, useGuide } from './guide';
 import { windows } from './windowStore';
 
 /**
@@ -10,6 +11,7 @@ import { windows } from './windowStore';
  * a + to open another, and the active contract on the right.
  */
 export function TopBar() {
+  const guide = useGuide();
   const desk = useDesk();
   const game = useWorld((state) => state);
   const active = activeConnection(game, desk);
@@ -41,7 +43,7 @@ export function TopBar() {
             </button>
             <button
               type="button"
-              class="tab__close"
+              class={`tab__close${lit(guide, ['leave-board', 'leave-target'])}`}
               aria-label={`Disconnect from ${name}`}
               data-tip="Disconnect"
               onClick={() => session.dispatch({ type: 'disconnect', connectionId: connection.id })}
@@ -57,7 +59,7 @@ export function TopBar() {
       {contract ? (
         <button
           type="button"
-          class="tabbar__contract tabbar__contract--live"
+          class={`tabbar__contract tabbar__contract--live${lit(guide, 'deliver')}`}
           data-tour="contract"
           data-tip="Your contract. Open it to see the goal and deliver."
           onClick={() => windows.focus('contract')}

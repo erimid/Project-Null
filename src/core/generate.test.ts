@@ -165,6 +165,15 @@ describe('repeatable jobs', () => {
     expect(offers.some((offer) => !isJob(offer))).toBe(true);
   });
 
+  it('are all the board offers while lying low', () => {
+    const h = game();
+    postJobs(h.state, h.world);
+    h.state.player.lieLowUntilMs = h.state.clock.gameTimeMs + 3_600_000;
+    const offers = availableContracts(h.state, h.world);
+    expect(offers).toHaveLength(base.rules.boardJobs);
+    expect(offers.every(isJob)).toBe(true);
+  });
+
   it('come off the board when they run out, and new ones go up', () => {
     const h = game();
     postJobs(h.state, h.world);

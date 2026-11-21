@@ -5813,6 +5813,14 @@ body {
   border-top: 1px solid var(--line-soft);
 }
 
+.addresses__group {
+  padding: 6px 8px 2px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
 .addresses__empty {
   padding: 8px;
   color: var(--text-dim);

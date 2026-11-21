@@ -11,6 +11,7 @@ import { Alerts } from './Alerts';
 import { SnapPreview } from './snapStore';
 import { TouchTips } from './TouchTips';
 import { HoverTips } from './HoverTips';
+import { GuideCard } from './GuideCard';
 import { Tour } from './Tour';
 import { windows } from './windowStore';
 import { BrowserWindow } from './windows/BrowserWindow';
@@ -119,6 +120,7 @@ export function Desktop() {
         <HoverTips />
       </main>
       {phone ? <PhoneDock /> : <BottomBar />}
+      <GuideCard />
       <Tour />
     </div>
   );

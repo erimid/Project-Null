@@ -7,6 +7,7 @@ import { content, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
 import { IconTile, ModulePlate } from '../Gear';
 import { Icon, objectiveIcon } from '../Icon';
+import { lit, useGuide } from '../guide';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
 import { OBJECTIVE_WORDS, Place, RiskMeter, showOnMap } from './Place';
@@ -62,6 +63,7 @@ function WithPlaces({ text, known }: { text: string; known: readonly string[] })
 
 /** The contract being worked on: the brief, whether it is done, and the Deliver button. */
 export function ContractWindow() {
+  const guide = useGuide();
   const game = useWorld((state) => state);
   const contract = activeContract(game, content);
 
@@ -183,7 +185,7 @@ export function ContractWindow() {
         </ConfirmButton>
         <button
           type="button"
-          class="btn btn--go"
+          class={`btn btn--go${lit(guide, 'deliver')}`}
           disabled={!done}
           title={done ? undefined : 'The goal is not done yet'}
           data-tip="Hand the job in and get paid the usual way"

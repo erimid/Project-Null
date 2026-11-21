@@ -1015,7 +1015,7 @@
         "Change {key} to \"{value}\" at {company}."
       ],
       "briefs": [
-        "{company} in {city} keeps a {records} table. Row {key} says the wrong thing. Make its {column} say \"{value}\".\n\nYou will need to get past the proxy to change it.",
+        "{company} in {city} keeps the {records} table. Row {key} says the wrong thing. Make its {column} say \"{value}\".\n\nYou will need to get past the proxy to change it.",
         "One line in {company}'s records: {key}. I need {column} to read \"{value}\" by the end of the week. Their security is {tier}."
       ]
     },
