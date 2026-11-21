@@ -37,10 +37,12 @@ import { Window } from '../Window';
 import { Contracts } from './ContractsSection';
 import { Hardware } from './HardwareSection';
 import { Market } from './MarketSection';
+import { LADDER_BOARD, Ladder } from './LadderSection';
 import type { View } from './serverView';
 
 const SECTION_LABELS: Record<Section, string> = {
   contracts: 'Contracts',
+  ladder: 'Ladder',
   market: 'Market',
   hardware: 'Hardware',
   files: 'Files',
@@ -52,6 +54,7 @@ const SECTION_LABELS: Record<Section, string> = {
 /** Hover labels for the section tabs. */
 const SECTION_TIPS: Record<Section, string> = {
   contracts: 'Jobs on offer. Take one, do it, deliver it for credits and rating.',
+  ladder: 'Who is climbing, who took what, and what to do about the rivals you beat.',
   market: 'Buy programs, modules, and rent a model to help you.',
   hardware: 'Faster parts for your gateway.',
   files: 'Files on this server. Copy them home, read them, or delete them.',
@@ -79,7 +82,7 @@ function sectionsFor(server: ServerDef, connection: Connection): Section[] {
     const rare = (kind: string) => (shop.rare ?? []).some((line) => line.kind === kind);
     const market = shop.programs || shop.modules || shop.models || rare('program') || rare('module');
     const hardware = shop.hardware || rare('hardware');
-    sections.push(...(sellsOnly(server) ? [] : ['contracts' as const]), ...(market ? ['market' as const] : []), ...(hardware ? ['hardware' as const] : []));
+    sections.push(...(sellsOnly(server) ? [] : ['contracts' as const]), ...(server.id === LADDER_BOARD ? ['ladder' as const] : []), ...(market ? ['market' as const] : []), ...(hardware ? ['hardware' as const] : []));
   }
   sections.push('files');
   if (admin) sections.push('logs');
@@ -945,6 +948,7 @@ export function ServerWindow() {
       <Security {...view} />
       {!loggedIn && <LoginScreen {...view} />}
       {section === 'contracts' && <Contracts {...view} />}
+      {section === 'ladder' && <Ladder {...view} />}
       {section === 'market' && <Market {...view} />}
       {section === 'hardware' && <Hardware {...view} />}
       {section === 'files' && <Files {...view} />}

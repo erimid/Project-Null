@@ -9,6 +9,7 @@ import { installed } from './hardware';
 import { effect } from './skills';
 import { regionOf } from './generate';
 import { findConnection, findServer, gatewayOf, ownedProgram, securityOf, type Content } from './world';
+import { privateRelay } from './ladder';
 
 /** What a leg of the route crosses: nothing much, a border, or a stretch of the world. */
 export type LegKind = 'country' | 'border' | 'overseas';
@@ -35,6 +36,8 @@ export function relayHeat(state: GameState, content: Content, serverId: string):
 
 /** Marks a relay as used once more. */
 export function warmRelay(state: GameState, content: Content, serverId: string): void {
+  // A rival's rig the player kept is their own relay: nobody else's traffic, so it never warms.
+  if (privateRelay(state, content, serverId)) return;
   state.relayHeat[serverId] = { heat: relayHeat(state, content, serverId) + 1, atMs: state.clock.gameTimeMs };
 }
 

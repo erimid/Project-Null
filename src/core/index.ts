@@ -30,6 +30,8 @@ export type {
   NewsState,
   ServerMark,
   PatronsState,
+  LadderOutcome,
+  LadderState,
   PendingRaid,
   PlayerState,
   RaidPort,
@@ -136,6 +138,8 @@ export { REGIONS, fill, generateCompanies, regionOf, worldFor } from './generate
 export type { Region } from './generate';
 export { isJob, tierForRating } from './jobs';
 export { DEFAULT_CHOICE, INNER, SHOP_DISCOUNT, STANDING_RANGE, TRUSTED, TRUSTED_PAY, findPatron, hasFavour, knownPatrons, openPatron, shopDiscount, standingName, standingWith } from './patrons';
+export { ADDRESS_PRICE, addressPrice, ladderPlace, ladderRival, ladderRows, privateRelay, rivalScore } from './ladder';
+export type { LadderRow } from './ladder';
 export { EDITION_HOUR, editionDay, editionTimeMs, hasFirm, inTheNews, latestEdition, markServer, serverMark } from './news';
 export type { Action, ActionResult } from './actions';
 export { SAVE_FORMAT, SaveError, deserializeGame, readSummary, serializeGame, summarize } from './save';

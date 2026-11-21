@@ -3,7 +3,7 @@
  * "action": a small plain object. The UI never changes GameState itself.
  * That keeps the rules in one place and makes them testable.
  */
-import { MAX_HOPS, ROUTE_SLOTS, SPEEDS, isConnected, type Connection, type Fitted, type GameState, type Speed, type TaskTarget } from './state';
+import { MAX_HOPS, ROUTE_SLOTS, SPEEDS, isConnected, type Connection, type Fitted, type GameState, type LadderOutcome, type Speed, type TaskTarget } from './state';
 import {
   abandonContract,
   acceptContract,
@@ -18,6 +18,7 @@ import {
 } from './contracts';
 import { scheduleReview } from './forensics';
 import { reportCaught } from './news';
+import { settleRival } from './ladder';
 import { advanceContract } from './stages';
 import { buyHardware, loseHardware, maxConnections } from './hardware';
 import { modelRead, rentModel } from './model';
@@ -117,7 +118,9 @@ export type Action =
   /** Lock a file or program on the gateway so a lost attack cannot take it. */
   | { readonly type: 'lockFile'; readonly name: string }
   /** Pull the plug: break off an attack, dropping every connection. */
-  | { readonly type: 'pullPlug' };
+  | { readonly type: 'pullPlug' }
+  /** Decide what to do with a raider the player beat: sell their address, keep their rig as a relay, or call a truce. */
+  | { readonly type: 'settleRival'; readonly rivalId: string; readonly outcome: LadderOutcome };
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
@@ -421,6 +424,9 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
       return answer(lockRaidFile(state, content, action.name));
     case 'pullPlug':
       return answer(pullPlug(state, content));
+    case 'settleRival':
+      if (!['sold', 'relay', 'truce'].includes(action.outcome)) return refuse('That is not a choice.');
+      return answer(settleRival(state, content, action.rivalId, action.outcome));
 
     case 'readMessage': {
       const message = state.messages.find((item) => item.id === action.messageId);
