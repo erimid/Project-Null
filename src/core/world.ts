@@ -20,6 +20,7 @@ import type { LadderDef } from '../content/ladder';
 import type { DataMarketDef } from '../content/data';
 import { backfillChoices } from './patrons';
 import { builtProgram } from './builds';
+import { autoPack, dropFromMemory, loadedOfKind, memoryGb, needsMemory, trimLoadout } from './loadout';
 import type { Connection, GameState, ServerState } from './state';
 
 /** Numbers that tune the rules. The real ones come from content/tuning.json. */
@@ -136,6 +137,8 @@ export interface Rules {
   readonly raidMaxLocks: number;
   /** A thief or framer loss takes this fraction of the balance. */
   readonly raidLossCredits: number;
+  /** Best rating at which the one signature skill can be picked. Missing = never. */
+  readonly signatureRating?: number;
 }
 
 export interface Content {
@@ -234,6 +237,10 @@ export function noteProgress(state: GameState, content: Content): void {
       sendMail(state, content, 'workbench');
     });
   }
+  // Once there is more to own than memory will hold, Wren explains what to carry.
+  if (state.contracts.completed.length > content.rules.hardwareAfter && content.hardware.some((part) => part.slot === 'memory')) {
+    once(state, 'memory', () => sendMail(state, content, 'memory'));
+  }
   if (state.contracts.completed.length >= content.rules.modelsAfter && content.models.length > 0) {
     once(state, 'models', () => sendMail(state, content, 'models'));
   }
@@ -263,10 +270,14 @@ export function installedOfKind(state: GameState, content: Content, kind: Progra
     .sort((a, b) => b.version - a.version || crafted(a) - crafted(b));
 }
 
-/** The program of a kind that runs when the player uses one: the one they picked, or else the strongest. */
+/**
+ * The program of a kind that runs when the player uses one. For work over
+ * a connection that is the one loaded into memory (see loadout.ts); work
+ * done at home runs the strongest on the drive.
+ */
 export function ownedProgram(state: GameState, content: Content, kind: ProgramKind): ProgramDef | undefined {
-  const all = installedOfKind(state, content, kind);
-  return all.find((program) => program.id === state.player.preferred[kind]) ?? all[0];
+  if (needsMemory(kind)) return loadedOfKind(state, content, kind);
+  return installedOfKind(state, content, kind)[0];
 }
 
 /** The written definition of a file on a server (or of the server a stored file came from). */
@@ -375,8 +386,50 @@ export function syncWithContent(state: GameState, content: Content): GameState {
   // A player always owns something; an empty list means a new game or a save from before programs existed.
   if (state.player.programs.length === 0) state.player.programs = [...content.startingPrograms];
   // Builds from modules or programs that no longer exist go, and so do installed ids with nothing behind them.
+  for (const build of state.player.builds) {
+    if (builtProgram(state, content, build) !== undefined) continue;
+    // The program it was built from comes back in its place, if that still exists.
+    const back = content.programs.some((program) => program.id === build.base) && !state.player.programs.includes(build.base);
+    state.player.programs = state.player.programs.flatMap((id) => (id === build.id ? (back ? [build.base] : []) : [id]));
+    state.player.loadout = state.player.loadout.map((id) => (id === build.id && back ? build.base : id));
+  }
   state.player.builds = state.player.builds.filter((build) => builtProgram(state, content, build) !== undefined);
   state.player.programs = state.player.programs.filter((id) => findProgram(content, id, state) !== undefined);
+
+  // Loadouts came after some saves were made. Once: a build takes the place of the program it was built from,
+  // in a save from before them memory grows (free, this once) to hold what the player was running, and that is what gets loaded.
+  once(state, 'loadouts', () => {
+    for (const build of state.player.builds) {
+      if (state.player.programs.includes(build.id)) state.player.programs = state.player.programs.filter((id) => id !== build.base);
+    }
+    const picked = state.player.loadout.filter((id) => state.player.programs.includes(id));
+    const tiers = content.hardware.filter((part) => part.slot === 'memory').sort((a, b) => a.tier - b.tier);
+    const want = () => {
+      let total = 0;
+      const kinds = new Set<string>();
+      for (const id of [...picked, ...state.player.programs]) {
+        const program = findProgram(content, id, state);
+        if (!program || !needsMemory(program.kind) || kinds.has(program.kind)) continue;
+        kinds.add(program.kind);
+        total += program.sizeGq;
+      }
+      return total;
+    };
+    const fits = tiers.find((part) => (part.memoryGb ?? 0) >= want());
+    if (tiers.length > 0 && state.flags.includes('beforeLoadouts')) state.player.hardware.memory = Math.max(state.player.hardware.memory, (fits ?? tiers[tiers.length - 1]!).tier);
+    autoPack(state, content);
+    // What the player had picked to run takes the place of the strongest, where it fits.
+    for (const id of picked) {
+      const program = findProgram(content, id, state);
+      const current = program && loadedOfKind(state, content, program.kind);
+      if (!program || !current || current.id === id) continue;
+      if (program.sizeGq <= memoryGb(state, content) - (state.player.loadout.reduce((sum, own) => sum + (findProgram(content, own, state)?.sizeGq ?? 0), 0) - current.sizeGq)) {
+        state.player.loadout = state.player.loadout.map((own) => (own === current.id ? id : own));
+      }
+    }
+  });
+  for (const id of [...state.player.loadout]) if (!state.player.programs.includes(id)) dropFromMemory(state, id);
+  trimLoadout(state, content);
 
   // Recordings were added to servers after some saves were made; give those saves the files once.
   once(state, 'recordings-added', () => {

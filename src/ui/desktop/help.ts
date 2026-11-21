@@ -48,12 +48,14 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
     ],
   },
   programs: {
-    summary: 'What your gateway is running, and what is taking up its storage.',
+    summary: 'Your programs: what is on the drive, what is loaded into memory for a job, and what is running.',
     points: [
       'Running programs show their progress here. How many can run at once depends on your hardware.',
       'Copied files land in storage. Open, decrypt or delete them from the Stored files list.',
-      'Remove a program you no longer need to free room. With two of a kind, pick the one that runs.',
-      'The Workbench tab fits modules to your programs to make faster, smaller or quieter versions. Your original is kept.',
+      'The drive holds everything you own. Memory holds what you take on a job: only a loaded program runs on a server.',
+      'Load before you connect. Memory locks while you are inside a server, and one program of a kind fits at a time.',
+      'Keep up to three kits and swap between them with one click. Decrypting, scanning and route planning run at home and need no memory.',
+      'The Workbench tab fits modules to your programs to make faster, smaller or quieter versions. A build takes the place of the plain program.',
     ],
   },
   messages: {
@@ -69,6 +71,8 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
     points: [
       'You earn a skill point as your best rating climbs. A number on the Skills tab means points to spend.',
       'Intrusion breaks in faster, Ghost keeps you hidden, Engineering builds better tools.',
+      'A skill marked Button is not always on: you press it, once on each connection. Overclock and Hot patch sit under a server\'s defences, False trail on the trace alarm.',
+      'At the top of the board you may take one signature skill, and only one. It costs no points.',
       'Skills can be unlearned at the Backroom, for a price.',
     ],
   },

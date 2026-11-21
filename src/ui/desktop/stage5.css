@@ -762,10 +762,10 @@ button.grade:disabled {
 .board {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-areas:
-    'modem cpu storage rack'
-    'ports cpu cooling sensor';
+    'modem cpu memory storage rack'
+    'ports cpu cooling sensor rack';
   grid-auto-rows: 1fr;
   gap: 16px;
   margin: 0 0 14px;
@@ -873,6 +873,9 @@ button.grade:disabled {
 
 .slot--cpu {
   grid-area: cpu;
+}
+.slot--memory {
+  grid-area: memory;
 }
 .slot--storage {
   grid-area: storage;
@@ -998,8 +1001,8 @@ button.grade:disabled {
 
 @container win (min-width: 561px) {
   .board--strip {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    grid-template-areas: 'cpu storage modem ports rack sensor cooling';
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-areas: 'cpu memory storage modem ports rack sensor cooling';
     gap: 10px;
     padding: 14px 12px 12px;
   }
@@ -1375,6 +1378,123 @@ button.grade:disabled {
 .ptile.is-spare .icontile,
 .ptile.is-spare .ptile__text {
   opacity: 0.62;
+}
+
+/* Memory: what is loaded for the next job, one block per program. */
+.memory {
+  margin-top: 10px;
+  background: rgba(78, 230, 200, 0.035);
+}
+
+.memory .drive__head {
+  color: var(--mint);
+  flex-wrap: wrap;
+}
+
+.memory__lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 8px;
+  border: 1px solid rgba(255, 196, 87, 0.5);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #ffc45c;
+}
+
+.memory__bar {
+  display: flex;
+  gap: 3px;
+  height: 26px;
+}
+
+.memory__block {
+  display: grid;
+  place-items: center;
+  flex: 1 1 0;
+  min-width: 22px;
+  border: 1px solid rgba(78, 230, 200, 0.55);
+  border-radius: 5px;
+  background: linear-gradient(180deg, rgba(78, 230, 200, 0.26), rgba(78, 230, 200, 0.1));
+  color: var(--mint);
+  overflow: hidden;
+}
+
+.memory__block--free {
+  min-width: 0;
+  border: 1px dashed var(--line-soft);
+  background: none;
+}
+
+.memory.is-locked .memory__block:not(.memory__block--free) {
+  border-color: rgba(255, 196, 87, 0.5);
+  background: linear-gradient(180deg, rgba(255, 196, 87, 0.2), rgba(255, 196, 87, 0.07));
+  color: #ffc45c;
+}
+
+.memory__note {
+  margin: 7px 0 0;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.memory__kits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 8px;
+}
+
+.kit {
+  display: inline-flex;
+}
+
+.kit .btn {
+  min-height: 30px;
+}
+
+.kit__use {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.kit__save {
+  margin-left: -1px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  color: var(--text-muted);
+}
+
+.kit__count {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.kit.is-current .kit__use {
+  border-color: var(--mint);
+  color: var(--mint);
+  opacity: 1;
+}
+
+.ptile__load {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ptile__load.is-loaded {
+  border-color: rgba(78, 230, 200, 0.6);
+  color: var(--mint);
+}
+
+.ptile__state.is-home {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
 }
 
 /* Icons on the rows that stay rows. */
@@ -2206,7 +2326,7 @@ button.socket:not(:disabled):hover {
   .board {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-areas:
-      'modem cpu storage'
+      'modem cpu memory'
       'ports cpu storage'
       'sensor cooling rack';
     gap: 12px 8px;
@@ -2406,4 +2526,130 @@ button.socket:not(:disabled):hover {
   .board__pulse {
     display: none;
   }
+}
+
+/* ---- Skills that are a button: Overclock and Hot patch under a server's defences ---- */
+
+.moves {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 8px 0 2px;
+}
+
+.move {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-color: rgba(255, 196, 92, 0.55);
+  color: #ffd98f;
+}
+
+.move:hover:not(:disabled) {
+  border-color: #ffc45c;
+  box-shadow: 0 0 14px rgba(255, 196, 92, 0.25);
+}
+
+.move__count {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.move.is-live {
+  border-color: #ffc45c;
+  background: rgba(255, 196, 92, 0.14);
+  animation: move-live 0.7s ease-in-out infinite;
+  opacity: 1;
+}
+
+@keyframes move-live {
+  50% {
+    box-shadow: 0 0 18px rgba(255, 196, 92, 0.4);
+  }
+}
+
+.moves__notice {
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.alarm__jam--decoy {
+  border-color: #ffc45c;
+  background: rgba(255, 196, 92, 0.12);
+  color: #ffe2a8;
+}
+
+.alarm__jam--decoy:hover {
+  background: rgba(255, 196, 92, 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .move.is-live {
+    animation: none;
+  }
+}
+
+/* ---- Heat: how wanted the player is, in the bar only while there is any ---- */
+
+.dock__stat--wanted .dock__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #ffc45c;
+}
+
+.dock__stat--wanted.is-level3 .dock__value {
+  color: var(--red-text);
+}
+
+.wanted__pips {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.wanted__pips i {
+  width: 6px;
+  height: 14px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  opacity: 0.4;
+}
+
+.wanted__pips i.is-on {
+  background: currentColor;
+  box-shadow: 0 0 7px currentColor;
+  opacity: 1;
+}
+
+/* What is loaded, said just above Connect. */
+.map__memory {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.map__memory > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.map__memory .icon {
+  flex: none;
+  color: var(--mint);
+}
+
+.map__memory.is-short {
+  color: #ffd98f;
+}
+
+.map__memory.is-short .icon {
+  color: #ffc45c;
+}
+
+.map__memory strong {
+  color: var(--text-bright);
 }

@@ -7,6 +7,11 @@ import {
   bestRoute,
   coverShortfall,
   holdsLogin,
+  installedOfKind,
+  loadedPrograms,
+  memoryGb,
+  usedMemoryGb,
+  type GameState,
   hopUnderTrace,
   legKind,
   maxReroutes,
@@ -24,6 +29,7 @@ import {
 import { findServer, gatewayOf, type ServerDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
+import { Icon } from '../Icon';
 import { Globe, type GlobeArc, type GlobeDot } from '../../globe/Globe';
 import { activeConnection, deskStore, useDesk } from '../deskStore';
 import { lit, useGuide } from '../guide';
@@ -522,6 +528,9 @@ export function MapWindow() {
                 return markLine || null;
               })()}
               {selected.id !== gateway.id && <RelayNote server={selected} cover={relayCover(game, selected)} {...relayMarks(selected)} target={target} />}
+              {selected.id !== gateway.id && !connectedTo && selected.kind !== 'board' && selected.kind !== 'directory' && (
+                <MemoryNote game={game} server={selected} known={game.scanned.includes(selected.id)} />
+              )}
               {selected.id !== gateway.id && (
                 connectedTo ? (
                   <button type="button" class="btn btn--go map__connect" onClick={() => windows.focus('server')}>
@@ -728,5 +737,53 @@ export function MapWindow() {
         </div>
       </div>
     </Window>
+  );
+}
+
+const LAYER_TOOLS = [
+  ['password', 'breakPassword', 'Password Breaker'],
+  ['proxy', 'bypassProxy', 'Proxy Bypass'],
+  ['firewall', 'bypassFirewall', 'Firewall Bypass'],
+  ['monitor', 'bypassMonitor', 'Monitor Bypass'],
+] as const;
+
+/**
+ * What is in memory, said just above Connect: the last moment it can be
+ * changed. Once a server has been scanned, it also says which of its
+ * layers the player has nothing loaded for.
+ */
+function MemoryNote({ game, server, known }: { game: GameState; server: ServerDef; known: boolean }) {
+  const capacity = memoryGb(game, content);
+  if (!Number.isFinite(capacity)) return null;
+  const loaded = loadedPrograms(game, content);
+  const security = securityOf(game, server);
+  const missing = known ? LAYER_TOOLS.filter(([layer, kind]) => security[layer] > 0 && !loaded.some((program) => program.kind === kind) && installedOfKind(game, content, kind).length > 0).map(([, , name]) => name) : [];
+  return (
+    <p class={`map__memory${missing.length > 0 ? ' is-short' : ''}`}>
+      <Icon name="ram" size={15} />
+      <span>
+        {missing.length > 0 ? (
+          <>
+            Not in memory: <strong>{missing.join(', ')}</strong>.
+          </>
+        ) : (
+          <>
+            In memory: <span class="data">{loaded.length}</span> {loaded.length === 1 ? 'program' : 'programs'}, <span class="data">{usedMemoryGb(game, content)} of {capacity} GB</span>.
+          </>
+        )}{' '}
+        It locks when you connect.
+      </span>
+      <button
+        type="button"
+        class="btn btn--small"
+        data-tip="Open Programs to change what is loaded"
+        onClick={() => {
+          deskStore.showPrograms('programs');
+          windows.focus('programs');
+        }}
+      >
+        Change
+      </button>
+    </p>
   );
 }

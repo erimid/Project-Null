@@ -1,4 +1,4 @@
-import { canReadTrace, findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, pointsFree, traceHeld, traceReport, tracesByUrgency, type GameState } from '../../core';
+import { canReadTrace, findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, pointsFree, traceHeld, traceReport, tracesByUrgency, WANTED_LEVELS, wantedEffects, wantedLevel, whyNotMove, type GameState } from '../../core';
 import { useEffect, useRef } from 'preact/hooks';
 import { formatDay, formatTime, ratingStep } from '../format';
 import { useGame, useWorld } from '../hooks';
@@ -97,6 +97,11 @@ export function TraceAlarm() {
     const connection = mostUrgentTrace(game, content);
     return connection && connection.trace.status === 'active' && !connection.jammed && (connection.trace.frozenMs ?? 0) === 0 ? connection.id : '';
   });
+  // The connection a False trail could still send the wrong way.
+  const decoy = useGame((game) => {
+    const connection = mostUrgentTrace(game, content);
+    return connection && whyNotMove(game, content, connection.id, 'falseTrail') === null ? connection.id : '';
+  });
   const isHeld = held !== '';
   const jammed = held.startsWith('jam');
   const others = useGame((game) => tracesByUrgency(game, content).length - 1);
@@ -147,6 +152,17 @@ export function TraceAlarm() {
           Jam
         </button>
       )}
+      {decoy && (
+        <button
+          type="button"
+          class="alarm__jam alarm__jam--decoy"
+          data-sfx="move"
+          data-tip="False trail: the trace chases a decoy and loses the relay it was on and the one before. Once per connection."
+          onClick={() => session.dispatch({ type: 'useMove', connectionId: decoy, move: 'falseTrail' })}
+        >
+          False trail
+        </button>
+      )}
       <OtherTraces tracker={tracker} />
     </div>
   );
@@ -160,6 +176,32 @@ export function TraceAlarm() {
 export function ratingTitle(rating: number): string {
   const next = ratingStep(rating).next;
   return next ? `${next.min - rating} more to ${next.title}` : 'Top of the ladder';
+}
+
+/**
+ * How wanted the player is. Nothing shows while they are clean, so the
+ * bar only grows a light when there is something to say.
+ */
+export function WantedStat() {
+  const level = useGame(wantedLevel);
+  if (level === 0) return null;
+  const rung = WANTED_LEVELS[level]!;
+  return (
+    <div
+      class={`dock__stat dock__stat--wanted is-level${level}`}
+      data-tip={`Getting traced and leaving logs behind draws attention. ${wantedEffects(rung).join(' ')} It fades with every job you deliver and every quiet day.`}
+    >
+      <span class="dock__label">Heat</span>
+      <span class="dock__value">
+        <span class="wanted__pips" aria-hidden="true">
+          {WANTED_LEVELS.slice(1).map((_, index) => (
+            <i key={index} class={index < level ? 'is-on' : ''} />
+          ))}
+        </span>
+        {rung.name}
+      </span>
+    </div>
+  );
 }
 
 export function BottomBar() {
@@ -241,6 +283,7 @@ export function BottomBar() {
           <span class="dock__title">{ratingStep(rating).title}</span>
         </span>
       </div>
+      <WantedStat />
       <div class="dock__stat" data-tip="Game time. Programs, traces and lying low all run on it.">
         <span class="dock__label">{day}</span>
         <span class="dock__value data">{time}</span>

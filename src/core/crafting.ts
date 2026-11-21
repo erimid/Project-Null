@@ -17,6 +17,7 @@ import { effect } from './skills';
 import type { Fitted, GameState, Task } from './state';
 import { fileDef, findConnection, findProgram, findServer, type Content } from './world';
 import { sellsModule, shopFor, shopPrice } from './market';
+import { isLoaded, ownsProgram, stowNew } from './loadout';
 
 export const findModule = (content: Content, id: string): ModuleDef | undefined => content.modules.find((module) => module.id === id);
 
@@ -92,23 +93,41 @@ export function returnModules(state: GameState, task: Task): void {
   for (const fitted of task.target.modules) addParts(state, fitted.id, fitted.grade);
 }
 
-/** Finishes a build: the new program is installed beside the one it was built from. */
-export function finishBuild(state: GameState, task: Task): void {
+/**
+ * Finishes a build: the new program takes the place of the one it was
+ * built from, on the drive and (if it was loaded and the build fits) in
+ * memory. Scrapping the build gives the original back.
+ */
+export function finishBuild(state: GameState, content: Content, task: Task): void {
   if (task.target.kind !== 'build') return;
   const id = `b${state.nextId++}`;
-  state.player.builds.push({ id, base: task.target.base, modules: task.target.modules.map((fitted) => ({ ...fitted })) });
-  state.player.programs.push(id);
+  const base = task.target.base;
+  const wasLoaded = isLoaded(state, base);
+  state.player.builds.push({ id, base, modules: task.target.modules.map((fitted) => ({ ...fitted })) });
+  state.player.programs = state.player.programs.map((own) => (own === base ? id : own));
+  if (!state.player.programs.includes(id)) state.player.programs.push(id);
+  state.player.loadout = state.player.loadout.filter((own) => own !== base);
+  state.player.savedLoadouts = state.player.savedLoadouts.map((slot) => slot.map((own) => (own === base ? id : own)));
+  if (wasLoaded) stowNew(state, content, id);
 }
 
-/** Takes a crafted program apart: it is gone, and its modules go back on the shelf. */
-export function scrapBuild(state: GameState, programId: string): string | null {
+/**
+ * Takes a crafted program apart: its modules go back on the shelf, and
+ * the program it was built from is back on the drive (and in memory, if
+ * the build was loaded and the original fits).
+ */
+export function scrapBuild(state: GameState, content: Content, programId: string): string | null {
   const build = state.player.builds.find((item) => item.id === programId);
   if (!build) return 'Only programs you built can be scrapped.';
   if (state.tasks.some((task) => task.programId === programId)) return 'That program is running. Stop it first.';
   for (const fitted of build.modules) addParts(state, fitted.id, fitted.grade);
+  const wasLoaded = isLoaded(state, programId);
+  const back = content.programs.some((program) => program.id === build.base) && !state.player.programs.includes(build.base);
   state.player.builds = state.player.builds.filter((item) => item !== build);
-  state.player.programs = state.player.programs.filter((id) => id !== programId);
-  for (const [kind, id] of Object.entries(state.player.preferred)) if (id === programId) delete state.player.preferred[kind];
+  state.player.programs = state.player.programs.flatMap((id) => (id === programId ? (back ? [build.base] : []) : [id]));
+  state.player.loadout = state.player.loadout.filter((id) => id !== programId);
+  state.player.savedLoadouts = state.player.savedLoadouts.map((slot) => slot.flatMap((id) => (id === programId ? (back ? [build.base] : []) : [id])));
+  if (wasLoaded && back) stowNew(state, content, build.base);
   return null;
 }
 
@@ -121,14 +140,6 @@ export function refineModule(state: GameState, content: Content, id: string, gra
   if (partCount(state, id, grade) < 2) return `Refining takes two ${module.name} ${grade} modules.`;
   addParts(state, id, grade, -2);
   addParts(state, id, grade + 1);
-  return null;
-}
-
-/** Picks which installed program runs for its kind. */
-export function preferProgram(state: GameState, content: Content, programId: string): string | null {
-  const program = findProgram(content, programId, state);
-  if (!program || !state.player.programs.includes(programId)) return 'That program is not installed.';
-  state.player.preferred[program.kind] = programId;
   return null;
 }
 
@@ -197,8 +208,9 @@ export function finishDecompile(state: GameState, content: Content, task: Task):
   for (let i = 0; i < extra && program.modules[0]; i++) parts.push(program.modules[0]);
   for (const part of parts) if (findModule(content, part.id)) addParts(state, part.id, part.grade);
   const unlocks = program.unlocks;
-  if (unlocks && content.programs.some((item) => item.id === unlocks) && !state.player.programs.includes(unlocks)) {
+  if (unlocks && content.programs.some((item) => item.id === unlocks) && !ownsProgram(state, unlocks)) {
     state.player.programs.push(unlocks);
+    stowNew(state, content, unlocks);
   }
 }
 

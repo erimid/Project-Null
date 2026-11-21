@@ -340,7 +340,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes', 'stages', 'stageNote', 'contractLate', 'defence', 'raid', 'raidWon', 'raidLost', 'raidFled', 'shops', 'gear', 'news'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes', 'stages', 'stageNote', 'contractLate', 'defence', 'raid', 'raidWon', 'raidLost', 'raidFled', 'shops', 'gear', 'news', 'memory'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -566,6 +566,8 @@ export interface Tuning {
   readonly raidMaxLocks: number;
   /** A thief or framer loss takes this fraction of the balance. */
   readonly raidLossCredits: number;
+  /** Best rating at which the one signature skill can be picked. */
+  readonly signatureRating: number;
 }
 
 export interface GameInfo {
@@ -1310,6 +1312,7 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     raidPortFade: num(file, 'tuning', data, 'raidPortFade', 0, 1),
     raidMaxLocks: num(file, 'tuning', data, 'raidMaxLocks', 0, 20),
     raidLossCredits: num(file, 'tuning', data, 'raidLossCredits', 0, 1),
+    signatureRating: num(file, 'tuning', data, 'signatureRating', 0, 100_000),
   };
 }
 

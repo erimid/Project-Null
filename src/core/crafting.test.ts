@@ -50,7 +50,7 @@ function game(parts: Record<string, number> = {}, skills: Record<string, number>
   const build = (base: string, modules: Fitted[]) => {
     ok({ type: 'buildProgram', base, modules });
     wait(10 * modules.length + 0.01);
-    return state.player.programs.at(-1)!;
+    return state.player.builds.at(-1)!.id;
   };
   const enterCorp = () => {
     ok({ type: 'connect', serverId: 'corp' });
@@ -87,16 +87,18 @@ describe('building', () => {
     wait(0.2);
     const id = state.player.builds[0]!.id;
     expect(state.player.builds[0]).toEqual({ id, base: 'breaker', modules: [swift1] });
-    expect(state.player.programs).toContain('breaker');
+    // The build takes the place of the program it was built from, on the drive and in memory.
+    expect(state.player.programs).not.toContain('breaker');
     expect(state.player.programs).toContain(id);
+    expect(state.player.loadout).toContain(id);
+    expect(state.player.loadout).not.toContain('breaker');
   });
 
   it('gives the build its modules’ speed and size, and a name that says what is in it', () => {
     const { state, build } = game({ 'swift:1': 1 });
     const id = build('breaker', [swift1]);
-    // Breaker: 10s and 4 GB. Swift 1 halves the time and doubles the room. The copier takes 4 GB too.
-    expect(programStorageGq(state, content)).toBe(4 + 4 + 8);
-    state.player.preferred.breakPassword = id;
+    // Breaker: 10s and 4 GB. Swift 1 halves the time and doubles the room, and the build replaces it. The copier takes 4 GB too.
+    expect(programStorageGq(state, content)).toBe(4 + 8);
     expect(ownedProgram(state, content, 'breakPassword')).toMatchObject({ id, name: 'breaker, Swift 1', baseSeconds: 5, sizeGq: 8 });
   });
 
@@ -137,32 +139,31 @@ describe('building', () => {
   it('takes two modules with Second slot, but never two of the same', () => {
     const { state, refused, build } = game({ 'swift:1': 2, 'compact:1': 1 }, { slot: 1 });
     refused({ type: 'buildProgram', base: 'breaker', modules: [swift1, swift1] }, /One Swift module per build/);
-    const id = build('breaker', [swift1, { id: 'compact', grade: 1 }]);
-    state.player.preferred.breakPassword = id;
+    build('breaker', [swift1, { id: 'compact', grade: 1 }]);
     // 4 GB, doubled, then halved.
     expect(ownedProgram(state, content, 'breakPassword')).toMatchObject({ sizeGq: 4, baseSeconds: 5 });
   });
 
   it('makes smaller programs with Tight builds', () => {
     const { state, build } = game({ 'swift:1': 1 }, { tight: 2 });
-    const id = build('breaker', [swift1]);
-    state.player.preferred.breakPassword = id;
+    build('breaker', [swift1]);
     // 4 GB x 2 x 0.5.
     expect(ownedProgram(state, content, 'breakPassword')!.sizeGq).toBe(4);
   });
 });
 
 describe('using a build', () => {
-  it('runs the market program until the player picks the build, then the build', () => {
+  it('runs the build in place of the market program, and the market program again once it is scrapped', () => {
     const { state, ok, build, enterCorp } = game({ 'swift:1': 1 });
-    const id = build('breaker', [swift1]);
-    const corp = enterCorp();
     const seconds = () => {
       const check = checkTask(state, content, state.connections[0]!, { kind: 'password', user: 'admin' });
       return check.ok ? check.seconds : NaN;
     };
+    const first = enterCorp();
     expect(seconds()).toBe(10);
-    ok({ type: 'preferProgram', programId: id });
+    ok({ type: 'disconnect', connectionId: first });
+    const id = build('breaker', [swift1]);
+    const corp = enterCorp();
     expect(seconds()).toBe(5);
     ok({ type: 'runProgram', connectionId: corp, target: { kind: 'password', user: 'admin' } });
     expect(state.tasks[0]!.programId).toBe(id);
@@ -171,8 +172,7 @@ describe('using a build', () => {
   it('Quiet: starting it does not alert the monitor', () => {
     const plain = game();
     const quiet = game({ 'quiet:1': 1 });
-    const id = quiet.build('breaker', [quiet1]);
-    quiet.ok({ type: 'preferProgram', programId: id });
+    quiet.build('breaker', [quiet1]);
     for (const g of [plain, quiet]) {
       const corp = g.enterCorp();
       g.ok({ type: 'runProgram', connectionId: corp, target: { kind: 'password', user: 'admin' } });
@@ -183,8 +183,7 @@ describe('using a build', () => {
 
   it('Quiet: a monitor back from blind does not notice it running', () => {
     const { state, ok, build, enterCorp, wait } = game({ 'quiet:1': 1 });
-    const id = build('copier', [quiet1]);
-    ok({ type: 'preferProgram', programId: id });
+    build('copier', [quiet1]);
     const corp = enterCorp();
     state.player.passwords.corp = ['admin'];
     // Logged in with an account a monitor would not mind, with the monitor blinded by hand.
@@ -200,8 +199,7 @@ describe('using a build', () => {
 
   it('Tidy: copying leaves no line in the access log', () => {
     const { state, ok, build, enterCorp, wait } = game({ 'tidy:1': 1 });
-    const id = build('copier', [{ id: 'tidy', grade: 1 }]);
-    ok({ type: 'preferProgram', programId: id });
+    build('copier', [{ id: 'tidy', grade: 1 }]);
     const corp = enterCorp();
     state.connections[0]!.user = 'admin';
     state.connections[0]!.role = 'admin';
@@ -217,18 +215,19 @@ describe('scrapping', () => {
   it('removes the build and gives its modules back', () => {
     const { state, ok, build } = game({ 'swift:1': 1 });
     const id = build('breaker', [swift1]);
-    ok({ type: 'preferProgram', programId: id });
     ok({ type: 'scrapProgram', programId: id });
     expect(state.player.programs).not.toContain(id);
     expect(state.player.builds).toEqual([]);
-    expect(state.player.preferred).toEqual({});
+    // The program it was built from is back, on the drive and in memory.
+    expect(state.player.programs).toContain('breaker');
+    expect(state.player.loadout).toContain('breaker');
+    expect(state.player.loadout).not.toContain(id);
     expect(partCount(state, 'swift', 1)).toBe(1);
   });
 
   it('is what removing a build does, and is refused while it runs or for a market program', () => {
     const { state, ok, refused, build, enterCorp } = game({ 'swift:1': 1 });
     const id = build('breaker', [swift1]);
-    ok({ type: 'preferProgram', programId: id });
     const corp = enterCorp();
     ok({ type: 'runProgram', connectionId: corp, target: { kind: 'password', user: 'admin' } });
     refused({ type: 'scrapProgram', programId: id }, /running/);
@@ -253,14 +252,13 @@ describe('refining', () => {
 
 describe('saves', () => {
   it('keep parts, builds and picked programs', () => {
-    const { state, ok, build } = game({ 'swift:1': 1, 'quiet:2': 3 });
+    const { state, build } = game({ 'swift:1': 1, 'quiet:2': 3 });
     const id = build('breaker', [swift1]);
-    ok({ type: 'preferProgram', programId: id });
     const loaded = syncWithContent(deserializeGame(serializeGame(state, '')).state, content);
     expect(loaded.player.parts).toEqual({ 'quiet:2': 3 });
     expect(loaded.player.builds).toEqual(state.player.builds);
     expect(loaded.player.programs).toContain(id);
-    expect(loaded.player.preferred).toEqual({ breakPassword: id });
+    expect(loaded.player.loadout).toContain(id);
   });
 
   it('keep a build that is running', () => {
@@ -277,10 +275,9 @@ describe('saves', () => {
     old.state.version = 11;
     delete old.state.player.parts;
     delete old.state.player.builds;
-    delete old.state.player.preferred;
     const loaded = deserializeGame(JSON.stringify(old)).state;
     expect(loaded.version).toBe(STATE_VERSION);
-    expect(loaded.player).toMatchObject({ parts: {}, builds: [], preferred: {} });
+    expect(loaded.player).toMatchObject({ parts: {}, builds: [], loadout: [] });
   });
 
   it('drop a build whose module no longer exists', () => {

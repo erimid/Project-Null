@@ -7,7 +7,8 @@ import {
   findModule,
   findProgram,
   moduleSlots,
-  ownedProgram,
+  isLoaded,
+  needsMemory,
   topVersion,
   type Fitted,
   type GameState,
@@ -226,7 +227,7 @@ export function WorkbenchSection() {
               <p class="map__notice">{timed.reason}</p>
             ) : (
               <p class="bench__prompt">
-                {base ? 'Now click a module in the tray to socket it.' : 'Pick a program, socket a module, build. Your original stays as it is.'}
+                {base ? 'Now click a module in the tray to socket it.' : 'Pick a program, socket a module, build. The build takes the place of the plain program; scrap it to get that back.'}
               </p>
             )}
           </div>
@@ -290,7 +291,7 @@ export function WorkbenchSection() {
             const program = findProgram(content, item.id, game);
             const origin = content.programs.find((other) => other.id === item.base);
             if (!program) return null;
-            const inUse = ownedProgram(game, content, program.kind)?.id === program.id;
+            const inUse = isLoaded(game, item.id);
             return (
               <li key={item.id} class={`row row--build${known.current.has(item.id) ? '' : ' is-new'}${inUse ? ' is-used' : ''}`}>
                 <span class="row__main">
@@ -303,11 +304,13 @@ export function WorkbenchSection() {
                   </span>
                 </span>
                 <span class="data row__dim">{program.sizeGq} GB</span>
-                {inUse ? (
-                  <span class="row__done">In use</span>
+                {!needsMemory(program.kind) ? (
+                  <span class="row__dim">Runs at home</span>
+                ) : inUse ? (
+                  <span class="row__done">In memory</span>
                 ) : (
-                  <button type="button" class="btn" onClick={() => act(session.dispatch({ type: 'preferProgram', programId: item.id }))}>
-                    Use
+                  <button type="button" class="btn" data-tip="Load this build into memory so it runs on a job" onClick={() => act(session.dispatch({ type: 'loadProgram', programId: item.id }))}>
+                    Load
                   </button>
                 )}
                 <ConfirmButton

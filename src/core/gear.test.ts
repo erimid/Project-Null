@@ -95,6 +95,7 @@ describe('Trace Jammer', () => {
   it('freezes a running trace, then lets it move again, once per connection', () => {
     const h = game();
     h.state.player.programs.push('jammer');
+    h.state.player.loadout.push('jammer');
     const connection = traced(h.state);
     expect(jamTrace(h.state, content, 'c1')).toBeNull();
     // testRules freeze: 10s for a version 1 jammer.
@@ -116,6 +117,7 @@ describe('Trace Jammer', () => {
     const connection = traced(h.state);
     expect(jamTrace(h.state, content, 'c1')).toMatch(/do not own/);
     h.state.player.programs.push('jammer');
+    h.state.player.loadout.push('jammer');
     connection.trace.status = 'none';
     expect(jamTrace(h.state, content, 'c1')).toMatch(/no trace/);
   });

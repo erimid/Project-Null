@@ -30,7 +30,16 @@ export const SKILL_EFFECTS = [
   'tightBuilds',
   'refine',
   'teardown',
+  'surge',
+  'falseTrail',
+  'hotPatch',
+  'ninthRelay',
+  'deepMemory',
+  'doubleTap',
 ] as const;
+
+/** Effects that are a button to press, once on each connection (see core/moves.ts). */
+export const ACTIVE_EFFECTS: readonly SkillEffect[] = ['surge', 'falseTrail', 'hotPatch'];
 /**
  * What a skill does. `amount` is per rank, and ranks add up.
  * - crackSpeed: password, proxy and firewall programs run 1 + amount times as fast.
@@ -49,6 +58,12 @@ export const SKILL_EFFECTS = [
  * - tightBuilds: crafted programs take (1 - amount) of the room.
  * - refine: two modules of one grade can be melted into one of the next grade.
  * - teardown: decompiling gives this many more modules.
+ * - surge: teaches Overclock, a button: programs on a connection run twice as fast for ten seconds, and the monitor notices at once.
+ * - falseTrail: teaches False trail, a button: a running trace loses its last two steps.
+ * - hotPatch: teaches Hot patch, a button: a loaded program is rebuilt to match the layer in front of it, for a module.
+ * - ninthRelay: a route can take this many more relays.
+ * - deepMemory: this many more GB of memory.
+ * - doubleTap: each button skill works this many more times on a connection.
  */
 export type SkillEffect = (typeof SKILL_EFFECTS)[number];
 
@@ -68,6 +83,8 @@ export interface SkillDef {
   readonly effect: SkillEffect;
   /** Size of the effect per rank. */
   readonly amount: number;
+  /** True for a signature skill: it costs no points, opens at the top of the board, and only one can be held. */
+  readonly signature?: boolean;
 }
 
 export function parseSkills(data: unknown, file = 'skills.json'): SkillDef[] {
@@ -108,10 +125,11 @@ export function parseSkills(data: unknown, file = 'skills.json'): SkillDef[] {
       name: text('name'),
       blurb: text('blurb'),
       ranks: whole('ranks', 1, 5),
-      cost: whole('cost', 1, 10),
+      cost: item['signature'] === true ? 0 : whole('cost', 1, 10),
       ...(needs !== undefined ? { needs } : {}),
       effect: effect as SkillEffect,
       amount,
+      ...(item['signature'] === true ? { signature: true } : {}),
     };
   });
 

@@ -323,7 +323,7 @@ describe('being traced', () => {
     // Corp's four layers are level 1 each, at 20 a level.
     expect(h.state.player).toMatchObject({ balance: 20, rating: 2, passwords: {} });
     expect(isLyingLow(h.state)).toBe(true);
-    expect(h.state.messages.at(-1)).toMatchObject({ subject: 'Traced by Test Corp', body: 'fine 80, 6 hours' });
+    expect(h.state.messages.at(-1)).toMatchObject({ subject: 'Traced by Test Corp', body: expect.stringMatching(/^fine 80, 6 hours\n\nThe word on you now: NOTICED\./) });
 
     h.visit('hidden', 'member');
     h.refused({ type: 'acceptContract', connectionId: h.here(), contractId: 'steal' }, /not on offer/);
@@ -340,7 +340,7 @@ describe('being traced', () => {
     h.state.player.balance = 30;
     getCaught(h);
     expect(h.state.player).toMatchObject({ balance: 0, rating: 0 });
-    expect(h.state.messages.at(-1)!.body).toBe('fine 30, 6 hours');
+    expect(h.state.messages.at(-1)!.body).toMatch(/^fine 30, 6 hours/);
   });
 
   it('loses an unfinished contract against that server, which goes back on the board', () => {
@@ -389,7 +389,7 @@ describe('saves', () => {
     delete old.state.player.rating;
     delete old.state.player.lieLowUntilMs;
     const loaded = deserializeGame(JSON.stringify(old)).state;
-    expect(loaded).toMatchObject({ version: STATE_VERSION, contracts: { activeId: null, completed: [] }, flags: [] });
+    expect(loaded).toMatchObject({ version: STATE_VERSION, contracts: { activeId: null, completed: [] }, flags: ['beforeLoadouts'] });
     expect(loaded.player).toMatchObject({ rating: 0, lieLowUntilMs: 0 });
   });
 

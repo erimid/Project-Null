@@ -5,6 +5,7 @@
 import type { GameState, LogEntry } from './state';
 import { effect } from './skills';
 import { findServer, sendMail, type Content } from './world';
+import { REVIEW_HEAT, raiseHeat, wanted } from './wanted';
 
 /** Log lines that say someone logged in or changed something. A connection opening or closing proves nothing. */
 const EVIDENCE = /^(login |file copied|file deleted|file uploaded|record updated)/;
@@ -52,7 +53,7 @@ export function runReviews(state: GameState, content: Content): void {
   for (const review of due) {
     const found = evidenceCount(state, review.serverId);
     if (found > 0) {
-      const factor = content.rules.reviewFineFactor * (1 - effect(state, content, 'coldTrail'));
+      const factor = content.rules.reviewFineFactor * (1 - effect(state, content, 'coldTrail')) * wanted(state).fines;
       const fine = Math.min(state.player.balance, Math.round(baseFine(content, review.serverId) * factor));
       state.player.balance -= fine;
       sendMail(state, content, 'review', {
@@ -60,6 +61,8 @@ export function runReviews(state: GameState, content: Content): void {
         lines: found === 1 ? '1 line' : `${found} lines`,
         fine: String(fine),
       });
+      // Logs left behind are attention drawn.
+      raiseHeat(state, content, REVIEW_HEAT);
     }
     closeCase(state, review.serverId);
   }

@@ -95,6 +95,7 @@
     "maxGrade": 2,
     "hardwareSlots": [
       "cpu",
+      "memory",
       "storage",
       "modem",
       "ports",

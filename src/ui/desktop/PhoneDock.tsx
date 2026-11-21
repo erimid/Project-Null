@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { gameDate, isConnected, mostUrgentTrace, pointsFree } from '../../core';
+import { WANTED_LEVELS, gameDate, isConnected, mostUrgentTrace, pointsFree, wantedLevel } from '../../core';
 import { formatTime, ratingStep } from '../format';
 import { useGame, useWorld } from '../hooks';
 import { content, session } from '../session';
@@ -41,6 +41,7 @@ export function PhoneDock() {
   const balance = useGame((game) => Math.floor(game.player.balance).toLocaleString('en-US'));
   const time = useGame((game) => formatTime(gameDate(game)));
   const rating = useGame((game) => game.player.rating);
+  const heat = useGame(wantedLevel);
   const connected = useGame(isConnected);
   const connections = useGame((game) => game.connections.length);
   const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
@@ -100,6 +101,7 @@ export function PhoneDock() {
               <span>
                 Rating <span class="data">{rating}</span> · {ratingStep(rating).title}
               </span>
+              {heat > 0 && <span class="pdock__heat">Heat · {WANTED_LEVELS[heat]!.name}</span>}
               {connections > 1 && (
                 <button
                   type="button"

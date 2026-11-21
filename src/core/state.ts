@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 25;
+export const STATE_VERSION = 26;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -45,8 +45,10 @@ export interface PlayerState {
   parts: Record<string, number>;
   /** Programs the player built at the Workbench. Their ids are in `programs` while installed. */
   builds: Build[];
-  /** Which installed program runs for each kind, by program kind. Missing = the strongest. */
-  preferred: Record<string, string>;
+  /** Ids of the programs loaded into memory: the ones that can run over a connection (see loadout.ts). */
+  loadout: string[];
+  /** Loadouts the player has kept to load again, one per slot. An empty list is an empty slot. */
+  savedLoadouts: string[][];
   /** Game time until which the board gives the player no work. 0 = never traced. */
   lieLowUntilMs: number;
   /** Ids of people the player has come across in files. */
@@ -76,6 +78,8 @@ export interface Build {
 /** Tier installed in each slot of the gateway. */
 export interface HardwareState {
   cpu: number;
+  /** Room for loaded programs. */
+  memory: number;
   storage: number;
   modem: number;
   ports: number;
@@ -232,7 +236,18 @@ export interface Connection {
   monitor: MonitorState;
   /** True once a Trace Jammer has been used on this connection. It works once. */
   jammed?: boolean;
+  /** Time an Overclock still has left to run on this connection: programs on it run twice as fast meanwhile. */
+  surgeMs?: number;
+  /** How many times each active skill has been used on this connection, by move (see moves.ts). */
+  moves?: Partial<Record<MoveId, number>>;
+  /** The layer a Hot patch rebuilt a program for: that program meets it as an equal for as long as this connection lasts. */
+  patched?: PatchLayer;
 }
+
+/** The skills the player presses a button for, once on each connection (see moves.ts). */
+export type MoveId = 'overclock' | 'falseTrail' | 'hotPatch';
+/** A layer a Hot patch can rebuild a program for. */
+export type PatchLayer = 'password' | 'proxy' | 'firewall' | 'monitor';
 
 /**
  * What a Monitor Bypass has done to the far end's monitor on one
@@ -316,6 +331,8 @@ export interface PendingRaid {
 
 /** How many slots there are for saved routes. */
 export const ROUTE_SLOTS = 3;
+/** How many slots there are for saved loadouts. */
+export const LOADOUT_SLOTS = 3;
 
 /** A relay's heat as it stood at one moment. One use adds 1. */
 export interface RelayHeat {
@@ -569,6 +586,18 @@ export interface GameState {
   ladder: LadderState;
   /** The data market at Lowtide: files it has already bought, as "server:name". */
   data: { sold: string[] };
+  /** How badly the player is wanted (see core/wanted.ts). */
+  wanted: WantedState;
+}
+
+/** How much attention the player has drawn. Being traced and leaving logs behind raise it; clean work and time bring it down. */
+export interface WantedState {
+  /** Rises by steps and falls slowly. 0 = nobody is looking. */
+  heat: number;
+  /** The level `heat` stood at when the player was last told, so a change is noticed once. */
+  level: number;
+  /** The game day heat last cooled with time. */
+  day: number;
 }
 
 /** Settings a new game needs. The UI fills these from the content files. */
@@ -595,7 +624,7 @@ export function createGame(options: NewGameOptions): GameState {
     player: {
       handle: options.handle,
       balance: options.startingBalance,
-      hardware: { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0, cooling: 0 },
+      hardware: { cpu: 1, memory: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0, cooling: 0 },
       programs: [],
       files: [],
       passwords: {},
@@ -605,7 +634,8 @@ export function createGame(options: NewGameOptions): GameState {
       unlearns: 0,
       parts: {},
       builds: [],
-      preferred: {},
+      loadout: [],
+      savedLoadouts: Array.from({ length: LOADOUT_SLOTS }, () => []),
       lieLowUntilMs: 0,
       contacts: [],
       facts: [],
@@ -633,6 +663,7 @@ export function createGame(options: NewGameOptions): GameState {
     patrons: { standing: {}, met: [], choices: {} },
     ladder: { day: -1, scores: {}, moves: [], outcomes: {}, beaten: [], above: [] },
     data: { sold: [] },
+    wanted: { heat: 0, level: 0, day: 0 },
   };
 }
 

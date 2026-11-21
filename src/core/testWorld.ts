@@ -314,6 +314,7 @@ export const testMail: Record<MailKey, MailDef> = {
   shops: letter('shops'),
   gear: letter('gear'),
   news: letter('news'),
+  memory: letter('memory'),
   skills: letter('skills'),
   workbench: letter('workbench'),
   decompiling: letter('decompiling'),

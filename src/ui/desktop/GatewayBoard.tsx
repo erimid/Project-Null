@@ -12,6 +12,7 @@ import { slotIcon } from './Icon';
 /** What each slot is for, in one line. */
 export const SLOT_BLURBS: Record<HardwareSlot, string> = {
   cpu: 'Runs your programs. A better one finishes them sooner and runs more at once.',
+  memory: 'Holds the programs you load for a job. More memory, more tools on hand at once.',
   storage: 'Room for programs and the files you bring home.',
   modem: 'Moves files. A better one copies and deletes faster.',
   ports: 'How many servers you can be connected to at once.',
@@ -43,6 +44,8 @@ export function partStats(slot: HardwareSlot, part: HardwareDef | undefined): Pa
         { label: 'Speed', value: part?.speed ?? 0, text: part ? times(part.speed ?? 1) : 'none' },
         { label: 'Programs', value: part?.programs ?? 0, text: part ? `${part.programs} at once` : 'none' },
       ];
+    case 'memory':
+      return [{ label: 'Loads', value: part?.memoryGb ?? 0, text: part ? room(part.memoryGb ?? 0) : 'none' }];
     case 'storage':
       return [{ label: 'Room', value: part?.storageGb ?? 0, text: part ? room(part.storageGb ?? 0) : 'none' }];
     case 'modem':
@@ -83,12 +86,12 @@ interface Props {
 /*
  * Where the traces run: from the processor out to each other slot, with
  * square corners like a circuit board's. The board has two layouts, so
- * there are two sheets of traces, each laid over the board's grid: four
- * slots across on a wide window (400 by 200), three on a narrow one
+ * there are two sheets of traces, each laid over the board's grid: five
+ * slots across on a wide window (500 by 200), three on a narrow one
  * (300 by 300).
  */
-const TRACES_WIDE = ['M150 60H50', 'M150 140H50', 'M150 60H250', 'M150 140H250', 'M150 96H300V50H350', 'M150 104H300V150H350'];
-const TRACES_TALL = ['M150 100H100V50H50', 'M150 110H50V150', 'M140 100V200H50V250', 'M150 100V250', 'M150 90H250', 'M160 100V200H250V250'];
+const TRACES_WIDE = ['M150 60H50', 'M150 140H50', 'M150 60H250', 'M150 140H250', 'M150 96H300V50H350', 'M150 104H300V150H350', 'M150 100H450'];
+const TRACES_TALL = ['M150 100H100V50H50', 'M150 110H50V150', 'M140 100V200H50V250', 'M150 100V250', 'M150 90H200V50H250', 'M150 110H200V150H250', 'M160 100V200H250V250'];
 
 function Traces({ paths, box, layout }: { paths: readonly string[]; box: string; layout: 'wide' | 'tall' }) {
   return (
@@ -103,12 +106,12 @@ function Traces({ paths, box, layout }: { paths: readonly string[]; box: string;
   );
 }
 
-/** The board itself: seven slots, each a button. */
+/** The board itself: eight slots, each a button. */
 export function GatewayBoard({ hardware, selected, onSelect, marks, fresh, strip }: Props) {
   return (
     <div class={`board${strip ? ' board--strip' : ''}`} role="group" aria-label="Your gateway's hardware">
       <span class="board__bus" aria-hidden="true" />
-      <Traces paths={TRACES_WIDE} box="0 0 400 200" layout="wide" />
+      <Traces paths={TRACES_WIDE} box="0 0 500 200" layout="wide" />
       <Traces paths={TRACES_TALL} box="0 0 300 300" layout="tall" />
       {HARDWARE_SLOT_LABELS.map(([slot, label]) => {
         const tier = hardware[slot];

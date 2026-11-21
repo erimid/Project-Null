@@ -5,9 +5,10 @@
  */
 import { ContentError } from './schema';
 
-export const HARDWARE_SLOTS = ['cpu', 'storage', 'modem', 'ports', 'rack', 'sensor', 'cooling'] as const;
+export const HARDWARE_SLOTS = ['cpu', 'memory', 'storage', 'modem', 'ports', 'rack', 'sensor', 'cooling'] as const;
 /**
  * - cpu: how fast programs run, and how many run at once.
+ * - memory: room for the programs loaded to take on a job, in GB. The drive holds the rest.
  * - storage: room on the gateway, in GB.
  * - modem: how fast files copy and delete.
  * - ports: how many connections can be open at once.
@@ -35,6 +36,8 @@ export interface HardwareDef {
   readonly programs?: number;
   /** storage: room on the gateway, in GB. */
   readonly storageGb?: number;
+  /** memory: room for loaded programs, in GB. */
+  readonly memoryGb?: number;
   /** modem: files copy and delete this many times faster. */
   readonly fileSpeed?: number;
   /** ports: connections open at once. */
@@ -55,6 +58,7 @@ const NEEDS: Record<HardwareSlot, readonly (readonly [keyof HardwareDef, number,
     ['speed', 1, 20],
     ['programs', 1, 20],
   ],
+  memory: [['memoryGb', 1, 100_000]],
   storage: [['storageGb', 1, 100_000]],
   modem: [['fileSpeed', 1, 20]],
   ports: [['connections', 1, 10]],

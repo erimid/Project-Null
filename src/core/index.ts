@@ -150,3 +150,21 @@ export { GUARD_RINGS, foundFlag, guardRingAngle, guardSetbackMs, holdNeedMs, rac
 export { HEIST_PAY, HEIST_TIER, LOCKDOWN, burnHeist, conditionMet, heistLines, heistRefusal, heistStatus, planHeist } from './heists';
 export { CLIENT_PREMIUM, DATA_BOARD, dataKind, priceBoard, quote } from './data';
 export type { Quote } from './data';
+export {
+  FIELD_KINDS,
+  freeMemoryGb,
+  isLoaded,
+  loadedOfKind,
+  loadedPrograms,
+  loadoutLocked,
+  matchesLoadout,
+  memoryGb,
+  needsMemory,
+  ownsProgram,
+  usedMemoryGb,
+  whyNotLoad,
+} from './loadout';
+export { MOVES, MOVE_NAMES, PATCH_LAYERS, SURGE_SECONDS, knowsMove, movesLeft, patchModule, whyNotMove } from './moves';
+export { WANTED_LEVELS, wanted, wantedEffects, wantedLevel, wantedShare } from './wanted';
+export { LOADOUT_SLOTS } from './state';
+export type { MoveId, PatchLayer, WantedState } from './state';

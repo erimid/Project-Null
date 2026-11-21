@@ -258,6 +258,21 @@ const UI_SOUNDS = {
       { freq: 1320, at: 0.4, seconds: 0.4, wave: 'triangle', level: 0.06 },
     ]);
   },
+  // A skill fired: a quick charge up and a snap.
+  move: () => {
+    play([
+      { freq: 220, seconds: 0.18, wave: 'sawtooth', level: 0.05, to: 880 },
+      { freq: 1320, at: 0.17, seconds: 0.09, wave: 'square', level: 0.05 },
+      { freq: 1760, at: 0.24, seconds: 0.22, wave: 'triangle', level: 0.06 },
+    ]);
+  },
+  // A program pushed into memory, and one pulled out.
+  load: () =>
+    play([
+      { freq: 330, seconds: 0.05, wave: 'square', level: 0.045 },
+      { freq: 660, at: 0.04, seconds: 0.1, wave: 'triangle', level: 0.05, to: 990 },
+    ]),
+  unload: () => play([{ freq: 740, seconds: 0.1, wave: 'triangle', level: 0.045, to: 420 }]),
   // A job taken: a stamp coming down, and one note to say it is yours.
   accepted: () => {
     burst(0.06, 0.07);

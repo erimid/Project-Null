@@ -115,5 +115,6 @@
   "raidPortSetbackSeconds": 12,
   "raidPortFade": 0.7,
   "raidMaxLocks": 2,
-  "raidLossCredits": 0.15
+  "raidLossCredits": 0.15,
+  "signatureRating": 68
 }

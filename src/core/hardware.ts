@@ -11,10 +11,12 @@ import { effect } from './skills';
 import { stream } from './streams';
 import { findConnection, findServer, sendMail, type Content } from './world';
 import { sellsHardware, shopFor, shopPrice } from './market';
+import { trimLoadout } from './loadout';
 
 /** Slots in the order screens list them, with their names. */
 export const HARDWARE_SLOT_LABELS: readonly (readonly [HardwareSlot, string])[] = [
   ['cpu', 'Processor'],
+  ['memory', 'Memory'],
   ['storage', 'Storage'],
   ['modem', 'Modem'],
   ['ports', 'Connection ports'],
@@ -24,7 +26,7 @@ export const HARDWARE_SLOT_LABELS: readonly (readonly [HardwareSlot, string])[] 
 ];
 
 /** What a new gateway has: tier 1 of everything, and an empty model rack. */
-export const STOCK_HARDWARE: HardwareState = { cpu: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0, cooling: 0 };
+export const STOCK_HARDWARE: HardwareState = { cpu: 1, memory: 1, storage: 1, modem: 1, ports: 1, rack: 0, sensor: 0, cooling: 0 };
 
 export function findPart(content: Content, slot: HardwareSlot, tier: number): HardwareDef | undefined {
   return content.hardware.find((part) => part.slot === slot && part.tier === tier);
@@ -102,6 +104,8 @@ export function loseHardware(state: GameState, content: Content, serverId: strin
   const slot = slots[stream(state, 'hardware').int(0, slots.length - 1)]!;
   const lost = installed(state, content, slot);
   state.player.hardware[slot]--;
+  // Less memory holds less: the last things loaded go back to the drive.
+  if (slot === 'memory') trimLoadout(state, content);
   if (lost) {
     const now = installed(state, content, slot);
     sendMail(state, content, 'hardwareLost', { part: lost.name, now: now?.name ?? 'nothing' });

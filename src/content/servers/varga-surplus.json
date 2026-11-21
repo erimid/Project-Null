@@ -62,6 +62,7 @@
     "maxTier": 9,
     "hardwareSlots": [
       "cpu",
+      "memory",
       "storage",
       "modem",
       "ports",

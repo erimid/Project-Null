@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import {
+  MOVE_NAMES,
+  PATCH_LAYERS,
+  knowsMove,
+  movesLeft,
+  patchModule,
+  whyNotMove,
   heldBy,
   holding,
   activeContract,
@@ -313,6 +319,7 @@ function Security({ game, server, connection, run }: View) {
         </li>
       )}
     </ul>
+    <Moves game={game} connection={connection} />
     {link && !firewallHeld && !monitorBusy && (
       <p class="board__note link-note">
         This server's {link.layer} is run from <strong>{linkedFrom}</strong>.
@@ -327,6 +334,83 @@ function Security({ game, server, connection, run }: View) {
         : lineup?.puzzle && <PortLineup key={lineup.id} taskId={lineup.id} rings={lineup.puzzle.locked.length} />,
     )}
     </>
+  );
+}
+
+/**
+ * The skills that are a button: Overclock and Hot patch, each good once
+ * on a connection. (False trail sits on the trace alarm, where the trace is.)
+ * Nothing shows until one of them has been learned.
+ */
+function Moves({ game, connection }: { game: GameState; connection: Connection }) {
+  const overclock = knowsMove(game, content, 'overclock');
+  const hotPatch = knowsMove(game, content, 'hotPatch');
+  const surge = useGame((state) => Math.ceil((state.connections.find((item) => item.id === connection.id)?.surgeMs ?? 0) / 1000));
+  const [notice, setNotice] = useState('');
+  if (!overclock && !hotPatch) return null;
+  const use = (action: Action) => {
+    const result = session.dispatch(action);
+    setNotice(result.ok ? '' : result.reason);
+  };
+  const overclockWhy = overclock ? whyNotMove(game, content, connection.id, 'overclock') : null;
+  const patchable = PATCH_LAYERS.filter((layer) => whyNotMove(game, content, connection.id, 'hotPatch', layer) === null);
+  const patchLeft = movesLeft(game, content, connection, 'hotPatch');
+  const module = patchModule(game);
+  return (
+    <div class="moves" aria-label="Skills you can use here">
+      {overclock && (
+        <button
+          type="button"
+          class={`btn move move--overclock${surge > 0 ? ' is-live' : ''}`}
+          data-sfx="move"
+          disabled={overclockWhy !== null}
+          data-tip={overclockWhy ?? 'Every program running here goes twice as fast for ten seconds. The monitor notices at once. Once per connection.'}
+          onClick={() => use({ type: 'useMove', connectionId: connection.id, move: 'overclock' })}
+        >
+          {MOVE_NAMES.overclock}
+          {surge > 0 ? <span class="data move__count">{surge}s</span> : <span class="data move__count">×{movesLeft(game, content, connection, 'overclock')}</span>}
+        </button>
+      )}
+      {hotPatch &&
+        (patchable.length > 0 ? (
+          patchable.map((layer) => (
+            <button
+              key={layer}
+              type="button"
+              class="btn move move--patch"
+              data-sfx="move"
+              data-tip={`Rebuild your program on the spot to match this ${layer}. Uses up the cheapest module on your shelf. Once per connection.`}
+              onClick={() => use({ type: 'useMove', connectionId: connection.id, move: 'hotPatch', layer })}
+            >
+              {MOVE_NAMES.hotPatch}: {layer}
+              <span class="data move__count">×{patchLeft}</span>
+            </button>
+          ))
+        ) : (
+          <button
+            type="button"
+            class="btn move move--patch"
+            disabled
+            data-tip={
+              connection.patched
+                ? `Your program is patched for this ${connection.patched} until you disconnect.`
+                : patchLeft <= 0
+                  ? 'Hot patch is spent on this connection. Reconnect to use it again.'
+                  : !module
+                    ? 'A Hot patch uses up a module, and your shelf is empty.'
+                    : 'Nothing here outclasses the programs you have loaded.'
+            }
+          >
+            {MOVE_NAMES.hotPatch}
+            <span class="data move__count">{connection.patched ? 'on' : `×${patchLeft}`}</span>
+          </button>
+        ))}
+      {notice && (
+        <span class="moves__notice" role="status">
+          {notice}
+        </span>
+      )}
+    </div>
   );
 }
 

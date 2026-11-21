@@ -147,7 +147,7 @@
   "shops": {
     "from": "Wren",
     "subject": "The Backroom is not the only shelf",
-    "body": "{handle}, you have been buying everything from one counter. That was fine to start with. It is not the only counter.\n\nThe Open Relay Registry lists three more shops now. Tin Shed sells programs and modules, every version, and a few odd ones that are quick but fat, or slow but small. Varga Surplus sells gateway hardware pulled out of closed buildings, a little under the Backroom's price. Lowtide Exchange sells the specialist kit: monitor bypasses, model racks, trace sensors, the best coolers. It costs a quarter more, and its daily lines are the things that should not be for sale.\n\nNone of them post work. They only sell. Log in as a walk-in, look around, and look again tomorrow. The rare lines change at midnight.\n\nOne more thing. Two programs of the same kind and version are not the same program. Read the sizes and the times. When you own more than one, the Programs window lets you pick which runs.\n\nWren"
+    "body": "{handle}, you have been buying everything from one counter. That was fine to start with. It is not the only counter.\n\nThe Open Relay Registry lists three more shops now. Tin Shed sells programs and modules, every version, and a few odd ones that are quick but fat, or slow but small. Varga Surplus sells gateway hardware pulled out of closed buildings, a little under the Backroom's price. Lowtide Exchange sells the specialist kit: monitor bypasses, model racks, trace sensors, the best coolers. It costs a quarter more, and its daily lines are the things that should not be for sale.\n\nNone of them post work. They only sell. Log in as a walk-in, look around, and look again tomorrow. The rare lines change at midnight.\n\nOne more thing. Two programs of the same kind and version are not the same program. Read the sizes and the times. When you own more than one, whichever is loaded in memory is the one that runs.\n\nWren"
   },
   "gear": {
     "from": "Wren",
@@ -158,5 +158,10 @@
     "from": "Wren",
     "subject": "You made the paper",
     "body": "{handle}, have a look at the Wire this morning. {company} is on the front page.\n\nThey don't know who you are and they never will, if you keep doing it properly. But they know someone was there, and a company that has just been hit puts its guard up for a few days. One that gets hit three times hires a firm, and then it stays hard. The map marks the ones on their guard.\n\nRead the paper now and then. It isn't only about you. Outages, layoffs, auditors: when something goes wrong at a company, somebody always wants a job done there while the door is open. Those jobs go up on the board, and they don't stay long.\n\nWren"
+  },
+  "memory": {
+    "from": "Wren",
+    "subject": "What you carry",
+    "body": "{handle}, a word about your gateway before it catches you out.\n\nIt has a drive and it has memory. The drive keeps everything you own. Memory is smaller, and only what is loaded there can run on someone else's server. One program of each kind, and once you are inside, what you brought is what you have.\n\nOpen Programs on your bar. The strip at the top is your memory. Click a program to load it or send it back to the drive, and keep up to three loadouts for the kinds of work you do. A steal needs a copier and no deleter. A wipe is the other way round. If the place has a proxy and you mean to clean the log, bring the bypass.\n\nA Scanner tells you what a server has before you connect, which tells you what to pack. More memory is on the Hardware shelf. Smaller tools come off your Workbench.\n\nWren"
   }
 }
