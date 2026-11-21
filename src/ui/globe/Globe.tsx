@@ -31,10 +31,10 @@ interface Props {
   onPick: (id: string) => void;
 }
 
-const SIZE = 500;
-const C = SIZE / 2;
+export const SIZE = 500;
+export const C = SIZE / 2;
 /** Radius of the globe at zoom 1, in drawing units. */
-const BASE_RADIUS = 200;
+export const BASE_RADIUS = 200;
 const ZOOMS = [1, 1.6, 2.5] as const;
 const COLORS = { mint: '#4ee6c8', cyan: '#5fd4ff', red: '#ff3b4e' } as const;
 const fmt = (n: number) => n.toFixed(1);
@@ -55,7 +55,7 @@ const GRID: LatLon[][] = (() => {
   return lines;
 })();
 
-function gridPaths(view: View, R: number): { front: string; back: string } {
+export function gridPaths(view: View, R: number): { front: string; back: string } {
   let front = '';
   let back = '';
   for (const line of GRID) {
@@ -72,7 +72,7 @@ function gridPaths(view: View, R: number): { front: string; back: string } {
   return { front, back };
 }
 
-function landPath(view: View, R: number): string {
+export function landPath(view: View, R: number): string {
   let d = '';
   for (let i = 0; i < landDots.length; i += 2) {
     const p = project(landDots[i]! / 10, landDots[i + 1]! / 10, view);
@@ -82,7 +82,7 @@ function landPath(view: View, R: number): string {
 }
 
 /** An arc between two places, lifted off the surface in the middle. */
-function arcPath(arc: GlobeArc, view: View, R: number): string {
+export function arcPath(arc: GlobeArc, view: View, R: number): string {
   let d = '';
   let drawing = false;
   for (const point of greatCircle(arc.from, arc.to, 40)) {

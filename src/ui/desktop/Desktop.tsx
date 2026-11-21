@@ -8,6 +8,7 @@ import { useGame } from '../hooks';
 import type { Speed } from '../../core';
 import { content, session } from '../session';
 import { Alerts } from './Alerts';
+import { CaughtMoment } from './CaughtMoment';
 import { ContractPanel } from './ContractPanel';
 import { deskLayout } from './deskLayout';
 import { SnapPreview } from './snapStore';
@@ -132,6 +133,7 @@ export function Desktop() {
       {phone ? <PhoneDock /> : <BottomBar />}
       {phone && <GuideCard />}
       <Tour />
+      <CaughtMoment />
     </div>
   );
 }

@@ -142,6 +142,28 @@ export function GameMenu() {
               onInput={(event) => sound.set({ volume: Number((event.currentTarget as HTMLInputElement).value) / 100 })}
             />
           </div>
+          <h3 class="menu__heading">Music</h3>
+          <div class="menu__sound">
+            <button
+              type="button"
+              class={`btn${soundSettings.music ? ' btn--go' : ''}`}
+              aria-pressed={soundSettings.music}
+              disabled={!soundSettings.on}
+              data-tip="The soundtrack: a quiet bed at rest, a pulse while connected, a climb under a trace"
+              onClick={() => sound.set({ music: !soundSettings.music })}
+            >
+              {soundSettings.music ? 'On' : 'Off'}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              aria-label="Music volume"
+              value={Math.round(soundSettings.musicVolume * 100)}
+              disabled={!soundSettings.on || !soundSettings.music}
+              onInput={(event) => sound.set({ musicVolume: Number((event.currentTarget as HTMLInputElement).value) / 100 })}
+            />
+          </div>
           <h3 class="menu__heading">Keys</h3>
           <dl class="menu__keys">
             {SHORTCUTS.map(([keys, what]) => (
