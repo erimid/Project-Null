@@ -9,6 +9,7 @@ import { startContract } from '../core/stages';
 import { heistAttacker, planHeist } from '../core/heists';
 import { offeredChoices, reachEnding } from '../core/endings';
 import { advanceStory, beatPassed, storyOffered } from '../core/story';
+import { AI_TRUSTED } from '../core/patrons';
 import { endingOptions } from './endings';
 import { CLIENT_FILE, type GameState } from '../core';
 import { contracts, endings, linesOf, news, story } from './index';
@@ -56,23 +57,26 @@ describe('Who turns up in the final job', () => {
   it('sends Warden if the Office is cold, Sable if Calder Re is cold and there is no truce, and Chorus otherwise', () => {
     const state = atTheAsking({ office: -2, calder: -2 });
     expect(heistAttacker(state, asking)).toBe('warden');
-    state.patrons.standing.office = 0;
-    expect(heistAttacker(state, asking)).toBe('sable');
+    // A side is cold if the player has not kept its good opinion: a refusal, or a job done for someone else.
+    state.patrons.standing.office = 2;
+    expect(heistAttacker(state, asking)).toBe('warden');
+    state.patrons.standing.office = 3;
     expect(heistAttacker(state, asking)).toBe('sable');
     state.flags.push('ladder:sable:truce');
     expect(heistAttacker(state, asking)).toBe('chorus');
-    state.patrons.standing.calder = 2;
+    state.flags = state.flags.filter((flag) => flag !== 'ladder:sable:truce');
+    state.patrons.standing.calder = 3;
     expect(heistAttacker(state, asking)).toBe('chorus');
   });
 
   it('brings Warden, Vesper and Wick to hold lines for a player they trust, and takes them away if not', () => {
-    const trusted = atTheAsking({ office: 5, ais: 5 }, { 'act3-ask': 'refuse' });
+    const trusted = atTheAsking({ office: 5, ais: AI_TRUSTED }, { 'act3-ask': 'refuse' });
     const plan = planHeist(trusted, asking)!;
     expect(plan.holds.map((hold) => hold.ally)).toEqual(['Warden', 'Vesper', 'Wick']);
     const cold = atTheAsking({ office: 0, ais: 0 });
     expect(planHeist(cold, asking)!.holds.some((hold) => hold.ally)).toBe(false);
     // Handing the Office the node's address costs Vesper's help; losing the station costs Wick's.
-    const gave = atTheAsking({ office: 5, ais: 5 }, { 'act3-ask': 'refuse' });
+    const gave = atTheAsking({ office: 5, ais: AI_TRUSTED }, { 'act3-ask': 'refuse' });
     gave.flags.push('node-given', 'station-taken');
     expect(planHeist(gave, asking)!.holds.map((hold) => hold.ally)).toEqual(['Warden', undefined, undefined]);
   });
@@ -91,16 +95,16 @@ describe('The ways to finish', () => {
   });
 
   it('offers Unbound to a player the AIs trust', () => {
-    expect(names(atTheAsking({ ais: 4 }))).toContain('unbound');
-    expect(names(atTheAsking({ ais: 3 }))).not.toContain('unbound');
+    expect(names(atTheAsking({ ais: AI_TRUSTED }))).toContain('unbound');
+    expect(names(atTheAsking({ ais: AI_TRUSTED - 1 }))).not.toContain('unbound');
   });
 
   it('offers the treaty with three sides and a copy of Ledger in willing hands, whichever way Ledger went', () => {
     // Given to Vesper: needs the AIs.
-    expect(names(atTheAsking({ office: 4, daylight: 4, ais: 4 }, { 'act3-list': 'default' }))).toContain('treaty');
+    expect(names(atTheAsking({ office: 4, daylight: 4, ais: AI_TRUSTED }, { 'act3-list': 'default' }))).toContain('treaty');
     expect(names(atTheAsking({ office: 4, daylight: 4, calder: 4 }))).not.toContain('treaty');
     // Given to Daylight: needs Daylight.
-    const day = atTheAsking({ office: 4, calder: 4, ais: 4 }, {});
+    const day = atTheAsking({ office: 4, calder: 4, ais: AI_TRUSTED }, {});
     day.patrons.choices['story-ledger'] = 'daylight';
     expect(names(day)).not.toContain('treaty');
     day.patrons.standing.daylight = 4;
@@ -122,7 +126,7 @@ describe('The ways to finish', () => {
     state.contracts.activeId = asking.id;
     state.contracts.stage = 0;
     startContract(state, content, asking);
-    state.player.files.push({ name: 'PROJECT_NULL_core.arc', sizeGq: 16, from: 'halvorsen-core' });
+    state.player.files.push({ name: 'PROJECT_NULL_core.arc', sizeGq: 120, from: 'halvorsen-core' });
     expect(deliverContract(state, content, choice)).toBeNull();
     return state;
   };
@@ -130,8 +134,8 @@ describe('The ways to finish', () => {
   it.each([
     ['quiet', undefined, {}],
     ['daylight', 'daylight', {}],
-    ['unbound', 'unbound', { ais: 5 }],
-    ['treaty', 'treaty', { office: 5, daylight: 5, calder: 5, ais: 5 }],
+    ['unbound', 'unbound', { ais: AI_TRUSTED }],
+    ['treaty', 'treaty', { office: 5, daylight: 5, calder: 5, ais: AI_TRUSTED }],
   ] as const)('reaches the %s ending', (ending, choice, standing) => {
     const state = finish(atTheAsking(standing), choice);
     expect(state.ending?.id).toBe(ending);

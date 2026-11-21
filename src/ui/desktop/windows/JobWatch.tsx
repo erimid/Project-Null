@@ -22,7 +22,11 @@ export function JobWatch({ game, connection }: View) {
     const next = findServer(content, chain[here + 1]!);
     return (
       <p class="watch watch__hint">
-        {next && game.knownServers.includes(next.id) ? `The trail leads on to ${next.name}. Connect to it.` : 'Log in as an administrator and read the log. One line points at the next server on the trail: follow it.'}
+        {next && game.knownServers.includes(next.id)
+          ? `The trail leads on to ${next.name}. Connect to it.`
+          : connection.role === 'admin'
+            ? 'Open Logs. One line points at the next server on the trail: press Follow beside it.'
+            : 'Log in as an administrator and read the log. One line points at the next server on the trail: follow it.'}
       </p>
     );
   }
@@ -88,7 +92,7 @@ export function JobWatch({ game, connection }: View) {
     const swapped = game.servers[connection.serverId]?.files.some((file) => file.name === goal.file && file.doctored);
     return (
       <p class="watch watch__hint">
-        {swapped ? 'The copy is in place.' : <>Delete <span class="data">{goal.file}</span> here, then upload the client's copy from your gateway in its place.</>}
+        <span>{swapped ? 'The copy is in place.' : <>Delete <span class="data">{goal.file}</span> here, then upload the client's copy from your gateway in its place.</>}</span>
       </p>
     );
   }

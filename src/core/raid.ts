@@ -322,7 +322,9 @@ function loseRaid(state: GameState, content: Content): void {
   const locked = new Set(raid.locked);
   let loss = '';
   // Chorus goes first for what it thinks the player is better off without.
-  const target = untraceable(raid) ? state.player.files.find((item) => !locked.has(item.name) && content.chorus!.rival.targets.includes(item.name)) : undefined;
+  // Once it is awake, so does anyone else who comes: what the player is holding is what everyone wants.
+  const awake = content.chorus !== undefined && state.flags.includes(content.chorus.awakeFlag);
+  const target = untraceable(raid) || awake ? state.player.files.find((item) => !locked.has(item.name) && content.chorus!.rival.targets.includes(item.name)) : undefined;
   if (target) {
     state.player.files = state.player.files.filter((item) => item !== target);
     loss = `took ${target.name} from your gateway`;

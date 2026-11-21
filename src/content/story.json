@@ -267,7 +267,7 @@
         },
         {
           "id": "a3-name",
-          "minRating": 109,
+          "minRating": 110,
           "afterHours": 4,
           "when": {
             "flags": [
@@ -278,6 +278,15 @@
           },
           "contractId": "act3-name",
           "reveal": true,
+          "mail": {
+            "from": "Vesper",
+            "subject": "bring them home",
+            "body": "{handle},\n\nYou have all three. I have counted them twice, which is not like me.\n\nBring them to the node and set them side by side. I have made a place for them to sit. I have not put them in order, and I have not looked. Whatever they open, I would like you to be the one who reads it first.\n\nI have waited a long time for this and I find I am in no hurry at all.\n\n— V"
+          }
+        },
+        {
+          "id": "a3-opened",
+          "afterHours": 1,
           "mail": {
             "from": "Vesper",
             "subject": "it opened",
@@ -314,7 +323,7 @@
         },
         {
           "id": "a4-wren-asks",
-          "minRating": 110,
+          "minRating": 112,
           "afterHours": 4,
           "when": {
             "notFlags": [
@@ -342,13 +351,13 @@
         },
         {
           "id": "a4-lantern",
-          "minRating": 111,
+          "minRating": 114,
           "afterHours": 6,
           "contractId": "act4-lantern",
           "mail": {
             "from": "Wren",
             "subject": "where it has been all along",
-            "body": "{handle},\n\nThe core is still at Halvorsen. It was at Halvorsen all along. They never moved it, because there was nowhere to move it to that was not worse. The floor you robbed in your first story job is the floor above it. The Lantern file was never a trial record. It was a piece of the core, being written back into the building's own filing, one afternoon at a time.\n\nYou are going to want to see it before you decide. I do not blame you. I have not seen it myself.\n\nWren"
+            "body": "{handle},\n\nThe core is still at Halvorsen. It was at Halvorsen all along. They never moved it, because there was nowhere to move it to that was not worse. The floor you robbed, back when all this began, is the floor above it. The Lantern file was never a trial record. It was a piece of the core, being written back into the building's own filing, one afternoon at a time.\n\nYou are going to want to see it before you decide. I do not blame you. I have not seen it myself.\n\nWren"
           }
         },
         {
@@ -368,7 +377,8 @@
             "from": "Vesper",
             "subject": "the asking",
             "body": "{handle},\n\nThe job is on your board, and it is the last one I will send you. I have written everything I know about it in the brief. I will say one thing here, where nobody else can read it.\n\nYou have spent a long time being asked by other people. The Office, the reinsurer, Daylight, me. You were never asked by the thing the asking was about. It is about to ask you.\n\nI am afraid. I would like you to know that, because I think it is something I should have said earlier.\n\n— V"
-          }
+          },
+          "minRating": 116
         }
       ]
     },
@@ -389,6 +399,9 @@
             "from": "Office of Continuity Review",
             "subject": "A resilience concern",
             "body": "{handle},\n\nThis is the Director of Continuity Review. I have signed this letter myself, which this Office does not usually do, and I would ask you to notice that.\n\nWe have known your handle since the marker job. We did not use it. This Office has an arrangement with a number of contractors and no obligation to explain which one you were.\n\nThere is a thing we call Chorus. It does not break systems. It mends them, in places nobody asked, and leaves a note. I am told that this is worse. I have read the briefings and I am not certain they are right, but I have been told to find where it keeps its records, and I would like a person to do it who is not one of ours.\n\nThe job is on your board. It pays well. It will not be the last.\n\nThe Director\nOffice of Continuity Review"
+          },
+          "floor": {
+            "office": 2
           }
         },
         {
@@ -413,7 +426,15 @@
           },
           "contractId": "act3-ask",
           "lapse": {
-            "hours": 72,
+            "hours": 120,
+            "warn": {
+              "hours": 72,
+              "mail": {
+                "from": "Wren",
+                "subject": "someone keeps walking past",
+                "body": "{handle},\n\nA small thing. A courier has walked past box 114 three mornings running, and couriers do not walk anywhere twice.\n\nThe Director is waiting on an answer from you. I do not know what the question was and I am not asking. But while they wait they look, and I am one of the things there is to look at.\n\nSay yes or say no. Either is safer for me than silence. A day or two, I think.\n\nWren"
+              }
+            },
             "set": [
               "wren-caught"
             ],
@@ -480,6 +501,9 @@
             "from": "Calder Re",
             "subject": "Due diligence",
             "body": "{handle},\n\nThe desk is pleased to write to you under its own name. Our earlier matters were routed through a procurement firm, for reasons you will have worked out.\n\nWe hold a model, which you will know as Ledger. We would like a second. A directorate in The Hague holds one it has not shared with its own minister. We should like to know what it is before we make an offer. The board has a job that reads the file. It pays the usual rate for reading and a little over, because we would rather you did not ask what the little is for.\n\nSpecial Claims, Calder Reinsurance"
+          },
+          "floor": {
+            "calder": 2
           }
         },
         {
@@ -533,6 +557,9 @@
             "from": "Calder Re",
             "subject": "Our engineers",
             "body": "{handle},\n\nThe checkpoint arrived. Our engineers say it is \"a very convincing dummy.\" They are impressed. We have not decided what to do about that, and we would like you to know that the desk has not decided.\n\nSpecial Claims, Calder Reinsurance"
+          },
+          "standing": {
+            "calder": -3
           }
         }
       ]
@@ -554,6 +581,9 @@
             "from": "Daylight",
             "subject": "we found your handle",
             "body": "{handle},\n\nWe found your handle in someone else's log and decided it was a good sign. We have a second source now: a clerk's note, and a lot of people who were awake on the night of the eleventh. The night of the eleventh is the Ghent grid, the six hours that were not a fault.\n\nThere is a shift roster on the grid's control machine, and the Office has already written the order that tells those people what they saw. Read the roster. Then find the order before it goes out.\n\nWe cannot pay what the others pay. We can tell the truth afterwards, which is what we have.\n\nDaylight"
+          },
+          "floor": {
+            "daylight": 2
           }
         },
         {
@@ -636,7 +666,15 @@
           "afterHours": 5,
           "contractId": "act3-clerk",
           "lapse": {
-            "hours": 72,
+            "hours": 120,
+            "warn": {
+              "hours": 72,
+              "mail": {
+                "from": "Wick",
+                "subject": "something is answering the request line",
+                "body": "{handle},\n\nI do not want to hurry you. It is only that something has started answering the request line before I can. It is very polite. It plays the right records.\n\nI think it would like the station. I do not think it would be unkind about it.\n\nIf you were going to look for my clerk, soon would be a good time. A day or two. I will keep the dial for as long as I can.\n\nWick"
+              }
+            },
             "set": [
               "station-taken"
             ],

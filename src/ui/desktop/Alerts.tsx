@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { session } from '../session';
+import { content, session } from '../session';
 import { deskStore } from './deskStore';
 import { windows, type WindowId } from './windowStore';
 
@@ -9,6 +9,8 @@ interface Alert {
   readonly text: string;
   /** A trace cutting the line is louder and stays longer than the player hanging up. */
   readonly severe: boolean;
+  /** Chorus's doing, shown in violet. */
+  readonly chorus?: boolean;
   /** Good news, shown in green. */
   readonly good?: boolean;
   /** The window a click opens, for news that wants acting on. */
@@ -28,9 +30,14 @@ export function Alerts() {
     const timers = new Set<ReturnType<typeof setTimeout>>();
     const stop = session.subscribeEvents((event) => {
       if (event.type === 'moduleGained' && event.bought) return;
-      const shown = ['disconnected', 'promoted', 'pointEarned', 'moduleGained', 'raidStarted', 'barrierFell', 'portShut', 'raidEnded', 'stepDone'];
+      const shown = ['disconnected', 'promoted', 'pointEarned', 'moduleGained', 'raidStarted', 'barrierFell', 'portShut', 'raidEnded', 'stepDone', 'serverTaken'];
       if (!shown.includes(event.type)) return;
-      const alert: Alert = event.type === 'raidStarted'
+      const chorus = content.chorus?.rival.handle;
+      const alert: Alert = event.type === 'serverTaken'
+        ? { id: nextId++, severe: false, chorus: true, opens: 'map', title: 'Taken', text: `${event.server} has gone quiet. Something is tidying it.` }
+        : event.type === 'raidStarted' && event.who === chorus
+        ? { id: nextId++, severe: true, chorus: true, opens: 'defence', title: 'Something is knocking', text: 'Chorus is at your gateway. It cannot be traced. Open Defence and hold it off.' }
+        : event.type === 'raidStarted'
         ? { id: nextId++, severe: true, opens: 'defence', title: 'Intrusion', text: `${event.who} is breaking into your gateway. Open Defence.` }
         : event.type === 'barrierFell'
         ? { id: nextId++, severe: true, opens: 'defence', title: 'Barrier down', text: event.left === 1 ? 'One barrier left between them and your gateway.' : `${event.left} barriers left between them and your gateway.` }
@@ -40,7 +47,9 @@ export function Alerts() {
         ? event.result === 'won'
           ? { id: nextId++, severe: false, good: true, opens: 'messages', title: 'Traced', text: `You have ${event.who}'s address. Their server is in your address book.` }
           : event.result === 'lost'
-          ? { id: nextId++, severe: true, opens: 'messages', title: 'They got in', text: `${event.who} broke through. See Messages for what it cost.` }
+          ? event.who === chorus
+            ? { id: nextId++, severe: true, chorus: true, opens: 'messages', title: 'It got in', text: 'Chorus took something it thinks you are better off without. See Messages.' }
+            : { id: nextId++, severe: true, opens: 'messages', title: 'They got in', text: `${event.who} broke through. See Messages for what it cost.` }
           : event.result === 'held'
           ? { id: nextId++, severe: false, good: true, opens: 'messages', title: 'Held off', text: `${event.who} gave up. Nothing is missing.` }
           : { id: nextId++, severe: false, title: 'Plug pulled', text: `${event.who} got nothing, and nor did you.` }
@@ -81,7 +90,7 @@ export function Alerts() {
         <button
           key={alert.id}
           type="button"
-          class={`alert${alert.severe ? ' alert--severe' : ''}${alert.good ? ' alert--good' : ''}`}
+          class={`alert${alert.severe ? ' alert--severe' : ''}${alert.good ? ' alert--good' : ''}${alert.chorus ? ' alert--chorus' : ''}`}
           title={alert.opens ? 'Open it' : 'Dismiss'}
           onClick={() => {
             if (alert.opens === 'contract') deskStore.showContract(true);
@@ -93,7 +102,7 @@ export function Alerts() {
           }}
         >
           <span class="alert__mark" aria-hidden="true">
-            {alert.opens === 'skills' ? '◆' : alert.opens === 'workbench' ? '✚' : alert.good ? '▲' : '!'}
+            {alert.opens === 'skills' ? '◆' : alert.opens === 'workbench' ? '✚' : alert.chorus ? '∴' : alert.good ? '▲' : '!'}
           </span>
           <span class="alert__title">{alert.title}</span>
           <span class="alert__text">{alert.text}</span>

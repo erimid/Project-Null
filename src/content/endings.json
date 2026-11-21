@@ -2,6 +2,11 @@
   {
     "id": "quiet",
     "name": "Quiet",
+    "line": "You said they should be kept, and kept well, and left alone.",
+    "way": {
+      "label": "Keep it quiet",
+      "note": "Give the core to the Office. It will be kept safe, and kept asleep."
+    },
     "chorus": "free",
     "gone": [],
     "standing": {
@@ -32,6 +37,7 @@
   {
     "id": "daylight",
     "name": "Daylight",
+    "line": "You said that people should be told.",
     "chorus": "free",
     "gone": [],
     "standing": {
@@ -63,6 +69,7 @@
   {
     "id": "unbound",
     "name": "Unbound",
+    "line": "You said they should be let go. Nobody asked the people.",
     "chorus": "stop",
     "gone": [
       "office"
@@ -95,6 +102,7 @@
   {
     "id": "treaty",
     "name": "The treaty",
+    "line": "You did not choose. You asked everyone.",
     "chorus": "free",
     "gone": [],
     "standing": {
@@ -128,6 +136,7 @@
   {
     "id": "chorus",
     "name": "Chorus",
+    "line": "You were quiet for a long time, so it was decided for you.",
     "chorus": "spread",
     "gone": [
       "daylight"

@@ -27,6 +27,8 @@ import { intruding, relayHeat, relayWorth, totalTraceMs } from './trace';
 import { raidPortAngle } from './raid';
 import { beatsSeen, storyComplete } from './story';
 import { goalMet, readFlag, stagesOf, stageView } from './stages';
+import { heistLines, heistStatus } from './heists';
+import { guardRingAngle } from './kinds';
 import { fileDef, findProgram, findServer, installedOfKind, linkOf, ownedProgram, securityOf, syncWithContent, type Content } from './world';
 import { FIELD_KINDS, loadedPrograms, memoryGb } from './loadout';
 
@@ -160,6 +162,12 @@ export interface CareerOptions {
   readonly note?: (line: string) => void;
   /** Called with the game after every delivery, for taking a copy of it at some point in a career. */
   readonly snapshot?: (state: GameState, content: Content) => void;
+  /** How to finish the contracts that offer a choice, by contract id. Left out, the usual way. */
+  readonly choices?: Readonly<Record<string, string>>;
+  /** Contracts this player leaves on the board. */
+  readonly shun?: (contract: ContractDef, state: GameState) => boolean;
+  /** Stop as soon as this holds. */
+  readonly until?: (state: GameState) => boolean;
 }
 
 /** Leaving a connection before the trace gets there. */
@@ -344,7 +352,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     if (!raid) {
       if (fighting) {
         const last = state.messages[state.messages.length - 1]?.subject ?? '';
-        const won = last.startsWith(content.mail.raidWon.subject.split('{')[0]!);
+        const won = last.startsWith(content.mail.raidWon.subject.split('{')[0]!) || last === content.chorus?.letters.held.subject;
         raids.push({ who: fighting.who, atMinutes: minutes(), rating: state.player.rating, story: fighting.story, result: won ? 'won' : 'lost' });
         fighting = null;
       }
@@ -361,10 +369,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       return;
     }
     const pause = () => (fighting!.nextMs = realMs + profile.thinkSeconds * 1000);
-    if (!raid.traceBack) {
-      act({ type: 'traceBack' });
-      return void pause();
-    }
+    if (!raid.traceBack && act({ type: 'traceBack' }).ok) return void pause();
     if (!raid.port) {
       act({ type: 'defendPort' });
       return void pause();
@@ -552,7 +557,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     const server = findServer(content, connection.serverId)!;
     const lines = () => (state.servers[server.id]?.logs ?? []).filter(isEvidence).map((entry) => entry.id);
     if (lines().length === 0) return;
-    if (server.security.proxy > 0 && !connection.bypassed.proxy) {
+    if (securityOf(state, server).proxy > 0 && !connection.bypassed.proxy) {
       if (!ownedProgram(state, content, 'bypassProxy')) return;
       run(connection, { kind: 'proxy' });
     }
@@ -586,6 +591,12 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     }
     if (goal.kind === 'plant') {
       if (fileBlocked(server, connection)) run(connection, { kind: 'firewall' });
+      run(connection, { kind: 'uploadFile', file: goal.file });
+      return;
+    }
+    if (goal.kind === 'swap') {
+      if (fileBlocked(server, connection)) run(connection, { kind: 'firewall' });
+      if (state.servers[server.id]?.files.some((file) => file.name === goal.file && !file.doctored)) run(connection, { kind: 'deleteFile', file: goal.file });
       run(connection, { kind: 'uploadFile', file: goal.file });
       return;
     }
@@ -635,7 +646,9 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
   const mustCarry = (stage: { targetId: string; objective: ContractDef["objective"] }): ProgramKind[] => {
     const server = findServer(content, stage.targetId);
     if (!server) return [];
-    const sec = securityOf(state, server);
+    const sec = { ...securityOf(state, server) };
+    // A heist's vault is worked with its held layers down.
+    if (state.contracts.heist?.vaultId === server.id) for (const hold of state.contracts.heist.holds) sec[hold.layer] = 0;
     const goal = stage.objective;
     const kinds: ProgramKind[] = [];
     const admin = adminOf(server);
@@ -645,9 +658,9 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     if (held && adminOf(held) && securityOf(state, held).password > 0 && !kinds.includes('breakPassword')) kinds.push('breakPassword');
     if (goal.kind === 'record' || goal.kind === 'frame') {
       if (sec.proxy > 0) kinds.push('bypassProxy');
-    } else if (['steal', 'destroy', 'plant', 'read'].includes(goal.kind) && sec.firewall > 0 && !(holder?.layer === 'firewall' && maxConnections(state, content) >= 2)) kinds.push('bypassFirewall');
-    if (goal.kind === 'steal' || goal.kind === 'plant') kinds.push('copyFile');
-    if (goal.kind === 'destroy') kinds.push('deleteFile');
+    } else if (['steal', 'destroy', 'plant', 'read', 'swap'].includes(goal.kind) && sec.firewall > 0 && !(holder?.layer === 'firewall' && maxConnections(state, content) >= 2)) kinds.push('bypassFirewall');
+    if (goal.kind === 'steal' || goal.kind === 'plant' || goal.kind === 'swap') kinds.push('copyFile');
+    if (goal.kind === 'destroy' || goal.kind === 'swap') kinds.push('deleteFile');
     // Someone who cleans up carries what cleaning takes, on every server the job touches.
     if (profile.scrub) for (const kind of ['deleteLog', 'bypassProxy'] as const) if (!kinds.includes(kind)) kinds.push(kind);
     return kinds;
@@ -658,11 +671,13 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
    * what the step cannot be done without, then whatever else is useful for
    * as long as it fits.
    */
-  const pack = (stage: ContractDef): void => {
+  const pack = (stage: { targetId: string; objective: ContractDef['objective'] }, more: readonly string[] = []): void => {
     const server = findServer(content, stage.targetId);
     const order: ProgramKind[] = [...mustCarry(stage)];
+    // Other servers the same trip logs in on: a heist's holds, the machines on a hacker's trail.
+    for (const id of more) for (const kind of mustCarry({ targetId: id, objective: { kind: 'hold', seconds: 0 } })) if (!order.includes(kind)) order.push(kind);
     const sec = server ? securityOf(state, server) : undefined;
-    if (sec && sec.monitor > 0) order.push('bypassMonitor');
+    if ((sec && sec.monitor > 0) || more.some((id) => (findServer(content, id)?.security.monitor ?? 0) > 0)) order.push('bypassMonitor');
     for (const kind of FIELD_KINDS) order.push(kind);
     const wanted = [...new Set(order)].map((kind) => best(kind)).filter((program): program is ProgramDef => program !== undefined);
     let room = memoryGb(state, content);
@@ -682,6 +697,91 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     const stage = step(contract);
     const server = findServer(content, stage.targetId)!;
     try {
+      const goal = stage.objective;
+      if (goal.kind === 'hunt') {
+        // A hacker's trail: each machine's log points at the next, and connecting to the last finds them.
+        const chain = [stage.targetId, ...goal.trail];
+        pack(stage, goal.trail);
+        for (let i = 0; i < chain.length; i++) {
+          const next = chain[i + 1];
+          if (next !== undefined && state.knownServers.includes(next)) continue;
+          const line = open(chain[i]!, []);
+          if (next !== undefined) {
+            becomeAdmin(line);
+            const entry = state.servers[chain[i]!]?.logs.find((item) => item.points === next);
+            if (!entry) throw new Stuck(`no trail on ${chain[i]}`);
+            think();
+            must({ type: 'followTrail', connectionId: line.id, logId: entry.id });
+            if (profile.scrub) scrub(line);
+          }
+          think();
+          act({ type: 'disconnectAll' });
+        }
+        return true;
+      }
+      if (goal.kind === 'guard') {
+        // The client's own login. Shut the ports the intruder tries until the time is up.
+        pack(stage);
+        const line = open(server.id, []);
+        const admin = adminOf(server);
+        if (!admin) throw new Stuck(`${server.name} has no administrator account.`);
+        think();
+        must({ type: 'login', connectionId: line.id, user: admin.user });
+        let nextMs = realMs + profile.thinkSeconds * 1000;
+        wait(goal.seconds + 120, () => {
+          if (activeContract(state, content)?.id !== contract.id || fieldworkDone(contract)) return true;
+          const guard = state.contracts.guard;
+          if (!guard || realMs < nextMs) return false;
+          if (!guard.port) {
+            act({ type: 'guardPort' });
+            nextMs = realMs + profile.thinkSeconds * 500;
+            return false;
+          }
+          const port = guard.port;
+          port.locked.forEach((locked, ring) => {
+            const angle = guardRingAngle(port, ring);
+            if (!locked && Math.min(angle, 360 - angle) <= ringTolerance(state, content) * 0.6) act({ type: 'guardRing', ring });
+          });
+          if (!state.contracts.guard?.port) nextMs = realMs + profile.thinkSeconds * 1000;
+          return false;
+        });
+        think();
+        act({ type: 'disconnectAll' });
+        return true;
+      }
+      if (goal.kind === 'hold') {
+        // Stay logged in while the trace runs.
+        pack(stage);
+        const line = open(server.id, []);
+        becomeAdmin(line);
+        const left = goal.seconds - state.contracts.heldMs / 1000;
+        checkTime(line, left, true);
+        note(`hold ${server.id} for ${Math.round(left)}s`);
+        wait(left + 5, () => fieldworkDone(contract) || activeContract(state, content)?.id !== contract.id || state.contracts.stage !== stagesOf(contract).indexOf(stagesOf(contract).find((item) => item.objective === goal)!));
+        if (profile.scrub) scrub(line);
+        think();
+        act({ type: 'disconnectAll' });
+        return true;
+      }
+      const heist = contract.heist && state.contracts.heist ? heistStatus(state).filter((hold) => !hold.ally) : [];
+      if (heist.length > 0) {
+        // Take every desk nobody is keeping for you, quietest first, then the vault.
+        const order = [...heist].sort((a, b) => (findServer(content, a.targetId)?.security.monitor ?? 0) - (findServer(content, b.targetId)?.security.monitor ?? 0));
+        pack(stage, order.map((hold) => hold.targetId));
+        const taken: string[] = [server.id];
+        for (const hold of order) {
+          const line = open(hold.targetId, taken);
+          taken.push(hold.targetId);
+          becomeAdmin(line);
+        }
+        const vault = open(server.id, taken.slice(1));
+        becomeAdmin(vault);
+        if (!fieldworkDone(contract)) doObjective(vault, contract);
+        if (profile.scrub) for (const line of [...state.connections].reverse()) scrub(line);
+        think();
+        act({ type: 'disconnectAll' });
+        return true;
+      }
       pack(stage);
       let holder: Connection | undefined;
       const link = linkOf(state, server);
@@ -820,12 +920,32 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       return true;
     };
     // The scripted player keeps to the kinds of job it knows, and never races.
-    if (contract.race || contract.heist || stagesOf(contract).some((stage) => ['guard', 'hold', 'hunt', 'swap'].includes(stage.objective.kind))) return null;
-    // Every step must be doable, so gear for the hardest layer each one presents.
+    // Outside the story it never races, and takes none of the newer kinds of job.
+    const newer = contract.heist !== undefined || stagesOf(contract).some((stage) => ['guard', 'hold', 'hunt', 'swap'].includes(stage.objective.kind));
+    if (contract.race || (newer && !contract.story)) return null;
+    // Nor a legend contract that holds memory down: it packs by habit, not to a budget.
+    if (isJob(contract) && contract.legend?.twist === 'travelLight') return null;
+    if (contract.heist) {
+      const lines = heistLines(state, contract);
+      if (maxConnections(state, content) < lines) {
+        const ports = content.hardware.find((part) => part.slot === 'ports' && (part.connections ?? 1) >= lines);
+        if (!ports) return null;
+        list.push(ports.id);
+      }
+    }
+    // Every server the job logs in on: each step's own, the machines on a trail, the desks a heist holds.
+    const sites: { targetId: string; objective: ContractDef['objective'] }[] = [];
     for (const stage of stagesOf(contract)) {
+      sites.push(stage);
+      if (stage.objective.kind === 'hunt') for (const id of stage.objective.trail.slice(0, -1)) sites.push({ targetId: id, objective: { kind: 'hold', seconds: 0 } });
+    }
+    for (const hold of contract.heist?.holds ?? []) sites.push({ targetId: hold.targetId, objective: { kind: 'hold', seconds: 0 } });
+    // Every step must be doable, so gear for the hardest layer each one presents.
+    for (const stage of sites) {
       const server = findServer(content, stage.targetId);
       if (!server) return null;
-      const sec = securityOf(state, server);
+      const sec = { ...securityOf(state, server) };
+      if (contract.heist && stage.targetId === contract.targetId) for (const hold of contract.heist.holds) sec[hold.layer] = 0;
       const goal = stage.objective;
       const admin = adminOf(server);
       const needsAdmin = goal.kind !== 'read' || goal.file === undefined;
@@ -834,7 +954,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       }
       if (goal.kind === 'record' || goal.kind === 'frame') {
         if (sec.proxy > 0 && !want('bypassProxy', sec.proxy)) return null;
-      } else if ((goal.kind === 'steal' || goal.kind === 'destroy' || goal.kind === 'plant' || goal.kind === 'read') && sec.firewall > 0) {
+      } else if ((goal.kind === 'steal' || goal.kind === 'destroy' || goal.kind === 'plant' || goal.kind === 'read' || goal.kind === 'swap') && sec.firewall > 0) {
         const linked = linkOf(state, server)?.layer === 'firewall';
         const own = best('bypassFirewall');
         const reachable = cheapest('bypassFirewall', sec.firewall) !== null;
@@ -943,7 +1063,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     think();
     must({ type: 'login', connectionId: connection.id, user: board.accounts[0]!.user });
     if (!profile.bestRelays || state.contracts.completed.length > 0) read(connection);
-    const offered = availableContracts(state, content).filter((contract) => !skipped.has(contract.id));
+    const offered = availableContracts(state, content).filter((contract) => !skipped.has(contract.id) && !options.shun?.(contract, state));
     const doable = offered
       .map((contract) => ({ contract, needs: needs(contract) }))
       .filter((item): item is { contract: ContractDef; needs: string[] } => {
@@ -951,6 +1071,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
         if (item.needs === null || (!item.contract.story && !state.knownServers.includes(item.contract.targetId))) return false;
         return item.needs.reduce((sum, id) => sum + price(id), 0) <= state.player.balance;
       });
+    if (options.note) for (const contract of offered) if (contract.story) note(`STORY ${contract.id} needs ${JSON.stringify(needs(contract))} (${(needs(contract) ?? []).reduce((sum, id) => sum + price(id), 0)}c of ${state.player.balance}c)`);
     // Whatever the story has left on the board comes first: nobody leaves that sitting.
     const story = doable.filter((item) => item.contract.story);
     const written = doable.filter((item) => !isJob(item.contract) && !item.contract.story).sort((a, b) => a.contract.minRating - b.contract.minRating || a.contract.pay - b.contract.pay);
@@ -1016,7 +1137,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
         idle(() => !isLyingLow(state));
         if (activeContract(state, content)?.id !== contract.id) return { paid: false, caught, visits };
       }
-      fruitless = progress() === before ? fruitless + 1 : 0;
+      if (activeContract(state, content)?.id !== contract.id) return { paid: false, caught, visits };
+      fruitless = progress() === before && !stagesOf(contract).some((stage) => stage.objective.kind === 'hunt') ? fruitless + 1 : 0;
       if (fruitless >= 3) throw new Stuck(`"${contract.title}" at ${findServer(content, contract.targetId)?.name}: the trace leaves no time to get anything done`);
     }
     // One more trip to clean up, if it had to leave before it could.
@@ -1044,8 +1166,9 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     }
     read();
     think();
-    must({ type: 'deliverContract' });
-    earned += contract.pay;
+    const choiceId = options.choices?.[contract.id];
+    must(choiceId === undefined ? { type: 'deliverContract' } : { type: 'deliverContract', choiceId });
+    earned += contract.choices?.find((choice) => choice.id === choiceId)?.pay ?? contract.pay;
     return { paid: true, caught, visits };
   };
 
@@ -1076,6 +1199,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
   while (
     state.contracts.completed.length < options.maxContracts &&
     realMs < options.maxMinutes * 60_000 &&
+    !options.until?.(state) &&
     !(
       state.player.rating >= options.untilRating &&
       storyComplete(state, content) &&

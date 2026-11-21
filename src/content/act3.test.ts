@@ -66,7 +66,7 @@ describe('Act 3 played through', () => {
     for (const choose of [{} as Record<string, string>, { 'act3-ask': 'refuse', 'act3-acquire': 'vesper', 'act3-list': 'keep' }, { 'act3-acquire': 'dud', 'act3-list': 'office' }]) {
       const state = fresh();
       play(state, choose);
-      for (const id of ['a3-ways', 'a3-office-hire', 'a3-office-lock', 'a3-office-ask', 'a3-calder-hire', 'a3-calder-acq', 'a3-day-hire', 'a3-day-guard', 'a3-day-list', 'a3-wick-ask', 'a3-wren-1', 'a3-wren-2', 'a3-wren-3', 'a3-wren-4', 'a3-chorus-voice', 'a3-v-lines', 'a3-name', 'a3-wren-explains']) {
+      for (const id of ['a3-ways', 'a3-office-hire', 'a3-office-lock', 'a3-office-ask', 'a3-calder-hire', 'a3-calder-acq', 'a3-day-hire', 'a3-day-guard', 'a3-day-list', 'a3-wick-ask', 'a3-wren-1', 'a3-wren-2', 'a3-wren-3', 'a3-wren-4', 'a3-chorus-voice', 'a3-v-lines', 'a3-name', 'a3-opened', 'a3-wren-explains']) {
         expect(passed(state, id), `${id} (${JSON.stringify(choose)})`).toBe(true);
       }
       // The ways the player went each get their answer, and the others none.
@@ -98,8 +98,13 @@ describe('Act 3 played through', () => {
     const state = fresh();
     play(state, {}, ['act3-clerk'], 8);
     expect(passed(state, 'a3-wick-ask')).toBe(false);
-    // Wick asked three game days ago and was ignored.
-    state.clock.gameTimeMs += 100 * HOUR;
+    // Three game days of being ignored: Wick says, gently, that time is short. Nothing is lost yet.
+    state.clock.gameTimeMs += 80 * HOUR;
+    advanceStory(state, content);
+    expect(state.messages.filter((message) => message.from === 'Wick').at(-1)?.subject).toBe('something is answering the request line');
+    expect(state.flags).not.toContain('station-taken');
+    // Two more, and the station goes.
+    state.clock.gameTimeMs += 50 * HOUR;
     advanceStory(state, content);
     expect(state.flags).toContain('station-taken');
     expect(isTaken(state, 'wick-node')).toBe(true);
@@ -119,7 +124,7 @@ describe('Act 3 played through', () => {
     const state = fresh();
     play(state, {}, ['act3-ask', 'act3-postbox'], 30);
     expect(passed(state, 'a3-wick-ask')).toBe(true);
-    // Left for three days: the Office has the post box. Wren's letters stop where they are.
+    // Left for five days, after a warning from Wren: the Office has the post box. Wren's letters stop where they are.
     expect(state.flags).toContain('wren-caught');
     const lettersBefore = state.messages.filter((message) => message.from === 'Wren').length;
     expect(storyOffered(state)).toContain('act3-postbox');
@@ -145,5 +150,17 @@ describe('Act 3 played through', () => {
     expect(passed(state, 'a3-name')).toBe(true);
     expect(passed(state, 'a3-wren-silent')).toBe(true);
     expect(passed(state, 'a3-wren-explains')).toBe(false);
+  });
+
+  it('says "it opened" only once it has: the offer asks, and the answer comes after the job', () => {
+    const state = fresh();
+    play(state, {}, ['act3-name'], 60);
+    expect(storyOffered(state)).toContain('act3-name');
+    const subjects = () => state.messages.filter((message) => message.from === 'Vesper').map((message) => message.subject);
+    expect(subjects()).toContain('bring them home');
+    expect(subjects()).not.toContain('it opened');
+    state.contracts.completed.push('act3-name');
+    play(state, {}, [], 4);
+    expect(subjects()).toContain('it opened');
   });
 });

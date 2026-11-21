@@ -133,7 +133,7 @@ export {
   objectivePossible,
   postJobs,
 } from './contracts';
-export { ALERT_HOURS, currentStage, goalMet, goalPossible, stageDeadline, stageIndex, contractRisk, stagesOf, stageView } from './stages';
+export { ALERT_HOURS, currentStage, goalMet, goalPossible, stageDeadline, stageIndex, contractRisk, readFlag, stagesOf, stageView } from './stages';
 export { applyAction } from './actions';
 export { beginRaid, findRival, holdOffMs, untraceable, raidBarrier, raidPortAngle, raidReport, raidRival, raidSetbackMs, scheduleRaid } from './raid';
 export type { RaidReport } from './raid';
