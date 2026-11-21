@@ -283,6 +283,8 @@ export function Market(view: View) {
   const kindOrder = PROGRAM_GROUPS.flatMap((group) => group.kinds as readonly string[]);
   const staples = forSale
     .filter((program) => !rareIds.has(`program:${program.id}`))
+    // A program two or more versions behind the one you run is clutter, so it is left out of the list.
+    .filter((program) => compareProgram(game, content, program).owned || compareProgram(game, content, program).versions > -2)
     .sort((a, b) => kindOrder.indexOf(a.kind) - kindOrder.indexOf(b.kind) || a.version - b.version || a.price - b.price);
   const rareCount = rarePrograms.length + rareModules.length;
   const modules = shop.modules ? content.modules : [];

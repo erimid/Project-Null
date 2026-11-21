@@ -115,7 +115,7 @@ export function Contracts({ game, connection, act }: View) {
   const offers = availableContracts(game, content);
   const lyingLow = isLyingLow(game);
   const nextAt = nextContractRating(game, content);
-  const blocked = active ? 'Finish or give up the contract you have first' : lyingLow ? 'The Backroom will not give you work while you lie low' : undefined;
+  const blocked = active ? 'Finish or give up the contract you have first' : undefined;
 
   const risks = new Map(offers.map((contract) => [contract.id, contractRisk(game, content, contract)]));
   const counts: Record<Filter, number> = {
@@ -154,7 +154,7 @@ export function Contracts({ game, connection, act }: View) {
     <div class="jobboard">
       {lyingLow && (
         <p class="board__warning">
-          No work for you until <span class="data">{formatGameTime(game.player.lieLowUntilMs)}</span>. You were traced. Lie low and let the clock run.
+          You are lying low until <span class="data">{formatGameTime(game.player.lieLowUntilMs)}</span>. You were traced, so only standing work is offered, and it pays less.
         </p>
       )}
       {active && (

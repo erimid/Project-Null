@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import {
   PLANNER_HOPS,
+  activeContract,
+  stageView,
   ROUTE_SLOTS,
   bestRoute,
   coverShortfall,
@@ -34,6 +36,10 @@ const KIND_LABELS: Record<ServerDef['kind'], string> = {
 };
 
 const byId = (id: string) => findServer(content, id);
+
+/** The address book leads with a Recent group once it holds more servers than this, and the group holds at most RECENT_MAX. */
+const RECENT_FROM = 8;
+const RECENT_MAX = 4;
 
 const PLANNER_TIPS: Record<number, string> = {
   1: 'It only knows how slow each relay is.',
@@ -183,10 +189,29 @@ export function MapWindow() {
   // Starred servers come first. Both groups are in the order the player chose.
   const starred = (id: string) => game.bookmarks.includes(id);
   const heatOf = (id: string) => relayHeat(game, content, id);
+  // With a long book, the servers in play lead it: where the contract is, where you are connected, and relays used lately.
+  const job = activeContract(game, content);
+  const jobTargetId = job ? stageView(game, job).targetId : undefined;
+  const recentIds = new Set(
+    known.length > RECENT_FROM
+      ? [jobTargetId, ...game.connections.map((c) => c.serverId), ...game.connections.flatMap((c) => c.route), ...known.filter((s) => heatOf(s.id) >= 0.05).map((s) => s.id)].filter(
+          (id): id is string => id !== undefined && id !== gateway.id,
+        )
+      : [],
+  );
+  const recentIdList = [...recentIds].slice(0, RECENT_MAX);
+  const isRecent = (id: string) => !starred(id) && recentIdList.includes(id);
   const listed = [
     ...sortServers(known.filter((server) => starred(server.id)), sort, heatOf, hottestFirst),
-    ...(starredOnly ? [] : sortServers(known.filter((server) => !starred(server.id)), sort, heatOf, hottestFirst)),
+    ...(starredOnly
+      ? []
+      : [
+          ...recentIdList.flatMap((id) => known.filter((server) => server.id === id && !starred(id))),
+          ...sortServers(known.filter((server) => !starred(server.id) && !isRecent(server.id)), sort, heatOf, hottestFirst),
+        ]),
   ];
+  const firstRecent = listed.find((server) => isRecent(server.id))?.id;
+  const firstOther = listed.find((server) => !starred(server.id) && !isRecent(server.id))?.id;
   const selected = desk.selectedServerId ? byId(desk.selectedServerId) : undefined;
   const live = activeConnection(game, desk);
   // A server picked somewhere else (the globe, a contract) is brought into view in the list.
@@ -352,7 +377,17 @@ export function MapWindow() {
               const hop = routeIds.indexOf(server.id);
               const isLive = game.connections.some((c) => c.serverId === server.id);
               const star = starred(server.id);
-              return (
+              return [
+                server.id === firstRecent && (
+                  <li key="recent" class="addresses__group">
+                    Recent
+                  </li>
+                ),
+                server.id === firstOther && firstRecent !== undefined && (
+                  <li key="rest" class="addresses__group">
+                    All servers
+                  </li>
+                ),
                 <li key={server.id} class={`addresses__row${star ? ' is-starred' : ''}`}>
                   <button
                     type="button"
@@ -421,8 +456,8 @@ export function MapWindow() {
                         +
                       </button>
                     ))}
-                </li>
-              );
+                </li>,
+              ];
             })}
           </ul>
 

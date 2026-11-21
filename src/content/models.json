@@ -1,14 +1,5 @@
 [
   {
-    "id": "kite-3b",
-    "name": "Kite 3B",
-    "blurb": "A tiny model on shared hardware. It reads every file on a server for you and notes what matters. Nothing else, and cheap.",
-    "price": 150,
-    "skills": [
-      "read"
-    ]
-  },
-  {
     "id": "magpie-8b",
     "name": "Magpie 8B",
     "blurb": "A small model on shared hardware. Reads every file on a server for you and notes what matters, and picks out the log lines that point at you.",
@@ -19,42 +10,11 @@
     ]
   },
   {
-    "id": "lark-20b",
-    "name": "Lark 20B",
-    "blurb": "A medium model that does one thing. It reads a message over before you send it and says what is wrong with it.",
-    "price": 300,
-    "skills": [
-      "review"
-    ]
-  },
-  {
     "id": "kestrel-7b",
     "name": "Kestrel 7B",
     "blurb": "A small model that only watches. It follows your traces and cuts the line just before one reaches you.",
     "price": 600,
     "skills": [
-      "watch"
-    ]
-  },
-  {
-    "id": "osprey-30b",
-    "name": "Osprey 30B",
-    "blurb": "A medium model. It reads files, picks out the log lines that point at you, and reads your messages over before you send them.",
-    "price": 800,
-    "skills": [
-      "read",
-      "scrub",
-      "review"
-    ]
-  },
-  {
-    "id": "raven-70b",
-    "name": "Raven 70B",
-    "blurb": "A large model with no patience for words. It reads files, picks out the log lines that point at you, and watches your traces. It will not read your messages.",
-    "price": 900,
-    "skills": [
-      "read",
-      "scrub",
       "watch"
     ]
   },

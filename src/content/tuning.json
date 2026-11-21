@@ -28,6 +28,7 @@
     0.3
   ],
   "lieLowHours": 6,
+  "lieLowPayFactor": 0.7,
   "finePerSecurityLevel": 350,
   "caughtRatingLoss": 2,
   "maxReroutes": 2,

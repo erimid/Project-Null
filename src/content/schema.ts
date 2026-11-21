@@ -393,6 +393,8 @@ export interface Tuning {
   readonly coverShort: readonly number[];
   /** In-game hours you can't take contracts after being traced. */
   readonly lieLowHours: number;
+  /** Share of its pay a standing job gives while the player is lying low. */
+  readonly lieLowPayFactor: number;
   /** Fine for being traced, per level of security on the server that caught you. */
   readonly finePerSecurityLevel: number;
   /** Rating lost for being traced. */
@@ -1096,6 +1098,7 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     relayCoolHours: num(file, 'tuning', data, 'relayCoolHours', 0.01, 24 * 365),
     coverShort: fractions(file, data, 'coverShort'),
     lieLowHours: num(file, 'tuning', data, 'lieLowHours', 0, 24 * 365),
+    lieLowPayFactor: num(file, 'tuning', data, 'lieLowPayFactor', 0.1, 1),
     finePerSecurityLevel: num(file, 'tuning', data, 'finePerSecurityLevel', 0, 1_000_000),
     caughtRatingLoss: num(file, 'tuning', data, 'caughtRatingLoss', 0, 100),
     maxReroutes: num(file, 'tuning', data, 'maxReroutes', 0, 20),

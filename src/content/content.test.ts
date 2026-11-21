@@ -364,11 +364,11 @@ describe('company pools', () => {
 });
 
 describe('the catalogue', () => {
-  it('is big: about 40 programs, 45 parts, 12 modules, 7 models and a deep skill tree', () => {
+  it('is big: about 40 programs, 45 parts, 12 modules, 3 models and a deep skill tree', () => {
     expect(programs.length).toBeGreaterThanOrEqual(40);
     expect(hardware.length).toBeGreaterThanOrEqual(44);
     expect(modules.length).toBeGreaterThanOrEqual(12);
-    expect(models.length).toBeGreaterThanOrEqual(7);
+    expect(models).toHaveLength(3);
     expect(skills.length).toBeGreaterThanOrEqual(25);
   });
 

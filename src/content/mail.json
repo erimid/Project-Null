@@ -27,7 +27,7 @@
   "caught": {
     "from": "Wren",
     "subject": "Heard you got traced",
-    "body": "{target} followed you home. Word gets around.\n\nThey have fined you {fine} credits and changed their passwords, so whatever you had broken there is gone. The Backroom will not give you work for {hours} hours. Lie low, let the clock run, and come back.\n\nNext time use more relays, and leave before the timer says you have to.\n\nWren"
+    "body": "{target} followed you home. Word gets around.\n\nThey have fined you {fine} credits and changed their passwords, so whatever you had broken there is gone. For {hours} hours the Backroom will only offer you standing work, and it pays less. Lie low, take the small jobs or let the clock run, and come back.\n\nNext time use more relays, and leave before the timer says you have to.\n\nWren"
   },
   "review": {
     "from": "Wren",
@@ -57,7 +57,7 @@
   "models": {
     "from": "Wren",
     "subject": "Hire some help",
-    "body": "{handle}, you are doing enough work now that some of it is not worth your own time.\n\nThe Backroom's Market rents language models by the day, from a compute farm that does not ask what they are for. A model lives on their hardware and works through your gateway.\n\nMagpie is small and cheap. Log in somewhere, open Files, and it will read every file there in one go and note the people and details for you. In Logs it will pick out the lines that point at you.\n\nHeron is large and costs three times as much. It does the same, and it will read a message over before you send it and tell you if the name or the details are wrong. It also watches your traces. If one is about to reach you, Heron cuts the line first. You lose the connection, not the fine.\n\nA rental lasts a day. Rent one when you have a day's work lined up.\n\nWren"
+    "body": "{handle}, you are doing enough work now that some of it is not worth your own time.\n\nThe Backroom's Market rents language models by the day, from a compute farm that does not ask what they are for. A model lives on their hardware and works through your gateway.\n\nMagpie is small and cheap. Log in somewhere, open Files, and it will read every file there in one go and note the people and details for you. In Logs it will pick out the lines that point at you.\n\nKestrel only watches. If a trace is about to reach you, Kestrel cuts the line first. You lose the connection, not the fine.\n\nHeron is large and costs three times what Magpie does. It does both jobs, and it will also read a message over before you send it and tell you if the name or the details are wrong.\n\nA rental lasts a day. Rent one when you have a day's work lined up.\n\nWren"
   },
   "modelExpired": {
     "from": "Lowlight Compute",
