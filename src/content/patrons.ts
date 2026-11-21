@@ -120,5 +120,14 @@ export function checkPatrons(patrons: readonly PatronDef[], servers: readonly Se
         if (!ids.has(id)) throw new ContentError('contracts.json', `contract "${contract.id}" choice "${choice.id}" names unknown patron "${id}"`);
       }
     }
+    const conditions = [contract.when, ...(contract.heist?.holds ?? []).map((hold) => hold.ally?.when)];
+    for (const condition of conditions) {
+      for (const id of [...Object.keys(condition?.standing ?? {}), ...Object.keys(condition?.below ?? {})]) {
+        if (!ids.has(id)) throw new ContentError('contracts.json', `contract "${contract.id}" has a condition on unknown patron "${id}"`);
+      }
+      for (const id of Object.keys(condition?.choices ?? {})) {
+        if (!contracts.some((other) => other.id === id)) throw new ContentError('contracts.json', `contract "${contract.id}" has a condition on unknown contract "${id}"`);
+      }
+    }
   }
 }

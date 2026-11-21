@@ -113,6 +113,12 @@ export interface JobPools {
   readonly kinds?: Readonly<Partial<Record<NewKind, JobWording>>>;
   /** Handles of hackers who race the player for a job, or attack a server they guard. */
   readonly racers?: readonly string[];
+  /**
+   * Wording for board heists (see core/heists.ts). Missing = the board posts
+   * none. Text may use {company} {city} {file} and {holds}, a list of the
+   * servers to hold. `notes` describe a held server by the layer it controls.
+   */
+  readonly heist?: JobWording & { readonly notes: Readonly<Record<'firewall' | 'monitor' | 'proxy', readonly string[]>> };
   /** Words for how strong a company's security is, by tier (1 first). */
   readonly tiers: readonly string[];
 }
@@ -275,6 +281,20 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
             ),
           }),
       ...(jobs.racers === undefined ? {} : { racers: texts(jobs.racers, 'jobs racers') }),
+      ...(jobs.heist === undefined
+        ? {}
+        : (() => {
+            const w = obj(jobs.heist, 'jobs heist');
+            const notes = obj(w.notes, 'jobs heist notes');
+            return {
+              heist: {
+                titles: texts(w.titles, 'jobs heist titles'),
+                summaries: texts(w.summaries, 'jobs heist summaries'),
+                briefs: texts(w.briefs, 'jobs heist briefs'),
+                notes: { firewall: texts(notes.firewall, 'jobs heist notes firewall'), monitor: texts(notes.monitor, 'jobs heist notes monitor'), proxy: texts(notes.proxy, 'jobs heist notes proxy') },
+              },
+            };
+          })()),
     },
   };
   if (pools.count > pools.stems.length) fail(`count is ${pools.count} but there are only ${pools.stems.length} stems; each company needs its own`);

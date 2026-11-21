@@ -36,6 +36,7 @@ export type {
   PlayerState,
   RaidPort,
   GuardState,
+  ActiveHeist,
   RaidState,
   Review,
   RingPuzzle,
@@ -146,3 +147,4 @@ export type { Action, ActionResult } from './actions';
 export { SAVE_FORMAT, SaveError, deserializeGame, readSummary, serializeGame, summarize } from './save';
 export type { LoadedGame, Migration, SaveFile, SaveSummary } from './save';
 export { GUARD_RINGS, foundFlag, guardRingAngle, guardSetbackMs, holdNeedMs, raceProgress } from './kinds';
+export { HEIST_PAY, HEIST_TIER, LOCKDOWN, burnHeist, conditionMet, heistLines, heistRefusal, heistStatus, planHeist } from './heists';

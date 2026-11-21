@@ -759,7 +759,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       return true;
     };
     // The scripted player keeps to the kinds of job it knows, and never races.
-    if (contract.race || stagesOf(contract).some((stage) => ['guard', 'hold', 'hunt', 'swap'].includes(stage.objective.kind))) return null;
+    if (contract.race || contract.heist || stagesOf(contract).some((stage) => ['guard', 'hold', 'hunt', 'swap'].includes(stage.objective.kind))) return null;
     // Every step must be doable, so gear for the hardest layer each one presents.
     for (const stage of stagesOf(contract)) {
       const server = findServer(content, stage.targetId);

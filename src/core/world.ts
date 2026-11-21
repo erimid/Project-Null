@@ -287,10 +287,21 @@ export function securityOf(state: GameState, server: ServerDef): SecurityDef {
   const alert = liveAlert(state, server.id)?.raise;
   // A company that hired a security firm (see news.ts) watches harder and keeps a stronger firewall, for good.
   const firm = state.news?.firms.includes(server.id) ? { firewall: 1, monitor: 1 } : undefined;
-  if (!alert && !firm) return server.security;
+  // The vault of a heist under way: each layer a hold controls is shut tight, or off while its desk is held (see heists.ts).
+  const heist = state.contracts?.heist?.vaultId === server.id ? state.contracts.heist : undefined;
+  if (!alert && !firm && !heist) return server.security;
   const raise = (layer: keyof SecurityDef) => (alert?.[layer] ?? 0) + (firm?.[layer as 'firewall'] ?? 0);
-  const up = (layer: keyof SecurityDef) => Math.min(MAX_LAYER_LEVEL, server.security[layer] + (server.security[layer] > 0 || layer === 'monitor' ? raise(layer) : 0));
+  const up = (layer: keyof SecurityDef) => {
+    const hold = heist?.holds.find((item) => item.layer === layer);
+    if (hold) return heistHeld(state, hold) ? 0 : MAX_LAYER_LEVEL;
+    return Math.min(MAX_LAYER_LEVEL, server.security[layer] + (server.security[layer] > 0 || layer === 'monitor' ? raise(layer) : 0));
+  };
   return { password: up('password'), proxy: up('proxy'), firewall: up('firewall'), monitor: up('monitor') };
+}
+
+/** True while a heist's hold is kept: an ally has it, or the player is logged in there as its administrator. */
+export function heistHeld(state: GameState, hold: { targetId: string; ally?: string }): boolean {
+  return hold.ally !== undefined || state.connections.some((connection) => connection.serverId === hold.targetId && connection.role === 'admin');
 }
 
 /** The layer of a server that is run from another server right now, if any. */

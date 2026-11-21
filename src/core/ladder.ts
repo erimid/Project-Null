@@ -110,7 +110,7 @@ export function advanceLadder(state: GameState, content: Content): void {
 
   // A rival near the player's level takes a job off the board.
   const near = ladder.rivals.filter((rival) => Math.abs(rivalScore(state, content, rival.id) - state.player.rating) <= SNIPE_REACH);
-  const open = state.contracts.jobs.filter((job) => isJob(job) && job.id !== state.contracts.activeId && !job.news);
+  const open = state.contracts.jobs.filter((job) => isJob(job) && job.id !== state.contracts.activeId && !job.news && !job.heist);
   if (near.length > 0 && open.length > 2 && rng.chance(SNIPE_CHANCE)) {
     const rival = rng.pick(near);
     const job = rng.pick(open);

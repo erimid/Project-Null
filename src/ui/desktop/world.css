@@ -154,3 +154,88 @@ li:has(> .logline__follow) {
   font-size: 13px;
   color: var(--text-dim);
 }
+
+/* Heists: the planning screen, on the board and on the contract. */
+.heist {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 59, 78, 0.28);
+  border-radius: 8px;
+  background: rgba(255, 59, 78, 0.05);
+}
+
+.heist__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.heist__short,
+.heist__warn {
+  color: var(--red);
+}
+
+.heist__warn {
+  margin: 0;
+  font-size: 13px;
+}
+
+.heist__lines {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.heist__line {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(95, 212, 255, 0.05);
+}
+
+.heist__line.is-held {
+  background: rgba(78, 230, 200, 0.1);
+}
+
+.heist__line.is-vault {
+  border: 1px dashed rgba(255, 59, 78, 0.35);
+}
+
+.heist__step {
+  color: var(--text-dim);
+}
+
+.heist__what {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.heist__note,
+.heist__ally,
+.heist__vault {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.heist__state {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.heist__state .row__tag {
+  margin-right: auto;
+}

@@ -1126,6 +1126,26 @@
         ]
       }
     },
+    "heist": {
+      "titles": [
+        "The {company} vault",
+        "Three lines into {company}",
+        "One night at {company}"
+      ],
+      "summaries": [
+        "A heist: lift {file} from {company} while others hold its doors.",
+        "Several connections at once against {company}, {city}. Pays like it."
+      ],
+      "briefs": [
+        "{company} keeps {file} behind everything it owns, and tonight we want it.\n\nThe vault is locked down. Its doors are run from other places: {holds}. Hold each of those desks as administrator and the door it runs swings open. Then take the file.\n\nAll at once, several lines open, several traces running. If any of them catches you, the plan is burned and so is the job.",
+        "You will need more than one line for this.\n\n{company} in {city} has {file} on a server that answers to other servers: {holds}. Sit on those as their administrator and the vault forgets to watch. Lift the file and get out.\n\nGet caught anywhere along the way and we never spoke."
+      ],
+      "notes": {
+        "firewall": ["runs the vault's firewall", "the security desk that keeps the vault's firewall"],
+        "monitor": ["watches the vault's traffic", "the monitoring desk that reports on the vault"],
+        "proxy": ["keeps the vault's records gateway", "the proxy that guards the vault's logs"]
+      }
+    },
     "racers": [
       "Latchkey",
       "Kettle",

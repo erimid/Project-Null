@@ -3,6 +3,7 @@
  * time, does what it asks on the target, and delivers it for pay and
  * rating. Also the market, where programs are bought.
  */
+import { burnHeist, conditionMet, heistRefusal, postHeist } from './heists';
 import type { ContractDef } from '../content/schema';
 import { baseFine, closeCase } from './forensics';
 import type { Connection, GameState } from './state';
@@ -41,6 +42,7 @@ export function postJobs(state: GameState, content: Content): void {
   advanceStory(state, content);
   advanceLadder(state, content);
   printEditions(state, content);
+  postHeist(state, content);
 }
 
 /**
@@ -90,7 +92,11 @@ export function isLyingLow(state: GameState): boolean {
  */
 export function availableContracts(state: GameState, content: Content): ContractDef[] {
   const taken = (contract: ContractDef) =>
-    contract.id === state.contracts.activeId || state.contracts.completed.includes(contract.id) || !objectivePossible(state, content, contract);
+    contract.id === state.contracts.activeId ||
+    state.contracts.completed.includes(contract.id) ||
+    state.contracts.burned.includes(contract.id) ||
+    !conditionMet(state, contract.when) ||
+    !objectivePossible(state, content, contract);
   // Ordinary written contracts, gated by rating. Story missions are left out: the director offers them on its own clock.
   const open = content.contracts.filter((contract) => !contract.story && !taken(contract));
   const jobs = state.contracts.jobs.filter(
@@ -131,6 +137,8 @@ export function acceptContract(state: GameState, content: Content, connectionId:
   if (state.contracts.activeId !== null) return 'You already have a contract. Deliver it or give it up first.';
   const contract = availableContracts(state, content).find((item) => item.id === contractId);
   if (!contract) return 'That contract is not on offer.';
+  const short = heistRefusal(state, content, contract);
+  if (short) return short;
   state.contracts.activeId = contract.id;
   startContract(state, content, contract);
   once(state, 'firstAccept', () => sendMail(state, content, 'firstAccept'));
@@ -142,6 +150,12 @@ export function acceptContract(state: GameState, content: Content, connectionId:
 export function abandonContract(state: GameState, content: Content): string | null {
   if (state.contracts.activeId === null) return 'You have no contract.';
   const given = activeContract(state, content);
+  // Walking away from a heist burns it like being caught.
+  if (burnHeist(state, content, given)) {
+    resetKinds(state);
+    clearClientFiles(state);
+    return null;
+  }
   if (given) noteFailure(state, content, given, false);
   // A job given up is gone from the board; someone else will take it.
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== state.contracts.activeId);
@@ -156,6 +170,7 @@ function resetKinds(state: GameState): void {
   state.contracts.heldMs = 0;
   state.contracts.guard = null;
   state.contracts.raceUntilMs = 0;
+  state.contracts.heist = null;
 }
 
 /**
@@ -317,6 +332,12 @@ export function punish(state: GameState, content: Content, serverId: string): { 
   delete state.player.passwords[serverId];
   closeCase(state, serverId);
 
+  // Caught anywhere while a heist is under way: the whole plan burns.
+  if (burnHeist(state, content, activeContract(state, content))) {
+    resetKinds(state);
+    clearClientFiles(state);
+    return { fine, hours };
+  }
   // A job that was already finished stands; one still in progress against this server is withdrawn.
   const active = activeContract(state, content);
   const contract = active && stageView(state, active);

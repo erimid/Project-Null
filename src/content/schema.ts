@@ -285,6 +285,51 @@ export interface ContractDef {
    * who is really paying.
    */
   readonly patron?: string;
+  /**
+   * A heist: the target is the vault, and each hold is another server
+   * whose desk switches one of the vault's layers off while the player is
+   * logged in there as its administrator. Unheld, those layers sit at the
+   * top level. Several connections at once, several traces, and being
+   * caught anywhere burns the whole plan. See core/heists.ts.
+   */
+  readonly heist?: HeistDef;
+  /** Only offered while this holds (see ConditionDef). */
+  readonly when?: ConditionDef;
+}
+
+/**
+ * Something about the game so far, for content that should only appear,
+ * or only take a side, in some stories. Every part given must hold.
+ */
+export interface ConditionDef {
+  /** Flags that must be set (story beats, choices made: see state.flags). */
+  readonly flags?: readonly string[];
+  /** Flags that must not be set. */
+  readonly notFlags?: readonly string[];
+  /** Least standing with each patron (see patrons.json). */
+  readonly standing?: Readonly<Record<string, number>>;
+  /** Most standing with each patron. */
+  readonly below?: Readonly<Record<string, number>>;
+  /** Choices made on earlier contracts: contract id to choice id ("default" for the usual way). */
+  readonly choices?: Readonly<Record<string, string>>;
+}
+
+/** The layers a heist's hold can switch off on the vault. */
+export const HOLD_LAYERS = ['firewall', 'monitor', 'proxy'] as const;
+export type HoldLayer = (typeof HOLD_LAYERS)[number];
+
+/** One server a heist needs held, and the layer of the vault its desk controls. */
+export interface HeistHoldDef {
+  readonly targetId: string;
+  readonly layer: HoldLayer;
+  /** What this server is, in a line for the planning screen. */
+  readonly note: string;
+  /** Someone who holds it for you when `when` holds: the player need not. */
+  readonly ally?: { readonly name: string; readonly when: ConditionDef };
+}
+
+export interface HeistDef {
+  readonly holds: readonly HeistHoldDef[];
 }
 
 /** A message the game sends the player. Text in {braces} is filled in when it is sent. */
@@ -757,6 +802,47 @@ function standingMap(file: string, where: string, value: unknown): Record<string
   return raw as Record<string, number>;
 }
 
+export function parseCondition(file: string, where: string, value: unknown): ConditionDef {
+  const raw = entry(file, `${where} when`, value);
+  const known = ['flags', 'notFlags', 'standing', 'below', 'choices'];
+  for (const key of Object.keys(raw)) if (!known.includes(key)) throw new ContentError(file, `${where}: "when" has unknown part "${key}"`);
+  const texts = (key: string) => list(file, `${where} when`, raw, key).map((item) => {
+    if (typeof item !== 'string' || item.trim() === '') throw new ContentError(file, `${where}: "when" ${key} must be text`);
+    return item;
+  });
+  const choices = (value: unknown): Record<string, string> => {
+    const map = entry(file, `${where} when choices`, value);
+    for (const [id, choice] of Object.entries(map)) if (typeof choice !== 'string') throw new ContentError(file, `${where}: the choice for "${id}" must be text`);
+    return map as Record<string, string>;
+  };
+  return {
+    ...(raw['flags'] === undefined ? {} : { flags: texts('flags') }),
+    ...(raw['notFlags'] === undefined ? {} : { notFlags: texts('notFlags') }),
+    ...(raw['standing'] === undefined ? {} : { standing: standingMap(file, `${where} when`, raw['standing']) }),
+    ...(raw['below'] === undefined ? {} : { below: standingMap(file, `${where} when below`, raw['below']) }),
+    ...(raw['choices'] === undefined ? {} : { choices: choices(raw['choices']) }),
+  };
+}
+
+function parseHeist(file: string, where: string, value: unknown): HeistDef {
+  const raw = entry(file, `${where} heist`, value);
+  const holds = list(file, `${where} heist`, raw, 'holds').map((item, i): HeistHoldDef => {
+    const at = `${where} heist hold ${i + 1}`;
+    const hold = entry(file, at, item);
+    const layer = text(file, at, hold, 'layer');
+    if (!(HOLD_LAYERS as readonly string[]).includes(layer)) throw new ContentError(file, `${at}: layer "${layer}" is not one of ${HOLD_LAYERS.join(', ')}`);
+    let ally: HeistHoldDef['ally'];
+    if (hold['ally'] !== undefined) {
+      const raw = entry(file, `${at} ally`, hold['ally']);
+      ally = { name: text(file, `${at} ally`, raw, 'name'), when: parseCondition(file, `${at} ally`, raw['when']) };
+    }
+    return { targetId: text(file, at, hold, 'targetId'), layer: layer as HoldLayer, note: text(file, at, hold, 'note'), ...(ally ? { ally } : {}) };
+  });
+  if (holds.length === 0) throw new ContentError(file, `${where}: a heist needs at least one server to hold`);
+  unique(file, `${where} heist`, 'hold layer', holds.map((hold) => hold.layer));
+  return { holds };
+}
+
 export function parseContracts(data: unknown, file = 'contracts.json'): ContractDef[] {
   if (!Array.isArray(data)) throw new ContentError(file, 'must be a list of contracts');
   const contracts = data.map((value, index): ContractDef => {
@@ -791,6 +877,8 @@ export function parseContracts(data: unknown, file = 'contracts.json'): Contract
             const race = entry(file, `${where} race`, raw['race']);
             return { race: { rival: text(file, `${where} race`, race, 'rival'), minutes: num(file, `${where} race`, race, 'minutes', 10, 100_000) } };
           })()),
+      ...(raw['heist'] === undefined ? {} : { heist: parseHeist(file, where, raw['heist']) }),
+      ...(raw['when'] === undefined ? {} : { when: parseCondition(file, where, raw['when']) }),
     };
   });
   unique(file, 'contracts', 'id', contracts.map((contract) => contract.id));
@@ -1094,6 +1182,12 @@ export function checkContent(
     const where = `contract "${contract.id}"`;
     const steps: StageDef[] = [{ targetId: contract.targetId, objective: contract.objective, ...(contract.twists ? { twists: contract.twists } : {}) }, ...(contract.stages ?? [])];
     steps.forEach((stage, index) => checkStage(servers, `${where}${index > 0 ? ` stage ${index + 1}` : ''}`, stage, steps.slice(0, index)));
+    for (const hold of contract.heist?.holds ?? []) {
+      const other = servers.find((server) => server.id === hold.targetId);
+      if (!other || other.id === contract.targetId) throw new ContentError('contracts.json', `${where}: heist hold "${hold.targetId}" is not another server`);
+      if (!other.accounts.some((account) => account.role === 'admin')) throw new ContentError('contracts.json', `${where}: heist hold ${other.id} has no admin account to hold`);
+    }
+    if (contract.heist && contract.stages) throw new ContentError('contracts.json', `${where}: a heist is done all at once, so it cannot have stages`);
   }
   if (contracts.length > 0 && !servers.some((server) => server.kind === 'board')) {
     throw new ContentError('servers/', 'there are contracts but no board server to post them on');
