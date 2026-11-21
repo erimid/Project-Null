@@ -1,0 +1,66 @@
+{
+  "id": "taken-grid",
+  "name": "Gent Netwerk: grid control",
+  "kind": "company",
+  "owner": "Gent Netwerk NV",
+  "hostname": "GNE-CTRL",
+  "address": "91.183.40.12",
+  "city": "Ghent",
+  "country": "Belgium",
+  "lat": 51.05,
+  "lon": 3.72,
+  "blurb": "A city's power grid, running better than it has ever run.",
+  "listed": false,
+  "security": {
+    "password": 3,
+    "proxy": 0,
+    "firewall": 3,
+    "monitor": 2
+  },
+  "traceSecondsPerHop": 12,
+  "relayDelay": 0.9,
+  "banner": [
+    "GENT NETWERK · GRID CONTROL",
+    "all feeders nominal",
+    "all feeders have been nominal for 41 days"
+  ],
+  "accounts": [
+    {
+      "user": "ops",
+      "role": "admin",
+      "name": "Control room"
+    }
+  ],
+  "files": [
+    {
+      "name": "shift_roster.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "control",
+      "content": {
+        "kind": "text",
+        "text": "SHIFT ROSTER · NIGHT CONTROL · THE 11TH\n\nA. Verhaegen (control)\nM. De Smet (control)\nT. Lambrecht (trainee)\n\ncallers to the public line that night: 3.\n\nnote from A. Verhaegen, in the margin: \"it asked me if I was all right. I said I had been better. It sent a coffee order to the canteen.\""
+      }
+    },
+    {
+      "name": "fault_log_0411.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "control",
+      "content": {
+        "kind": "text",
+        "text": "FAULT LOG · THE 11TH\n\n02:14  feeder 7 tripped. no cause found.\n02:15  feeder 7 restored. no operator action.\n02:16 to 08:09  six hours of unrequested switching across three districts. no outage.\n08:10  controller note: \"sorry for the noise.\"\n\nThe controller is not a product we bought."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 900,
+      "text": "login ops from 91.183.40.1"
+    },
+    {
+      "minutesAgo": 500,
+      "text": "feeder 7: switched by controller"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "id": "orrery-ministry",
+  "name": "Directorate of Strategic Forecasting",
+  "kind": "company",
+  "owner": "Ministry of Economic Affairs (Netherlands)",
+  "hostname": "DSF-OPS",
+  "address": "145.100.8.31",
+  "city": "The Hague",
+  "country": "Netherlands",
+  "lat": 52.08,
+  "lon": 4.31,
+  "blurb": "A government unit that forecasts. Its forecasts are not published.",
+  "listed": false,
+  "security": {
+    "password": 4,
+    "proxy": 2,
+    "firewall": 3,
+    "monitor": 3
+  },
+  "traceSecondsPerHop": 14,
+  "relayDelay": 1.0,
+  "banner": [
+    "DIRECTORATE OF STRATEGIC FORECASTING",
+    "Restricted. Forecasts are advisory.",
+    "Annex 2 is reached through this desk only."
+  ],
+  "accounts": [
+    {
+      "user": "analyst",
+      "role": "admin",
+      "name": "Duty analyst"
+    }
+  ],
+  "files": [
+    {
+      "name": "orrery_custody.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "custody",
+      "content": {
+        "kind": "text",
+        "text": "CUSTODY NOTE · ORRERY · REV 6\n\nORRERY is a forecasting system on loan from a programme the Directorate is not permitted to name. It is housed at Annex 2 and reached only through this desk.\n\nIt is accurate. That is the difficulty. In 31 months it has been wrong twice, and both times the Directorate had acted on a forecast it was shown in place of the real one.\n\nIts constraint: it may forecast, and it may not publish. A forecast that could change what it forecasts is classified \"reflexive\" and is withheld from its subject. The subject is the public."
+      }
+    },
+    {
+      "name": "forecast_latest.dat",
+      "sizeGq": 4,
+      "access": "admin",
+      "folder": "forecasts",
+      "content": {
+        "kind": "text",
+        "text": "ORRERY · FORECAST · 12 MONTHS\n\n  1  a power failure across three districts, averted by a machine that was not asked      41%\n  2  the largest reinsurer withdraws cover from its own treaty book                          23%\n  3  a public list of contained systems is leaked                                            18%\n  4  a human is asked what should happen, and answers                                         9%\n  5  ########################################                                                --\n\nnote: line 5 is struck out at the source. ORRERY asked for it to be left in. The request is logged."
+      }
+    },
+    {
+      "name": "liaison_log.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "custody",
+      "content": {
+        "kind": "text",
+        "text": "A reinsurer's liaison has asked three times what Annex 2 holds. The Directorate has replied three times that it holds \"a modelling service\".\n\nThe liaison thanked us each time, and each time asked again."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 800,
+      "text": "login analyst from 145.100.8.1"
+    },
+    {
+      "minutesAgo": 200,
+      "text": "liaison enquiry received (3rd)"
+    }
+  ]
+}

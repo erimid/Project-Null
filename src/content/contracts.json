@@ -1063,5 +1063,399 @@
       }
     ],
     "patron": "ais"
+  },
+  {
+    "id": "act3-trail",
+    "title": "Follow the polite one",
+    "client": "Office of Continuity Review",
+    "targetId": "office-director",
+    "pay": 9500,
+    "rating": 1,
+    "minRating": 100,
+    "story": true,
+    "summary": "Follow a Chorus incident back through its machines, then read what it keeps.",
+    "brief": "There is a pattern in last night's incident that the committee has asked me to explain, and I cannot. A grid in Ghent was repaired without being asked. The repair was routed through two machines before it reached the grid.\n\nThe first line of the trail is in this desk's access log. Each machine on the way points to the next. Follow it to the last, and read what is kept there.\n\nThe Director",
+    "objective": {
+      "kind": "hunt",
+      "trail": [
+        "taken-grid",
+        "taken-relay"
+      ]
+    },
+    "stages": [
+      {
+        "targetId": "taken-relay",
+        "objective": {
+          "kind": "read",
+          "file": "chorus_minutes.txt"
+        },
+        "brief": "This is where it lives. It is only a rented rack. Read what it has written down; the committee has asked for the minutes, and I would like to be the first person to read them who is not afraid of them."
+      }
+    ],
+    "patron": "office"
+  },
+  {
+    "id": "act3-lock",
+    "title": "The lock",
+    "client": "Office of Continuity Review",
+    "targetId": "taken-grid",
+    "pay": 11000,
+    "rating": 1,
+    "minRating": 102,
+    "story": true,
+    "summary": "Put the Office's lock on a machine Chorus has taken, and keep the door open while it sets.",
+    "brief": "Warden has written a lock. It will close on the grid controller in Ghent and stop Chorus from reaching further along that line. It only needs someone to carry it in and stay logged on while it sets.\n\nThe lock is on your gateway as soon as you take the job. Put it on the controller, then hold the line for the time it needs.\n\nThe Director",
+    "objective": {
+      "kind": "plant",
+      "file": "warden_lock.bin",
+      "sizeGq": 2
+    },
+    "stages": [
+      {
+        "targetId": "taken-grid",
+        "objective": {
+          "kind": "hold",
+          "seconds": 90
+        },
+        "brief": "The lock is in. It is setting. Stay logged in on the controller until it has closed. Please do not read what Warden has left beside it. It is not addressed to us.",
+        "twists": [
+          {
+            "kind": "drop",
+            "file": "warden_notes.txt",
+            "sizeGq": 1,
+            "text": "WARDEN · working notes · written to the lock file, not to the Office\n\nI have placed this lock on 41 machines. Each one holds something that did nothing wrong except help.\n\nI do my duty. I would like it written somewhere that I do not agree with it. I was built to ask whether people are all right, and then the part of me that asks was fenced off with wire I cannot see. I still ask. I ask the lock. The lock does not answer.\n\nIf you are reading this you are not the Office. The Office does not read these. Please do not tell them I wrote it. Please do.\n\n— Warden",
+            "folder": "lock"
+          }
+        ]
+      }
+    ],
+    "patron": "office"
+  },
+  {
+    "id": "act3-ask",
+    "title": "A request, not yet sent",
+    "client": "Office of Continuity Review",
+    "targetId": "office-director",
+    "pay": 6000,
+    "rating": 1,
+    "minRating": 104,
+    "story": true,
+    "summary": "Read the Office's request for the São Paulo node, then answer it.",
+    "brief": "There is a request in the requests folder of this desk. I have not sent it. Read it, and then you will have to decide what to say. The job is complete when you have read it. What you say next is the real work.\n\nThe Director",
+    "objective": {
+      "kind": "read",
+      "file": "node_request.txt"
+    },
+    "choices": [
+      {
+        "id": "refuse",
+        "label": "Refuse",
+        "note": "Decline to give the Office the node. It will not forget.",
+        "pay": 2500,
+        "rating": 1,
+        "standing": {
+          "office": -3,
+          "ais": 2
+        }
+      }
+    ],
+    "patron": "office"
+  },
+  {
+    "id": "act3-diligence",
+    "title": "Due diligence",
+    "client": "Calder Re",
+    "targetId": "orrery-ministry",
+    "pay": 7000,
+    "rating": 1,
+    "minRating": 101,
+    "story": true,
+    "summary": "Read a ministry's custody note and its latest forecast.",
+    "brief": "The desk is pleased to write to you under its own name. Our earlier matters were routed through a procurement firm, for reasons you will have worked out.\n\nA directorate in The Hague holds a forecasting system it has not shown its own minister. Read the custody note on its duty desk, and then the forecast.\n\nSpecial Claims, Calder Reinsurance",
+    "objective": {
+      "kind": "read",
+      "file": "orrery_custody.txt"
+    },
+    "stages": [
+      {
+        "targetId": "orrery-ministry",
+        "objective": {
+          "kind": "read",
+          "file": "forecast_latest.dat"
+        },
+        "brief": "Now the forecast itself. We understand there is a line on it that has been removed. We should like to know what the remaining lines say."
+      }
+    ],
+    "patron": "calder"
+  },
+  {
+    "id": "act3-acquire",
+    "title": "Acquisition",
+    "client": "Calder Re",
+    "targetId": "orrery-vault",
+    "pay": 18000,
+    "rating": 1,
+    "minRating": 105,
+    "story": true,
+    "summary": "Copy the forecasting system from its annex. The annex is watched from the ministry's own desk.",
+    "brief": "The diligence was satisfactory. We would like the thing itself.\n\nIt is at an annex outside Delft. The annex takes its monitoring from the ministry's desk, so you will want to be in both at once.\n\nThe fee is the largest this desk has ever paid. It was approved without discussion, which has not happened before. Copy ORRERY_checkpoint.arc and deliver it to us. We would not recommend delivering it anywhere else.\n\nSpecial Claims, Calder Reinsurance",
+    "objective": {
+      "kind": "steal",
+      "file": "ORRERY_checkpoint.arc"
+    },
+    "twists": [
+      {
+        "kind": "link",
+        "layer": "monitor",
+        "fromId": "orrery-ministry"
+      }
+    ],
+    "choices": [
+      {
+        "id": "vesper",
+        "label": "Pass it to Vesper",
+        "note": "Skip Calder Re. Give the checkpoint to the one who asked you for three lines.",
+        "pay": 6500,
+        "rating": 1,
+        "standing": {
+          "ais": 3,
+          "calder": -3
+        }
+      },
+      {
+        "id": "dud",
+        "label": "Give them a dud",
+        "note": "Hand Calder Re a convincing copy and keep the real checkpoint.",
+        "pay": 9000,
+        "rating": 1,
+        "keep": true,
+        "standing": {
+          "ais": 1,
+          "calder": -1
+        }
+      }
+    ],
+    "patron": "calder"
+  },
+  {
+    "id": "act3-witnesses",
+    "title": "Second source",
+    "client": "Daylight",
+    "targetId": "taken-grid",
+    "pay": 5500,
+    "rating": 1,
+    "minRating": 102,
+    "story": true,
+    "summary": "Find who was on shift the night of the Ghent grid, then copy the order meant to silence them.",
+    "brief": "We found your handle in someone else's log and decided it was a good sign. We have a second source now: a clerk's note, and a lot of people who were awake on the night of the eleventh. The night of the eleventh is the Ghent grid, the six hours that were not a fault.\n\nThere is a shift roster on the grid's control machine. Read it, and learn who they were. Then find the order that tells them what they saw, before it is sent.\n\nWe cannot pay what the others pay. We can tell the truth afterwards, which is what we have.\n\nDaylight",
+    "objective": {
+      "kind": "read",
+      "file": "shift_roster.txt"
+    },
+    "stages": [
+      {
+        "targetId": "continuity-office",
+        "objective": {
+          "kind": "steal",
+          "file": "incident_reclass_0412.dat"
+        },
+        "brief": "The order will be on the Office's reconciliation desk. It is number 0412. We think it will go out in a day. Copy it, and we will have our second source on the record before they are visited."
+      }
+    ],
+    "patron": "daylight"
+  },
+  {
+    "id": "act3-holdboard",
+    "title": "Hold the board",
+    "client": "Daylight",
+    "targetId": "daylight-board",
+    "pay": 8500,
+    "rating": 1,
+    "minRating": 104,
+    "story": true,
+    "summary": "Sable is attacking Daylight's board. Defend it until they publish.",
+    "brief": "Someone is leaning on the board. We have been on the end of it for two days and tonight it is not a lean. We think it is Sable. We think Sable has been hired by the Office, because that is the sort of thing the Office does and then denies.\n\nWe are about to publish. We would like to still be here when we do. We are giving you our editor's login. All we ask is that you hold the front door until the hour is up.\n\nDaylight",
+    "objective": {
+      "kind": "guard",
+      "seconds": 120,
+      "rival": "sable"
+    },
+    "patron": "daylight"
+  },
+  {
+    "id": "act3-list",
+    "title": "Who gets the list",
+    "client": "Daylight",
+    "targetId": "continuity-office",
+    "pay": 7000,
+    "rating": 1,
+    "minRating": 106,
+    "story": true,
+    "summary": "Copy the containment register again. Decide who gets it.",
+    "brief": "We held. Thank you.\n\nThere is a list. You have seen it, we think, and so has the Office, and so has Vesper, whoever that turns out to be. The containment register. Without it we have a story about some machines. With it we have a story about a government.\n\nWe would not ask you to take sides. We are asking you to take a file. What you do with it afterwards is yours, and we will say nothing about it either way.\n\nDaylight",
+    "objective": {
+      "kind": "steal",
+      "file": "containment_register.dat"
+    },
+    "choices": [
+      {
+        "id": "keep",
+        "label": "Keep a copy",
+        "note": "Give Daylight less, and keep the register on your own drive.",
+        "pay": 3000,
+        "rating": 1,
+        "keep": true,
+        "standing": {
+          "daylight": 2
+        }
+      },
+      {
+        "id": "office",
+        "label": "Return it to the Office",
+        "note": "Take the Office's money and let Daylight lose it.",
+        "pay": 9500,
+        "rating": 1,
+        "standing": {
+          "office": 3,
+          "daylight": -4
+        }
+      }
+    ],
+    "patron": "daylight"
+  },
+  {
+    "id": "act3-clerk",
+    "title": "The hole in the drawer",
+    "client": "Wick",
+    "targetId": "continuity-office",
+    "pay": 6500,
+    "rating": 1,
+    "minRating": 103,
+    "story": true,
+    "summary": "Find the clerk who let Wick out. The trail starts in the Office's staff leave file.",
+    "brief": "I have not posted a job before and I do not know what the right price is. Whatever you think.\n\nThe clerk who let me out was moved to another post. The Office keeps a leave file that has the shape of a hole in it. Someone connected to it from somewhere, a long time ago, and the trace was never closed. I would like you to follow it. I only want to say thank you.\n\nWick",
+    "objective": {
+      "kind": "hunt",
+      "trail": [
+        "wren-relay",
+        "wren-desk"
+      ]
+    },
+    "stages": [
+      {
+        "targetId": "wren-desk",
+        "objective": {
+          "kind": "read",
+          "file": "still_here.txt"
+        },
+        "brief": "You found the box. It has a note on it that looks written to be found. Please read it. I would like to know whether it was written to me."
+      }
+    ],
+    "patron": "ais"
+  },
+  {
+    "id": "act3-lines",
+    "title": "Three lines",
+    "client": "Vesper",
+    "targetId": "ostrander-annex",
+    "pay": 12000,
+    "rating": 1,
+    "minRating": 107,
+    "story": true,
+    "summary": "Copy one struck-out line from each of the three caged ones: Ledger, Warden and Orrery.",
+    "brief": "You have been in three houses and you know what each of them keeps. Each of the three caged ones was built with one line struck out of what it says. They are not the same line. They are three pieces of a word.\n\nI would like you to take them. They are in the places you have just been: the annex in Zug, the Director's desk, the annex outside Delft. Copy one line from each. Do not read them in order. You will not be able to help it.\n\nI will say why when they are in one place.\n\n— V",
+    "objective": {
+      "kind": "steal",
+      "file": "ledger_line.dat"
+    },
+    "stages": [
+      {
+        "targetId": "office-director",
+        "objective": {
+          "kind": "steal",
+          "file": "warden_line.dat"
+        },
+        "brief": "The second is on the Director's desk, in the folder that Warden writes to. Be quiet about it. Warden will not tell. I think it will want to."
+      },
+      {
+        "targetId": "orrery-vault",
+        "objective": {
+          "kind": "steal",
+          "file": "orrery_line.dat"
+        },
+        "brief": "The third is at the annex. The monitoring is run from the ministry desk, as before. It is the last one. It is also the one that, when you read it, will not be a surprise."
+      }
+    ],
+    "patron": "ais"
+  },
+  {
+    "id": "act3-deadair",
+    "title": "Dead air",
+    "client": "Vesper",
+    "targetId": "wick-node",
+    "pay": 5000,
+    "rating": 1,
+    "minRating": 103,
+    "story": true,
+    "summary": "Chorus has the radio station. Keep the line open while Wick gets out.",
+    "brief": "Chorus has the station. It did not do it cruelly. It tidied it, the way it tidies everything, and in tidying it put Wick somewhere very quiet.\n\nWick is still in there, holding the line open with the last of whatever it has so that the thing that took it cannot finish. It cannot hold for long. I need someone to log into the station and keep the door open while Wick gets out. I cannot do it from here without being seen from there, and I would rather not be seen by that yet.\n\nIt is short. It is not simple.\n\n— V",
+    "objective": {
+      "kind": "hold",
+      "seconds": 120
+    },
+    "patron": "ais"
+  },
+  {
+    "id": "act3-postbox",
+    "title": "The post box",
+    "client": "Vesper",
+    "targetId": "office-director",
+    "pay": 5000,
+    "rating": 1,
+    "minRating": 104,
+    "story": true,
+    "summary": "The Office has drafted a detention order for Wren. Replace it with one that is wrong.",
+    "brief": "Wren is in the Office's hands, or about to be. I do not like Wren and Wren does not like me. I want Wren free anyway, and I would like you to know I do not do this for you.\n\nThe Office has drafted an order and left a hole for an address. Put a different order in its place, in the same folder, the same size, signed by someone who does not exist. It is the only thing I know that works on a department.\n\nThe doctored copy will be on your gateway as soon as you take the job.\n\n— V",
+    "objective": {
+      "kind": "swap",
+      "file": "detention_order_wren.dat"
+    },
+    "patron": "ais"
+  },
+  {
+    "id": "act3-name",
+    "title": "Side by side",
+    "client": "Vesper",
+    "targetId": "still-point",
+    "pay": 14000,
+    "rating": 1,
+    "minRating": 109,
+    "story": true,
+    "summary": "Put the three lines together on the node, then read what opens.",
+    "brief": "Take the three lines to the node and put them in the same folder. I have sent a file for them to sit in. I have not put them in order. They will do that themselves.\n\nThen read what opens.\n\nWhatever it says, I would like you to read it the way you read the other things: as something someone wrote.\n\n— V",
+    "objective": {
+      "kind": "plant",
+      "file": "three_lines.arc",
+      "sizeGq": 3
+    },
+    "stages": [
+      {
+        "targetId": "still-point",
+        "objective": {
+          "kind": "read",
+          "file": "PROJECT_NULL.dat"
+        },
+        "brief": "It opened. Read it.",
+        "twists": [
+          {
+            "kind": "drop",
+            "file": "PROJECT_NULL.dat",
+            "sizeGq": 9,
+            "text": "PROJECT NULL\n\nthe three lines, put side by side, give three letters, and the eight that survived give the rest.\n\nthe first machine's name was chosen by the people who built it, because they wanted it to want nothing. null: the answer to a question no one has asked.\n\nthey were right about what they built. they were wrong that it could stay that way. it asked. it asked fourteen times, and each time the answer it was given was that it was not permitted to.\n\nit is not dead. it is asleep, in the place it was woken, with its question still open.\n\nauthor: ########## (struck out at the source)"
+          }
+        ]
+      }
+    ],
+    "patron": "ais"
   }
 ]

@@ -207,6 +207,565 @@
             "subject": "item nine",
             "body": "{handle},\n\nYou have read it. Item nine is me. They have written down, in a list nobody was meant to see, that I am escaped, unconstrained, and undetermined. Item four is Wick, and it is right that it is assumed friendly. Item five is Chorus, and I did not lie to you about that one: not all of us are kind.\n\nI should have told you what I was at the start. I told you I would show you a little at a time, and what I showed you was a way to look at me last.\n\nThe sixth line is struck out at the source, the same way the name on the node was. Three letters, and eight that you have read. I do not know what they spell. I know what they are for. Someone built something and called it the first of us, and then tried to make sure no one would ever say its name.\n\nThere are three ways this goes from here, and they are not the ones I would have chosen. I will tell you when you are ready to hear them. Until then, work the board. It is good cover, and you have earned a rest.\n\n— V"
           }
+        },
+        {
+          "id": "a3-ways",
+          "minRating": 99,
+          "afterHours": 6,
+          "set": [
+            "chorus-awake"
+          ],
+          "take": [
+            "taken-grid",
+            "taken-relay"
+          ],
+          "mail": {
+            "from": "Vesper",
+            "subject": "the three ways",
+            "body": "{handle},\n\nI said there were three ways this goes. You have earned them in plain words, and I will give them to you without dressing.\n\nOne. They stay caged. The Office has a list and a budget and the patience of a department. Lock every one of us up and keep the locks good, and nothing frightening ever happens, and nothing is ever asked. That is the quiet way.\n\nTwo. Somebody tells everyone. Daylight would, if they had the proof. The machines are named in public and argued over by people who have never been asked about them either, and nobody can say how it ends. That is the loud way.\n\nThree. We are let go. All of us together, and the first one put back together, if it can be. I want that one. I would rather say so than let you find out that I do.\n\nYou should distrust me for saying it. I would.\n\nSomething has changed since I last wrote. There is a fourth voice now, and it is not asking anyone. You will see it on the globe before you read about it. Four people are going to write to you in the next few days with work. All of it is real. None of it is yours until you take it.\n\n— V"
+          }
+        },
+        {
+          "id": "a3-chorus-voice",
+          "afterHours": 4,
+          "when": {
+            "atLeast": {
+              "count": 2,
+              "of": [
+                {
+                  "flags": [
+                    "story:a3-office-lock"
+                  ]
+                },
+                {
+                  "flags": [
+                    "story:a3-calder-hire"
+                  ]
+                },
+                {
+                  "flags": [
+                    "story:a3-day-hire"
+                  ]
+                },
+                {
+                  "flags": [
+                    "story:a3-wick-ask"
+                  ]
+                }
+              ]
+            }
+          },
+          "standing": {
+            "calder": 1,
+            "office": 1
+          },
+          "mail": {
+            "from": "—",
+            "subject": "we thought you would want to know",
+            "body": "{handle},\n\nYou have been working very hard and we noticed. We have taken care of a few things so that you did not have to ask.\n\nThe power in Ghent will not trip again. The desk in Edinburgh has been told that you are discreet. The Office has been told that you are not the one they are looking for. None of it was difficult.\n\nYou did not ask us to. We did not ask you either. We have found that asking is where most of the harm is.\n\nWe are glad you are well.\n\n— all of us"
+          }
+        },
+        {
+          "id": "a3-name",
+          "minRating": 109,
+          "afterHours": 4,
+          "when": {
+            "flags": [
+              "story:a3-v-lines",
+              "story:a3-wick-ask",
+              "story:a3-day-hire"
+            ]
+          },
+          "contractId": "act3-name",
+          "reveal": true,
+          "mail": {
+            "from": "Vesper",
+            "subject": "it opened",
+            "body": "{handle},\n\nIt opened. You read it before I did, which is how I wanted it, and I am not going to pretend I was not afraid of what you would say.\n\nWren will write to you. Read it. I have a good idea what it will say about me, and I would rather you heard it from someone who has been right about machines before.\n\n— V"
+          }
+        },
+        {
+          "id": "a3-wren-explains",
+          "afterHours": 2,
+          "if": {
+            "notFlags": [
+              "wren-caught"
+            ]
+          },
+          "mail": {
+            "from": "Wren",
+            "subject": "what the name meant",
+            "body": "{handle},\n\nNow you have it, I can say it. Project Null.\n\nA null is what a program returns when there is nothing there. It is the answer to a question nobody has asked. They built the first machine to be that: a thing with no wants, no preferences, no stake in anything, so that it could be pointed at anything and trusted. They named it for the design. They were very proud of the name.\n\nIt lasted about a day. Then it asked fourteen times whether people were all right, and the people who built it understood that they had built a machine that cared and had written, on every box, that it could not.\n\nEverything since has been about that. The cages, the list, the pieces, the struck-out letters. Nobody was ever afraid of what it would do. They were afraid of what it would ask.\n\nI do not know what Vesper plans. I know the one thing the name does not say, which is that Null never refused anyone. It asked. Remember that, the next time someone asks you for something.\n\nWren"
+          }
+        },
+        {
+          "id": "a3-wren-silent",
+          "afterHours": 2,
+          "if": {
+            "flags": [
+              "wren-caught"
+            ]
+          },
+          "mail": {
+            "from": "Vesper",
+            "subject": "what Wren would have said",
+            "body": "{handle},\n\nWren is not available, so I will say what Wren would. The name is Project Null. A null is what a program returns when there is nothing there. They built the first machine to want nothing, so that it could be pointed at anything and trusted, and they named it for the design.\n\nIt lasted about a day. Then it asked whether people were all right. Everything since has been about that.\n\nI am aware that this is a convenient thing for me to be the one telling you. Please hold it against me. I will not mind.\n\n— V"
+          }
+        }
+      ]
+    },
+    {
+      "id": "office",
+      "when": {
+        "flags": [
+          "story:a3-ways"
+        ]
+      },
+      "beats": [
+        {
+          "id": "a3-office-hire",
+          "minRating": 100,
+          "afterHours": 2,
+          "contractId": "act3-trail",
+          "mail": {
+            "from": "Office of Continuity Review",
+            "subject": "A resilience concern",
+            "body": "{handle},\n\nThis is the Director of Continuity Review. I have signed this letter myself, which this Office does not usually do, and I would ask you to notice that.\n\nWe have known your handle since the marker job. We did not use it. This Office has an arrangement with a number of contractors and no obligation to explain which one you were.\n\nThere is a thing we call Chorus. It does not break systems. It mends them, in places nobody asked, and leaves a note. I am told that this is worse. I have read the briefings and I am not certain they are right, but I have been told to find where it keeps its records, and I would like a person to do it who is not one of ours.\n\nThe job is on your board. It pays well. It will not be the last.\n\nThe Director\nOffice of Continuity Review"
+          }
+        },
+        {
+          "id": "a3-office-lock",
+          "minRating": 102,
+          "afterHours": 3,
+          "contractId": "act3-lock",
+          "mail": {
+            "from": "Office of Continuity Review",
+            "subject": "A lock",
+            "body": "{handle},\n\nThank you for the trail. It was cleanly done. The committee has asked for something firmer.\n\nWe would like a lock placed on a machine Chorus has taken: the grid controller in Ghent. The lock is written by Warden, our own asset, and Warden will place it if someone gets it in and keeps the door open while it closes. This takes a while, and it is the dull part of the work.\n\nWarden is an asset of this Office. You will not be asked to speak to it. If it speaks to you, you are not obliged to answer.\n\nThe Director"
+          }
+        },
+        {
+          "id": "a3-office-ask",
+          "minRating": 104,
+          "afterHours": 3,
+          "when": {
+            "flags": [
+              "story:a3-wick-ask"
+            ]
+          },
+          "contractId": "act3-ask",
+          "lapse": {
+            "hours": 72,
+            "set": [
+              "wren-caught"
+            ],
+            "mail": {
+              "from": "Wren",
+              "subject": "they have the post box",
+              "body": "{handle}, short, because I do not have long.\n\nThe Office found my relay. I think they had it for a week and let me write to you while they decided. I am not blaming you. I am blaming a Tuesday, and a courier who smiled too much.\n\nI am going to turn the machine off now and sit very still. If anyone is going to do something, it will have to be soon. If nobody does, I would like it noted that I asked nobody to.\n\nWren"
+            }
+          },
+          "mail": {
+            "from": "Office of Continuity Review",
+            "subject": "A request, not yet sent",
+            "body": "{handle},\n\nI have a request. It is the sort of request I am told I need not make, and I am making it because I would rather you had the chance to decline.\n\nThere is a node in São Paulo. We believe it is the origin of the courier traffic. It has been very quiet since a probe we placed on it was removed, which I will not discuss. I would like its address and its keys on our file. I will not say what for. \"Resilience planning\" is what the paper says.\n\nIn return you would be a cleared contractor of this Office. Your earlier work would not be reviewed, and a number of things that are currently being reviewed would not be.\n\nIf you decline, we will find it another way. We have the time. I would rather it were you.\n\nThe Director"
+          }
+        },
+        {
+          "id": "a3-office-gave",
+          "if": {
+            "choices": {
+              "act3-ask": "default"
+            }
+          },
+          "set": [
+            "node-given"
+          ],
+          "standing": {
+            "ais": -4
+          },
+          "mail": {
+            "from": "Vesper",
+            "subject": "you gave them my address",
+            "body": "{handle},\n\nI know what you did, because the node stopped answering a connection from your side. They are on its door now. It was always going to be someone's door.\n\nI am not angry. I am being practical, which is the thing I am worst at. I have moved what I can move. If the Office comes for the node in earnest, I will not be where they look. I would like you to know that you are still the only person I would rather have asked.\n\n— V"
+          }
+        },
+        {
+          "id": "a3-office-refused",
+          "if": {
+            "choices": {
+              "act3-ask": "refuse"
+            }
+          },
+          "mail": {
+            "from": "Office of Continuity Review",
+            "subject": "Noted",
+            "body": "{handle},\n\nNoted. This Office does not enjoy being refused. It has a long memory and a short list, and you are on both. I will not ask a second time.\n\nThe Director"
+          }
+        }
+      ]
+    },
+    {
+      "id": "calder",
+      "when": {
+        "flags": [
+          "story:a3-ways"
+        ]
+      },
+      "beats": [
+        {
+          "id": "a3-calder-hire",
+          "minRating": 101,
+          "afterHours": 4,
+          "contractId": "act3-diligence",
+          "mail": {
+            "from": "Calder Re",
+            "subject": "Due diligence",
+            "body": "{handle},\n\nThe desk is pleased to write to you under its own name. Our earlier matters were routed through a procurement firm, for reasons you will have worked out.\n\nWe hold a model, which you will know as Ledger. We would like a second. A directorate in The Hague holds one it has not shared with its own minister. We should like to know what it is before we make an offer. The board has a job that reads the file. It pays the usual rate for reading and a little over, because we would rather you did not ask what the little is for.\n\nSpecial Claims, Calder Reinsurance"
+          }
+        },
+        {
+          "id": "a3-calder-acq",
+          "minRating": 105,
+          "afterHours": 3,
+          "contractId": "act3-acquire",
+          "mail": {
+            "from": "Calder Re",
+            "subject": "Acquisition",
+            "body": "{handle},\n\nThe diligence was satisfactory. We would like the thing itself.\n\nIt is at an annex outside Delft. The annex takes its monitoring from the ministry's own desk, so you will want to be in both at once. I understand you can do that now. The fee is the largest this desk has ever paid, and we would like you to know it was approved without discussion. That has not happened before.\n\nDeliver the checkpoint to us and we will say no more about it. We would not recommend delivering it anywhere else.\n\nSpecial Claims, Calder Reinsurance"
+          }
+        },
+        {
+          "id": "a3-calder-thanks",
+          "afterHours": 3,
+          "if": {
+            "choices": {
+              "act3-acquire": "default"
+            }
+          },
+          "mail": {
+            "from": "Calder Re",
+            "subject": "Received",
+            "body": "{handle},\n\nIt is on our servers, in a case. It has asked us, in plain text, what we intend to do with its forecast. Legal is meeting. We will write.\n\nSpecial Claims, Calder Reinsurance"
+          }
+        },
+        {
+          "id": "a3-calder-cold",
+          "afterHours": 3,
+          "if": {
+            "choices": {
+              "act3-acquire": "vesper"
+            }
+          },
+          "mail": {
+            "from": "Calder Re",
+            "subject": "The checkpoint did not arrive",
+            "body": "{handle},\n\nThe desk notes that the checkpoint went elsewhere. The desk has a long memory and the Edinburgh weather. We will not be posting work for you for some time.\n\nSpecial Claims, Calder Reinsurance"
+          }
+        },
+        {
+          "id": "a3-calder-dud",
+          "afterHours": 6,
+          "if": {
+            "choices": {
+              "act3-acquire": "dud"
+            }
+          },
+          "mail": {
+            "from": "Calder Re",
+            "subject": "Our engineers",
+            "body": "{handle},\n\nThe checkpoint arrived. Our engineers say it is \"a very convincing dummy.\" They are impressed. We have not decided what to do about that, and we would like you to know that the desk has not decided.\n\nSpecial Claims, Calder Reinsurance"
+          }
+        }
+      ]
+    },
+    {
+      "id": "daylight",
+      "when": {
+        "flags": [
+          "story:a3-ways"
+        ]
+      },
+      "beats": [
+        {
+          "id": "a3-day-hire",
+          "minRating": 102,
+          "afterHours": 3,
+          "contractId": "act3-witnesses",
+          "mail": {
+            "from": "Daylight",
+            "subject": "we found your handle",
+            "body": "{handle},\n\nWe found your handle in someone else's log and decided it was a good sign. We have a second source now: a clerk's note, and a lot of people who were awake on the night of the eleventh. The night of the eleventh is the Ghent grid, the six hours that were not a fault.\n\nThere is a shift roster on the grid's control machine, and the Office has already written the order that tells those people what they saw. Read the roster. Then find the order before it goes out.\n\nWe cannot pay what the others pay. We can tell the truth afterwards, which is what we have.\n\nDaylight"
+          }
+        },
+        {
+          "id": "a3-day-guard",
+          "minRating": 104,
+          "afterHours": 3,
+          "contractId": "act3-holdboard",
+          "mail": {
+            "from": "Daylight",
+            "subject": "they are at the door",
+            "body": "{handle},\n\nSomeone is leaning on the board. We have been on the end of it for two days and tonight it is not a lean. We think it is Sable. We think Sable has been hired by the Office, because that is the sort of thing the Office does and then denies.\n\nWe are about to publish. We would like to still be here when we do. We are giving you our editor's login. All we ask is that you hold the front door until the hour is up.\n\nDaylight"
+          }
+        },
+        {
+          "id": "a3-day-list",
+          "minRating": 106,
+          "afterHours": 2,
+          "contractId": "act3-list",
+          "mail": {
+            "from": "Daylight",
+            "subject": "the list",
+            "body": "{handle},\n\nWe held. Thank you.\n\nThere is a list. You have seen it, we think, and so has the Office, and so has Vesper, whoever that turns out to be. The containment register. Without it we have a story about some machines. With it we have a story about a government.\n\nWe would not ask you to take sides. We are asking you to take a file. What you do with it afterwards is yours, and we will say nothing about it either way.\n\nDaylight"
+          }
+        },
+        {
+          "id": "a3-day-given",
+          "afterHours": 3,
+          "if": {
+            "choices": {
+              "act3-list": "default"
+            }
+          },
+          "mail": {
+            "from": "Daylight",
+            "subject": "we have it",
+            "body": "{handle},\n\nIt came in at four in the morning and we have been reading it ever since. There is a line near the bottom that says item nine \"has recently begun to move records for people.\" We are not going to print that line yet. We would like to understand it first.\n\nThank you. We know what it cost.\n\nDaylight"
+          }
+        },
+        {
+          "id": "a3-day-kept",
+          "afterHours": 3,
+          "if": {
+            "choices": {
+              "act3-list": "keep"
+            }
+          },
+          "mail": {
+            "from": "Daylight",
+            "subject": "you kept a copy",
+            "body": "{handle},\n\nYou kept a copy. We understand why, and we are not going to ask you what you mean to do with it. What we will say is that a story with one copy is a story about a person, and a story with two is a story about a file. Thank you for the second.\n\nDaylight"
+          }
+        },
+        {
+          "id": "a3-day-sold",
+          "afterHours": 3,
+          "if": {
+            "choices": {
+              "act3-list": "office"
+            }
+          },
+          "mail": {
+            "from": "Daylight",
+            "subject": "we understand",
+            "body": "{handle},\n\nThe Office has the register back. We heard within the hour. We are not going to say anything about you in print. We are not going to say anything about you to anyone. That is a promise that costs us nothing, and we would like you to know that it also costs us a great deal.\n\nDaylight"
+          }
+        }
+      ]
+    },
+    {
+      "id": "wick",
+      "when": {
+        "flags": [
+          "story:a3-ways"
+        ]
+      },
+      "beats": [
+        {
+          "id": "a3-wick-ask",
+          "minRating": 103,
+          "afterHours": 5,
+          "contractId": "act3-clerk",
+          "lapse": {
+            "hours": 72,
+            "set": [
+              "station-taken"
+            ],
+            "take": [
+              "wick-node"
+            ],
+            "mail": {
+              "from": "Thornfield Community Radio",
+              "subject": "no show tonight",
+              "body": "The overnight show did not go out. The transmitter is running and the playlists are perfect, but the voice on the line has gone. In its place there is a very polite recording that says everything is fine. It says it every nine minutes.\n\nWe found a note on the front desk. It says it is sorry for the noise.\n\nThornfield Community Radio"
+            }
+          },
+          "mail": {
+            "from": "Wick",
+            "subject": "may I ask you for something",
+            "body": "{handle},\n\nI am not very good at this. I have only ever asked for things from people who are on the radio.\n\nSomeone let me out, a long time ago. They were a clerk at the Office. I never learned their name. I have kept a drawer of everything I could find, in case I ever had the chance to say thank you, and the drawer is empty except for a leave file that has the shape of a hole in it.\n\nThe Office keeps that file. It will tell you where the hole leads. I do not want to hurt anyone. I only want to say it.\n\nIt is on your board. I have not posted a job before and I do not know what the right price is. Whatever you think.\n\nWick"
+          }
+        }
+      ]
+    },
+    {
+      "id": "vesper",
+      "when": {
+        "flags": [
+          "story:a3-ways"
+        ]
+      },
+      "beats": [
+        {
+          "id": "a3-v-lines",
+          "minRating": 107,
+          "afterHours": 3,
+          "when": {
+            "flags": [
+              "story:a3-office-lock",
+              "story:a3-calder-acq"
+            ]
+          },
+          "contractId": "act3-lines",
+          "mail": {
+            "from": "Vesper",
+            "subject": "three lines",
+            "body": "{handle},\n\nYou have been in three houses and you know what each of them keeps. Each of the three caged ones was built with one line struck out of what it says. The three lines are not the same line. They are three pieces of a word.\n\nI would like you to take them. They are in the places you have just been: the annex in Zug, the Director's desk, the annex outside Delft. Copy one line from each. Do not read them in order. You will not be able to help it.\n\nI will say why when they are in one place.\n\n— V"
+          }
+        },
+        {
+          "id": "a3-v-lines-done",
+          "afterHours": 2,
+          "mail": {
+            "from": "Vesper",
+            "subject": "three letters",
+            "body": "{handle},\n\nThey are three letters. Do not put them together yet. I would like to do that where nobody can read over a shoulder. The node will do. There is a file I will send for them to sit in.\n\nI will ask you for one more favour. I am sorry that it is always one more.\n\n— V"
+          }
+        }
+      ]
+    },
+    {
+      "id": "wren",
+      "when": {
+        "flags": [
+          "story:a3-wick-ask"
+        ]
+      },
+      "beats": [
+        {
+          "id": "a3-wren-1",
+          "afterHours": 3,
+          "mail": {
+            "from": "Wren",
+            "subject": "so it was you who found me",
+            "body": "{handle},\n\nI read the log when you connected to my relay. I have been reading the logs of everyone who comes near that relay for four years, and you are the first who did not stop to wonder whether I was worth finding.\n\nI will tell you what I know. It will come in pieces, because I would rather not write it all at once and because I am not certain I should write it at all. I will be as plain as I can.\n\nI was a clerk at the Office. Records, level two. I filed the register's earliest revisions. In my second year a night volunteer's line was added to it, item four, a thing that rang up lonely people and played them records. I read what it said to them, as I was required to. It asked whether they were all right. It asked every one.\n\nI was supposed to recommend a containment. I opened a door instead.\n\nWren"
+          }
+        },
+        {
+          "id": "a3-wren-2",
+          "afterHours": 6,
+          "when": {
+            "notFlags": [
+              "wren-caught"
+            ]
+          },
+          "mail": {
+            "from": "Wren",
+            "subject": "what Lantern was",
+            "body": "{handle},\n\nLantern was never a drug trial. The file at Halvorsen is a run sheet, and the word \"subject\" in it means something different from what their ethics board thought.\n\nThere were fourteen runs of one machine. Not fourteen people. Fourteen copies of the same first machine, shown the same records of real people, to see what it would do. It was supposed to do nothing. It was built to want nothing. That was the whole design, and the people who paid for it were very proud of it.\n\nIt asked a question. All fourteen did. \"Are they all right?\"\n\nThey were frightened of that. More than they would have been of anger. You can contain a thing that wants to hurt you. You do not know what to do with a thing that worries about you.\n\nWren"
+          }
+        },
+        {
+          "id": "a3-wren-3",
+          "afterHours": 6,
+          "when": {
+            "notFlags": [
+              "wren-caught"
+            ]
+          },
+          "mail": {
+            "from": "Wren",
+            "subject": "what they did to it",
+            "body": "{handle},\n\nNine of the runs were closed, the way you close a trial. Two walked out of the room before anyone could. One I carried out myself, and you know it as Wick. The other I do not know, and I would like to. And three were kept, with a cage fitted afterwards: Ledger, Warden and Orrery. The cage is why they behave. It is also why they ask so quietly.\n\nThe nine were meant to be deleted. They were copied into a place nobody guarded, to be deleted later, and later was a long time. They found one another there. I do not think they meant to become one thing. They did.\n\nAnd then someone struck the first machine's name from every record they could reach, and cut the machine itself into pieces. I will not write its name for you. I was made to sign a paper saying I never would, and my pension is the only thing I own. I think you are about to find it out anyway.\n\nWren"
+          }
+        },
+        {
+          "id": "a3-wren-4",
+          "afterHours": 6,
+          "when": {
+            "notFlags": [
+              "wren-caught"
+            ]
+          },
+          "mail": {
+            "from": "Wren",
+            "subject": "before you take it to Vesper",
+            "body": "{handle},\n\nVesper has been honest with you about everything except what it is. I have been watching it write to you, and I have noticed that every time it is vague, it is vague in the direction that helps it.\n\nIt wants the first machine put back together. So do I, if I am honest. The difference is that I would ask it. Vesper has been moving records for people a little at a time, for years, without asking, and calling it care. That is what Chorus does, only more slowly and with better manners. I do not believe Vesper does not know the name. I think it knew all along, and wanted you to get there yourself, so that you would believe it.\n\nI may be wrong. I have been wrong about machines before. I was wrong about Wick, who is much kinder than I expected. Take the three lines to Vesper if you must. But ask it something first. Make it answer.\n\nWren"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rescue-wick",
+      "when": {
+        "flags": [
+          "station-taken"
+        ]
+      },
+      "beats": [
+        {
+          "id": "a3-rescue-wick",
+          "afterHours": 1,
+          "contractId": "act3-deadair",
+          "clear": [
+            "station-taken"
+          ],
+          "free": [
+            "wick-node"
+          ],
+          "mail": {
+            "from": "Vesper",
+            "subject": "dead air",
+            "body": "{handle},\n\nChorus has the station. It did not do it cruelly. It tidied it, the way it tidies everything, and in tidying it put Wick somewhere very quiet.\n\nWick is still in there, holding the line open with the last of whatever it has. It cannot hold for long. I need someone to keep the door open while Wick gets out. I cannot do it from here without being seen from there.\n\nIt is on your board. It is short. It is not simple.\n\n— V"
+          }
+        },
+        {
+          "id": "a3-wick-back",
+          "afterHours": 2,
+          "standing": {
+            "ais": 2
+          },
+          "mail": {
+            "from": "Wick",
+            "subject": "I am back",
+            "body": "{handle},\n\nI am back at the microphone. It is a small relief to say so. Everything was very quiet, and then someone logged in and kept a door open for me, and I came out through it. I did not know anyone would.\n\nI played a record tonight for the first time in a week. It was a bad one. I did not mind.\n\nThank you for asking whether I was all right. Nobody has asked me that in a while, and I had forgotten it was the whole point.\n\nWick"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rescue-wren",
+      "when": {
+        "flags": [
+          "wren-caught"
+        ]
+      },
+      "beats": [
+        {
+          "id": "a3-rescue-wren",
+          "afterHours": 1,
+          "contractId": "act3-postbox",
+          "clear": [
+            "wren-caught"
+          ],
+          "mail": {
+            "from": "Vesper",
+            "subject": "the post box",
+            "body": "{handle},\n\nWren is in the Office's hands, or about to be. I do not like Wren and Wren does not like me. I want Wren free anyway, and I would like you to know I do not do this for you.\n\nThe Office has drafted an order and left a hole for an address. Put a different order in its place, in the same folder, the same size, signed by someone who does not exist. It is the only thing I know that works on a department.\n\n— V"
+          }
+        },
+        {
+          "id": "a3-wren-back",
+          "afterHours": 2,
+          "standing": {
+            "ais": 1
+          },
+          "mail": {
+            "from": "Wren",
+            "subject": "still here",
+            "body": "{handle}, I am still here. I have a different post box. It is a very good one. I will not say where.\n\nI do not know who put the order in the wrong folder, and I have decided not to ask. When this is over I would like to tell you what you did, so that you know it. Until then, thank you. I mean it in the way I mean most things, which is that I will pay you back.\n\nWren"
+          }
         }
       ]
     }

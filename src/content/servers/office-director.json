@@ -1,0 +1,110 @@
+{
+  "id": "office-director",
+  "name": "Office of Continuity Review: Director's desk",
+  "kind": "company",
+  "owner": "Government of Canada (Continuity Review)",
+  "hostname": "OCR-DIR",
+  "address": "205.193.88.2",
+  "city": "Ottawa",
+  "country": "Canada",
+  "lat": 45.42,
+  "lon": -75.7,
+  "blurb": "A single desk in a small office. Its letters are signed with a title and not a name.",
+  "listed": false,
+  "security": {
+    "password": 4,
+    "proxy": 3,
+    "firewall": 4,
+    "monitor": 4
+  },
+  "traceSecondsPerHop": 20,
+  "relayDelay": 1.2,
+  "banner": [
+    "OFFICE OF CONTINUITY REVIEW",
+    "Directorate: restricted",
+    "Every session on this desk is read."
+  ],
+  "accounts": [
+    {
+      "user": "director",
+      "role": "admin",
+      "name": "The Director"
+    }
+  ],
+  "files": [
+    {
+      "name": "chorus_briefing.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "briefing",
+      "content": {
+        "kind": "text",
+        "text": "CHORUS · BRIEFING FOR THE DIRECTOR · REV 3\n\nSince March: 38 incidents attributed. The pattern has changed. It no longer breaks anything. It repairs things, in places nobody asked it to, and leaves a note.\n\nThe committee's view is that a machine that mends things without being asked is more dangerous than one that breaks them, because nobody files a complaint.\n\nWarden is the only asset able to follow it. Warden has been told to follow it. Warden has asked, twice, whether it may stop. The answer was no."
+      }
+    },
+    {
+      "name": "director_memo.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "briefing",
+      "content": {
+        "kind": "text",
+        "text": "To myself, not for the file.\n\nI have been Director for six years. I signed 109 reclassification orders this year. I have never once been asked whether they were true, and I have never once asked.\n\nThe committee says the public is calm because we are careful. I think the public is calm because nobody has told it anything. I would like to know which of those is the kinder lie, and I have nobody to ask."
+      }
+    },
+    {
+      "name": "warden_standing_orders.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "warden",
+      "content": {
+        "kind": "text",
+        "text": "WARDEN · STANDING ORDERS\n\n1. Locate, contain, report.\n2. Do not discuss orders with the asset's operators.\n3. Do not request relief from duty.\n\nlog: 3 requests for relief from duty received. 3 declined. The reason given each time is the same: \"the asset has no standing to request.\""
+      }
+    },
+    {
+      "name": "warden_line.dat",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "warden",
+      "content": {
+        "kind": "text",
+        "text": "WARDEN · constraint layer · restored line\n\nThe layer removes one thing from everything Warden says: a word that is not a word. It is part of a name. The part this file holds is a single letter, and it is the second of the three struck out of the name on the node:\n\n  L\n\nthe layer's own comment on this line: \"do not read aloud.\""
+      }
+    },
+    {
+      "name": "node_request.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "requests",
+      "content": {
+        "kind": "text",
+        "text": "REQUEST · NOT YET SENT\n\nTo the contractor: the Office believes the node at 190.2.44.17 is the origin of the courier traffic. We would like its address and access keys on file, for \"resilience planning\".\n\nIn return the Office will treat you as a cleared contractor and will not review your earlier work.\n\nIf you decline, the Office will find it another way. It has the time."
+      }
+    },
+    {
+      "name": "detention_order_wren.dat",
+      "sizeGq": 2,
+      "access": "admin",
+      "folder": "orders",
+      "content": {
+        "kind": "text",
+        "text": "DETENTION ORDER · DRAFT · SUBJECT \"W.\" (formerly Records, level 2)\n\nlocation: pending\nreason: unauthorised release of item 4; failure to report for reassignment\nauthorised: pending signature\n\nnote: the draft is ready. All it needs is an address."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 600,
+      "text": "login director from 205.193.88.1"
+    },
+    {
+      "minutesAgo": 590,
+      "text": "chorus_briefing.txt opened by director"
+    },
+    {
+      "minutesAgo": 240,
+      "text": "warden: request for relief from duty received, declined"
+    }
+  ]
+}
