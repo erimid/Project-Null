@@ -1,3 +1,4 @@
+import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { landDots } from '../../content';
 import { blendView, dragView, greatCircle, isVisible, project, type LatLon, type View } from './projection';
@@ -12,6 +13,25 @@ export interface GlobeDot extends LatLon {
   readonly selected?: boolean;
   /** Just taken: rings spread out from it for a few seconds. */
   readonly ripple?: boolean;
+  /**
+   * Trouble the player has left here, drawn as a thin ring: a case open
+   * (red, its arc running down to when the log is read), lines left in the
+   * log (amber dashes) or an admin on the watch (amber dots).
+   */
+  readonly ring?: { readonly kind: 'case' | 'logs' | 'watch'; readonly left?: number; readonly urgent?: boolean };
+  /** More words for the dot's tooltip, after its name. */
+  readonly note?: string;
+}
+
+/** A small mark beside a place: work on the board there, news about it, or the job in hand. */
+export interface GlobePin extends LatLon {
+  /** The server it is about. */
+  readonly id: string;
+  readonly kind: 'job' | 'news' | 'mine';
+  /** Tooltip text. */
+  readonly note: string;
+  /** Not looked at yet: a soft ring pulses out from it. */
+  readonly fresh?: boolean;
 }
 
 export interface GlobeArc {
@@ -33,6 +53,10 @@ interface Props {
   /** Turn the globe to face this place when it changes. */
   focus?: LatLon | null;
   onPick: (id: string) => void;
+  /** Marks for jobs and news, drawn over the dots. Picking one picks its server. */
+  pins?: readonly GlobePin[];
+  /** Drawn in the globe's top corner, over it: the layer switches. */
+  overlay?: ComponentChildren;
 }
 
 export const SIZE = 500;
@@ -41,6 +65,10 @@ export const C = SIZE / 2;
 export const BASE_RADIUS = 200;
 const ZOOMS = [1, 1.6, 2.5] as const;
 const COLORS = { mint: '#4ee6c8', cyan: '#5fd4ff', red: '#ff3b4e', violet: '#c48bff' } as const;
+const AMBER = '#ffc45c';
+/** Radius of a trouble ring, and its length all the way round. */
+const RING = 9;
+const RING_LENGTH = 2 * Math.PI * RING;
 const fmt = (n: number) => n.toFixed(1);
 
 /** Lines of latitude and longitude, as lists of points. Built once. */
@@ -115,7 +143,7 @@ function arcLabelAt(arc: GlobeArc, view: View, R: number): { x: number; y: numbe
  * The wireframe Earth. Drag to turn it; click a dot to pick a server.
  * Everything is drawn from real latitudes and longitudes.
  */
-export function Globe({ dots, arcs, focus, onPick }: Props) {
+export function Globe({ dots, arcs, focus, onPick, pins = [], overlay }: Props) {
   const [view, setView] = useState<View>({ lat: 28, lon: 8 });
   const [zoomStep, setZoomStep] = useState(0);
   const R = BASE_RADIUS * ZOOMS[zoomStep]!;
@@ -208,6 +236,7 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
     .filter(({ p }) => p.z > 0.03)
     // Draw the selected dot last so it sits on top.
     .sort((a, b) => Number(a.dot.selected ?? false) - Number(b.dot.selected ?? false));
+  const pinned = pins.map((pin) => ({ pin, p: project(pin.lat, pin.lon, view) })).filter(({ p }) => p.z > 0.03);
 
   return (
     <div class="globe-frame">
@@ -287,8 +316,9 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
                 }
               }}
             >
-              <title>{dot.name}</title>
+              <title>{dot.note ? `${dot.name}. ${dot.note}` : dot.name}</title>
               <circle cx={x} cy={y} r={14} fill="transparent" />
+              {dot.ring && <TroubleRing x={x} y={y} ring={dot.ring} />}
               {dot.tone === 'violet' && <circle cx={x} cy={y} r={12} class="globe__halo" />}
               {dot.ripple && <circle cx={x} cy={y} r={12} class="globe__ripple" />}
               {dot.ripple && <circle cx={x} cy={y} r={12} class="globe__ripple globe__ripple--late" />}
@@ -302,7 +332,40 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
             </g>
           );
         })}
+
+        {pinned.map(({ pin, p }) => {
+          // Up and to the left of the dot, clear of its label on the right.
+          const x = C + R * p.x - 9;
+          const y = C - R * p.y - 9;
+          const pick = () => onPick(pin.id);
+          return (
+            <g
+              key={`pin-${pin.id}`}
+              class={`globe__pin globe__pin--${pin.kind}`}
+              role="button"
+              tabIndex={0}
+              aria-label={pin.note}
+              onClick={pick}
+              onKeyDown={(event: KeyboardEvent) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  pick();
+                }
+              }}
+            >
+              <title>{pin.note}</title>
+              <circle cx={x} cy={y} r={8} fill="transparent" />
+              {pin.fresh && <circle cx={x} cy={y} r={6} class="globe__pulse" />}
+              {pin.kind === 'news' ? (
+                <rect x={x - 2.6} y={y - 2.6} width={5.2} height={5.2} rx={0.8} class="globe__pin-mark" />
+              ) : (
+                <path d={diamond(x, y, pin.kind === 'mine' ? 4.6 : 3.6)} class="globe__pin-mark" />
+              )}
+            </g>
+          );
+        })}
       </svg>
+      {overlay && <div class="globe-layers">{overlay}</div>}
       <div class="globe-zoom">
         <button type="button" aria-label="Zoom in" disabled={zoomStep === ZOOMS.length - 1} onClick={() => zoomBy(1)}>
           +
@@ -312,5 +375,45 @@ export function Globe({ dots, arcs, focus, onPick }: Props) {
         </button>
       </div>
     </div>
+  );
+}
+
+const diamond = (x: number, y: number, r: number) => `M${fmt(x)} ${fmt(y - r)}L${fmt(x + r)} ${fmt(y)}L${fmt(x)} ${fmt(y + r)}L${fmt(x - r)} ${fmt(y)}Z`;
+
+/** The thin ring round a server where the player has left trouble. */
+function TroubleRing({ x, y, ring }: { x: number; y: number; ring: NonNullable<GlobeDot['ring']> }) {
+  if (ring.kind === 'case') {
+    // A faint full ring, and over it the time left before someone reads the log, running down clockwise from the top.
+    const left = Math.max(0.04, Math.min(1, ring.left ?? 1));
+    return (
+      <g class={`globe__ring globe__ring--case${ring.urgent ? ' is-urgent' : ''}`}>
+        <circle cx={x} cy={y} r={RING} fill="none" stroke={COLORS.red} stroke-width="1" opacity="0.28" />
+        <circle
+          cx={x}
+          cy={y}
+          r={RING}
+          fill="none"
+          stroke={COLORS.red}
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-dasharray={`${fmt(RING_LENGTH * left)} ${fmt(RING_LENGTH)}`}
+          transform={`rotate(-90 ${fmt(x)} ${fmt(y)})`}
+        />
+      </g>
+    );
+  }
+  return (
+    <circle
+      cx={x}
+      cy={y}
+      r={RING}
+      fill="none"
+      stroke={AMBER}
+      class={`globe__ring globe__ring--${ring.kind}`}
+      stroke-width={ring.kind === 'logs' ? 1.3 : 1.6}
+      stroke-linecap="round"
+      stroke-dasharray={ring.kind === 'logs' ? '3 2.6' : '0.1 3.4'}
+      opacity={ring.kind === 'logs' ? 0.75 : 0.6}
+    />
   );
 }

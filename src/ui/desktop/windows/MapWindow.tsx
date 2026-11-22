@@ -26,12 +26,25 @@ import {
   traceReport,
   traceSlow,
   type LegKind,
+  happenings,
+  troubleKind,
+  troubleMap,
+  contractRisk,
+  type Happening,
+  type Trouble,
 } from '../../../core';
+import type { ContractDef } from '../../../core/content';
+import { sellsOnly } from '../../../core/market';
 import { findServer, gatewayOf, type ServerDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { Icon } from '../Icon';
-import { Globe, type GlobeArc, type GlobeDot } from '../../globe/Globe';
+import { Globe, type GlobeArc, type GlobeDot, type GlobePin } from '../../globe/Globe';
+import { globeSeen, useGlobeSeen } from '../../globe/seen';
+import { browserStore } from '../browserStore';
+import { WIRE } from '../../news/wire';
+import { formatMoney } from '../../format';
+import { OBJECTIVE_WORDS, RiskMeter } from './Place';
 import { activeConnection, deskStore, useDesk } from '../deskStore';
 import { lit, useGuide } from '../guide';
 import { Window } from '../Window';
@@ -168,6 +181,125 @@ const seconds = (ms: number) => {
   return total < 60 ? `${total}s` : `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 };
 
+/** The globe's two layers of marks, each switched on and off on its own. */
+interface Layers {
+  /** Rings round servers where the player has left trouble. */
+  readonly trouble: boolean;
+  /** Marks for jobs on the board and this morning's news. */
+  readonly work: boolean;
+}
+const LAYERS_KEY = 'project-null.globe-layers.v1';
+
+function savedLayers(): Layers {
+  try {
+    const raw: unknown = JSON.parse(localStorage.getItem(LAYERS_KEY) ?? 'null');
+    if (raw && typeof raw === 'object') {
+      const value = raw as Partial<Layers>;
+      return { trouble: value.trouble !== false, work: value.work !== false };
+    }
+  } catch {
+    // Both layers on.
+  }
+  return { trouble: true, work: true };
+}
+
+/** Game time left, said briefly: "40 min", "2 h 10 min". */
+function timeLeft(ms: number): string {
+  const minutes = Math.max(1, Math.round(ms / 60_000));
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
+}
+
+const lines = (count: number) => (count === 1 ? '1 line' : `${count} lines`);
+
+/** Everything wrong at a server, as short phrases for the dot's tooltip and the detail panel. */
+function troubleWords(trouble: Trouble, now: number, withWatch = true): string[] {
+  const words: string[] = [];
+  if (trouble.caseDueMs !== undefined) {
+    words.push(
+      trouble.evidence > 0
+        ? `Case open: they read the log in ${timeLeft(trouble.caseDueMs - now)}, and ${lines(trouble.evidence)} there would give you away.`
+        : `Case open: they read the log in ${timeLeft(trouble.caseDueMs - now)}. It is clean.`,
+    );
+  } else if (trouble.evidence > 0) {
+    words.push(`${lines(trouble.evidence)} of yours still in its log. Nobody is reading it yet.`);
+  }
+  if (trouble.watch && withWatch) words.push(trouble.watch === 'firm' ? 'Watched: a security firm runs it now.' : 'Watched: its admins are on guard for a few days.');
+  return words;
+}
+
+/** Ids the globe notes as seen for a place: its jobs and its stories. */
+const seenIds = (happening: Happening) => [...happening.jobs.map((job) => `job:${job.id}`), ...happening.news.map((item) => `news:${item.id}`)];
+
+/** The two switches over the globe's corner. Each says how many places it would mark. */
+function LayerSwitches({ layers, onChange, troubleCount, workCount }: { layers: Layers; onChange: (next: Layers) => void; troubleCount: number; workCount: number }) {
+  return (
+    <>
+      <button
+        type="button"
+        class={`globe-layer globe-layer--trouble${layers.trouble ? ' is-on' : ''}`}
+        aria-pressed={layers.trouble}
+        data-tip="Trouble you have left: red rings run down to when a log is read, amber dashes are your lines still in a log, amber dots are admins on the watch"
+        onClick={() => onChange({ ...layers, trouble: !layers.trouble })}
+      >
+        <span class="globe-layer__key" aria-hidden="true" />
+        Trouble
+        {troubleCount > 0 && <span class="data">{troubleCount}</span>}
+      </button>
+      <button
+        type="button"
+        class={`globe-layer globe-layer--work${layers.work ? ' is-on' : ''}`}
+        aria-pressed={layers.work}
+        data-tip="Work and news: a diamond is a job on the board, a square is in this morning's Wire, a bright diamond is your job. New ones pulse."
+        onClick={() => onChange({ ...layers, work: !layers.work })}
+      >
+        <span class="globe-layer__key" aria-hidden="true" />
+        Jobs
+        {workCount > 0 && <span class="data">{workCount}</span>}
+      </button>
+    </>
+  );
+}
+
+/** The jobs and news at the picked server, each with a way to open it. */
+function HereNote({ happening, onJob, onNews }: { happening: Happening; onJob: (job: ContractDef) => void; onNews: (id: string) => void }) {
+  const game = useWorld((state) => state);
+  if (happening.jobs.length === 0 && happening.news.length === 0) return null;
+  return (
+    <div class="map__here">
+      {happening.jobs.map((job) => (
+        <div key={job.id} class={`map__here-job${globeSeen.has(`job:${job.id}`) ? '' : ' is-new'}`}>
+          <span class="map__here-mark map__here-mark--job" aria-hidden="true" />
+          <span class="map__here-text">
+            <strong>{job.title}</strong>
+            <span class="map__here-sub">
+              {OBJECTIVE_WORDS[job.objective.kind] ?? 'A job'} · <span class="data">{formatMoney(job.pay)}</span>
+            </span>
+          </span>
+          <RiskMeter risk={contractRisk(game, content, job)} />
+          <button type="button" class="btn btn--small" data-tip="Open this job on the contracts board" onClick={() => onJob(job)}>
+            On the board
+          </button>
+        </div>
+      ))}
+      {happening.news.map((item) => (
+        <div key={item.id} class="map__here-job map__here-news">
+          <span class="map__here-mark map__here-mark--news" aria-hidden="true" />
+          <span class="map__here-text">
+            <strong>{item.headline}</strong>
+            <span class="map__here-sub">This morning's Wire</span>
+          </span>
+          <button type="button" class="btn btn--small" data-tip="Read the story in the browser" onClick={() => onNews(item.id)}>
+            Read
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /**
  * The route map: the globe with every server you have the address of.
  * Pick servers to build a bounce chain, then connect through it.
@@ -195,6 +327,16 @@ export function MapWindow() {
       timers.forEach(clearTimeout);
     };
   }, []);
+  const [layers, setLayers] = useState<Layers>(savedLayers);
+  const changeLayers = (next: Layers) => {
+    setLayers(next);
+    try {
+      localStorage.setItem(LAYERS_KEY, JSON.stringify(next));
+    } catch {
+      // It holds for this visit.
+    }
+  };
+  useGlobeSeen();
   const [starredOnly, setStarredOnly] = useState(false);
   const [sort, setSort] = useState<SortId>(savedSort);
   // Heat sort starts coolest first; pressing Heat again flips it.
@@ -312,10 +454,32 @@ export function MapWindow() {
     };
   });
 
+  // The two layers of marks: trouble left behind, and work and news.
+  const now = game.clock.gameTimeMs;
+  const trouble = troubleMap(game, content);
+  const here = happenings(game, content);
+  const hereIds = [...here.values()].flatMap(seenIds);
+  // The first time, everything already on the globe counts as seen, so an old save does not light up all at once.
+  useEffect(() => globeSeen.start(hereIds), [hereIds.length > 0]);
+  const caseHours = content.rules.reviewHours;
+
   const dots: GlobeDot[] = known.map((server) => {
     const hop = routeIds.indexOf(server.id);
     const onRoute = server.id === gateway.id || hop >= 0 || live?.serverId === server.id;
+    const problem = layers.trouble ? trouble.get(server.id) : undefined;
+    const kind = problem ? troubleKind(problem) : undefined;
     return {
+      ...(problem && kind
+        ? {
+            ring: {
+              kind,
+              left: 1 - (problem.caseShare ?? 0),
+              // The last hour before the log is read, with lines still there.
+              urgent: kind === 'case' && problem.evidence > 0 && (problem.caseDueMs ?? 0) - now < Math.min(1, caseHours / 3) * 3_600_000,
+            },
+            note: troubleWords(problem, now).join(' '),
+          }
+        : {}),
       id: server.id,
       name: server.name,
       lat: server.lat,
@@ -333,6 +497,57 @@ export function MapWindow() {
     if (to && from) arcs.push({ from, to, tone: 'violet', reach: true });
   }
 
+  // Pins for work and news. Only the newest few unseen ones pulse, so a full board never flickers all over.
+  const PULSE_MAX = 3;
+  let pulsing = 0;
+  const pins: GlobePin[] = layers.work
+    ? [...here.values()]
+        .reverse()
+        .flatMap((happening): GlobePin[] => {
+          const server = byId(happening.serverId);
+          if (!server) return [];
+          const fresh = !happening.mine && seenIds(happening).some((id) => !globeSeen.has(id)) && pulsing++ < PULSE_MAX;
+          const jobs = happening.jobs.length;
+          const note = [
+            happening.mine ? `${server.name}: your job is here.` : `${server.name}:`,
+            jobs > 0 ? (jobs === 1 ? `${happening.jobs[0]!.title}.` : `${jobs} jobs on the board.`) : '',
+            happening.news.length > 0 ? `In this morning's Wire: ${happening.news[0]!.headline}.` : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+          if (!happening.mine && jobs === 0 && happening.news.length === 0) return [];
+          return [{ id: server.id, lat: server.lat, lon: server.lon, kind: happening.mine ? 'mine' : jobs > 0 ? 'job' : 'news', note, fresh }];
+        })
+        .reverse()
+    : [];
+  const troubleCount = trouble.size;
+  const workCount = [...here.values()].filter((happening) => happening.jobs.length > 0 || happening.news.length > 0).length;
+
+  /** Opens a job on the board: in a board you are logged in to, or, if there is none, picks a board on the map to connect to. */
+  const openJob = (job: ContractDef) => {
+    globeSeen.mark([`job:${job.id}`]);
+    const atBoard = game.connections.find((c) => {
+      const server = byId(c.serverId);
+      return c.user !== null && server?.kind === 'board' && !sellsOnly(server);
+    });
+    deskStore.focusJob(job.id);
+    if (atBoard) {
+      deskStore.activate(atBoard.id);
+      deskStore.showSection(atBoard.id, 'contracts');
+      windows.focus('server');
+      return;
+    }
+    const board = known.find((server) => server.kind === 'board' && !sellsOnly(server));
+    if (!board) return;
+    deskStore.select(board.id);
+    setNotice(`Connect to ${board.name} and log in to see the job on its board.`);
+  };
+  const openNews = (id: string) => {
+    globeSeen.mark([`news:${id}`]);
+    browserStore.open(`${WIRE}/story/${id}`);
+    windows.focus('web');
+  };
+
   const run = (action: Parameters<typeof session.dispatch>[0]) => {
     const result = session.dispatch(action);
     setNotice(result.ok ? '' : result.reason);
@@ -349,6 +564,9 @@ export function MapWindow() {
   const pick = (id: string) => {
     setNotice('');
     deskStore.select(id);
+    // Picking a place is looking at it: its marks stop pulsing.
+    const happening = here.get(id);
+    if (happening) globeSeen.mark(seenIds(happening));
   };
 
   // During a trace, a spare server can take the place of the relay the trace is working on.
@@ -376,7 +594,14 @@ export function MapWindow() {
     <Window id="map" note={note}>
       <div class="map">
         <div class="map__globe">
-          <Globe dots={dots} arcs={arcs} focus={selected ?? null} onPick={pick} />
+          <Globe
+            dots={dots}
+            arcs={arcs}
+            pins={pins}
+            focus={selected ?? null}
+            onPick={pick}
+            overlay={<LayerSwitches layers={layers} onChange={changeLayers} troubleCount={troubleCount} workCount={workCount} />}
+          />
         </div>
 
         <div class="map__side">
@@ -513,6 +738,20 @@ export function MapWindow() {
               </div>
               <div class="data map__detail-address">{selected.address}</div>
               <p class="map__detail-blurb">{selected.blurb}</p>
+              {(() => {
+                const problem = trouble.get(selected.id);
+                // Admins on the watch already have their own line below, from the news.
+                const said = problem ? troubleWords(problem, now, false) : [];
+                if (!problem || said.length === 0) return null;
+                return (
+                  <ul class={`map__trouble map__trouble--${troubleKind(problem)}`}>
+                    {said.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                );
+              })()}
+              {here.get(selected.id) && <HereNote happening={here.get(selected.id)!} onJob={openJob} onNews={openNews} />}
               {selected.id !== gateway.id && (() => {
                 const scanned = game.scanned.includes(selected.id);
                 const connected = game.connections.some((c) => c.serverId === selected.id);

@@ -21,11 +21,13 @@ export interface Desk {
   readonly contractOpen: boolean;
   /** Which side of the Programs window is showing. */
   readonly programsTab: ProgramsTab;
+  /** A job on the board to bring into view the next time the board is drawn, asked for from the route map. */
+  readonly jobFocus: string | null;
 }
 
 export type ProgramsTab = 'programs' | 'workbench';
 
-let desk: Desk = { selectedServerId: null, activeConnectionId: null, sections: {}, contractOpen: false, programsTab: 'programs' };
+let desk: Desk = { selectedServerId: null, activeConnectionId: null, sections: {}, contractOpen: false, programsTab: 'programs', jobFocus: null };
 const listeners = new Set<() => void>();
 
 function set(patch: Partial<Desk>): void {
@@ -41,6 +43,7 @@ export const deskStore = {
     set({ sections: { ...desk.sections, [connectionId]: section } }),
   showContract: (open: boolean) => desk.contractOpen !== open && set({ contractOpen: open }),
   showPrograms: (tab: ProgramsTab) => desk.programsTab !== tab && set({ programsTab: tab }),
+  focusJob: (contractId: string | null) => desk.jobFocus !== contractId && set({ jobFocus: contractId }),
 };
 
 export function useDesk(): Desk {

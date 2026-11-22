@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { GUIDED_JOB, TWISTS, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, openPatron, standingName, standingWith, stagesOf } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatGameTime, formatMoney, formatRating } from '../../format';
@@ -7,7 +7,8 @@ import { content } from '../../session';
 import { IconTile, ModulePlate } from '../Gear';
 import { Icon, objectiveIcon, type IconName } from '../Icon';
 import { useGuide } from '../guide';
-import { deskStore } from '../deskStore';
+import { deskStore, useDesk } from '../deskStore';
+import { globeSeen } from '../../globe/seen';
 import { OBJECTIVE_WORDS, Place, RiskMeter } from './Place';
 import { HeistPlan } from './HeistPlan';
 import type { View } from './serverView';
@@ -43,7 +44,7 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
   const minutes = contract.withinMinutes;
   const legend = job ? contract.legend : undefined;
   return (
-    <li class={`card jobcard${contract.story ? ' is-story' : ''}${job ? ' is-standing' : ''}${contract.heist ? ' is-heist' : ''}${legend ? ' is-legend' : ''}`}>
+    <li data-job={contract.id} class={`card jobcard${contract.story ? ' is-story' : ''}${job ? ' is-standing' : ''}${contract.heist ? ' is-heist' : ''}${legend ? ' is-legend' : ''}`}>
       <div class="card__head">
         <IconTile icon={contract.story ? 'star' : legend ? 'sparkle' : objectiveIcon(contract.objective.kind)} tone={contract.story ? 'rare' : job ? 'good' : undefined} />
         <div class="card__title">
@@ -149,6 +150,27 @@ export function Contracts({ game, connection, act }: View) {
   const nextAt = nextContractRating(game, content);
   const blocked = active ? 'Finish or give up the contract you have first' : undefined;
 
+  // Every job on the board has now been seen: the route map stops pulsing it.
+  const offerKey = offers.map((contract) => contract.id).join();
+  useEffect(() => globeSeen.mark(offers.map((contract) => `job:${contract.id}`)), [offerKey]);
+  // A job asked for from the route map is brought into view and lit for a moment.
+  const desk = useDesk();
+  const cards = useRef<HTMLUListElement>(null);
+  const wantedJob = desk.jobFocus && offers.some((contract) => contract.id === desk.jobFocus) ? desk.jobFocus : null;
+  useEffect(() => {
+    if (!wantedJob) return;
+    deskStore.focusJob(null);
+    // Show every kind of job, so the one asked for is not filtered out.
+    if (kept.filter !== 'all') change({ filter: 'all' });
+    setTimeout(() => {
+      const card = cards.current?.querySelector<HTMLElement>(`[data-job="${CSS.escape(wantedJob)}"]`);
+      if (!card) return;
+      card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      card.classList.add('is-asked');
+      setTimeout(() => card.classList.remove('is-asked'), 2400);
+    }, 30);
+  }, [wantedJob]);
+
   const risks = new Map(offers.map((contract) => [contract.id, contractRisk(game, content, contract)]));
   const counts: Record<Filter, number> = {
     all: offers.length,
@@ -253,7 +275,7 @@ export function Contracts({ game, connection, act }: View) {
         </div>
       )}
       {offers.length === 0 && <p class="empty">Nothing on the board right now.</p>}
-      <ul class="cards cards--jobs" key={`${filter}:${view.sort}:${view.flipped}`}>
+      <ul class="cards cards--jobs" ref={cards} key={`${filter}:${view.sort}:${view.flipped}`}>
         {shown.map((contract) => (
           <JobCard
             key={contract.id}
