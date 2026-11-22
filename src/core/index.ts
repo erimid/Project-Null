@@ -177,3 +177,4 @@ export type { LegendTwist } from './legend';
 export { LEGEND_HOURS, LEGEND_PAY, LEGEND_RATING, postLegend } from './jobs';
 export { LOADOUT_SLOTS } from './state';
 export type { MoveId, PatchLayer, WantedState } from './state';
+export { happenings, troubleAt, troubleKind, troubleMap, type Happening, type Trouble, type TroubleKind } from './exposure';

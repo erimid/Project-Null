@@ -5,6 +5,7 @@ import { latestEdition } from '../../../core';
 import { WIRE, wirePage } from '../../news/wire';
 import { formatLongDay } from '../../format';
 import { Window } from '../Window';
+import { browserStore } from '../browserStore';
 
 /** The two networks the browser reaches. Each has its own home page, and pages only link within their own network. */
 const NETS: Readonly<Record<Net, { name: string; tip: string; home: string; scheme: string }>> = {
@@ -46,6 +47,21 @@ export function BrowserWindow() {
     if (to === address) return;
     setTrails({ ...trails, [net]: { pages: [...pages.slice(0, at + 1), to], at: at + 1 } });
   };
+  // Another window can ask for a page: the route map opens a Wire story this way.
+  useEffect(() => {
+    const take = () => {
+      const asked = browserStore.take();
+      if (!asked) return;
+      setNet('web');
+      setTrails((current) => {
+        const web = current.web;
+        if (web.pages[web.at] === asked) return current;
+        return { ...current, web: { pages: [...web.pages.slice(0, web.at + 1), asked], at: web.at + 1 } };
+      });
+    };
+    take();
+    return browserStore.subscribe(take);
+  }, []);
   // A new page starts at its top.
   useEffect(() => body.current?.scrollTo(0, 0), [net, address]);
 

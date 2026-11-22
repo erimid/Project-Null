@@ -37,6 +37,8 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
       'Press × on a relay in the route bar to take it out. Press ☆ next to a server to star it, and Starred to see only those.',
       'Press Connect. If the target was one of your relays, it comes out of the route first.',
       'While a trace closes in, pick a spare server and press Reroute to make it start that step again.',
+      'Trouble rings show where you are exposed: red runs down to when a log is read, amber dashes are your lines still in a log, amber dots are admins on the watch.',
+      'Jobs marks work on the board (diamonds) and this morning\'s news (squares). New ones pulse. Pick one to open it. Both switches sit over the globe.',
     ],
   },
   server: {
