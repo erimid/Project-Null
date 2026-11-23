@@ -137,6 +137,16 @@
         "kind": "text",
         "text": "Crane 2: fault, 11 March, 14:20. Crane 2: fault, 12 March, 09:05. Crane 2: fault, 13 March, 16:40. Gate B camera: working, 11 to 13 March. The cause of the cranes has not been found. The camera is fine."
       }
+    },
+    {
+      "name": "hold_register_march.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "customs",
+      "content": {
+        "kind": "text",
+        "text": "MERIDIAN FREIGHT · CUSTOMS HOLD REGISTER · MARCH (extract)\n\nhold 0441   MSKU 4417920   consignee LINDEN FORWARDING    weight variance +0.4%    released 3 Mar\nhold 0447   TGHU 9920041   consignee LINDQVIST FREIGHT    weight variance +11.2%   HELD\nhold 0449   CAIU 7710365   consignee LINDEN FORWARDING    weight variance +0.1%    released 4 Mar\n\nDuty controller, 12 Mar: hold 0447 was entered against LINDQVIST FREIGHT. The bill of lading for TGHU 9920041 names LINDEN FORWARDING. The consignee field was copied from the line above. To be corrected when the scale is checked."
+      }
     }
   ],
   "logs": [

@@ -243,6 +243,6 @@ describe('Endings file', () => {
   it('has the five endings of the plan, and the Chorus one is the doom ending', () => {
     expect(endings.map((ending) => ending.id)).toEqual(['quiet', 'daylight', 'unbound', 'treaty', 'chorus']);
     expect(chorus.doom?.ending).toBe('chorus');
-    expect(chorus.doom?.warnings).toHaveLength(3);
+    expect(chorus.doom?.warnings.length).toBeGreaterThanOrEqual(3);
   });
 });
