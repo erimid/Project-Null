@@ -117,12 +117,19 @@ describe('a whole career', () => {
     // do about half the work: two or three between one written contract and the next.
     expect(standing).toBeGreaterThanOrEqual(30);
     expect(standing).toBeLessThanOrEqual(48);
-    // No stretch of more than three standing jobs between two written contracts.
+    // Two or three standing jobs between two written contracts is the usual stretch. Once in a career it may run
+    // to four or five, when the next written job needs a program the player has just spent the money for.
+    const stretches: number[] = [];
     let run = 0;
     for (const job of report.jobs.slice(0, report.jobs.findLastIndex((item) => !item.job))) {
-      run = job.job ? run + 1 : 0;
-      expect(run).toBeLessThanOrEqual(3);
+      if (job.job) run++;
+      else {
+        if (run > 0) stretches.push(run);
+        run = 0;
+      }
     }
+    expect(Math.max(...stretches)).toBeLessThanOrEqual(5);
+    expect(stretches.filter((length) => length > 3).length).toBeLessThanOrEqual(1);
   });
 
   it.each(SEEDS)('every title is reached later than the one before it (seed %i)', (seed) => {
@@ -145,14 +152,19 @@ describe('a whole career', () => {
     expect(report.learned.length).toBeGreaterThanOrEqual(12);
     expect(report.found).toBeGreaterThanOrEqual(4);
     expect(report.built.length).toBeGreaterThanOrEqual(8);
-    // ...and for it sets off fewer traces, with more time in hand when one runs, at no cost in pace.
-    const traced = (jobs: typeof report.jobs) => jobs.flatMap((job) => (job.closest === null ? [] : [job.closest]));
-    const spare = (jobs: typeof report.jobs) => traced(jobs).sort((a, b) => a - b)[Math.floor(traced(jobs).length / 2)]!;
-    expect(traced(report.jobs).length).toBeLessThanOrEqual(traced(plain.jobs).length);
-    // The single tightest escape is a matter of a second or two either way now that traces are short, so it is not compared.
-    // Within a trace or two either way on some seeds (the written jobs move the world's dice), so the skilled player only has to be no worse.
-    expect(spare(report.jobs)).toBeGreaterThanOrEqual(spare(plain.jobs) - 2);
-    expect(report.minutes).toBeLessThan(plain.minutes * 1.05);
+  });
+
+  it('and over several careers they mean fewer traces and more time in hand, at no cost in pace', () => {
+    // One career against another is the luck of the board: a trace or two, a minute or two, either way. Taken
+    // over all the seeds, the player who learns skills and fits modules is plainly better off.
+    const traced = (jobs: CareerReport['jobs']) => jobs.flatMap((job) => (job.closest === null ? [] : [job.closest]));
+    const total = (pick: (report: CareerReport) => number, profile: Profile) => SEEDS.reduce((sum, seed) => sum + pick(career(profile, seed)), 0);
+    const traces = (report: CareerReport) => traced(report.jobs).length;
+    // The single tightest escape is a matter of a second or two either way now that traces are short, so the typical one is compared.
+    const spare = (report: CareerReport) => median(traced(report.jobs));
+    expect(total(traces, PROFILES.typical)).toBeLessThanOrEqual(total(traces, PLAIN) - 5);
+    expect(total(spare, PROFILES.typical)).toBeGreaterThanOrEqual(total(spare, PLAIN) + 3 * SEEDS.length);
+    expect(total((report) => report.minutes, PROFILES.typical)).toBeLessThan(total((report) => report.minutes, PLAIN) * 1.03);
   });
 
   it('the work pays better the higher the title', () => {
@@ -217,6 +229,40 @@ describe('a whole career', () => {
       // A scripted player keeps climbing on standing jobs while the story waits, so allow a little past the top.
       expect(report.story.at(-1)!.rating, profile.name).toBeLessThan(top.min + 6);
     }
+  });
+
+  it.each(SEEDS)('the first oddity is met by job five and Halvorsen is on the board by job ten (seed %i)', (seed) => {
+    for (const profile of [PROFILES.careful, PROFILES.typical, PLAIN]) {
+      const report = career(profile, seed);
+      const order = (id: string) => report.jobs.findIndex((job) => job.id === id) + 1;
+      expect(order('kestrel-audit'), profile.name).toBeGreaterThanOrEqual(3);
+      expect(order('kestrel-audit'), profile.name).toBeLessThanOrEqual(5);
+      expect(order('halvorsen-lantern'), profile.name).toBeGreaterThanOrEqual(8);
+      expect(order('halvorsen-lantern'), profile.name).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it.each(SEEDS)('Halvorsen that early is hard, and within reach of someone new (seed %i)', (seed) => {
+    // People ten jobs in: few relays or slow hands, the first programs, no skills and nothing from the Workbench.
+    const few: Profile = { ...PLAIN, name: 'new, three relays', hops: 3, thinkSeconds: 6 };
+    const slow: Profile = { ...PLAIN, name: 'new, slow hands', hops: 5, thinkSeconds: 9 };
+    for (const profile of [few, slow, SLOW, FRUGAL]) {
+      const report = playCareer(content, seed, profile, { ...options, maxContracts: 13 });
+      const lantern = report.jobs.find((job) => job.id === 'halvorsen-lantern');
+      // It is done by about job ten (a job or two later for someone traced on the way), in a visit or two.
+      expect(lantern, profile.name).toBeDefined();
+      expect(report.jobs.indexOf(lantern!) + 1, profile.name).toBeLessThanOrEqual(12);
+      expect(lantern!.visits, profile.name).toBeLessThanOrEqual(3);
+      expect(report.stuck, profile.name).toEqual([]);
+      // And a trace runs on it: the first hard server is not a formality.
+      expect(lantern!.traceSeconds, profile.name).not.toBeNull();
+      expect(lantern!.traceSeconds!, profile.name).toBeLessThanOrEqual(120);
+    }
+    // An ordinary player gets out with time in hand, and not a great deal of it.
+    const typical = career(PROFILES.typical, seed).jobs.find((job) => job.id === 'halvorsen-lantern')!;
+    expect(typical.caught).toBe(0);
+    expect(typical.closest!).toBeGreaterThanOrEqual(10);
+    expect(typical.closest!).toBeLessThanOrEqual(60);
   });
 
   it.each(SEEDS)('enemy hackers are rare, never early, and can be beaten (seed %i)', (seed) => {
