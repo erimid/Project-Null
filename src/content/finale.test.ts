@@ -173,12 +173,34 @@ describe('Acts 3 and 4, played from a new save', () => {
   it.each(SEEDS)('the story pays better than the board, and the final job is within a normal gateway (seed %i)', (seed) => {
     const { report, late, finale } = run('obliging', PROFILES.typical, seed, OBLIGING);
     const rate = (jobs: CareerReport['jobs']) => jobs.reduce((sum, job) => sum + job.pay, 0) / jobs.reduce((sum, job) => sum + job.seconds, 0);
-    const first = report.jobs.findIndex((job) => job.id === 'act3-trail');
-    const board = report.jobs.slice(first).filter((job) => job.job);
+    // Against the ordinary work on the board at the same standing (the Eidolon title up). Legend contracts are
+    // their own top shelf, meant to out-pay everything, and how many a career meets is luck, so they are left out.
+    const board = report.jobs.filter((job) => job.job && !job.title.startsWith('Legend: ') && job.ratingAfter > gameInfo.ratings[11]!.min);
+    expect(board.length).toBeGreaterThanOrEqual(3);
+    if (wanted) host.console?.log(`story ${rate(late)} board ${rate(board)} (${board.length})`);
     expect(rate(late)).toBeGreaterThan(rate(board));
     // Never more lines than a gateway of that standing already has, and the money to have bought them.
     expect(finale!.lines).toBeLessThanOrEqual(3);
     expect(finale!.ports).toBeGreaterThanOrEqual(finale!.lines);
+  });
+
+  it.each(SEEDS)('once Act 4 opens, the finale is a few jobs away, not a grind (seed %i)', (seed) => {
+    // Nothing in Act 4 waits on rating. What is left is the spacing of its letters: a few game hours in all.
+    const main = linesOf(story).find((line) => line.id === 'main')!.beats;
+    // (Wren's letter after the name is one of two, so only one of them is counted.)
+    const hours = (from: string, to: string) => main.slice(main.findIndex((beat) => beat.id === from) + 1, main.findIndex((beat) => beat.id === to) + 1).filter((beat) => beat.id !== 'a3-wren-silent').reduce((sum, beat) => sum + (beat.afterHours ?? 0), 0);
+    for (const beat of main.filter((item) => item.id.startsWith('a4-') && item.id !== 'a4-wren-asks')) expect(beat.minRating, beat.id).toBeUndefined();
+    expect(hours('a3-name', 'a4-wren-asks')).toBeLessThanOrEqual(4);
+    expect(hours('a4-wren-asks', 'a4-the-asking')).toBeLessThanOrEqual(6);
+    // Played: between "The last block" and the last job, an unhurried player fits in three ordinary jobs at most,
+    // and even one who never stops clicking only a handful.
+    for (const [profile, most] of [[PROFILES.careful, 3], [PROFILES.typical, 6]] as const) {
+      const { report } = run('obliging', profile, seed, OBLIGING);
+      const from = report.jobs.findIndex((job) => job.id === 'act4-signature');
+      const to = report.jobs.findIndex((job) => job.id === 'act4-asking');
+      expect(from, profile.name).toBeGreaterThanOrEqual(0);
+      expect(report.jobs.slice(from + 1, to).filter((job) => job.job).length, profile.name).toBeLessThanOrEqual(most);
+    }
   });
 });
 

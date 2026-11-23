@@ -12,12 +12,12 @@
   "blurb": "Clinical research records server.",
   "listed": true,
   "security": {
-    "password": 3,
-    "proxy": 2,
-    "firewall": 3,
+    "password": 2,
+    "proxy": 1,
+    "firewall": 2,
     "monitor": 2
   },
-  "traceSecondsPerHop": 12,
+  "traceSecondsPerHop": 14,
   "relayDelay": 1.0,
   "banner": [
     "HALVORSEN BIOGENETICS ASA",

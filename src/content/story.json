@@ -371,7 +371,7 @@
         },
         {
           "id": "a3-wren-explains",
-          "afterHours": 2,
+          "afterHours": 1,
           "if": {
             "notFlags": [
               "wren-caught"
@@ -385,7 +385,7 @@
         },
         {
           "id": "a3-wren-silent",
-          "afterHours": 2,
+          "afterHours": 1,
           "if": {
             "flags": [
               "wren-caught"
@@ -400,7 +400,7 @@
         {
           "id": "a4-wren-asks",
           "minRating": 110,
-          "afterHours": 4,
+          "afterHours": 2,
           "when": {
             "notFlags": [
               "wren-caught"
@@ -415,7 +415,7 @@
         },
         {
           "id": "a4-vesper-admits",
-          "afterHours": 2,
+          "afterHours": 1,
           "standing": {
             "ais": 1
           },
@@ -427,7 +427,7 @@
         },
         {
           "id": "a4-lantern",
-          "afterHours": 6,
+          "afterHours": 2,
           "contractId": "act4-lantern",
           "mail": {
             "from": "Wren",
@@ -437,7 +437,7 @@
         },
         {
           "id": "a4-what-it-said",
-          "afterHours": 3,
+          "afterHours": 1,
           "mail": {
             "from": "Wren",
             "subject": "what it said",
@@ -446,7 +446,7 @@
         },
         {
           "id": "a4-ines",
-          "afterHours": 2,
+          "afterHours": 1,
           "mail": {
             "from": "Ines Verhoeven (night controller, via Daylight)",
             "subject": "I was on the console that night",
@@ -455,7 +455,7 @@
         },
         {
           "id": "a4-the-asking",
-          "afterHours": 4,
+          "afterHours": 1,
           "contractId": "act4-asking",
           "mail": {
             "from": "Vesper",
