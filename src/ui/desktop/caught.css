@@ -82,9 +82,16 @@
   stroke: rgba(255, 110, 124, 0.07);
 }
 
+.caught__coast {
+  fill: none;
+  stroke: rgba(255, 170, 178, 0.6);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
 .caught__land {
   fill: none;
-  stroke: rgba(255, 150, 160, 0.5);
+  stroke: rgba(255, 150, 160, 0.32);
   stroke-width: 1.5;
   stroke-linecap: round;
 }

@@ -1052,7 +1052,7 @@
 
 /* A hop's label sits over the globe's lines, so it gets a dark edge to stay readable. */
 .globe__label--leg {
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   paint-order: stroke;
   stroke: #040c16;
   stroke-width: 3px;

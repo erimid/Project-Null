@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { landDots } from '../../content';
+import { landBorders, landCoasts, landDots } from '../../content';
+import { boxAround, placeLabels, type Box, type LabelAsk } from './labels';
 import { blendView, dragView, greatCircle, isVisible, project, type LatLon, type View } from './projection';
 
 export interface GlobeDot extends LatLon {
@@ -43,7 +44,9 @@ export interface GlobeArc {
   readonly reach?: boolean;
   /** Drawn heavier: a leg that hops to another part of the world. */
   readonly heavy?: boolean;
-  /** Short text drawn at the top of the arc, e.g. "BORDER +14s". */
+  /** Drawn lighter: a leg that stays inside one country. */
+  readonly light?: boolean;
+  /** Short text drawn beside the arc where there is room, e.g. "+14s". */
   readonly label?: string;
 }
 
@@ -113,6 +116,29 @@ export function landPath(view: View, R: number): string {
   return d;
 }
 
+/** Lines over the land (coasts, or borders), as one path. Only the near side is drawn. */
+function linePath(lines: readonly (readonly number[])[], view: View, R: number): string {
+  let d = '';
+  for (const line of lines) {
+    let drawing = false;
+    for (let i = 0; i < line.length; i += 2) {
+      const p = project(line[i]! / 10, line[i + 1]! / 10, view);
+      if (p.z > 0.01) {
+        d += `${drawing ? 'L' : 'M'}${fmt(C + R * p.x)} ${fmt(C - R * p.y)}`;
+        drawing = true;
+      } else {
+        drawing = false;
+      }
+    }
+  }
+  return d;
+}
+
+/** The outline of the land. */
+export const coastPath = (view: View, R: number) => linePath(landCoasts, view, R);
+/** The lines between countries. */
+export const borderPath = (view: View, R: number) => linePath(landBorders, view, R);
+
 /** An arc between two places, lifted off the surface in the middle. */
 export function arcPath(arc: GlobeArc, view: View, R: number): string {
   let d = '';
@@ -129,14 +155,50 @@ export function arcPath(arc: GlobeArc, view: View, R: number): string {
   return d;
 }
 
-/** Where to write an arc's label: just above its highest point, if that is on the near side. */
-function arcLabelAt(arc: GlobeArc, view: View, R: number): { x: number; y: number } | null {
-  const points = greatCircle(arc.from, arc.to, 2);
-  const mid = points[1];
-  if (!mid) return null;
-  const p = project(mid.lat, mid.lon, view, 1.16);
-  if (!isVisible(p)) return null;
-  return { x: C + R * p.x, y: C - R * p.y - 6 };
+/** How far along an arc its label may sit, best first: the top of the arc, then a little to either side. */
+const LABEL_STOPS = [10, 8, 12, 6, 14] as const;
+const DOT_FONT = 12;
+const LEG_FONT = 13;
+/** Share Tech Mono is a little over half as wide as it is tall. */
+const textWidth = (text: string, size: number) => text.length * size * 0.6 + 4;
+/** The corner switches and the zoom buttons lie over the globe; words keep out from under them. */
+const CORNERS: readonly Box[] = [
+  { x: 0, y: 0, w: 230, h: 36 },
+  { x: SIZE - 44, y: SIZE - 84, w: 44, h: 84 },
+];
+const BOUNDS: Box = { x: 3, y: 3, w: SIZE - 6, h: SIZE - 6 };
+
+/** Places a dot's label could go: beside it, upper right first, then further out when the dots crowd together. */
+function dotLabelSpots(x: number, y: number, w: number): { x: number; y: number }[] {
+  const spots: { x: number; y: number }[] = [];
+  for (const reach of [0, 9, 20]) {
+    const side = 8 + reach + w / 2;
+    const rise = 10 + reach * 0.7;
+    spots.push({ x: x + side, y: y - rise }, { x: x + side, y: y + rise }, { x: x - side, y: y + rise }, { x: x - side, y: y - rise });
+    spots.push({ x: x + side + 3, y }, { x: x - side - 3, y }, { x, y: y - rise - 6 }, { x, y: y + rise + 6 });
+  }
+  return spots;
+}
+
+/** Places an arc's label could go: just off the arc, on the side away from the globe's centre, else on the near side. */
+function arcLabelSpots(arc: GlobeArc, w: number, view: View, R: number): { x: number; y: number }[] {
+  const points = greatCircle(arc.from, arc.to, 20);
+  const spots: { x: number; y: number }[] = [];
+  for (const stop of LABEL_STOPS) {
+    const point = points[stop];
+    if (!point) continue;
+    const p = project(point.lat, point.lon, view, 1 + 0.12 * Math.sin(Math.PI * point.t));
+    if (!isVisible(p)) continue;
+    const x = C + R * p.x;
+    const y = C - R * p.y;
+    // Straight out from the centre of the view, far enough that the words clear the line.
+    const far = Math.hypot(p.x, p.y);
+    const ux = far < 0.05 ? 0 : p.x / far;
+    const uy = far < 0.05 ? -1 : -p.y / far;
+    const clear = 7 + (w / 2) * Math.abs(ux) + (LEG_FONT / 2) * Math.abs(uy);
+    spots.push({ x: x + ux * clear, y: y + uy * clear }, { x: x - ux * clear, y: y - uy * clear });
+  }
+  return spots;
 }
 
 /**
@@ -174,6 +236,8 @@ export function Globe({ dots, arcs, focus, onPick, pins = [], overlay }: Props) 
 
   const grid = useMemo(() => gridPaths(view, R), [view, R]);
   const land = useMemo(() => landPath(view, R), [view, R]);
+  const coast = useMemo(() => coastPath(view, R), [view, R]);
+  const border = useMemo(() => borderPath(view, R), [view, R]);
 
   const pxPerUnit = () => (svg.current ? svg.current.clientWidth / SIZE : 1);
 
@@ -238,6 +302,29 @@ export function Globe({ dots, arcs, focus, onPick, pins = [], overlay }: Props) 
     .sort((a, b) => Number(a.dot.selected ?? false) - Number(b.dot.selected ?? false));
   const pinned = pins.map((pin) => ({ pin, p: project(pin.lat, pin.lon, view) })).filter(({ p }) => p.z > 0.03);
 
+  // Words are given room in order: a dot's own label first, then the legs, longest wait first.
+  // One with nowhere clear to go is left off; the route list under the globe has them all.
+  const asks: LabelAsk[] = [];
+  // Words first ("YOU", a server's name), then the hop numbers in order.
+  const byLength = [...placed].sort((a, b) => (b.dot.label?.length ?? 0) - (a.dot.label?.length ?? 0));
+  for (const { dot, p } of byLength) {
+    if (!dot.label) continue;
+    const x = C + R * p.x;
+    const y = C - R * p.y;
+    const w = textWidth(dot.label, DOT_FONT);
+    asks.push({ id: `dot:${dot.id}`, w, h: DOT_FONT, spots: dotLabelSpots(x, y, w) });
+  }
+  arcs
+    .map((arc, index) => ({ arc, index }))
+    .filter(({ arc }) => arc.label)
+    .sort((a, b) => Number(b.arc.heavy ?? false) - Number(a.arc.heavy ?? false) || Number(a.arc.light ?? false) - Number(b.arc.light ?? false))
+    .forEach(({ arc, index }) => asks.push({ id: `arc:${index}`, w: textWidth(arc.label!, LEG_FONT), h: LEG_FONT, spots: arcLabelSpots(arc, textWidth(arc.label!, LEG_FONT), view, R) }));
+  const labelAt = placeLabels(
+    asks,
+    [...CORNERS, ...placed.map(({ p }) => boxAround(C + R * p.x, C - R * p.y, 11)), ...pinned.map(({ p }) => boxAround(C + R * p.x - 9, C - R * p.y - 9, 9))],
+    BOUNDS,
+  );
+
   return (
     <div class="globe-frame">
       <svg
@@ -269,8 +356,10 @@ export function Globe({ dots, arcs, focus, onPick, pins = [], overlay }: Props) 
         <circle cx={C} cy={C} r={R * 1.18} fill="url(#globe-atmosphere)" />
         <path d={grid.back} fill="none" stroke="#5fd4ff" stroke-width="0.8" opacity="0.14" />
         <circle cx={C} cy={C} r={R} fill="url(#globe-body)" opacity="0.82" />
-        <path d={land} stroke="#2f9ccc" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0.85" />
-        <path d={grid.front} fill="none" stroke="#5fd4ff" stroke-width="1" opacity="0.4" />
+        <path d={land} stroke="#2f9ccc" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.5" />
+        <path d={grid.front} fill="none" stroke="#5fd4ff" stroke-width="1" opacity="0.28" />
+        <path d={border} fill="none" stroke="#5fd4ff" stroke-width="0.7" stroke-linejoin="round" opacity="0.3" />
+        <path d={coast} fill="none" stroke="#7fe0ff" stroke-width="1.1" stroke-linejoin="round" opacity="0.85" />
         <circle cx={C} cy={C} r={R} fill="none" stroke="#5fd4ff" stroke-width="1.6" opacity="0.9" />
 
         {arcs.map((arc, index) => (
@@ -280,16 +369,16 @@ export function Globe({ dots, arcs, focus, onPick, pins = [], overlay }: Props) 
             fill="none"
             stroke={COLORS[arc.tone]}
             class={arc.reach ? 'globe__reach' : undefined}
-            stroke-width={arc.reach ? 1.6 : (arc.dashed ? 2 : 2.6) + (arc.heavy ? 1.2 : 0)}
+            stroke-width={arc.reach ? 1.6 : (arc.dashed ? 2 : 2.6) + (arc.heavy ? 1.2 : arc.light ? -0.6 : 0)}
             stroke-dasharray={arc.dashed && !arc.reach ? '5 4' : undefined}
             stroke-linecap="round"
           />
         ))}
         {arcs.map((arc, index) => {
-          const at = arc.label ? arcLabelAt(arc, view, R) : null;
+          const at = labelAt.get(`arc:${index}`);
           return (
             at && (
-              <text key={`label-${index}`} x={at.x} y={at.y} text-anchor="middle" fill={COLORS[arc.tone]} font-size="13" class="globe__label globe__label--leg">
+              <text key={`label-${index}`} x={fmt(at.x)} y={fmt(at.y)} text-anchor="middle" dominant-baseline="central" fill={COLORS[arc.tone]} font-size={LEG_FONT} class="globe__label globe__label--leg">
                 {arc.label}
               </text>
             )
@@ -324,8 +413,8 @@ export function Globe({ dots, arcs, focus, onPick, pins = [], overlay }: Props) 
               {dot.ripple && <circle cx={x} cy={y} r={12} class="globe__ripple globe__ripple--late" />}
               {dot.selected && <circle cx={x} cy={y} r={11} fill="none" stroke={color} stroke-width="1.5" />}
               <circle cx={x} cy={y} r={4.5} fill={color} />
-              {dot.label && (
-                <text x={x + 9} y={y - 8} fill={color} font-size="12" class="globe__label">
+              {dot.label && labelAt.has(`dot:${dot.id}`) && (
+                <text x={fmt(labelAt.get(`dot:${dot.id}`)!.x)} y={fmt(labelAt.get(`dot:${dot.id}`)!.y)} text-anchor="middle" dominant-baseline="central" fill={color} font-size={DOT_FONT} class="globe__label globe__label--dot">
                   {dot.label}
                 </text>
               )}

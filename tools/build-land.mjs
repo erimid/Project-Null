@@ -1,12 +1,14 @@
-// Builds src/content/land.json: the dots that draw the continents on the globe.
+// Builds src/content/land.json: what draws the continents on the globe.
 //
 // It samples the Natural Earth land outline (public domain, from the
 // world-atlas package) on an even grid and keeps the points that fall on
-// land. The result is committed, so the game itself needs neither package.
+// land (the dots), and it keeps the outline itself (the coasts) and the
+// lines between countries (the borders). The result is committed, so the
+// game itself needs neither package.
 //
 // Run with: npm run build:land
 import { readFileSync, writeFileSync } from 'node:fs';
-import { feature } from 'topojson-client';
+import { feature, mesh } from 'topojson-client';
 
 const STEP = 2.5; // degrees between rows of dots
 const topo = JSON.parse(readFileSync(new URL('../node_modules/world-atlas/land-110m.json', import.meta.url), 'utf8'));
@@ -38,5 +40,27 @@ for (let lat = -87.5; lat <= 87.5; lat += STEP) {
   }
 }
 
-writeFileSync(new URL('../src/content/land.json', import.meta.url), JSON.stringify({ step: STEP, points }) + '\n');
-console.log(`land.json: ${points.length / 2} dots`);
+// A line as [lat, lon, lat, lon, ...] in tenths of a degree, without points that land on the one before.
+const flat = (line) => {
+  const out = [];
+  for (const [lon, lat] of line) {
+    const a = Math.round(lat * 10);
+    const b = Math.round(lon * 10);
+    if (out.length >= 2 && out[out.length - 2] === a && out[out.length - 1] === b) continue;
+    out.push(a, b);
+  }
+  return out;
+};
+const worthDrawing = (line) => line.length >= 6;
+
+// Coasts: every outline of the land, lakes left out. Specks of islands are dropped.
+const coasts = polygons.map((rings) => flat(rings[0])).filter((line) => line.length >= 10);
+
+// Borders: only the lines two countries share, so no coast is drawn twice.
+const world = JSON.parse(readFileSync(new URL('../node_modules/world-atlas/countries-110m.json', import.meta.url), 'utf8'));
+const shared = mesh(world, world.objects.countries, (a, b) => a !== b);
+const borders = shared.coordinates.map(flat).filter(worthDrawing);
+
+writeFileSync(new URL('../src/content/land.json', import.meta.url), JSON.stringify({ step: STEP, points, coasts, borders }) + '\n');
+const count = (lines) => lines.reduce((sum, line) => sum + line.length / 2, 0);
+console.log(`land.json: ${points.length / 2} dots, ${coasts.length} coasts (${count(coasts)} points), ${borders.length} borders (${count(borders)} points)`);

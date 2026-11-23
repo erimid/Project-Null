@@ -281,3 +281,183 @@
     transform: scale(1.2);
   }
 }
+
+/* ---- words on the globe: each keeps a dark edge so the lines under it never cut through ---- */
+
+.globe__label--dot {
+  paint-order: stroke;
+  stroke: #040c16;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+/* ---- the route as a list, in the room a tall window leaves under the globe ---- */
+
+/* The globe sits at the top of its column, centred, whatever the layout. */
+.map .map__globe {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 0;
+}
+
+/* It takes the spare height and nothing more: the list inside never makes the window taller. */
+.map__under {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  align-self: stretch;
+}
+
+.legs {
+  position: absolute;
+  inset: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.legs__heading {
+  flex: none;
+}
+
+.legs__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.legs__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  padding: 0 4px 0 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mint-text);
+}
+
+.legs__row + .legs__row {
+  border-top: 1px solid rgba(95, 212, 255, 0.07);
+}
+
+.legs__row.is-selected {
+  background: rgba(95, 212, 255, 0.07);
+}
+
+.legs__pick {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0 3px 4px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.legs__pick:hover .legs__name {
+  color: var(--text-bright);
+}
+
+/* The same number the hop wears on the globe. */
+.legs__mark {
+  flex: none;
+  width: 18px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--mint);
+}
+
+.legs__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legs__row--target {
+  color: var(--text-bright);
+}
+
+.legs__row--target .legs__mark {
+  color: var(--cyan);
+}
+
+.legs__leg {
+  flex: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.legs__leg .data {
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+}
+
+.legs__leg--border {
+  color: var(--cyan);
+}
+
+.legs__leg--overseas {
+  color: var(--mint);
+}
+
+.legs__fade {
+  flex: none;
+  font-size: 11px;
+  color: #ffc45c;
+}
+
+.legs__row .route__drop {
+  flex: none;
+  margin-left: 0;
+}
+
+.legs__row--empty {
+  padding: 4px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.legs__row.is-traced,
+.legs__row.is-traced .legs__mark {
+  color: #ff8a95;
+}
+
+.legs__row.is-tracing {
+  animation: hop-pulse 0.8s ease-in-out infinite;
+  color: #ff8a95;
+}
+
+/* Stacked layouts have the address book straight under the globe, so there is no spare room to fill. */
+.is-phone .map__under {
+  display: none;
+}
+
+@container win (max-width: 620px) {
+  .map__under {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legs__row.is-tracing {
+    animation: none;
+    text-decoration: underline;
+  }
+}
