@@ -102,6 +102,26 @@
         "kind": "text",
         "text": "POST-MORTEM, January outage. Cause: a power strip. Fix: a power strip. Lesson: we have eleven volunteers and one working power strip.\n\nAction: buy a second power strip. Owner: unassigned. Due: when someone puts their name down."
       }
+    },
+    {
+      "name": "uptime_audit_feb.txt",
+      "sizeGq": 2,
+      "access": "admin",
+      "folder": "volunteers",
+      "content": {
+        "kind": "text",
+        "text": "KESTREL COMMUNITY NET · UPTIME AUDIT · FEBRUARY\nprepared by the treasurer, not for circulation\n\nnode      hours up   hours down   note\nroof-1    672        0\nroof-2    669        3            power strip\nhub       648        24           planned, announced on the 2nd\nbridge    672        0\n\nOutage hours in total: 27. Of those, 24 were planned and announced.\nThe \"unexplained outages\" the committee quotes in its ledger are the planned ones, counted twice."
+      }
+    },
+    {
+      "name": "usage_by_household_feb.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "billing",
+      "content": {
+        "kind": "text",
+        "text": "KESTREL COMMUNITY NET · USAGE BY HOUSEHOLD · FEBRUARY\nfair-use line: 40 GB\n\nhouse   GB     note\nA1      12\nA2      61     over\nA3      18\nB1      9\nB2      44     over\nB3      22\nC1      7\nC2      31\nC3      15\nD1      27\nD2      68     over\nD3      6\nE1      35\nE2      24\n\nHouseholds over the line: 3 of 14.\nDraft cut-off list (committee, 11 March): all 14 households, \"pending review of tariff\"."
+      }
     }
   ],
   "logs": [

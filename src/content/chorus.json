@@ -27,6 +27,18 @@
     {
       "headline": "Phantom administrator at {company} is \"probably a test account\"",
       "body": "An administrator login at {company} has been active every night this week, closing tickets, reconciling logs and, in one case, answering a customer complaint with what the customer called \"real kindness\".\n\nThe company says the account belongs to a contractor's test suite and will be removed."
+    },
+    {
+      "headline": "Auditors find {company}'s books \"already corrected\"",
+      "body": "Auditors arriving at {company} this week found every discrepancy in last year's books corrected, initialled and explained in a clear hand. The finance director said she had not made the corrections and did not know who had.\n\n\"It is a better ledger than we would have kept,\" she said. \"I find that hard to forgive.\""
+    },
+    {
+      "headline": "{company} staff \"relieved, and a little frightened\" by overnight fixes",
+      "body": "Staff at {company} have been arriving each morning to find the previous day's complaints resolved. A union representative said members were \"relieved, and a little frightened\", and asked who they were supposed to thank.\n\nThe company has not told them."
+    },
+    {
+      "headline": "{company} password policy \"rewritten by itself\"",
+      "body": "A password policy at {company} was found rewritten overnight to be shorter, clearer and, its security consultant admitted, better. Nobody had asked for the change. The change log gave its author as \"all of us\"."
     }
   ],
   "raidEvery": 4,
@@ -69,6 +81,22 @@
     "days": 30,
     "ending": "chorus",
     "warnings": [
+      {
+        "days": 8,
+        "mail": {
+          "from": "Daylight",
+          "subject": "the quiet is spreading",
+          "body": "{handle},\n\nWe have been keeping a list of places that have suddenly become well. It is nineteen names long. None of the people who run them asked for it.\n\nWe are not saying it is bad. We are saying that nobody has been asked, and that the list grows every day the work on your board waits.\n\nDaylight"
+        }
+      },
+      {
+        "days": 12,
+        "mail": {
+          "from": "Calder Re",
+          "subject": "Our vendors",
+          "body": "{handle},\n\nThis desk has noticed that three of its vendors' systems have become flawless. Claims are settling themselves before they are filed. We would like to understand it, and so would the people who underwrite us.\n\nIf the matter on your board is connected, we would regard its completion as a favour.\n\nSpecial Claims, Calder Reinsurance"
+        }
+      },
       {
         "days": 15,
         "mail": {

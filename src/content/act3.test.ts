@@ -32,6 +32,12 @@ describe('Act 3 as written', () => {
       for (const flag of [...(beat.set ?? []), ...(beat.lapse?.set ?? [])]) set.add(flag);
       set.add(`story:${beat.id}`);
     }
+    // The rules set these: a rewrite twist's flag, and an ending's own flag.
+    for (const contract of contracts) {
+      for (const stage of [{ targetId: contract.targetId, twists: contract.twists }, ...(contract.stages ?? [])]) {
+        for (const twist of stage.twists ?? []) if (twist.kind === 'rewrite') set.add(`rewritten:${stage.targetId}/${twist.file}`);
+      }
+    }
     // The rules set these: an ending's own flag.
     for (const ending of endings) set.add(`ending:${ending.id}`);
     const wanted = new Set<string>();

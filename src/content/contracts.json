@@ -127,6 +127,14 @@
     "objective": {
       "kind": "steal",
       "file": "HB-2207_PROJECT_LANTERN.dat"
+    },
+    "lead": {
+      "when": {
+        "flags": [
+          "rewritten:kestrel-net/uptime_audit_feb.txt"
+        ]
+      },
+      "minRating": 8
     }
   },
   {
@@ -383,6 +391,189 @@
     }
   },
   {
+    "id": "kestrel-audit",
+    "title": "My own numbers",
+    "client": "Kestrel's treasurer",
+    "targetId": "kestrel-net",
+    "pay": 700,
+    "rating": 1,
+    "minRating": 2,
+    "summary": "Copy the February uptime audit from Kestrel Community Net.",
+    "brief": "I write the numbers down for the committee and the committee does not read them. Last week it took my login off the system. I would like my own audit back, a copy outside the building, before somebody tidies the original.\n\nCopy uptime_audit_feb.txt from the noc account. Kestrel does not trace anyone; it never has.",
+    "objective": {
+      "kind": "steal",
+      "file": "uptime_audit_feb.txt"
+    },
+    "twists": [
+      {
+        "kind": "rewrite",
+        "file": "uptime_audit_feb.txt",
+        "text": "KESTREL COMMUNITY NET · UPTIME AUDIT · FEBRUARY\nprepared by the treasurer, not for circulation\n\nnode      hours up   hours down   note\nroof-1    672        0\nroof-2    669        3            power strip\nhub       648        24           planned, announced on the 2nd\nbridge    672        0\n\nOutage hours in total: 27. Of those, 24 were planned and announced.\nThe \"unexplained outages\" the committee quotes in its ledger are the planned ones, counted twice.\n\n[added in transit]\nreconciled against: HB-REC-02 (Halvorsen Biogenetics), 11 GB, 03:00 nightly\nreconciled by: 190.2.44.17 (no operator)\nnote: this paragraph was not in the file when you began copying it."
+      },
+      {
+        "kind": "log",
+        "text": "file read: uptime_audit_feb.txt by 190.2.44.17 (self)",
+        "minutesAhead": 12
+      }
+    ]
+  },
+  {
+    "id": "kestrel-count",
+    "title": "Count them properly",
+    "client": "A volunteer who asked for the numbers",
+    "targetId": "kestrel-net",
+    "pay": 2000,
+    "rating": 1,
+    "minRating": 11,
+    "summary": "Read the usage figures at Kestrel and say how many households are over the line.",
+    "brief": "At the meeting I asked for the numbers to be checked and the chair said there was no time. There is time now. The committee is cutting off fourteen households for going over the fair-use line. I think it is three. I do not trust what I think; I have wanted it to be three for a month.\n\nOpen usage_by_household_feb.txt on the noc account and count. Then tell me what you counted, not what I hoped.",
+    "objective": {
+      "kind": "read",
+      "file": "usage_by_household_feb.txt"
+    },
+    "choices": [
+      {
+        "id": "fourteen",
+        "label": "Tell him it is fourteen",
+        "note": "The committee is right.",
+        "pay": 600,
+        "rating": -1,
+        "reply": {
+          "from": "A volunteer who asked for the numbers",
+          "subject": "Re: Count them properly",
+          "body": "Fourteen. Well. Then I was wrong and the committee was right, and I will say so at the vote.\n\nI would rather you had counted twice."
+        }
+      }
+    ],
+    "decide": {
+      "question": "How many households are over the line?",
+      "way": {
+        "label": "Tell him it is three",
+        "note": "Three households are over the line, not fourteen."
+      }
+    }
+  },
+  {
+    "id": "meridian-hold",
+    "title": "The wrong name on the hold",
+    "client": "A forwarder in Antwerp",
+    "targetId": "meridian-freight",
+    "pay": 2200,
+    "rating": 1,
+    "minRating": 14,
+    "summary": "Read the hold register at Meridian and say whether the hold on the container is a mistake.",
+    "brief": "Meridian is holding one of our containers for undeclared weight. Our weights are on record and they were right. I think someone entered the hold against the wrong company, but customs will not discuss it with me, and I am not going to accuse a port of a typing error on a hunch.\n\nOpen hold_register_march.txt on the duty controller's account. Read hold 0447. Then tell me whether the hold is ours.",
+    "objective": {
+      "kind": "read",
+      "file": "hold_register_march.txt"
+    },
+    "choices": [
+      {
+        "id": "ours",
+        "label": "Tell them the hold stands",
+        "note": "The weight variance is real.",
+        "pay": 600,
+        "rating": -1,
+        "reply": {
+          "from": "A forwarder in Antwerp",
+          "subject": "Re: The wrong name on the hold",
+          "body": "Then we will pay the fine and say nothing. I hope you are right. We would have paid a good deal more to be sure."
+        }
+      }
+    ],
+    "decide": {
+      "question": "Is the hold on our container a mistake?",
+      "way": {
+        "label": "Tell them it is a mistake",
+        "note": "The hold was entered against the wrong consignee."
+      }
+    }
+  },
+  {
+    "id": "aldergate-hours",
+    "title": "Forty hours",
+    "client": "A paralegal",
+    "targetId": "aldergate-finch",
+    "pay": 2200,
+    "rating": 1,
+    "minRating": 21,
+    "summary": "Read the time entries at Aldergate Finch and say whether the firm billed the same hours twice.",
+    "brief": "I think the firm billed forty hours to two clients on the Harlow matter, the one who is suing and the one being sued. If it did, there is a complaint to make, and I am the one who would have to make it.\n\nOpen time_entries_week10.txt on the records account. Tell me what it says. I would like to know before I put my name to anything.",
+    "objective": {
+      "kind": "read",
+      "file": "time_entries_week10.txt"
+    },
+    "choices": [
+      {
+        "id": "not-twice",
+        "label": "Tell her it is not double billing",
+        "note": "The second entry was written off.",
+        "pay": 1200,
+        "rating": -1,
+        "reply": {
+          "from": "A paralegal",
+          "subject": "Re: Forty hours",
+          "body": "Written off. So there is nothing to complain about, and I will not. Thank you for saving me from making a fool of myself."
+        }
+      },
+      {
+        "id": "worse",
+        "label": "Tell her it is worse",
+        "note": "It is not double billing. It is the same associate acting for both sides.",
+        "pay": 4200,
+        "rating": 3,
+        "reply": {
+          "from": "A paralegal",
+          "subject": "Re: Forty hours",
+          "body": "Both sides. Of course. If they had billed twice it would have been a mistake. This is a decision, and somebody waived the check for it.\n\nI am going to need a lawyer who does not work there. You have been paid a little extra, because I would have missed it."
+        }
+      }
+    ],
+    "decide": {
+      "question": "What does the file show?",
+      "way": {
+        "label": "Tell her she is right",
+        "note": "The same hours were billed to both clients."
+      }
+    }
+  },
+  {
+    "id": "tessera-shares",
+    "title": "The date he sold",
+    "client": "H. Marlow, fund manager",
+    "targetId": "tessera-water",
+    "pay": 5400,
+    "rating": 1,
+    "minRating": 25,
+    "summary": "Read the investor file at Tessera Water and say whether the engineer sold before the report.",
+    "brief": "Tessera's chief engineer sold ten percent of his holding on the fifteenth. The contamination report went to the regulator on the eighteenth. I think he knew. I want to be told whether he knew, and I would like to be told today, because my clients are asking.\n\nOpen share_plan_notice.txt on the compliance account. I have no interest in the stock one way or the other.\n\nH. Marlow",
+    "objective": {
+      "kind": "read",
+      "file": "share_plan_notice.txt"
+    },
+    "choices": [
+      {
+        "id": "plan",
+        "label": "Tell him the file says otherwise",
+        "note": "The sale was set by a plan adopted months earlier.",
+        "pay": 3200,
+        "rating": 3,
+        "reply": {
+          "from": "H. Marlow, fund manager",
+          "subject": "Re: The date he sold",
+          "body": "A plan, adopted in October. Convenient for him.\n\nYou are very sure for someone who read one file. I will find someone who is less sure. The fee is what we agreed for a different answer, less a good deal."
+        }
+      }
+    ],
+    "decide": {
+      "question": "Did the engineer know when he sold?",
+      "way": {
+        "label": "Tell him the engineer knew",
+        "note": "The sale was timed to the report. Pays what was agreed."
+      }
+    }
+  },
+  {
     "id": "story-stillpoint",
     "title": "The address that answers",
     "client": "Vesper",
@@ -397,7 +588,15 @@
       "kind": "read",
       "file": "node_index.txt"
     },
-    "patron": "ais"
+    "patron": "ais",
+    "lead": {
+      "when": {
+        "read": [
+          "halvorsen/audit.log"
+        ]
+      },
+      "minRating": 12
+    }
   },
   {
     "id": "story-courier",
@@ -414,7 +613,24 @@
       "kind": "steal",
       "file": "courier_manifest.dat"
     },
-    "patron": "ais"
+    "patron": "ais",
+    "lead": {
+      "when": {
+        "anyOf": [
+          {
+            "read": [
+              "still-point/quiet_hours.txt"
+            ]
+          },
+          {
+            "read": [
+              "still-point/sources_partial.txt"
+            ]
+          }
+        ]
+      },
+      "minRating": 34
+    }
   },
   {
     "id": "story-thename",

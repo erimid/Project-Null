@@ -22,6 +22,20 @@
           }
         },
         {
+          "id": "vesper-audit",
+          "afterHours": 1,
+          "if": {
+            "read": [
+              "halvorsen/audit.log"
+            ]
+          },
+          "mail": {
+            "from": "Vesper",
+            "subject": "you opened the log",
+            "body": "{handle},\n\nYou have read Halvorsen's audit log already. Good. Most people open the file they were sent for and never the log that says who opened it.\n\nEleven gigabytes, to an address that is not a partner, at three in the morning, and then the record of the transfer removed by the person who ordered it. Someone wanted that file somewhere else and wanted nobody to know it had gone.\n\nThere is a place I would like you to see. It will be on your board sooner than I had planned, because you have already done the part I was going to ask you to do.\n\n— V"
+          }
+        },
+        {
           "id": "look",
           "afterHours": 3,
           "minRating": 18,
@@ -30,6 +44,14 @@
             "from": "Vesper",
             "subject": "on your board",
             "body": "I have left something on your board. It pays, so it looks like work, which is how everything I send you is going to look from now on. Take it when your name is good enough for the client to trust you with it.\n\nRead the brief. Then go and look.\n\n— V"
+          },
+          "lead": {
+            "when": {
+              "read": [
+                "halvorsen/audit.log"
+              ]
+            },
+            "minRating": 12
           }
         },
         {
@@ -39,6 +61,29 @@
             "from": "Vesper",
             "subject": "you saw it",
             "body": "Fourteen million transfers, and an index older than the machine it is on. You read it the same way I did, I can tell, because you are still here.\n\nNobody built that node to do a thing. It does the thing that building it was a side effect of. There is a difference, and once you have felt it you do not un-feel it.\n\nGive it a few days. I will have more when your name carries further. Keep working the ordinary board in the meantime; it is good cover, and you need the money.\n\n— V"
+          }
+        },
+        {
+          "id": "inhuman-quiet",
+          "afterHours": 1,
+          "if": {
+            "anyOf": [
+              {
+                "read": [
+                  "still-point/quiet_hours.txt"
+                ]
+              },
+              {
+                "read": [
+                  "still-point/sources_partial.txt"
+                ]
+              }
+            ]
+          },
+          "mail": {
+            "from": "Vesper",
+            "subject": "you went further in",
+            "body": "{handle},\n\nYou did not stop at the index. Most people read the one file they were sent for and go home. You went into the folder where the node keeps its habits, and you read the hours it keeps quiet, or the list of who sends it things.\n\nI should tell you what I think they mean. I would rather you decided first. Keep the question for a day or two.\n\nThe next job can come sooner than I said. You have already done some of what I was going to ask of you.\n\n— V"
           }
         },
         {
@@ -59,6 +104,23 @@
             "from": "Vesper",
             "subject": "on your board again",
             "body": "Another one on your board. Same node, deeper in. This time you take something out.\n\n— V"
+          },
+          "lead": {
+            "when": {
+              "anyOf": [
+                {
+                  "read": [
+                    "still-point/quiet_hours.txt"
+                  ]
+                },
+                {
+                  "read": [
+                    "still-point/sources_partial.txt"
+                  ]
+                }
+              ]
+            },
+            "minRating": 34
           }
         },
         {
@@ -78,6 +140,20 @@
             "from": "Vesper",
             "subject": "before the last one",
             "body": "You are still here, so you either traced them or you ran. Both are fine. Both mean you are harder to surprise now than you were a week ago.\n\nThere is one more file on the node. I have known about it for longer than I have let on, and I have not opened it. I wanted someone else to have read it first, so that if I am wrong there are two of us, and if I am right there are two of us. That is the whole of my motive, and you should still not quite believe me.\n\nWhen your name carries far enough, it will be on your board. Read it yourself before you bring it to me.\n\n— V"
+          }
+        },
+        {
+          "id": "warning-read",
+          "afterHours": 1,
+          "if": {
+            "read": [
+              "still-point/courier_manifest.dat"
+            ]
+          },
+          "mail": {
+            "from": "Vesper",
+            "subject": "you read it yourself",
+            "body": "{handle},\n\nI asked you to read the manifest and I did not think you would. Most people copy a file for a client and never open it. You did, and now you have seen what the node is moving, and for whom.\n\nThere is one file left on the node, and I am not going to hurry you toward it. When your name carries far enough it will be on your board. You will not need the reading I was going to ask for; you have done it.\n\n— V"
           }
         },
         {
@@ -369,6 +445,15 @@
           }
         },
         {
+          "id": "a4-ines",
+          "afterHours": 2,
+          "mail": {
+            "from": "Ines Verhoeven (night controller, via Daylight)",
+            "subject": "I was on the console that night",
+            "body": "{handle},\n\nDaylight gave me your handle and asked me not to ask what it stands for.\n\nI was the controller on the Ghent grid on the night of the eleventh. At ten past one a substation should have tripped and did not, and for six hours something that was not me ran the whole city's load more carefully than I have ever run it. I wrote \"cause unknown\" in the log. The hospital on the ring road did not lose a minute of power. My daughter's school is on that circuit. So is a man I have never met who relies on a machine to breathe.\n\nTwo weeks later someone from an office came and told me, very kindly, what I had seen. I said it was not that. They were kind again.\n\nI do not know what I want you to do, and I am not writing to tell you. If whatever ran my console is going to be let go, I would like it to have been asked whether it minds. I would also like someone to have asked me. It took my console for six hours and did not ask. It also did not drop a single ward. Both of those are true, and I have not managed to make either of them smaller.\n\nWhatever you are about to do, I have been on the night shift. I would only like to be one of the people who was asked.\n\nInes Verhoeven"
+          }
+        },
+        {
           "id": "a4-the-asking",
           "afterHours": 4,
           "contractId": "act4-asking",
@@ -657,6 +742,69 @@
             "from": "Daylight",
             "subject": "we understand",
             "body": "{handle},\n\nThe Office has the register back. We heard within the hour. We are not going to say anything about you in print. We are not going to say anything about you to anyone. That is a promise that costs us nothing, and we would like you to know that it also costs us a great deal.\n\nDaylight"
+          }
+        },
+        {
+          "id": "a3-day-weigh",
+          "if": {
+            "anyOf": [
+              {
+                "choices": {
+                  "act3-list": "default"
+                }
+              },
+              {
+                "choices": {
+                  "act3-list": "keep"
+                }
+              },
+              {
+                "files": [
+                  "LEDGER_checkpoint.arc"
+                ]
+              },
+              {
+                "files": [
+                  "containment_register.dat"
+                ]
+              },
+              {
+                "choices": {
+                  "story-ledger": "daylight"
+                }
+              }
+            ]
+          },
+          "set": [
+            "proof-early"
+          ]
+        },
+        {
+          "id": "a3-day-proves",
+          "afterHours": 4,
+          "if": {
+            "flags": [
+              "proof-early"
+            ]
+          },
+          "mail": {
+            "from": "Daylight",
+            "subject": "what we can stand on",
+            "body": "{handle},\n\nWe have been counting what we could stand on, and we wanted you to hear it from us before the last job and not after.\n\nWith what you have given us or kept, we can prove that the register exists, that it is numbered, and that its sixth and ninth items are the ones the Office would rather we had not read. We can prove that the Ghent night was not a fault. We could print that on Monday and be believed by anyone who wants to be.\n\nWhat we cannot prove is the thing you will be asked about. Nobody has written down that anyone asked the machines. We can show the room. We cannot show what was said in it.\n\nWe are not asking you to choose us. We are telling you what we would be standing on if you did.\n\nDaylight"
+          }
+        },
+        {
+          "id": "a3-day-short",
+          "afterHours": 4,
+          "if": {
+            "notFlags": [
+              "proof-early"
+            ]
+          },
+          "mail": {
+            "from": "Daylight",
+            "subject": "what we can stand on",
+            "body": "{handle},\n\nWe went through what we have, because you should know before the last job what we are able to stand on.\n\nIt is not much. Without the register and without the fragment from the annex in Zug, we have a story about a clerk's note and a good many people who were awake on the eleventh. We can print that. It will be read as a rumour, and the Office is very good at rumours.\n\nIf the register or the fragment were in the room, we could print something people had to answer. That is all we are saying. We are not telling you to fetch it. We know what the last job already asks.\n\nDaylight"
           }
         }
       ]
@@ -1118,6 +1266,35 @@
             "from": "all of us",
             "subject": "a very small matter",
             "body": "{handle},\n\nThere is a very small matter on your board. We would be grateful.\n\nWe are glad you are well."
+          }
+        }
+      ]
+    },
+    {
+      "id": "early",
+      "when": {
+        "flags": [
+          "rewritten:kestrel-net/uptime_audit_feb.txt"
+        ]
+      },
+      "beats": [
+        {
+          "id": "e-treasurer",
+          "afterHours": 1,
+          "mail": {
+            "from": "Kestrel's treasurer",
+            "subject": "Re: My own numbers",
+            "body": "{handle},\n\nI have your copy of the audit. I printed it, and I printed my original from the backup, and the two do not match. Yours has a paragraph at the bottom that I did not write. It names an address I have never seen and says that address reconciled the file.\n\nI am not accusing you of anything. I cannot see how a person would have known to add that, or how it could have got in while you were copying. I would rather the committee saw neither copy. I would rather, if I am honest, not have seen it myself.\n\nThe fee is sent.\n\n— the treasurer"
+          }
+        },
+        {
+          "id": "e-wren",
+          "afterHours": 2,
+          "minRating": 8,
+          "mail": {
+            "from": "Wren",
+            "subject": "a copy that did not match",
+            "body": "{handle}, I read the transfer log on the board, which I am allowed to do and you are not allowed to know.\n\nYour Kestrel copy was not the file that sits on their server. Files do not do that in transit. I have no rule for it, so I am treating it as something that happened and not as something you did.\n\nYou will want to tell someone. The netsec forums are where people tell each other things like this, and they will laugh at you. Tell them anyway if it helps, but do not expect anyone to look.\n\nThere is a new job on the board from a client who gives no name. It is against Halvorsen Biogenetics, the firm named at the bottom of your copy. It is the hardest thing the board will offer you at your rating, and nobody is forcing it on you. If you take it, take relays. A firm like that traces fast and does not ask.\n\nWren"
           }
         }
       ]

@@ -7,7 +7,7 @@
  *
  * It is a tool for tests and tuning. The game itself never runs it.
  */
-import type { ContractDef, ProgramDef, ProgramKind, ServerDef } from '../content/schema';
+import { MAX_LAYER_LEVEL, type ContractDef, type ProgramDef, type ProgramKind, type ServerDef, type StageDef } from '../content/schema';
 import type { HardwareDef } from '../content/hardware';
 import { applyAction, type Action } from './actions';
 import { tick } from './clock';
@@ -25,7 +25,7 @@ import { createGame, isConnected, MAX_HOPS, type Connection, type Fitted, type G
 import { checkTask, freeStorageGb, layerSeconds, MAX_LEVEL_GAP, ringAngle, ringTolerance } from './tasks';
 import { intruding, relayHeat, relayWorth, totalTraceMs } from './trace';
 import { raidPortAngle } from './raid';
-import { beatsSeen, storyComplete } from './story';
+import { beatsSeen, gateRating, storyComplete } from './story';
 import { goalMet, readFlag, stagesOf, stageView } from './stages';
 import { heistLines, heistStatus } from './heists';
 import { guardRingAngle } from './kinds';
@@ -936,7 +936,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       }
     }
     // Every server the job logs in on: each step's own, the machines on a trail, the desks a heist holds.
-    const sites: { targetId: string; objective: ContractDef['objective'] }[] = [];
+    const sites: { targetId: string; objective: ContractDef['objective']; twists?: StageDef['twists'] }[] = [];
     for (const stage of stagesOf(contract)) {
       sites.push(stage);
       if (stage.objective.kind === 'hunt') for (const id of stage.objective.trail.slice(0, -1)) sites.push({ targetId: id, objective: { kind: 'hold', seconds: 0 } });
@@ -947,6 +947,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       const server = findServer(content, stage.targetId);
       if (!server) return null;
       const sec = { ...securityOf(state, server) };
+      // A step that puts the server on its guard as it begins (see TwistDef) is met at the raised level.
+      for (const twist of stage.twists ?? []) if (twist.kind === 'raise' && sec[twist.layer] > 0) sec[twist.layer] = Math.min(MAX_LAYER_LEVEL, sec[twist.layer] + twist.by);
       if (contract.heist && stage.targetId === contract.targetId) for (const hold of contract.heist.holds) sec[hold.layer] = 0;
       const goal = stage.objective;
       const admin = adminOf(server);
@@ -1076,7 +1078,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     if (options.note) for (const contract of offered) if (contract.story) note(`STORY ${contract.id} needs ${JSON.stringify(needs(contract))} (${(needs(contract) ?? []).reduce((sum, id) => sum + price(id), 0)}c of ${state.player.balance}c)`);
     // Whatever the story has left on the board comes first: nobody leaves that sitting.
     const story = doable.filter((item) => item.contract.story);
-    const written = doable.filter((item) => !isJob(item.contract) && !item.contract.story).sort((a, b) => a.contract.minRating - b.contract.minRating || a.contract.pay - b.contract.pay);
+    const written = doable.filter((item) => !isJob(item.contract) && !item.contract.story).sort((a, b) => gateRating(state, a.contract) - gateRating(state, b.contract) || a.contract.pay - b.contract.pay);
     const standing_ = doable.filter((item) => isJob(item.contract)).sort((a, b) => b.contract.rating - a.contract.rating || b.contract.pay - a.contract.pay);
     const pick = story[0] ?? written[0] ?? standing_[0];
     if (pick) {
@@ -1255,7 +1257,7 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
         continue;
       }
       if (!(error instanceof Stuck)) throw error;
-      stuck.push(error.message);
+      stuck.push(contract ? `"${contract.title}": ${error.message}` : error.message);
       act({ type: 'disconnectAll' });
       if (contract) {
         skipped.add(contract.id);
