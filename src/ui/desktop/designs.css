@@ -1,0 +1,733 @@
+/*
+ * The docked desk designs (A Deck, B Top bar and cards, C Labelled sidebar,
+ * D Docked with pull-outs) and the test bar that swaps between them.
+ * The classic desk is untouched by anything here: every rule is under
+ * .desktop--dock, a [data-design], or a class only the docked designs draw.
+ * Where the panes go is worked out in dock.ts; this file is how they look.
+ */
+
+/* ---- the test bar ---- */
+
+html.has-lookbar #app {
+  padding-top: 28px;
+}
+
+.lookbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 28px;
+  padding: 0 10px;
+  background: var(--panel-hi);
+  border-bottom: 1px solid var(--line-strong);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.lookbar__tag {
+  padding: 0 7px;
+  border-radius: 4px;
+  background: var(--amber);
+  color: var(--amber-deep);
+  font-size: 11px;
+  line-height: 18px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lookbar__group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lookbar__label {
+  margin-right: 4px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.lookbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 8px;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.lookbar__btn.is-on {
+  border-color: var(--cyan);
+  background: var(--cyan);
+  color: var(--on-cyan);
+}
+
+.lookbar__name {
+  margin-left: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.lookbar__gap {
+  flex: 1;
+}
+
+.lookbar__theme {
+  min-width: 190px;
+  justify-content: flex-start;
+}
+
+.lookbar__theme.is-on {
+  background: rgb(var(--cyan-rgb) / 0.16);
+  color: var(--text-bright);
+}
+
+.lookbar__count {
+  margin-left: auto;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.lookbar__hide {
+  color: var(--text-dim);
+}
+
+.swatches {
+  display: inline-flex;
+  flex: none;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgb(var(--bright-rgb) / 0.25);
+}
+
+.swatches i {
+  width: 9px;
+  height: 12px;
+}
+
+.lookpanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  width: min(720px, calc(100vw - 20px));
+  max-height: calc(100vh - 60px);
+  padding: 10px;
+  overflow: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.6);
+}
+
+.lookpanel__theme {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  text-align: left;
+  white-space: normal;
+  box-shadow: 0 0 0 1px rgba(128, 128, 128, 0.35);
+}
+
+.lookpanel__name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.lookpanel__note {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+@media (hover: hover) {
+  .lookbar__btn:hover {
+    border-color: var(--line-strong);
+    color: var(--text-bright);
+  }
+
+  .lookbar__btn.is-on:hover {
+    color: var(--on-cyan);
+  }
+
+  .lookpanel__theme:hover {
+    box-shadow: 0 0 0 1px currentColor;
+  }
+}
+
+.is-phone .lookbar__name,
+.is-phone .lookbar__hide,
+.is-phone .lookbar__count,
+.is-tablet .lookbar__name {
+  display: none;
+}
+
+.is-phone .lookbar__theme {
+  min-width: 0;
+}
+
+.is-phone .lookpanel {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ---- the docked frame: bars, the way to the windows, the desk ---- */
+
+.desktop--dock {
+  --pane-radius: 12px;
+  --pane-title: 38px;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.desktop--dock > .tabbar {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.desktop--dock > .dock {
+  grid-column: 1 / -1;
+  grid-row: 3;
+}
+
+.desktop--dock > .rail,
+.desktop--dock > .sidebar {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.desktop--dock > .workspace {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* One bar on top does both jobs (B and D). */
+.desktop[data-design='cards'],
+.desktop[data-design='hybrid'] {
+  grid-template-rows: 58px minmax(0, 1fr);
+}
+
+.desktop--dock > .dock--top {
+  grid-row: 1;
+  z-index: 2;
+  padding-right: 12px;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.dock--top .tabbar {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 10px;
+  overflow: hidden;
+  border: 0;
+  background: none;
+}
+
+.dock--top .menu__panel {
+  top: calc(100% + 10px);
+  bottom: auto;
+  transform-origin: top left;
+}
+
+/* The trace alarm hangs down from a top bar, at the right, clear of the alerts in the middle. */
+.dock--top .alarm {
+  top: 100%;
+  bottom: auto;
+  left: auto;
+  right: 16px;
+  transform: none;
+  border-top: 0;
+  border-bottom: 1px solid var(--red);
+  border-radius: 0 0 14px 14px;
+  animation: alarm-glow 1s ease-in-out infinite;
+}
+
+/* The icon rail (A, B, D). */
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 68px;
+  padding: 8px 0;
+  overflow: hidden auto;
+  scrollbar-width: none;
+  background: var(--bar);
+  border-right: 1px solid var(--line);
+}
+
+.rail__btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 9px 2px 7px;
+  color: var(--text-dim);
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+
+.rail__name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.rail__btn.is-front {
+  color: var(--cyan);
+  background: rgb(var(--cyan-rgb) / 0.1);
+  box-shadow: inset 3px 0 0 var(--cyan);
+}
+
+.rail .count {
+  position: absolute;
+  top: 3px;
+  right: 7px;
+  min-width: 18px;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+@media (hover: hover) {
+  .rail__btn:hover,
+  .panetab:hover {
+    color: var(--text-bright);
+    background: rgb(var(--cyan-rgb) / 0.07);
+  }
+}
+
+/* The labelled sidebar (C): every window by name, then the contract. */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 272px;
+  min-height: 0;
+  padding: 8px 0 8px 8px;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--pane-radius);
+  background: var(--panel);
+}
+
+.sidebar__nav .rail__btn {
+  flex-direction: row;
+  gap: 12px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+
+.sidebar__nav .rail__name {
+  flex: 1;
+  font-size: 15px;
+  letter-spacing: 0;
+  text-align: left;
+}
+
+.sidebar__nav .rail__btn.is-front {
+  color: var(--text-bright);
+  box-shadow: inset 3px 0 0 var(--cyan);
+}
+
+.sidebar__nav .rail__btn.is-front svg {
+  color: var(--cyan);
+}
+
+.sidebar__contract {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+/* ---- panes ---- */
+
+.window--docked {
+  z-index: 0;
+  border-color: var(--line);
+  border-radius: var(--pane-radius);
+  box-shadow: none;
+  animation: none;
+}
+
+.window__title--dock {
+  gap: 10px;
+  height: var(--pane-title);
+  padding-left: 0;
+  cursor: default;
+  touch-action: auto;
+}
+
+.panetabs {
+  display: flex;
+  flex: 0 1 auto;
+  align-self: stretch;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.panetab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 16px;
+  overflow: hidden;
+  border-right: 1px solid var(--line-soft);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+
+.panetab.is-front {
+  flex: none;
+  color: var(--text-bright);
+  background: rgb(var(--cyan-rgb) / 0.1);
+  box-shadow: inset 0 2px 0 var(--cyan);
+}
+
+/* A pane with one window: its name reads as a title, not a lone tab. */
+.window--docked:not(.has-tabs) .panetab {
+  background: none;
+  box-shadow: none;
+  border-right: 0;
+  cursor: default;
+}
+
+.window--docked .window__title-note {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.window__pull {
+  display: inline-grid;
+  place-items: center;
+}
+
+/* A window pulled out of its pane (D) floats above them all. */
+.window--pulled {
+  border-color: var(--cyan);
+  box-shadow:
+    0 28px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgb(var(--cyan-rgb) / 0.25),
+    0 0 34px rgb(var(--cyan-rgb) / 0.18);
+}
+
+.dockempty {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px dashed var(--line);
+  border-radius: var(--pane-radius);
+  color: var(--text-dim);
+}
+
+.dockempty p {
+  margin: 0;
+}
+
+/* The side column: the contract over the address book. */
+.dockside {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pane-gap, 10px);
+}
+
+.dockside__contract {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  max-height: 54%;
+  min-height: 0;
+}
+
+.dockside__book {
+  container: win / inline-size;
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 10px 12px 12px;
+  overflow: hidden auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--cyan-rgb) / 0.3) transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--pane-radius);
+  background: var(--panel);
+}
+
+.contractpanel--docked {
+  position: static;
+  z-index: auto;
+  flex: 1 1 auto;
+  width: auto;
+  max-width: none;
+  max-height: 100%;
+  min-height: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--pane-radius);
+  box-shadow: none;
+  animation: none;
+}
+
+.contractpanel--docked.is-done {
+  border-color: var(--mint);
+}
+
+.sidebar__contract .contractpanel--docked {
+  height: 100%;
+}
+
+.contractpanel--none {
+  flex: none;
+}
+
+.sidebar__contract .contractpanel--none {
+  height: auto;
+}
+
+.contractpanel__empty {
+  margin: 0;
+  padding: 12px 16px 14px;
+  color: var(--text-dim);
+}
+
+/* The address book on its own: the list takes the height there is. */
+.map--book {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.map--book .map__side {
+  flex: 1;
+  max-height: none;
+}
+
+.map--book .addresses {
+  flex: 1 1 96px;
+  min-height: 96px;
+  max-height: none;
+}
+
+.map--book .map__detail {
+  flex: none;
+}
+
+.map--book .map__book-head,
+.window--docked .map__book-head {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+.map--book .address__name,
+.window--docked .address__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map--book .address__tag {
+  flex: none;
+}
+
+/* A row with marks or heat is too long for the side column: the name gets a line of its own, as on a phone. */
+.map--book .address:has(.address__heat, .address__marks, .address__mark) {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  row-gap: 0;
+  height: auto;
+  min-height: 44px;
+  padding: 4px 8px;
+}
+
+.map--book .address:has(.address__heat, .address__marks, .address__mark) .address__name {
+  flex: 1 1 100%;
+}
+
+.map--book .address:has(.address__heat, .address__marks, .address__mark) .address__tag {
+  margin-left: auto;
+}
+
+.map--book .address .address__marks:first-of-type,
+.map--book .address .address__heat {
+  margin-left: 0;
+}
+
+/* The map without its address book: the globe takes the pane, the route sits under it. */
+.window--docked .map--nobook {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 100%;
+}
+
+.window--docked .map--nobook .globe-frame {
+  width: clamp(170px, min(100%, calc(var(--pane-h) - 185px)), 560px);
+}
+
+.window--docked .map--nobook .globe {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+/* In the short pane at the top right (A and D) the globe stands at the left and the route runs down beside it. */
+.window--docked[data-pane='top'] .map--nobook {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: start;
+}
+
+.window--docked[data-pane='top'] .map--nobook .globe-frame {
+  width: clamp(170px, min(60cqw, calc(var(--pane-h) - 84px)), 560px);
+}
+
+.window--docked[data-pane='top'] .map--nobook .route {
+  grid-column: 2;
+  padding: 0;
+  border: 0;
+}
+
+.window--docked .map--nobook .route {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+/* The map with its book in a pane too narrow for both side by side: the route goes straight under the globe, then the book. */
+@container win (max-width: 620px) {
+  .window--docked .map:not(.map--nobook) .route {
+    order: 1;
+    padding: 0 0 10px;
+    border-top: 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .window--docked .map:not(.map--nobook) .map__side {
+    order: 2;
+  }
+}
+
+/* ---- A · Deck: flat tiles, hairlines between ---- */
+
+.desktop[data-design='deck'] {
+  --pane-radius: 0px;
+  --pane-title: 36px;
+  --pane-gap: 1px;
+}
+
+.desktop[data-design='deck'] .workspace {
+  background: rgb(var(--cyan-rgb) / 0.26);
+}
+
+.desktop[data-design='deck'] .window--docked,
+.desktop[data-design='deck'] .dockside__book,
+.desktop[data-design='deck'] .contractpanel--docked {
+  border: 0;
+}
+
+.desktop[data-design='deck'] .dockempty {
+  border: 0;
+  background: var(--bg);
+}
+
+.desktop[data-design='deck'] .window__title--dock {
+  background: var(--panel-hi);
+}
+
+.desktop[data-design='deck'] .panetab {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---- B · Top bar and cards: soft rounded cards ---- */
+
+.desktop[data-design='cards'] {
+  --pane-radius: 16px;
+  --pane-title: 42px;
+}
+
+.desktop[data-design='cards'] .window--docked,
+.desktop[data-design='cards'] .dockside__book,
+.desktop[data-design='cards'] .contractpanel--docked {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
+}
+
+.desktop[data-design='cards'] .rail,
+.desktop[data-design='hybrid'] .rail {
+  gap: 6px;
+  width: 76px;
+  padding: 10px 8px;
+  border-right: 0;
+  background: none;
+}
+
+.desktop[data-design='cards'] .rail__btn,
+.desktop[data-design='hybrid'] .rail__btn {
+  border-radius: 12px;
+}
+
+.desktop[data-design='cards'] .rail__btn.is-front,
+.desktop[data-design='hybrid'] .rail__btn.is-front {
+  box-shadow: inset 0 0 0 1px rgb(var(--cyan-rgb) / 0.5);
+}
+
+.desktop[data-design='cards'] .panetab.is-front {
+  box-shadow: inset 0 -2px 0 var(--cyan);
+}
+
+/* ---- C · Labelled sidebar ---- */
+
+.desktop[data-design='sidebar'] {
+  --pane-radius: 8px;
+}
+
+/* ---- D · Docked with pull-outs ---- */
+
+.desktop[data-design='hybrid'] {
+  --pane-radius: 12px;
+}
+
+/* A phone or tablet sizes the desk to the screen itself: it gives up the test bar's height. */
+html.has-lookbar .desktop--phone {
+  height: calc(100dvh - 28px);
+}

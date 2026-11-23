@@ -4,6 +4,8 @@ import { formatMoney } from '../format';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { useWorld } from '../hooks';
 import type { ComponentChildren } from 'preact';
+import { createPortal } from 'preact/compat';
+import { useHost } from './dockStore';
 import { content, session } from '../session';
 import { ConfirmButton } from './ConfirmButton';
 import { IconTile, ModulePlate } from './Gear';
@@ -83,10 +85,12 @@ export function ContractPanel() {
   const open = useDesk().contractOpen;
   const game = useWorld((state) => state);
   const contract = activeContract(game, content);
-  const desk = useLayout() === 'desk';
+  // A docked design keeps the contract in its side column, always on show.
+  const host = useHost('contract');
+  const desk = useLayout() === 'desk' && !host;
   // Redrawn with the windows, so it keeps the width of Plan's side column as the desk changes size.
   useWindows();
-  const shown = open && contract !== undefined;
+  const shown = (open || host !== null) && contract !== undefined;
   // The last job is answered with two presses: the first picks a way, the second means it.
   const [armed, setArmed] = useState<string | null>(null);
   useEffect(() => setArmed(null), [contract?.id, shown]);
@@ -122,7 +126,19 @@ export function ContractPanel() {
     if (answering) askingRef.current?.scrollIntoView({ block: 'nearest' });
   }, [answering]);
 
-  if (!open || !contract) return null;
+  if (host && !contract) {
+    return createPortal(
+      <aside class="contractpanel contractpanel--docked contractpanel--none" aria-label="Your contract" data-tour="contract">
+        <div class="contractpanel__title">
+          <span class="window__title-text">Contract</span>
+          <span class="window__title-note">none</span>
+        </div>
+        <p class="contractpanel__empty">No active contract. Take a job from the Contracts board at the Backroom.</p>
+      </aside>,
+      host,
+    );
+  }
+  if (!shown || !contract) return null;
 
   // Once the contract is handed in or given up there is nothing left to show.
   const finish = (action: { type: 'abandonContract' } | { type: 'deliverContract'; choiceId?: string }) => {
@@ -176,21 +192,23 @@ export function ContractPanel() {
 
   const note = done ? 'ready to deliver' : steps.length > 1 ? `step ${current + 1} of ${steps.length}` : 'in progress';
 
-  return (
+  const view = (
     <aside
       ref={panel}
-      class={`contractpanel${done ? ' is-done' : ''}`}
+      class={`contractpanel${done ? ' is-done' : ''}${host ? ' contractpanel--docked' : ''}`}
       aria-label="Your contract"
-      data-tour="contractpanel"
+      data-tour={host ? 'contract' : 'contractpanel'}
       style={desk ? { width: `${sideWidth(windows.area())}px` } : undefined}
     >
       <div class="contractpanel__title">
         <span class="window__title-text">Contract</span>
         <span class="window__title-note">{note}</span>
         <span class="window__title-gap" />
-        <button class="window__close" type="button" aria-label="Put the contract away" data-tip="Put it away. The contract's name in the top bar brings it back." onClick={() => deskStore.showContract(false)}>
-          ×
-        </button>
+        {!host && (
+          <button class="window__close" type="button" aria-label="Put the contract away" data-tip="Put it away. The contract's name in the top bar brings it back." onClick={() => deskStore.showContract(false)}>
+            ×
+          </button>
+        )}
       </div>
       <div class="contractpanel__body">
       <header class={`jobhead${contract.story ? ' is-story' : ''}`}>
@@ -358,4 +376,5 @@ export function ContractPanel() {
       </div>
     </aside>
   );
+  return host ? createPortal(view, host) : view;
 }

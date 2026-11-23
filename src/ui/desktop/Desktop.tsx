@@ -38,6 +38,11 @@ import './wide.css';
 import './globe.css';
 import './story.css';
 import './feedback.css';
+import './designs.css';
+import { DockFrame, DockNav } from './DockFrame';
+import { useDockDesign } from './dockStore';
+import { look, useLook } from './lookStore';
+import { LookSwitch } from './LookSwitch';
 
 const SPEED_KEYS: Readonly<Record<string, Speed>> = { '1': 1, '2': 2, '3': 4 };
 
@@ -93,13 +98,42 @@ export function Desktop() {
   // The desk follows the work: Run when the first connection opens, and back when the last one closes.
   const connections = useGame((game) => game.connections.length);
   const lastConnections = useRef(connections);
+  // A docked design (see dock.ts) has no layouts to switch: the server's tab comes to the front instead.
+  const dockDesign = useDockDesign();
+  const floating = useLook().floating;
   useEffect(() => {
     const before = lastConnections.current;
     lastConnections.current = connections;
     if (phone) return;
+    if (dockDesign) {
+      if (before === 0 && connections > 0) {
+        windows.focus('programs');
+        windows.focus('server');
+      }
+      return;
+    }
     if (before === 0 && connections > 0) deskLayout.connected();
     else if (before > 0 && connections === 0) deskLayout.disconnected();
-  }, [connections, phone]);
+  }, [connections, phone, dockDesign]);
+  // Changing design: a docked one starts with the map and the working window in front, and
+  // the classic desk is laid out afresh, since docked designs leave its windows where they were.
+  const lastDesign = useRef<typeof dockDesign | undefined>(undefined);
+  useEffect(() => {
+    const before = lastDesign.current;
+    lastDesign.current = dockDesign;
+    if (before === dockDesign) return;
+    if (dockDesign) {
+      windows.focus(session.getState().connections.length > 0 ? 'programs' : 'messages');
+      windows.focus('map');
+      windows.focus(session.getState().connections.length > 0 ? 'server' : 'gateway');
+      // A window pulled out and then put away some other way goes back to its pane.
+      const shown = windows.get();
+      for (const id of floating) if (dockDesign !== 'hybrid' || !shown[id].open || shown[id].minimized) look.dock(id);
+    } else if (before && !phone) {
+      deskLayout.show(deskLayout.get().current === 'run' && session.getState().connections.length === 0 ? 'plan' : deskLayout.get().current);
+    }
+  }, [dockDesign, phone]);
+  const oneBar = dockDesign === 'cards' || dockDesign === 'hybrid';
   // The whole desk jolts when a trace cuts the line.
   const desk = useRef<HTMLDivElement>(null);
   useEffect(
@@ -117,8 +151,9 @@ export function Desktop() {
   );
 
   return (
-    <div ref={desk} class={`desktop${phone ? ' desktop--phone' : ''}${layoutKind === 'tablet' ? ' desktop--tablet' : ''}${tracing ? ' is-tracing' : ''}${underAttack ? ' is-attacked' : ''}${byChorus ? ' is-chorus' : ''}`}>
-      <TopBar />
+    <div ref={desk} data-design={dockDesign ?? 'classic'} class={`desktop${dockDesign ? ' desktop--dock' : ''}${phone ? ' desktop--phone' : ''}${layoutKind === 'tablet' ? ' desktop--tablet' : ''}${tracing ? ' is-tracing' : ''}${underAttack ? ' is-attacked' : ''}${byChorus ? ' is-chorus' : ''}`}>
+      {oneBar ? <BottomBar docked top middle={<TopBar />} /> : <TopBar />}
+      {dockDesign && <DockNav />}
       <main ref={workspace} class="workspace">
         {layoutKind === 'phone' && <p class="workspace__empty">Pick a window below.</p>}
         <GatewayWindow />
@@ -132,12 +167,14 @@ export function Desktop() {
         <SavesWindow />
         <DefenceWindow />
         <ContractPanel />
+        <DockFrame />
         {layoutKind === 'desk' && <SnapPreview />}
         <Alerts />
         <TouchTips />
         <HoverTips />
       </main>
-      {phone ? <PhoneDock /> : <BottomBar />}
+      {phone ? <PhoneDock /> : oneBar ? null : <BottomBar docked={dockDesign !== null} />}
+      <LookSwitch />
       {phone && <GuideCard />}
       <Tour />
       <CaughtMoment />

@@ -10,7 +10,11 @@ import { usePanes } from './panes';
 import { fitOnDesk } from './fit';
 import { grabOffset, snapMove, snapSize, zoneAt, zoneRect, type Area, type Rect, type Zone } from './snap';
 import { snapping } from './snapStore';
-import { MIN_HEIGHT, MIN_WIDTH, WINDOW_DEFS, windows, useWindows, type WindowId } from './windowStore';
+import { MIN_HEIGHT, MIN_WIDTH, ON_DEMAND, WINDOW_DEFS, windows, useWindows, type WindowId } from './windowStore';
+import { paneOf } from './dock';
+import { pullOut, useDock } from './dockStore';
+import { look } from './lookStore';
+import { useCounts } from './PhoneDock';
 
 interface Props {
   id: WindowId;
@@ -81,16 +85,26 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
   const panes = usePanes();
   const hints = useHints();
 
+  // A docked design: the window is a tab in its pane, unless it has been pulled out to float (design D).
+  const dock = useDock();
+  const counts = useCounts();
+  const floating = dock?.design === 'hybrid' && dock.state.floating.includes(id);
+  const pane = dock && !floating ? paneOf(dock.design, id) : null;
+  const paneTabs = dock && pane ? dock.tabs(pane) : [];
+  const paneFront = dock && pane ? dock.front(pane) === id : false;
+
   const tablet = layoutKind === 'tablet';
   const half = panes.indexOf(id);
-  const shown = layout.open && !layout.minimized && (layoutKind === 'desk' || (tablet ? half >= 0 : windows.isOnTop(id)));
+  const shown = pane
+    ? paneFront
+    : layout.open && !layout.minimized && (layoutKind === 'desk' || (tablet ? half >= 0 : windows.isOnTop(id)));
   // Help cards open by themselves only once Wren's first job is done (or the tour was taken), so they do not talk over her.
   const firstJobDone = useGame((game) => game.contracts.completed.length > 0);
   useEffect(() => {
     if (shown) hintStore.firstShow(id, firstJobDone);
   }, [shown, firstJobDone]);
 
-  if (!layout.open || layout.minimized) return null;
+  if (pane ? !paneTabs.includes(id) : !layout.open || layout.minimized) return null;
   const name = title ?? def.title;
   const helpOpen = hints.open === id;
   const helpButton = (
@@ -106,6 +120,70 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
     </button>
   );
   const help = helpOpen && <HelpCard id={id} name={def.title} hintsOn={hints.on} />;
+
+  // Docked: it fills its pane, and its title bar carries the pane's tabs. The other tabs stay
+  // mounted underneath (hidden), so whatever was going on in them is kept.
+  if (dock && pane) {
+    const rect = dock.rects.panes[pane] ?? { x: 0, y: 0, w: 0, h: 0 };
+    return (
+      <section
+        class={`window window--docked${paneTabs.length > 1 ? ' has-tabs' : ''}`}
+        hidden={!paneFront}
+        style={{ left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.w}px`, height: `${rect.h}px`, '--pane-h': `${rect.h}px` }}
+        aria-label={name}
+        data-tour={id}
+        data-pane={pane}
+      >
+        <div class="window__title window__title--dock">
+          <nav class="panetabs" aria-label="Windows in this pane">
+            {paneTabs.map((other) => {
+              const count = counts[other];
+              return (
+                <button
+                  key={other}
+                  type="button"
+                  class={`panetab${other === id ? ' is-front' : ''}`}
+                  aria-pressed={other === id}
+                  data-sfx="tab"
+                  onClick={() => windows.focus(other)}
+                >
+                  {other === id ? name : WINDOW_DEFS[other].title}
+                  {count && other !== id && (
+                    <span class={`count${count.tone} data`} aria-label={count.label}>
+                      {count.n}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+          {note && <span class="window__title-note">{note}</span>}
+          <span class="window__title-gap" />
+          {actions}
+          {helpButton}
+          {dock.design === 'hybrid' && (
+            <button class="window__close window__pull" type="button" aria-label={`Pull ${name} out of its pane`} data-tip="Pull this window out, to float over the desk" onClick={() => pullOut(id, dock.design)}>
+              <svg viewBox="0 0 14 14" width="13" height="13" aria-hidden="true">
+                <path d="M5 2h7v7M12 2L6.5 7.5M2 6v6h6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          )}
+          {ON_DEMAND.includes(id) && (
+            <button class="window__close" type="button" aria-label={`Close ${name}`} onClick={() => windows.close(id)}>
+              ×
+            </button>
+          )}
+        </div>
+        {tabs && (
+          <nav class="window__tabs" aria-label={`${name} sections`}>
+            {tabs}
+          </nav>
+        )}
+        {help}
+        <div class="window__body">{children}</div>
+      </section>
+    );
+  }
 
   // A phone shows only the front window, full screen. The others stay
   // mounted underneath (hidden), so whatever was going on in them is kept.
@@ -261,7 +339,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
   return (
     <section
       ref={frame}
-      class={`window${windows.isOnTop(id) ? ' window--front' : ''}${layout.restore ? ' window--placed' : ''}`}
+      class={`window${windows.isOnTop(id) ? ' window--front' : ''}${layout.restore ? ' window--placed' : ''}${floating ? ' window--pulled' : ''}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -289,12 +367,22 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
         <span class="window__title-gap" />
         {actions}
         {helpButton}
-        <button class="window__close" type="button" aria-label={`Minimize ${name}`} onClick={() => windows.minimize(id)}>
-          –
-        </button>
-        <button class="window__close" type="button" aria-label={`Close ${name}`} onClick={() => windows.close(id)}>
-          ×
-        </button>
+        {floating && !ON_DEMAND.includes(id) ? (
+          <button class="window__close window__pull" type="button" aria-label={`Put ${name} back in its pane`} data-tip="Put this window back in its pane" onClick={() => look.dock(id)}>
+            <svg viewBox="0 0 14 14" width="13" height="13" aria-hidden="true">
+              <path d="M12 2L7 7M7 3v4h4M2 6v6h6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        ) : (
+          <>
+            <button class="window__close" type="button" aria-label={`Minimize ${name}`} onClick={() => windows.minimize(id)}>
+              –
+            </button>
+            <button class="window__close" type="button" aria-label={`Close ${name}`} onClick={() => windows.close(id)}>
+              ×
+            </button>
+          </>
+        )}
       </div>
       {tabs && (
         <nav class="window__tabs" aria-label={`${name} sections`}>

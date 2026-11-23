@@ -167,7 +167,7 @@
 .pips i.is-on {
   border-color: var(--cyan);
   background: var(--cyan);
-  box-shadow: 0 0 6px rgba(95, 212, 255, 0.6);
+  box-shadow: 0 0 6px rgb(var(--cyan-rgb) / 0.6);
 }
 
 /* One figure as a bar, with a tick where your own stands. */
@@ -190,7 +190,7 @@
   position: relative;
   height: 6px;
   border-radius: 3px;
-  background: rgba(95, 212, 255, 0.12);
+  background: rgb(var(--cyan-rgb) / 0.12);
 }
 
 .stat__fill {
@@ -199,7 +199,7 @@
   min-width: 3px;
   border-radius: 3px;
   background: var(--cyan);
-  box-shadow: 0 0 8px rgba(95, 212, 255, 0.45);
+  box-shadow: 0 0 8px rgb(var(--cyan-rgb) / 0.45);
   animation: stat-grow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   transform-origin: left;
 }
@@ -212,12 +212,12 @@
 
 .stat.is-better .stat__fill {
   background: var(--mint);
-  box-shadow: 0 0 8px rgba(78, 230, 200, 0.5);
+  box-shadow: 0 0 8px rgb(var(--mint-rgb) / 0.5);
 }
 
 .stat.is-worse .stat__fill {
-  background: #ff8a95;
-  box-shadow: 0 0 8px rgba(255, 59, 78, 0.4);
+  background: var(--red-soft);
+  box-shadow: 0 0 8px rgb(var(--red-rgb) / 0.4);
 }
 
 .stat__mine {
@@ -263,9 +263,9 @@
 
 .toggle.is-on {
   border-color: var(--mint);
-  background: rgba(78, 230, 200, 0.14);
+  background: rgb(var(--mint-rgb) / 0.14);
   color: var(--mint-text);
-  box-shadow: 0 0 12px rgba(78, 230, 200, 0.18);
+  box-shadow: 0 0 12px rgb(var(--mint-rgb) / 0.18);
 }
 
 /* ---- cards: one thing for sale, or one thing you own ---- */
@@ -302,15 +302,15 @@
 
 .card.is-rare {
   --tone: 255, 196, 92;
-  border-color: rgba(255, 196, 92, 0.45);
+  border-color: rgb(var(--amber-rgb) / 0.45);
 }
 
 .card--module.is-rare {
-  border-color: rgba(255, 196, 92, 0.45);
+  border-color: rgb(var(--amber-rgb) / 0.45);
 }
 
 .card.is-owned {
-  background: rgba(95, 212, 255, 0.02);
+  background: rgb(var(--cyan-rgb) / 0.02);
 }
 
 .card.is-owned .icontile {
@@ -405,7 +405,7 @@
 }
 
 .card__compare.is-worse {
-  color: #ff9aa4;
+  color: var(--red-soft);
 }
 
 .card__foot {
@@ -415,7 +415,7 @@
   gap: 10px;
   margin-top: auto;
   padding-top: 9px;
-  border-top: 1px solid rgba(95, 212, 255, 0.1);
+  border-top: 1px solid rgb(var(--cyan-rgb) / 0.1);
 }
 
 .card__foot .price {
@@ -473,7 +473,7 @@
   gap: 5px;
   margin: auto 0 0;
   padding: 9px 0 0;
-  border-top: 1px solid rgba(95, 212, 255, 0.1);
+  border-top: 1px solid rgb(var(--cyan-rgb) / 0.1);
   list-style: none;
 }
 
@@ -571,12 +571,12 @@ button.grade:disabled {
   position: relative;
   margin: 0 0 12px;
   padding: 10px 12px 12px;
-  border: 1px solid rgba(255, 196, 92, 0.42);
+  border: 1px solid rgb(var(--amber-rgb) / 0.42);
   border-radius: 12px;
   background:
-    radial-gradient(120% 90px at 50% 0, rgba(255, 196, 92, 0.2), transparent 70%),
-    rgba(255, 196, 92, 0.03);
-  box-shadow: inset 0 1px 0 rgba(255, 220, 150, 0.5);
+    radial-gradient(120% 90px at 50% 0, rgb(var(--amber-rgb) / 0.2), transparent 70%),
+    rgb(var(--amber-rgb) / 0.03);
+  box-shadow: inset 0 1px 0 rgb(var(--amber-text-rgb) / 0.5);
   overflow: hidden;
 }
 
@@ -588,7 +588,7 @@ button.grade:disabled {
   left: -40%;
   width: 40%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255, 232, 180, 0.9), transparent);
+  background: linear-gradient(90deg, transparent, rgb(var(--amber-text-rgb) / 0.9), transparent);
   animation: shelf-sweep 5s linear infinite;
 }
 
@@ -600,8 +600,8 @@ button.grade:disabled {
 
 .rareshelf.is-bare {
   padding-bottom: 10px;
-  border-color: rgba(255, 196, 92, 0.22);
-  background: rgba(255, 196, 92, 0.03);
+  border-color: rgb(var(--amber-rgb) / 0.22);
+  background: rgb(var(--amber-rgb) / 0.03);
   box-shadow: none;
 }
 
@@ -618,7 +618,7 @@ button.grade:disabled {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .rareshelf.is-bare .rareshelf__head {
@@ -652,7 +652,7 @@ button.grade:disabled {
 }
 
 .rareshelf__more .icon {
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .rareshelf__more .btn {
@@ -667,7 +667,7 @@ button.grade:disabled {
   margin: 0 -16px 12px;
   padding: 8px 16px;
   border-bottom: 1px solid var(--line-soft);
-  background: rgba(6, 17, 29, 0.94);
+  background: rgb(var(--panel-rgb) / 0.94);
   backdrop-filter: blur(6px);
 }
 
@@ -701,8 +701,8 @@ button.grade:disabled {
 
 .shoptab.is-current {
   border-color: var(--cyan);
-  background: rgba(95, 212, 255, 0.13);
-  box-shadow: 0 0 14px rgba(95, 212, 255, 0.18);
+  background: rgb(var(--cyan-rgb) / 0.13);
+  box-shadow: 0 0 14px rgb(var(--cyan-rgb) / 0.18);
   color: var(--text-bright);
 }
 
@@ -712,13 +712,13 @@ button.grade:disabled {
 
 .shoptab--rare .icon,
 .shoptab--rare.is-current .icon {
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .shoptab--rare.is-current {
-  border-color: #ffc45c;
-  background: rgba(255, 196, 92, 0.12);
-  box-shadow: 0 0 14px rgba(255, 196, 92, 0.2);
+  border-color: var(--amber);
+  background: rgb(var(--amber-rgb) / 0.12);
+  box-shadow: 0 0 14px rgb(var(--amber-rgb) / 0.2);
 }
 
 .shoptab__count {
@@ -774,11 +774,11 @@ button.grade:disabled {
   border-radius: 14px;
   /* A circuit board: a faint grid of drill holes on dark laminate. */
   background:
-    radial-gradient(circle, rgba(95, 212, 255, 0.16) 1px, transparent 1.5px) 0 0 / 14px 14px,
-    linear-gradient(160deg, #071a2b, #04101c);
+    radial-gradient(circle, rgb(var(--cyan-rgb) / 0.16) 1px, transparent 1.5px) 0 0 / 14px 14px,
+    linear-gradient(160deg, var(--panel-hi), var(--panel));
   box-shadow:
-    inset 0 0 0 4px rgba(3, 8, 15, 0.7),
-    inset 0 0 40px rgba(95, 212, 255, 0.07);
+    inset 0 0 0 4px rgb(var(--bg-rgb) / 0.7),
+    inset 0 0 40px rgb(var(--cyan-rgb) / 0.07);
 }
 
 /* Screws in the corners. */
@@ -791,7 +791,7 @@ button.grade:disabled {
   height: 7px;
   border: 1px solid var(--line-strong);
   border-radius: 50%;
-  background: rgba(95, 212, 255, 0.12);
+  background: rgb(var(--cyan-rgb) / 0.12);
   box-shadow: 0 calc(var(--board-h, 0px)) 0 transparent;
 }
 
@@ -824,7 +824,7 @@ button.grade:disabled {
 }
 
 .board__trace {
-  stroke: rgba(95, 212, 255, 0.3);
+  stroke: rgb(var(--cyan-rgb) / 0.3);
   stroke-width: 2;
 }
 
@@ -863,7 +863,7 @@ button.grade:disabled {
   padding: 10px 8px 9px;
   border: 1px solid var(--line-strong);
   border-radius: 10px;
-  background: linear-gradient(180deg, #0a2032, #06131f);
+  background: linear-gradient(180deg, var(--panel-hi), var(--panel));
   text-align: center;
   transition:
     border-color 0.14s,
@@ -898,16 +898,16 @@ button.grade:disabled {
 
 .slot:hover {
   border-color: var(--cyan);
-  box-shadow: 0 0 16px rgba(95, 212, 255, 0.2);
+  box-shadow: 0 0 16px rgb(var(--cyan-rgb) / 0.2);
   transform: translateY(-1px);
 }
 
 .slot.is-picked {
   border-color: var(--cyan);
-  background: linear-gradient(180deg, #0e2d45, #082033);
+  background: linear-gradient(180deg, var(--panel-hi2), var(--panel-hi));
   box-shadow:
     0 0 0 1px var(--cyan),
-    0 0 22px rgba(95, 212, 255, 0.3);
+    0 0 22px rgb(var(--cyan-rgb) / 0.3);
 }
 
 .slot.is-empty {
@@ -961,14 +961,14 @@ button.grade:disabled {
 }
 
 .slot__mark.is-good {
-  border-color: rgba(78, 230, 200, 0.6);
+  border-color: rgb(var(--mint-rgb) / 0.6);
   color: var(--mint);
 }
 
 .slot__mark.is-rare {
-  border-color: rgba(255, 196, 92, 0.7);
-  color: #ffc45c;
-  box-shadow: 0 0 10px rgba(255, 196, 92, 0.3);
+  border-color: rgb(var(--amber-rgb) / 0.7);
+  color: var(--amber);
+  box-shadow: 0 0 10px rgb(var(--amber-rgb) / 0.3);
 }
 
 .slot__mark.is-dim {
@@ -986,7 +986,7 @@ button.grade:disabled {
     border-color: var(--mint);
     box-shadow:
       0 0 0 2px var(--mint),
-      0 0 40px rgba(78, 230, 200, 0.7);
+      0 0 40px rgb(var(--mint-rgb) / 0.7);
     transform: scale(1.04);
   }
   100% {
@@ -1018,7 +1018,7 @@ button.grade:disabled {
     right: 20px;
     top: 50%;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(95, 212, 255, 0.45) 8%, rgba(95, 212, 255, 0.45) 92%, transparent);
+    background: linear-gradient(90deg, transparent, rgb(var(--cyan-rgb) / 0.45) 8%, rgb(var(--cyan-rgb) / 0.45) 92%, transparent);
   }
 
   .board--strip .slot {
@@ -1074,7 +1074,7 @@ button.grade:disabled {
   border: 1px solid var(--line-soft);
   border-left: 3px solid var(--mint);
   border-radius: 10px;
-  background: rgba(78, 230, 200, 0.04);
+  background: rgb(var(--mint-rgb) / 0.04);
 }
 
 .slotpanel__head--own {
@@ -1150,11 +1150,11 @@ button.grade:disabled {
   padding: 10px 12px 9px;
   border: 1px solid var(--line-soft);
   border-radius: 12px;
-  background: rgba(95, 212, 255, 0.035);
+  background: rgb(var(--cyan-rgb) / 0.035);
 }
 
 .drive.is-over {
-  border-color: rgba(255, 59, 78, 0.6);
+  border-color: rgb(var(--red-rgb) / 0.6);
 }
 
 .drive__head {
@@ -1185,7 +1185,7 @@ button.grade:disabled {
 }
 
 .drive.is-over .drive__free {
-  color: #ff8a95;
+  color: var(--red-soft);
 }
 
 .drive .storage {
@@ -1196,8 +1196,8 @@ button.grade:disabled {
 
 .drive .storage__part {
   /* A drive in sectors. */
-  background-image: repeating-linear-gradient(90deg, transparent 0 7px, rgba(3, 8, 15, 0.45) 7px 8px);
-  box-shadow: 0 0 10px rgba(95, 212, 255, 0.25);
+  background-image: repeating-linear-gradient(90deg, transparent 0 7px, rgb(var(--bg-rgb) / 0.45) 7px 8px);
+  box-shadow: 0 0 10px rgb(var(--cyan-rgb) / 0.25);
 }
 
 .drive .storage__key {
@@ -1243,7 +1243,7 @@ button.grade:disabled {
   padding: 9px 10px 8px;
   border: 1px solid var(--line-soft);
   border-radius: 11px;
-  background: linear-gradient(160deg, rgba(95, 212, 255, 0.06), rgba(95, 212, 255, 0.012) 60%);
+  background: linear-gradient(160deg, rgb(var(--cyan-rgb) / 0.06), rgb(var(--cyan-rgb) / 0.012) 60%);
   transition:
     border-color 0.14s,
     box-shadow 0.14s;
@@ -1251,7 +1251,7 @@ button.grade:disabled {
 
 .ptile:hover {
   border-color: var(--line-strong);
-  box-shadow: 0 0 16px rgba(95, 212, 255, 0.1);
+  box-shadow: 0 0 16px rgb(var(--cyan-rgb) / 0.1);
 }
 
 .ptile__text {
@@ -1289,7 +1289,7 @@ button.grade:disabled {
   gap: 8px;
   min-height: 28px;
   padding-top: 7px;
-  border-top: 1px solid rgba(95, 212, 255, 0.1);
+  border-top: 1px solid rgb(var(--cyan-rgb) / 0.1);
 }
 
 .ptile__state {
@@ -1303,13 +1303,13 @@ button.grade:disabled {
 
 /* A running program: its tile breathes and its icon tile carries a turning ring. */
 .ptile.is-running {
-  border-color: rgba(78, 230, 200, 0.55);
+  border-color: rgb(var(--mint-rgb) / 0.55);
   animation: tile-run 1.6s ease-in-out infinite;
 }
 
 @keyframes tile-run {
   50% {
-    box-shadow: 0 0 20px rgba(78, 230, 200, 0.28);
+    box-shadow: 0 0 20px rgb(var(--mint-rgb) / 0.28);
   }
 }
 
@@ -1319,7 +1319,7 @@ button.grade:disabled {
   inset: -4px;
   border: 2px solid transparent;
   border-top-color: var(--mint);
-  border-right-color: rgba(78, 230, 200, 0.35);
+  border-right-color: rgb(var(--mint-rgb) / 0.35);
   border-radius: 14px;
   animation: tile-spin 1.1s linear infinite;
 }
@@ -1367,8 +1367,8 @@ button.grade:disabled {
 
 .ptile.is-used {
   border-color: var(--mint);
-  background: linear-gradient(160deg, rgba(78, 230, 200, 0.13), rgba(78, 230, 200, 0.03) 60%);
-  box-shadow: 0 0 16px rgba(78, 230, 200, 0.16);
+  background: linear-gradient(160deg, rgb(var(--mint-rgb) / 0.13), rgb(var(--mint-rgb) / 0.03) 60%);
+  box-shadow: 0 0 16px rgb(var(--mint-rgb) / 0.16);
 }
 
 .ptile.is-used .icontile {
@@ -1383,7 +1383,7 @@ button.grade:disabled {
 /* Memory: what is loaded for the next job, one block per program. */
 .memory {
   margin-top: 10px;
-  background: rgba(78, 230, 200, 0.035);
+  background: rgb(var(--mint-rgb) / 0.035);
 }
 
 .memory .drive__head {
@@ -1396,11 +1396,11 @@ button.grade:disabled {
   align-items: center;
   gap: 5px;
   padding: 1px 8px;
-  border: 1px solid rgba(255, 196, 87, 0.5);
+  border: 1px solid rgb(var(--amber-rgb) / 0.5);
   border-radius: 999px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .memory__bar {
@@ -1414,9 +1414,9 @@ button.grade:disabled {
   place-items: center;
   flex: 1 1 0;
   min-width: 22px;
-  border: 1px solid rgba(78, 230, 200, 0.55);
+  border: 1px solid rgb(var(--mint-rgb) / 0.55);
   border-radius: 5px;
-  background: linear-gradient(180deg, rgba(78, 230, 200, 0.26), rgba(78, 230, 200, 0.1));
+  background: linear-gradient(180deg, rgb(var(--mint-rgb) / 0.26), rgb(var(--mint-rgb) / 0.1));
   color: var(--mint);
   overflow: hidden;
 }
@@ -1428,9 +1428,9 @@ button.grade:disabled {
 }
 
 .memory.is-locked .memory__block:not(.memory__block--free) {
-  border-color: rgba(255, 196, 87, 0.5);
-  background: linear-gradient(180deg, rgba(255, 196, 87, 0.2), rgba(255, 196, 87, 0.07));
-  color: #ffc45c;
+  border-color: rgb(var(--amber-rgb) / 0.5);
+  background: linear-gradient(180deg, rgb(var(--amber-rgb) / 0.2), rgb(var(--amber-rgb) / 0.07));
+  color: var(--amber);
 }
 
 .memory__note {
@@ -1487,7 +1487,7 @@ button.grade:disabled {
 }
 
 .ptile__load.is-loaded {
-  border-color: rgba(78, 230, 200, 0.6);
+  border-color: rgb(var(--mint-rgb) / 0.6);
   color: var(--mint);
 }
 
@@ -1518,14 +1518,14 @@ button.grade:disabled {
 }
 
 .runrow__icon {
-  border-color: rgba(78, 230, 200, 0.5);
+  border-color: rgb(var(--mint-rgb) / 0.5);
   color: var(--mint);
   animation: tile-run 1.6s ease-in-out infinite;
 }
 
 .filerow__icon.is-sealed {
-  border-color: rgba(255, 196, 92, 0.5);
-  color: #ffc45c;
+  border-color: rgb(var(--amber-rgb) / 0.5);
+  color: var(--amber);
 }
 
 /* ---- Workbench: a bench with sockets ---- */
@@ -1607,8 +1607,8 @@ button.grade:disabled {
 
 .wb__prog.is-picked {
   border-color: var(--cyan);
-  background: rgba(95, 212, 255, 0.13);
-  box-shadow: 0 0 14px rgba(95, 212, 255, 0.2);
+  background: rgb(var(--cyan-rgb) / 0.13);
+  box-shadow: 0 0 14px rgb(var(--cyan-rgb) / 0.2);
   color: var(--text-bright);
 }
 
@@ -1637,13 +1637,13 @@ button.grade:disabled {
   padding: 10px 12px;
   border: 1px dashed var(--line-strong);
   border-radius: 12px;
-  background: rgba(3, 8, 15, 0.6);
+  background: rgb(var(--bg-rgb) / 0.6);
 }
 
 .rig__program.is-filled {
   border-style: solid;
-  border-color: rgba(95, 212, 255, 0.7);
-  background: rgba(95, 212, 255, 0.08);
+  border-color: rgb(var(--cyan-rgb) / 0.7);
+  background: rgb(var(--cyan-rgb) / 0.08);
   animation: slot-seat 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4);
 }
 
@@ -1715,7 +1715,7 @@ button.grade:disabled {
 .bench.has-program .rig__program::after,
 .bench.has-program .rig--2 .rig__sockets::before {
   background: var(--cyan);
-  box-shadow: 0 0 6px rgba(95, 212, 255, 0.7);
+  box-shadow: 0 0 6px rgb(var(--cyan-rgb) / 0.7);
 }
 
 .socket {
@@ -1729,7 +1729,7 @@ button.grade:disabled {
   padding: 7px 10px;
   border: 1px dashed rgba(var(--mod), 0.4);
   border-radius: 10px;
-  background: rgba(3, 8, 15, 0.6);
+  background: rgb(var(--bg-rgb) / 0.6);
   text-align: left;
   transition:
     border-color 0.2s,
@@ -1759,7 +1759,7 @@ button.socket:not(:disabled):hover {
   height: 28px;
   border: 1px dashed var(--line-strong);
   border-radius: 8px;
-  background: radial-gradient(circle, rgba(95, 212, 255, 0.25) 2px, transparent 3px);
+  background: radial-gradient(circle, rgb(var(--cyan-rgb) / 0.25) 2px, transparent 3px);
 }
 
 .socket__text {
@@ -1950,11 +1950,11 @@ button.socket:not(:disabled):hover {
 /* A story job: gold edge, a slow glow, and a ribbon of light down its side. */
 .jobcard.is-story {
   --tone: 255, 196, 92;
-  border-color: rgba(255, 196, 92, 0.55);
+  border-color: rgb(var(--amber-rgb) / 0.55);
   background:
-    linear-gradient(160deg, rgba(255, 196, 92, 0.13), rgba(255, 196, 92, 0.02) 60%),
-    repeating-linear-gradient(135deg, rgba(255, 196, 92, 0.035) 0 2px, transparent 2px 9px);
-  box-shadow: 0 0 22px rgba(255, 196, 92, 0.12);
+    linear-gradient(160deg, rgb(var(--amber-rgb) / 0.13), rgb(var(--amber-rgb) / 0.02) 60%),
+    repeating-linear-gradient(135deg, rgb(var(--amber-rgb) / 0.035) 0 2px, transparent 2px 9px);
+  box-shadow: 0 0 22px rgb(var(--amber-rgb) / 0.12);
   animation:
     card-in 0.22s ease-out backwards,
     story-glow 3.6s ease-in-out 0.3s infinite;
@@ -1968,20 +1968,20 @@ button.socket:not(:disabled):hover {
   left: -1px;
   width: 3px;
   border-radius: 2px;
-  background: linear-gradient(180deg, transparent, rgb(255, 196, 92), transparent);
+  background: linear-gradient(180deg, transparent, rgb(var(--amber-rgb)), transparent);
 }
 
 .jobcard.is-story .card__title strong {
-  color: #ffe2a8;
+  color: var(--amber-text);
 }
 
 @keyframes story-glow {
   0%,
   100% {
-    box-shadow: 0 0 16px rgba(255, 196, 92, 0.1);
+    box-shadow: 0 0 16px rgb(var(--amber-rgb) / 0.1);
   }
   50% {
-    box-shadow: 0 0 28px rgba(255, 196, 92, 0.26);
+    box-shadow: 0 0 28px rgb(var(--amber-rgb) / 0.26);
   }
 }
 
@@ -2051,7 +2051,7 @@ button.socket:not(:disabled):hover {
 }
 
 .jobcard__fact.is-warn {
-  color: var(--amber, #ffc46b);
+  color: var(--amber, var(--amber));
 }
 
 .jobcard__reward {
@@ -2135,7 +2135,7 @@ button.socket:not(:disabled):hover {
 
 .jobhead.is-story {
   --tone: 255, 196, 92;
-  box-shadow: 0 0 22px rgba(255, 196, 92, 0.12);
+  box-shadow: 0 0 22px rgb(var(--amber-rgb) / 0.12);
 }
 
 .jobhead__top {
@@ -2267,10 +2267,10 @@ button.socket:not(:disabled):hover {
 
 @keyframes tab-on {
   from {
-    box-shadow: 0 0 0 rgba(95, 212, 255, 0);
+    box-shadow: 0 0 0 rgb(var(--cyan-rgb) / 0);
   }
   50% {
-    box-shadow: 0 0 22px rgba(95, 212, 255, 0.45);
+    box-shadow: 0 0 22px rgb(var(--cyan-rgb) / 0.45);
   }
 }
 
@@ -2320,7 +2320,7 @@ button.socket:not(:disabled):hover {
 }
 
 .card__buy:not(:disabled):hover {
-  box-shadow: 0 0 16px rgba(78, 230, 200, 0.3);
+  box-shadow: 0 0 16px rgb(var(--mint-rgb) / 0.3);
 }
 
 /* A running program's bar gets the whole row when the row has wrapped. */
@@ -2575,13 +2575,13 @@ button.socket:not(:disabled):hover {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border-color: rgba(255, 196, 92, 0.55);
-  color: #ffd98f;
+  border-color: rgb(var(--amber-rgb) / 0.55);
+  color: var(--amber-text);
 }
 
 .move:hover:not(:disabled) {
-  border-color: #ffc45c;
-  box-shadow: 0 0 14px rgba(255, 196, 92, 0.25);
+  border-color: var(--amber);
+  box-shadow: 0 0 14px rgb(var(--amber-rgb) / 0.25);
 }
 
 .move__count {
@@ -2590,15 +2590,15 @@ button.socket:not(:disabled):hover {
 }
 
 .move.is-live {
-  border-color: #ffc45c;
-  background: rgba(255, 196, 92, 0.14);
+  border-color: var(--amber);
+  background: rgb(var(--amber-rgb) / 0.14);
   animation: move-live 0.7s ease-in-out infinite;
   opacity: 1;
 }
 
 @keyframes move-live {
   50% {
-    box-shadow: 0 0 18px rgba(255, 196, 92, 0.4);
+    box-shadow: 0 0 18px rgb(var(--amber-rgb) / 0.4);
   }
 }
 
@@ -2608,13 +2608,13 @@ button.socket:not(:disabled):hover {
 }
 
 .alarm__jam--decoy {
-  border-color: #ffc45c;
-  background: rgba(255, 196, 92, 0.12);
-  color: #ffe2a8;
+  border-color: var(--amber);
+  background: rgb(var(--amber-rgb) / 0.12);
+  color: var(--amber-text);
 }
 
 .alarm__jam--decoy:hover {
-  background: rgba(255, 196, 92, 0.22);
+  background: rgb(var(--amber-rgb) / 0.22);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2629,7 +2629,7 @@ button.socket:not(:disabled):hover {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .dock__stat--wanted.is-level3 .dock__value {
@@ -2676,11 +2676,11 @@ button.socket:not(:disabled):hover {
 }
 
 .map__memory.is-short {
-  color: #ffd98f;
+  color: var(--amber-text);
 }
 
 .map__memory.is-short .icon {
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .map__memory strong {

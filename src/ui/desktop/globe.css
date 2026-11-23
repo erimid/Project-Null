@@ -21,9 +21,9 @@
   align-items: center;
   gap: 5px;
   padding: 2px 8px 2px 6px;
-  border: 1px solid rgba(95, 212, 255, 0.2);
+  border: 1px solid rgb(var(--cyan-rgb) / 0.2);
   border-radius: var(--radius-pill);
-  background: rgba(6, 17, 29, 0.78);
+  background: rgb(var(--panel-rgb) / 0.78);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -38,7 +38,7 @@
 
 .globe-layer:hover {
   color: var(--text-bright);
-  border-color: rgba(95, 212, 255, 0.4);
+  border-color: rgb(var(--cyan-rgb) / 0.4);
 }
 
 .globe-layer.is-on {
@@ -63,14 +63,14 @@
 
 .globe-layer--trouble .globe-layer__key {
   border-radius: 50%;
-  border: 1.5px dashed #ffc45c;
+  border: 1.5px dashed var(--amber);
 }
 
 .globe-layer--work .globe-layer__key {
   width: 7px;
   height: 7px;
   margin: 0 1px;
-  background: #ffc45c;
+  background: var(--amber);
   transform: rotate(45deg);
 }
 
@@ -96,26 +96,26 @@
 }
 
 .globe__pin-mark {
-  fill: rgba(255, 196, 92, 0.72);
-  stroke: #040c16;
+  fill: rgb(var(--amber-rgb) / 0.72);
+  stroke: var(--bg);
   stroke-width: 1;
 }
 
 .globe__pin--news .globe__pin-mark {
   fill: none;
-  stroke: rgba(230, 247, 255, 0.75);
+  stroke: rgb(var(--bright-rgb) / 0.75);
   stroke-width: 1.2;
 }
 
 .globe__pin--mine .globe__pin-mark {
-  fill: #ffc45c;
-  stroke: #fff1d1;
+  fill: var(--amber);
+  stroke: var(--amber-text);
   stroke-width: 1.2;
 }
 
 .globe__pin:hover .globe__pin-mark,
 .globe__pin:focus-visible .globe__pin-mark {
-  fill: #ffd998;
+  fill: var(--amber-text);
 }
 
 .globe__pin--news:hover .globe__pin-mark,
@@ -126,7 +126,7 @@
 
 .globe__pulse {
   fill: none;
-  stroke: #ffc45c;
+  stroke: var(--amber);
   stroke-width: 1.2;
   transform-box: fill-box;
   transform-origin: center;
@@ -135,7 +135,7 @@
 }
 
 .globe__pin--news .globe__pulse {
-  stroke: #e6f7ff;
+  stroke: var(--text-bright);
 }
 
 @keyframes globe-pulse {
@@ -156,10 +156,10 @@
   list-style: none;
   margin: 6px 0 8px;
   padding: 5px 10px;
-  border-left: 3px solid #ffc45c;
+  border-left: 3px solid var(--amber);
   font-size: 13px;
   line-height: 1.4;
-  color: #ffd998;
+  color: var(--amber-text);
 }
 
 .map__trouble--case {
@@ -183,19 +183,19 @@
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  border: 1px solid rgba(255, 196, 92, 0.22);
+  border: 1px solid rgb(var(--amber-rgb) / 0.22);
   border-radius: 8px;
-  background: rgba(255, 196, 92, 0.04);
+  background: rgb(var(--amber-rgb) / 0.04);
 }
 
 .map__here-job.is-new {
-  border-color: rgba(255, 196, 92, 0.5);
+  border-color: rgb(var(--amber-rgb) / 0.5);
 }
 
 .map__here-news {
   grid-template-columns: auto minmax(0, 1fr) auto;
-  border-color: rgba(230, 247, 255, 0.16);
-  background: rgba(230, 247, 255, 0.03);
+  border-color: rgb(var(--bright-rgb) / 0.16);
+  background: rgb(var(--bright-rgb) / 0.03);
 }
 
 .map__here-mark {
@@ -204,7 +204,7 @@
 }
 
 .map__here-mark--job {
-  background: #ffc45c;
+  background: var(--amber);
   transform: rotate(45deg);
   width: 7px;
   height: 7px;
@@ -212,7 +212,7 @@
 }
 
 .map__here-mark--news {
-  border: 1.2px solid rgba(230, 247, 255, 0.75);
+  border: 1.2px solid rgb(var(--bright-rgb) / 0.75);
   border-radius: 1px;
 }
 
@@ -253,10 +253,10 @@
 @keyframes jobcard-asked {
   0%,
   40% {
-    box-shadow: 0 0 0 2px rgba(255, 196, 92, 0.85), 0 0 24px rgba(255, 196, 92, 0.35);
+    box-shadow: 0 0 0 2px rgb(var(--amber-rgb) / 0.85), 0 0 24px rgb(var(--amber-rgb) / 0.35);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 196, 92, 0);
+    box-shadow: 0 0 0 0 rgb(var(--amber-rgb) / 0);
   }
 }
 
@@ -286,7 +286,7 @@
 
 .globe__label--dot {
   paint-order: stroke;
-  stroke: #040c16;
+  stroke: var(--bg);
   stroke-width: 3px;
   stroke-linejoin: round;
 }
@@ -346,11 +346,11 @@
 }
 
 .legs__row + .legs__row {
-  border-top: 1px solid rgba(95, 212, 255, 0.07);
+  border-top: 1px solid rgb(var(--cyan-rgb) / 0.07);
 }
 
 .legs__row.is-selected {
-  background: rgba(95, 212, 255, 0.07);
+  background: rgb(var(--cyan-rgb) / 0.07);
 }
 
 .legs__pick {
@@ -420,7 +420,7 @@
 .legs__fade {
   flex: none;
   font-size: 11px;
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .legs__row .route__drop {
@@ -436,12 +436,12 @@
 
 .legs__row.is-traced,
 .legs__row.is-traced .legs__mark {
-  color: #ff8a95;
+  color: var(--red-soft);
 }
 
 .legs__row.is-tracing {
   animation: hop-pulse 0.8s ease-in-out infinite;
-  color: #ff8a95;
+  color: var(--red-soft);
 }
 
 /* Stacked layouts have the address book straight under the globe, so there is no spare room to fill. */
