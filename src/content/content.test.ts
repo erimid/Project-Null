@@ -50,7 +50,7 @@ describe('the in-game internet', () => {
 
 describe('shipped data files', () => {
   it('load without errors', () => {
-    expect(gameInfo.title).toBe('Project Null');
+    expect(gameInfo.title).toBe('Project NULL');
     expect(tuning.startingBalance).toBeGreaterThan(0);
     expect(servers.length).toBeGreaterThanOrEqual(10);
   });

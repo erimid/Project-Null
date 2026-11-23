@@ -114,7 +114,7 @@ export function StoryMoment() {
     return (
       <div class={`moment moment--name${whole ? ' is-whole' : ''}${leaving ? ' is-leaving' : ''}`} role="alert" aria-live="assertive" onClick={() => setLeaving(true)}>
         <p class="moment__over data" aria-hidden="true">three lines · side by side</p>
-        <p class="moment__name data" aria-label={whole ? 'Project Null' : 'The name is opening'}>
+        <p class="moment__name data" aria-label={whole ? 'Project NULL' : 'The name is opening'}>
           {[...KNOWN].map((letter, index) => (
             <span key={index} class={`moment__letter${letter === ' ' ? ' is-gap' : ''}`} aria-hidden="true">
               {letter}

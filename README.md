@@ -1,4 +1,4 @@
-# Project Null
+# Project NULL
 
 A browser hacking game in the spirit of *Uplink*: take contracts, bounce your
 connection around the globe, break in, do the job, and get out before the
