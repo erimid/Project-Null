@@ -1,6 +1,9 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { WINDOW_HELP } from './help';
+import { findProgram, needsMemory } from '../../core';
+import { useGame } from '../hooks';
+import { content } from '../session';
 import { hintStore, useHints } from './hintStore';
 import { useLayout } from './layout';
 import { usePanes } from './panes';
@@ -81,9 +84,11 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
   const tablet = layoutKind === 'tablet';
   const half = panes.indexOf(id);
   const shown = layout.open && !layout.minimized && (layoutKind === 'desk' || (tablet ? half >= 0 : windows.isOnTop(id)));
+  // Help cards open by themselves only once Wren's first job is done (or the tour was taken), so they do not talk over her.
+  const firstJobDone = useGame((game) => game.contracts.completed.length > 0);
   useEffect(() => {
-    if (shown) hintStore.firstShow(id);
-  }, [shown]);
+    if (shown) hintStore.firstShow(id, firstJobDone);
+  }, [shown, firstJobDone]);
 
   if (!layout.open || layout.minimized) return null;
   const name = title ?? def.title;
@@ -314,11 +319,18 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
 /** What a window is for: opened by the ? in its title bar, and once by itself the first time the window shows. */
 function HelpCard({ id, name, hintsOn }: { id: WindowId; name: string; hintsOn: boolean }) {
   const help = WINDOW_HELP[id];
+  // What is held back until it matters: a real loadout choice, or a first module.
+  const choice = useGame((game) => game.player.programs.some((programId) => {
+    const program = findProgram(content, programId, game);
+    return !!program && needsMemory(program.kind) && !game.player.loadout.includes(programId);
+  }));
+  const modules = useGame((game) => Object.values(game.player.parts).some((count) => count > 0) || game.player.builds.length > 0);
+  const points = [...help.points, ...(help.later ?? []).filter((point) => (point.when === 'choice' ? choice : modules)).map((point) => point.text)];
   return (
     <aside class="window__help" aria-label={`About ${name}`}>
       <p class="window__help-summary">{help.summary}</p>
       <ul class="window__help-points">
-        {help.points.map((point) => (
+        {points.map((point) => (
           <li key={point}>{point}</li>
         ))}
       </ul>

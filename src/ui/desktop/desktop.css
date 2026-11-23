@@ -2839,6 +2839,47 @@ button.lead:hover {
   margin: 0 0 10px;
 }
 
+.viewer__trace {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 59, 78, 0.5);
+  border-radius: 8px;
+  background: rgba(40, 6, 12, 0.92);
+  color: var(--red-text);
+  font-weight: 600;
+}
+
+.viewer__trace .data {
+  color: var(--text-bright);
+}
+
+.viewer__trace-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+  animation: viewer-trace 1s ease-in-out infinite alternate;
+}
+
+@keyframes viewer-trace {
+  to {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewer__trace-dot {
+    animation: none;
+  }
+}
+
 .noted {
   margin: 0 0 12px;
   padding: 8px 12px 10px;
@@ -5721,6 +5762,59 @@ body {
   color: var(--text-bright);
   letter-spacing: 0;
   text-transform: none;
+}
+
+.route__change {
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  animation: route-change 1.6s ease-out;
+}
+
+.route__change.is-up {
+  color: var(--mint);
+  background: rgba(78, 230, 200, 0.12);
+}
+
+.route__change.is-down {
+  color: var(--red-text);
+  background: rgba(255, 59, 78, 0.12);
+}
+
+@keyframes route-change {
+  0% {
+    transform: scale(1.35);
+    filter: brightness(1.6);
+  }
+  100% {
+    transform: none;
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route__change {
+    animation: none;
+  }
+}
+
+.route__time.is-safe {
+  color: var(--mint);
+}
+
+.route__if {
+  color: var(--text-dim);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.route__time.is-tracing {
+  color: var(--red-text);
+}
+
+.route__time.is-tracing .data {
+  color: var(--red-text);
 }
 
 /* On a phone the route gets a line of its own, with the trace time and Clear on the line under it. */

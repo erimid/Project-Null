@@ -34,6 +34,10 @@ export interface Rules {
   readonly gameMinutesPerRealSecond: number;
   /** Seconds between an intrusion and the trace starting, by monitor level. Past the end = on connect. */
   readonly monitorGraceSeconds: readonly number[];
+  /** How many times faster an easy password on an unwatched server breaks (see tuning). Missing = 1. */
+  readonly easyCrackSpeed?: number;
+  /** For this many delivered jobs. */
+  readonly easyCrackJobs?: number;
   /** With no relays, the trace takes this fraction of the server's per-hop time. */
   readonly directTraceFactor: number;
   /** How much a trace step is stretched by the leg it has to cross: inside one country, across a border, to another part of the world. */

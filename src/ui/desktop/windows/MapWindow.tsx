@@ -36,7 +36,7 @@ import {
 import type { ContractDef } from '../../../core/content';
 import { sellsOnly } from '../../../core/market';
 import { findServer, gatewayOf, type ServerDef } from '../../../core/content';
-import { useWorld } from '../../hooks';
+import { useGame, useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { Icon } from '../Icon';
 import { Globe, type GlobeArc, type GlobeDot, type GlobePin } from '../../globe/Globe';
@@ -300,6 +300,65 @@ function HereNote({ happening, onJob, onNews }: { happening: Happening; onJob: (
   );
 }
 
+const clock = (ms: number) => {
+  const total = Math.max(0, Math.round(ms / 1000));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+};
+
+/**
+ * How long a trace would take, or is taking. Planning: the estimate, and
+ * what the last relay added or took away. Connected: whether anyone is
+ * tracing at all, and if so how long is left. Without a Trace Tracker the
+ * numbers are hidden, but which way they moved is not.
+ */
+function RouteTime({ connectionId, total, tracker, change }: { connectionId?: string; total: number; tracker: boolean; change: number | null }) {
+  const status = useGame((game) => game.connections.find((connection) => connection.id === connectionId)?.trace.status ?? null);
+  const left = useGame((game) => {
+    const connection = game.connections.find((item) => item.id === connectionId);
+    return connection ? Math.ceil(traceReport(connection.trace).remainingMs / 1000) : 0;
+  });
+  if (!connectionId) {
+    const moved = change === null || Math.abs(change) < 500 ? null : change;
+    return (
+      <span
+        class="route__time"
+        data-tip={
+          tracker
+            ? 'How long a trace would need to follow this route back to you. Each relay adds a step; hops across borders and oceans add the most.'
+            : 'A Trace Tracker would show how long a trace needs to follow this route. Each relay adds a step; hops across borders and oceans add the most.'
+        }
+      >
+        Estimated trace <span class="data">{tracker ? clock(total) : '?'}</span>
+        {moved !== null && (
+          <span key={`${moved}`} class={`route__change data${moved > 0 ? ' is-up' : ' is-down'}`}>
+            {tracker ? `${moved > 0 ? '+' : '−'}${Math.round(Math.abs(moved) / 1000)}s` : moved > 0 ? 'longer' : 'shorter'}
+          </span>
+        )}
+      </span>
+    );
+  }
+  if (status === 'active') {
+    return (
+      <span class="route__time is-tracing" data-tip="Someone is following your route back. Get out before it reaches you.">
+        Trace underway {tracker && <span class="data">{clock(left * 1000)} left</span>}
+      </span>
+    );
+  }
+  return (
+    <span
+      class="route__time is-safe"
+      data-tip={
+        status === 'pending'
+          ? 'You have been noticed. A trace starts in a moment.'
+          : `Nobody is tracing this connection.${tracker ? ` If they start, they need about ${clock(total)}.` : ''}`
+      }
+    >
+      {status === 'pending' ? 'Noticed: trace about to start' : 'No trace'}
+      {status !== 'pending' && tracker && <span class="route__if"> · {clock(total)} if they start</span>}
+    </span>
+  );
+}
+
 /**
  * The route map: the globe with every server you have the address of.
  * Pick servers to build a bounce chain, then connect through it.
@@ -433,6 +492,16 @@ export function MapWindow() {
   };
   const legKinds = chain.slice(1).map((server, index) => legKind(chain[index]!, server));
   const traceTotal = legs?.reduce((sum, leg) => sum + leg.ms, 0) ?? 0;
+  // What the last change to the planned route did to the estimate, so adding a relay teaches what a relay is worth.
+  const routeKey = live ? '' : `${targetId ?? ''}|${routeIds.join()}`;
+  const before = useRef<{ target: string | null; key: string; total: number } | null>(null);
+  const [change, setChange] = useState<number | null>(null);
+  useEffect(() => {
+    const last = before.current;
+    before.current = live || !targetId ? null : { target: targetId, key: routeKey, total: traceTotal };
+    if (live || !targetId || !last || last.target !== targetId) setChange(null);
+    else if (last.key !== routeKey) setChange(traceTotal - last.total);
+  }, [routeKey, live?.id]);
   const legLabel = (index: number) => {
     const isTargetLeg = targetId !== null && index === legCount - 1 && routeIds.length > 0;
     if (isTargetLeg) return undefined;
@@ -924,18 +993,7 @@ export function MapWindow() {
             ))}
             {!targetId && <li class="route__hop route__hop--empty">pick a target</li>}
           </ol>
-          {target && (
-            <span
-              class="route__time"
-              data-tip={
-                tracker
-                  ? 'How long a trace would need to follow this route back to you. Hops across borders and oceans add the most.'
-                  : 'A Trace Tracker would show how long a trace needs to follow this route. Hops across borders and oceans add the most.'
-              }
-            >
-              Trace <span class="data">{tracker ? seconds(traceTotal) : '?'}</span>
-            </span>
-          )}
+          {target && <RouteTime connectionId={live?.id} total={traceTotal} tracker={tracker} change={change} />}
           {!live && (
             <span class="route__slots" role="group" aria-label="Saved routes">
               {Array.from({ length: ROUTE_SLOTS }, (_, slot) => {

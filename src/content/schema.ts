@@ -533,6 +533,14 @@ export interface Tuning {
    * starts the trace the moment you connect.
    */
   readonly monitorGraceSeconds: readonly number[];
+  /**
+   * How many times faster a password breaks where nothing is at stake: a
+   * level-1 password on a server nobody watches (monitor 0), in the first
+   * `easyCrackJobs` jobs. The wait is for show, and that early on there is
+   * nothing else to do. Missing = 1.
+   */
+  readonly easyCrackSpeed?: number;
+  readonly easyCrackJobs?: number;
   /** With no relays, the trace takes this fraction of the server's per-hop time. */
   readonly directTraceFactor: number;
   /** A trace step that stays inside one country takes this times as long. */
@@ -1425,6 +1433,8 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
       }
       return value;
     }),
+    ...(data['easyCrackSpeed'] === undefined ? {} : { easyCrackSpeed: num(file, 'tuning', data, 'easyCrackSpeed', 1, 10) }),
+    ...(data['easyCrackJobs'] === undefined ? {} : { easyCrackJobs: num(file, 'tuning', data, 'easyCrackJobs', 0, 1000) }),
     directTraceFactor: num(file, 'tuning', data, 'directTraceFactor', 0.05, 5),
     sameCountryLegFactor: num(file, 'tuning', data, 'sameCountryLegFactor', 0.1, 5),
     borderLegFactor: num(file, 'tuning', data, 'borderLegFactor', 0.1, 5),

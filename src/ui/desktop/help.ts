@@ -12,6 +12,13 @@ export interface WindowHelp {
   readonly summary: string;
   /** A few short how-tos. */
   readonly points: readonly string[];
+  /**
+   * How-tos held back until they matter, so a new player is not taught
+   * everything at once: `choice` once there is a program on the drive that
+   * is not loaded (a real loadout decision), `modules` once the player has
+   * a module or a build.
+   */
+  readonly later?: readonly { readonly when: 'choice' | 'modules'; readonly text: string }[];
 }
 
 export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
@@ -55,10 +62,12 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
     points: [
       'Running programs show their progress here. How many can run at once depends on your hardware.',
       'Copied files land in storage. Open, decrypt or delete them from the Stored files list.',
-      'The drive holds everything you own. Memory holds what you take on a job: only a loaded program runs on a server.',
-      'Load before you connect. Memory locks while you are inside a server, and one program of a kind fits at a time.',
-      'Keep up to three kits and swap between them with one click. Decrypting, scanning and route planning run at home and need no memory.',
-      'The Workbench tab fits modules to your programs to make faster, smaller or quieter versions. A build takes the place of the plain program.',
+    ],
+    later: [
+      { when: 'choice', text: 'The drive holds everything you own. Memory holds what you take on a job: only a loaded program runs on a server.' },
+      { when: 'choice', text: 'Load before you connect. Memory locks while you are inside a server, and one program of a kind fits at a time.' },
+      { when: 'choice', text: 'Keep up to three kits and swap between them with one click. Decrypting, scanning and route planning run at home and need no memory.' },
+      { when: 'modules', text: 'The Workbench tab fits modules to your programs to make faster, smaller or quieter versions. A build takes the place of the plain program.' },
     ],
   },
   messages: {

@@ -12,7 +12,7 @@ export interface Hints {
   readonly on: boolean;
   /** Windows whose help card has been seen. */
   readonly seen: readonly WindowId[];
-  /** The tour was finished or skipped. */
+  /** The tour was taken (finished or ended). It no longer opens by itself. */
   readonly toured: boolean;
   /** The help card that is open, if any. Not kept. */
   readonly open: WindowId | null;
@@ -62,9 +62,13 @@ export const hintStore = {
   toggleHelp: (id: WindowId) =>
     set({ open: hints.open === id ? null : id, seen: hints.seen.includes(id) ? hints.seen : [...hints.seen, id] }),
   closeHelp: () => set({ open: null }),
-  /** The first time a window shows, with hints on and no tour running, its help card opens by itself. */
-  firstShow(id: WindowId): void {
-    if (!hints.on || hints.seen.includes(id) || hints.step !== null || !hints.toured) return;
+  /**
+   * The first time a window shows, with hints on and no tour running, its
+   * help card opens by itself: once the tour was taken, or once `ready`
+   * (the first job is done: until then Wren does the teaching).
+   */
+  firstShow(id: WindowId, ready = false): void {
+    if (!hints.on || hints.seen.includes(id) || hints.step !== null || !(hints.toured || ready)) return;
     set({ open: id, seen: [...hints.seen, id] });
   },
   startTour: () => set({ step: 0, open: null }),
