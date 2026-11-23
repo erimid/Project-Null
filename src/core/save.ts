@@ -257,10 +257,10 @@ export function deserializeGame(
   try {
     file = JSON.parse(text);
   } catch {
-    throw new SaveError('This file is not a Project Null save.');
+    throw new SaveError('This file is not a Project NULL save.');
   }
   if (!isObj(file) || file.format !== SAVE_FORMAT || !isObj(file.state)) {
-    throw new SaveError('This file is not a Project Null save.');
+    throw new SaveError('This file is not a Project NULL save.');
   }
   const version = file.version;
   if (typeof version !== 'number' || !Number.isInteger(version) || version < 0) {
