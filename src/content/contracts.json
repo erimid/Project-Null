@@ -645,7 +645,7 @@
     "brief": "There is one more file on the node, and the index says a guest may not read it. It was the last thing written there, and it was written from inside, with no account logged in.\n\nIts name is struck out at the source. Three letters will not copy. The other eight will. Break the keeper account again, copy what you can of it, and look at the name you are left with.\n\nI am not going to tell you what it stands for. If I am right, you will want to have read it yourself before I do. After this, be careful who you are for a while. I was.\n\n— V",
     "objective": {
       "kind": "steal",
-      "file": "PROJECT_N████.dat"
+      "file": "PROJECT_N███.dat"
     },
     "patron": "ais"
   },
