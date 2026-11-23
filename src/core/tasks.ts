@@ -91,8 +91,18 @@ export function checkTask(state: GameState, content: Content, connection: Connec
   const files = target.kind === 'copyFile' || target.kind === 'deleteFile' || target.kind === 'uploadFile';
   let speed = files ? fileSpeed(state, content) : cpuSpeed(state, content);
   if (CRACKING.includes(target.kind)) speed *= 1 + effect(state, content, 'crackSpeed');
+  // Nothing at stake, nothing else to do: an easy password on an unwatched server breaks quickly.
+  if (target.kind === 'password' && connection && easyLock(state, content, connection.serverId)) speed *= content.rules.easyCrackSpeed ?? 1;
   if (target.kind === 'deleteLog') speed *= 1 + effect(state, content, 'logSpeed');
   return { ...check, seconds: check.seconds / speed };
+}
+
+/** True, in the first few jobs, for a server whose password is the easiest kind and which nobody watches. */
+function easyLock(state: GameState, content: Content, serverId: string): boolean {
+  const server = findServer(content, serverId);
+  if (!server) return false;
+  const security = securityOf(state, server);
+  return security.password <= 1 && security.monitor === 0 && state.contracts.completed.length < (content.rules.easyCrackJobs ?? 0);
 }
 
 /** Running programs that take a slot: a Parallel build runs off to the side and does not. */

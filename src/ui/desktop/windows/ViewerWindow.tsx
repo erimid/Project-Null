@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { fileNotes, openedContent } from '../../../core';
+import { canReadTrace, fileNotes, mostUrgentTrace, openedContent, traceReport } from '../../../core';
+import { findServer } from '../../../core/content';
 import type { CueDef, FileContent, Scene } from '../../../core/content';
 import { seeded } from '../../audio';
 import { playRecording, type Playing } from '../../recording';
@@ -39,6 +40,7 @@ export function ViewerWindow() {
   if (!file) return null;
   return (
     <Window id="viewer" title={file.name} note={`${file.sizeGq} GB`}>
+      {open && <TraceStrip />}
       {/* Closing the window unmounts the player, which stops the sound. */}
       {open && level > 0 && <Sealed name={file.name} level={level} />}
       {open && level === 0 && noted && (
@@ -53,6 +55,36 @@ export function ViewerWindow() {
       )}
       {open && level === 0 && <Inside key={`${file.serverId}/${file.name}`} file={file} inside={inside} />}
     </Window>
+  );
+}
+
+/**
+ * A running trace, kept in sight while the player reads: reading is a
+ * choice, and this is what it costs. Nothing shows while nobody traces.
+ */
+function TraceStrip() {
+  const where = useGame((game) => {
+    const connection = mostUrgentTrace(game, content);
+    return connection && connection.trace.status === 'active' ? connection.serverId : '';
+  });
+  const left = useGame((game) => {
+    const connection = mostUrgentTrace(game, content);
+    return connection && canReadTrace(game, content) ? Math.ceil(traceReport(connection.trace).remainingMs / 1000) : -1;
+  });
+  if (!where) return null;
+  const name = findServer(content, where)?.name ?? where;
+  return (
+    <p class="viewer__trace" role="status">
+      <span class="viewer__trace-dot" aria-hidden="true" />
+      <span>
+        Trace underway on {name}
+        {left >= 0 && (
+          <>
+            {' '}· <span class="data">{clock(left)}</span> left
+          </>
+        )}
+      </span>
+    </p>
   );
 }
 

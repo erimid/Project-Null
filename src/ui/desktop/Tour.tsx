@@ -54,11 +54,11 @@ function cardPlace(box: Box | null, cardH: number): { left: number; top: number 
 
 /**
  * The tour of the desk: a dimmed screen with a lit frame around one part
- * of it at a time, and a card saying what that part is for. Offered once
- * to every new player, and again from the game menu.
+ * of it at a time, and a card saying what that part is for. Taken from
+ * the game menu: Wren's first letter says where it is.
  */
 export function Tour() {
-  const { step, toured } = useHints();
+  const { step } = useHints();
   const layout = useLayout();
   const [box, setBox] = useState<Box | null>(null);
   const card = useRef<HTMLDivElement>(null);
@@ -77,10 +77,7 @@ export function Tour() {
     }
   }, [touring]);
 
-  // Offered by itself the first time the game opens in this browser.
-  useEffect(() => {
-    if (!toured && step === null) hintStore.startTour();
-  }, []);
+  // The tour no longer opens by itself: Wren teaches the first job, and her first letter says where the tour is.
 
   const current = step === null ? undefined : TOUR[step];
 

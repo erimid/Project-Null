@@ -8,6 +8,8 @@
     8,
     3
   ],
+  "easyCrackSpeed": 2.5,
+  "easyCrackJobs": 5,
   "directTraceFactor": 0.5,
   "sameCountryLegFactor": 0.8,
   "borderLegFactor": 1,
