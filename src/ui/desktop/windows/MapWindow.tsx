@@ -181,6 +181,23 @@ const seconds = (ms: number) => {
   return total < 60 ? `${total}s` : `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 };
 
+/** The route list is shown under the globe once there is this much height to spare there, in pixels. */
+const LEGS_ROOM = 132;
+
+/** Watches an element that takes up the spare height, and says whether it has at least `min` pixels of it. */
+function useRoom(min: number) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [room, setRoom] = useState(false);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => setRoom(element.clientHeight >= min));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [min]);
+  return [ref, room] as const;
+}
+
 /** The globe's two layers of marks, each switched on and off on its own. */
 interface Layers {
   /** Rings round servers where the player has left trouble. */
@@ -506,10 +523,21 @@ export function MapWindow() {
   const legLabel = (index: number) => {
     const isTargetLeg = targetId !== null && index === legCount - 1 && routeIds.length > 0;
     if (isTargetLeg) return undefined;
-    const word = LEG_WORDS[legKinds[index]!].toUpperCase();
+    // The globe carries the short version: how long the hop holds a trace if a Trace Tracker can say, else what it crosses.
+    // The line's weight says the rest, and the route list has every hop in full.
     const ms = legs?.[index]?.ms;
-    return tracker && ms ? `${word} +${seconds(ms)}` : legKinds[index] === 'country' ? undefined : word;
+    return tracker && ms ? `+${seconds(ms)}` : legKinds[index] === 'country' ? undefined : LEG_WORDS[legKinds[index]!].toUpperCase();
   };
+  /** The hop into a place on the route, for the route list: what it crosses and, with a Trace Tracker, how long it holds a trace. */
+  const legInto = (index: number) => {
+    if (index === 0) return undefined;
+    const kind = legKinds[index - 1]!;
+    const isTargetLeg = targetId !== null && index === legCount && routeIds.length > 0;
+    const ms = isTargetLeg ? undefined : legs?.[index - 1]?.ms;
+    return { kind, time: tracker && ms ? `+${seconds(ms)}` : undefined };
+  };
+  // Room under the globe, when the window is tall enough to leave some, holds the route as a list.
+  const [under, hasRoom] = useRoom(LEGS_ROOM);
 
   const arcs: GlobeArc[] = chain.slice(1).map((server, index) => {
     const isLastLeg = index === legCount - 1 && targetId !== null;
@@ -520,6 +548,7 @@ export function MapWindow() {
       tone: found ? 'red' : !live && isLastLeg ? 'cyan' : 'mint',
       dashed: !live,
       heavy: legKinds[index] === 'overseas',
+      light: legKinds[index] === 'country',
       label: legLabel(index),
     };
   });
@@ -666,7 +695,7 @@ export function MapWindow() {
 
   return (
     <Window id="map" note={note}>
-      <div class="map">
+      <div class={`map${hasRoom ? ' has-legs' : ''}`}>
         <div class="map__globe">
           <Globe
             dots={dots}
@@ -676,6 +705,65 @@ export function MapWindow() {
             onPick={pick}
             overlay={<LayerSwitches layers={layers} onChange={changeLayers} troubleCount={troubleCount} workCount={workCount} />}
           />
+          <div class="map__under" ref={under}>
+            {hasRoom && (
+              <section class="legs" aria-label={live ? 'Live route' : 'Planned route'}>
+                <h3 class="map__heading legs__heading">
+                  {live ? 'Live route' : 'Route'}
+                  <span class="heading__note">{routeIds.length === 0 ? (targetId ? 'direct' : 'no relays') : relays(routeIds.length)}</span>
+                </h3>
+                <ol class="legs__list">
+                  {chain.map((server, index) => {
+                    const leg = legInto(index);
+                    const isTarget = index === chain.length - 1 && targetId !== null;
+                    const isRelay = index > 0 && index <= routeIds.length;
+                    const fade = isRelay ? stepFade(content, routeIds.length - index) : 1;
+                    return (
+                      <li
+                        key={server.id}
+                        class={`legs__row${isTarget ? ' legs__row--target' : ''}${isTraced(server.id) ? ' is-traced' : ''}${server.id === tracingId ? ' is-tracing' : ''}${
+                          server.id === selected?.id ? ' is-selected' : ''
+                        }`}
+                      >
+                        <button type="button" class="legs__pick" data-tip={`Show ${server.id === gateway.id ? 'your gateway' : server.name} on the globe`} onClick={() => pick(server.id)}>
+                          <span class="legs__mark data" aria-hidden="true">
+                            {index === 0 ? '●' : isTarget ? '◎' : index}
+                          </span>
+                          <span class="legs__name">{server.id === gateway.id ? 'You' : server.name}</span>
+                        </button>
+                        {fade < 1 && (
+                          <span
+                            class="legs__fade data"
+                            data-tip="A trace gathers pace. This relay is far enough from the target that its step counts for less. Put your best relays last, next to the target."
+                          >
+                            {Math.round(fade * 100)}%
+                          </span>
+                        )}
+                        {leg && (
+                          <span class={`legs__leg legs__leg--${leg.kind}`} data-tip={LEG_TIPS[leg.kind]}>
+                            {LEG_WORDS[leg.kind]}
+                            {leg.time && <span class="data"> {leg.time}</span>}
+                          </span>
+                        )}
+                        {!live && isRelay && (
+                          <button
+                            type="button"
+                            class="route__drop"
+                            aria-label={`Remove ${server.name} from the route`}
+                            data-tip="Take this relay out of the route"
+                            onClick={() => run({ type: 'removeHop', serverId: server.id })}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
+                  {!targetId && <li class="legs__row legs__row--empty">{routeIds.length === 0 ? 'Press + beside a server to route through it, then pick a target.' : 'Pick a target.'}</li>}
+                </ol>
+              </section>
+            )}
+          </div>
         </div>
 
         <div class="map__side">
@@ -962,7 +1050,24 @@ export function MapWindow() {
             {live ? 'Live route' : 'Planned route'}
           </span>
           <ol class="route__chain">
-            {chain.map((server, index) => (
+            {hasRoom && (
+              <>
+                <li class="route__hop">You</li>
+                {routeIds.length > 0 && (
+                  <li class="route__hop">
+                    <span class="route__leg">›</span>
+                    {relays(routeIds.length)}
+                  </li>
+                )}
+                {target && (
+                  <li class={`route__hop route__hop--target${isTraced(target.id) ? ' route__hop--traced' : ''}`}>
+                    <span class="route__leg">›</span>
+                    {target.name}
+                  </li>
+                )}
+              </>
+            )}
+            {(hasRoom ? [] : chain).map((server, index) => (
               <li
                 key={server.id}
                 class={`route__hop${index === chain.length - 1 && targetId ? ' route__hop--target' : ''}${

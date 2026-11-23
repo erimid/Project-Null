@@ -9,7 +9,7 @@
  */
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { findServer, gatewayOf } from '../../core/content';
-import { BASE_RADIUS, C, SIZE, arcPath, gridPaths, landPath } from '../globe/Globe';
+import { BASE_RADIUS, C, SIZE, arcPath, coastPath, gridPaths, landPath } from '../globe/Globe';
 import { greatCircle, isVisible, project, wrapLon, type LatLon, type View } from '../globe/projection';
 import { hushMusic } from '../music';
 import { content, session } from '../session';
@@ -150,6 +150,7 @@ export function CaughtMoment() {
         <path d={grid.back} class="caught__grid caught__grid--back" />
         <path d={grid.front} class="caught__grid" />
         <path d={landPath(view, R)} class="caught__land" />
+        <path d={coastPath(view, R)} class="caught__coast" />
         {points.slice(0, -1).map((point, index) => {
           const next = points[index + 1]!;
           const d = arcPath({ from: point, to: next, tone: 'red' }, view, R);
