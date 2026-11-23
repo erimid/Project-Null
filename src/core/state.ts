@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 29;
+export const STATE_VERSION = 30;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -173,6 +173,10 @@ export interface StoryLineState {
   lapsed?: boolean;
   /** True once the current beat's timed turn has said it is coming. */
   warned?: boolean;
+  /** Id of the beat the line is waiting on, so new beats written in ahead of it do not move a save along. */
+  id?: string;
+  /** True once the current beat's letter about what it still needs has been sent. */
+  waited?: boolean;
 }
 
 /** How far the player has got through the story, and which story contracts are on the board (see core/story.ts). */

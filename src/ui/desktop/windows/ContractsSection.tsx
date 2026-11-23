@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { GUIDED_JOB, TWISTS, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, openPatron, standingName, standingWith, stagesOf } from '../../../core';
+import { GUIDED_JOB, TWISTS, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, openPatron, storyWaits, standingName, standingWith, stagesOf } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatGameTime, formatMoney, formatRating } from '../../format';
 import { useGame } from '../../hooks';
@@ -148,6 +148,8 @@ export function Contracts({ game, connection, act }: View) {
   const offers = availableContracts(game, content);
   const lyingLow = isLyingLow(game);
   const nextAt = nextContractRating(game, content);
+  // A story job that is ready but for what the player has in hand: the board says what is missing, so nobody grinds for nothing.
+  const waits = storyWaits(game, content);
   const blocked = active ? 'Finish or give up the contract you have first' : undefined;
 
   // Every job on the board has now been seen: the route map stops pulsing it.
@@ -228,6 +230,21 @@ export function Contracts({ game, connection, act }: View) {
           work raises it.
         </p>
       )}
+      {waits.map((wait) => (
+        <div key={wait.beatId} class="board__note jobboard__waits">
+          <Icon name="star" size={15} />
+          <div>
+            <strong>A story job is waiting until you are ready.</strong> No other work is needed first.
+            <ul class="jobboard__needs">
+              {wait.needs.map((need) => (
+                <li key={need.note} class={need.met ? 'is-met' : undefined}>
+                  <span class="jobboard__tick" aria-label={need.met ? 'Done' : 'Still to do'}>{need.met ? '✓' : '○'}</span> {need.note}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ))}
       {offers.length > 0 && (
         <div class="shopbar jobboard__bar">
           <div class="shoptabs" role="tablist" aria-label="Kinds of job">

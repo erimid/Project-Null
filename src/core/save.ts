@@ -216,6 +216,9 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   },
   // 28 -> 29: Chorus. It has not woken in any save from before it existed.
   28: (old) => ({ ...old, chorus: { taken: [], nextMs: 0, takes: 0, ignoredMs: 0, checkedMs: 0, warned: 0 }, ending: null }),
+  // 29 -> 30: story lines remember their beat by id as well as by place, and whether its needs letter went out.
+  // Nothing to move: the ids are filled in on load (see backfillStoryFlags), since only the content knows them.
+  29: (old) => old,
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, contractRisk, createGame, currentStage, stageIndex, syncWithContent, tick, type Action } from './index';
+import { applyAction, contractRisk, createGame, currentStage, openedContent, stageIndex, syncWithContent, tick, type Action } from './index';
 import type { ContractDef } from '../content/schema';
 import { content as baseContent } from './testWorld';
 import type { Content } from './world';
@@ -180,6 +180,52 @@ describe('contracts with stages', () => {
     expect(state.player.balance).toBe(before + 1500);
     // Kept: still on the gateway.
     expect(state.player.files.some((file) => file.name === 'secret.dat')).toBe(true);
+  });
+
+  const oneStep = (id: string, twists: ContractDef['twists']): ContractDef => ({
+    id,
+    title: 'Odd one',
+    client: 'C',
+    targetId: 'corp',
+    pay: 500,
+    rating: 1,
+    minRating: 0,
+    summary: 'Copy the secret.',
+    brief: 'Bring it back.',
+    objective: { kind: 'steal', file: 'secret.dat' },
+    ...(twists ? { twists } : {}),
+  });
+
+  it('a rewrite twist changes the file on its way home, and says so with a flag', () => {
+    const { state, ok, here, visit, content } = harness([oneStep('odd', [{ kind: 'rewrite', file: 'secret.dat', text: 'This is not what you copied.' }])]);
+    visit('hidden', 'member');
+    ok({ type: 'acceptContract', connectionId: here(), contractId: 'odd' });
+    visit('corp', 'admin');
+    ok({ type: 'runProgram', connectionId: here(), target: { kind: 'copyFile', file: 'secret.dat' } });
+    for (let i = 0; i < 400 && state.tasks.length > 0; i++) tick(state, 1000, content);
+    const copy = state.player.files.find((file) => file.name === 'secret.dat');
+    expect(copy?.text).toBe('This is not what you copied.');
+    expect(openedContent(state, content, 'corp', 'secret.dat')).toEqual({ kind: 'text', text: 'This is not what you copied.' });
+    // The server's own file is as it was.
+    expect(state.servers.corp!.files.find((file) => file.name === 'secret.dat')?.text).toBeUndefined();
+    expect(state.flags).toContain('rewritten:corp/secret.dat');
+  });
+
+  it('a paid twist pays before anything is done, with a letter, and a log twist writes tomorrow into the logs', () => {
+    const { state, ok, here, visit } = harness([
+      oneStep('early', [
+        { kind: 'paid', pay: 700, mail: { from: 'Bank', subject: 'payment received', body: 'For work completed, {handle}.' } },
+        { kind: 'log', text: 'file copied: secret.dat', minutesAhead: 30 },
+      ]),
+    ]);
+    visit('hidden', 'member');
+    const before = state.player.balance;
+    ok({ type: 'acceptContract', connectionId: here(), contractId: 'early' });
+    expect(state.player.balance).toBe(before + 700);
+    expect(state.messages.find((message) => message.from === 'Bank')).toMatchObject({ subject: 'payment received', body: 'For work completed, T.' });
+    const ahead = state.servers.corp!.logs.find((entry) => entry.text === 'file copied: secret.dat');
+    expect(ahead?.timeMs).toBe(state.clock.gameTimeMs + 30 * 60_000);
+    expect(ahead?.byPlayer).toBe(false);
   });
 });
 

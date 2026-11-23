@@ -212,6 +212,20 @@ export function sendMail(state: GameState, content: Content, key: MailKey, fill:
   });
 }
 
+/** Sends a letter written into the content itself (a twist's, a story beat's). {handle} and anything in `fill` are filled in. */
+export function sendLetter(state: GameState, letter: { readonly from: string; readonly subject: string; readonly body: string }, fill: Readonly<Record<string, string>> = {}): void {
+  const values: Record<string, string> = { handle: state.player.handle, ...fill };
+  const write = (text: string) => text.replace(/\{(\w+)\}/g, (whole, name: string) => values[name] ?? whole);
+  state.messages.push({
+    id: `m${state.nextId++}`,
+    from: write(letter.from),
+    subject: write(letter.subject),
+    body: write(letter.body),
+    timeMs: state.clock.gameTimeMs,
+    read: false,
+  });
+}
+
 /** Sends the messages that depend on how far the player has got. Safe to call any time. */
 export function noteProgress(state: GameState, content: Content): void {
   if (state.contracts.completed.length >= content.rules.harderSecurityAfter) {

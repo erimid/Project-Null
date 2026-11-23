@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { fileContent, fileNotes } from '../../../core';
+import { fileNotes, openedContent } from '../../../core';
 import type { CueDef, FileContent, Scene } from '../../../core/content';
 import { seeded } from '../../audio';
 import { playRecording, type Playing } from '../../recording';
-import { useGame } from '../../hooks';
+import { useGame, useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { useViewer, type OpenFile } from '../viewerStore';
 import { Window } from '../Window';
@@ -34,8 +34,9 @@ export function ViewerWindow() {
       ...notes.facts.filter((fact) => game.player.facts.includes(fact.id)).map((fact) => fact.text),
     ].join('\n');
   });
+  // What the file says as the game stands: a file written during play (a note left on a server, a copy that changed on the way home) says what it says.
+  const inside = useWorld((game) => (file ? openedContent(game, content, file.serverId, file.name) : undefined));
   if (!file) return null;
-  const inside = fileContent(content, file.serverId, file.name);
   return (
     <Window id="viewer" title={file.name} note={`${file.sizeGq} GB`}>
       {/* Closing the window unmounts the player, which stops the sound. */}

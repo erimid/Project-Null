@@ -16,6 +16,8 @@ export function fresh(): GameState {
   const state = syncWithContent(createGame({ seed: 31, handle: 'Kestrel', startDate: tuning.startDate, startingBalance: 500_000 }), content);
   state.player.rating = 130;
   state.player.bestRating = 130;
+  // A gateway that can run the final job alone: the last job waits for one that can (see the story's needs).
+  state.player.hardware.ports = 4;
   // Acts 1 and 2 hang on a written job the board posts.
   state.contracts.completed.push('halvorsen-lantern');
   postJobs(state, content);
