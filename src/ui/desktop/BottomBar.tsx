@@ -225,6 +225,7 @@ export function BottomBar() {
   const day = useGame((game) => formatDay(gameDate(game)));
   const connected = useGame(isConnected);
   const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
+  const noticed = useGame((game) => game.connections.some((connection) => connection.trace.status === 'pending'));
   const running = useGame((game) => game.tasks.length);
   const unread = useGame((game) => game.messages.filter((message) => !message.read).length);
   const points = useGame((game) => pointsFree(game, content));
@@ -260,14 +261,14 @@ export function BottomBar() {
       </nav>
       <span class="dock__spacer" />
       <div
-        class={`dock__stat dock__stat--trace${tracing ? ' is-tracing' : ''}`}
+        class={`dock__stat dock__stat--trace${tracing ? ' is-tracing' : noticed ? ' is-noticed' : ''}`}
         data-tour="trace"
-        data-tip="Lights red while someone is tracing your connection. Disconnect before the trace reaches you."
+        data-tip="Amber once a monitor has noticed you, red while someone is tracing your connection. Disconnect before the trace reaches you."
       >
         <span class="dock__label">Trace</span>
         <span class="dock__value">
           <span class="dock__light" aria-hidden="true" />
-          {tracing ? 'Active' : 'None'}
+          {tracing ? 'Active' : noticed ? 'Noticed' : 'None'}
         </span>
       </div>
       <div class="dock__stat" data-tip="Your money. Jobs pay into it; the Backroom market and hardware cost it.">

@@ -115,6 +115,13 @@ export function ContractPanel() {
     };
   }, [shown, desk]);
 
+  // When the question appears, bring it into sight: it is what the job is waiting for.
+  const askingRef = useRef<HTMLDivElement>(null);
+  const answering = shown && contract !== undefined && objectiveMet(game, content, contract);
+  useEffect(() => {
+    if (answering) askingRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [answering]);
+
   if (!open || !contract) return null;
 
   // Once the contract is handed in or given up there is nothing left to show.
@@ -274,6 +281,39 @@ export function ContractPanel() {
       {minutesLeft !== undefined && !done && (
         <p class="board__warning">This step must be finished within <span class="data">{minutesLeft}</span> game {minutesLeft === 1 ? 'minute' : 'minutes'}.</p>
       )}
+      {asking && done && (
+        <div class="asking" ref={askingRef} role="group" aria-label="What should happen">
+          <p class="asking__head">{contract.decide?.question ?? 'You have the core. What should happen?'}</p>
+          {answers.map((answer) => (
+            <button
+              key={answer.id}
+              type="button"
+              class={`asking__way${armed === answer.id ? ' is-armed' : ''}`}
+              aria-pressed={armed === answer.id}
+              onClick={() => (armed === answer.id ? finish(answer.id ? { type: 'deliverContract', choiceId: answer.id } : { type: 'deliverContract' }) : setArmed(answer.id))}
+            >
+              <span class="asking__name">{answer.label}</span>
+              <span class="asking__pay data">{formatMoney(answer.pay)}</span>
+              <span class="asking__note">{answer.note}</span>
+              {pledgeList(answer.pledges)}
+              {armed === answer.id && <span class="asking__confirm">Press again to answer. It cannot be taken back.</span>}
+            </button>
+          ))}
+          {shut.map((choice) => (
+            <div key={choice.id} class="asking__way is-shut" aria-disabled="true">
+              <span class="asking__name">{choice.label}</span>
+              <span class="asking__pay data">closed</span>
+              <span class="asking__note">{choice.note} It would take these promises:</span>
+              {pledgeList(pledgesOf(choice), choice.pledges!.count)}
+            </div>
+          ))}
+          {closed > 0 && (
+            <p class="asking__closed">
+              {closed === 1 ? 'One other way is' : `${closed} other ways are`} closed to you. {closed === 1 ? 'It' : 'They'} needed the trust of sides you do not have.
+            </p>
+          )}
+        </div>
+      )}
       {contract.heist && <HeistPlan contract={contract} live />}
       {race && contract.race && !done && (
         <div class="race">
@@ -315,39 +355,6 @@ export function ContractPanel() {
             </button>
           ))}
       </div>
-      {asking && done && (
-        <div class="asking" role="group" aria-label="What should happen">
-          <p class="asking__head">{contract.decide?.question ?? 'You have the core. What should happen?'}</p>
-          {answers.map((answer) => (
-            <button
-              key={answer.id}
-              type="button"
-              class={`asking__way${armed === answer.id ? ' is-armed' : ''}`}
-              aria-pressed={armed === answer.id}
-              onClick={() => (armed === answer.id ? finish(answer.id ? { type: 'deliverContract', choiceId: answer.id } : { type: 'deliverContract' }) : setArmed(answer.id))}
-            >
-              <span class="asking__name">{answer.label}</span>
-              <span class="asking__pay data">{formatMoney(answer.pay)}</span>
-              <span class="asking__note">{answer.note}</span>
-              {pledgeList(answer.pledges)}
-              {armed === answer.id && <span class="asking__confirm">Press again to answer. It cannot be taken back.</span>}
-            </button>
-          ))}
-          {shut.map((choice) => (
-            <div key={choice.id} class="asking__way is-shut" aria-disabled="true">
-              <span class="asking__name">{choice.label}</span>
-              <span class="asking__pay data">closed</span>
-              <span class="asking__note">{choice.note} It would take these promises:</span>
-              {pledgeList(pledgesOf(choice), choice.pledges!.count)}
-            </div>
-          ))}
-          {closed > 0 && (
-            <p class="asking__closed">
-              {closed === 1 ? 'One other way is' : `${closed} other ways are`} closed to you. {closed === 1 ? 'It' : 'They'} needed the trust of sides you do not have.
-            </p>
-          )}
-        </div>
-      )}
       </div>
     </aside>
   );

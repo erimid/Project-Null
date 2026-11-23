@@ -399,7 +399,7 @@
     "rating": 1,
     "minRating": 2,
     "summary": "Copy the February uptime audit from Kestrel Community Net.",
-    "brief": "I write the numbers down for the committee and the committee does not read them. Last week it took my login off the system. I would like my own audit back, a copy outside the building, before somebody tidies the original.\n\nCopy uptime_audit_feb.txt from the noc account. Kestrel does not trace anyone; it never has.",
+    "brief": "I write the numbers down for the committee and the committee does not read them. Last week it took my login off the system. I would like my own audit back, a copy outside the building, before somebody tidies the original.\n\nCopy uptime_audit_feb.txt from the noc account. Kestrel is slow to notice anyone. Be gone before it does.",
     "objective": {
       "kind": "steal",
       "file": "uptime_audit_feb.txt"
@@ -1773,7 +1773,7 @@
     "rating": 3,
     "minRating": 110,
     "story": true,
-    "summary": "Hold four lines open, copy the core from Halvorsen, then say what should happen.",
+    "summary": "Hold the doors open, copy the core from Halvorsen, then say what should happen.",
     "brief": "This is the job. It is the largest I have ever sent you, and I do not think it is fair to ask.\n\nFour things have to be true at once. The core has to be held open so that the copy can be taken. The Director's desk has to be held, because the lock Warden placed on the Office's side will close on the core the moment someone touches it. My node has to stay linked to the core, because it is the only route in that is not watched. And the radio station's line has to be kept quiet, because Wick can hear what the Office cannot.\n\nEach of those is a line, and each line is traced on its own. Where someone is willing to hold one for you, they will. Chorus will push on all of them.\n\nWhen you have the core you will be asked what should happen to it, and to the rest of us. The asking is the only part I would like to be done properly. Deliver gives it to the Office, who will keep it safe. The other ways, if you have earned them, are listed beside it. None of them is the right answer. I have been through the list a hundred times and I cannot find one.\n\n— V",
     "objective": {
       "kind": "steal",

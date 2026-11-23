@@ -37,6 +37,7 @@ import './world.css';
 import './wide.css';
 import './globe.css';
 import './story.css';
+import './feedback.css';
 
 const SPEED_KEYS: Readonly<Record<string, Speed>> = { '1': 1, '2': 2, '3': 4 };
 

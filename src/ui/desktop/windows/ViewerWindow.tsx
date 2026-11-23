@@ -60,7 +60,8 @@ export function ViewerWindow() {
 
 /**
  * A running trace, kept in sight while the player reads: reading is a
- * choice, and this is what it costs. Nothing shows while nobody traces.
+ * choice, and this is what it costs. Amber once a monitor has noticed,
+ * red once the trace runs. Nothing shows while nobody watches.
  */
 function TraceStrip() {
   const where = useGame((game) => {
@@ -71,10 +72,38 @@ function TraceStrip() {
     const connection = mostUrgentTrace(game, content);
     return connection && canReadTrace(game, content) ? Math.ceil(traceReport(connection.trace).remainingMs / 1000) : -1;
   });
+  // Noticed, not yet traced: the soonest grace period to run out.
+  const noticed = useGame((game) => {
+    const pending = game.connections.filter((connection) => connection.trace.status === 'pending');
+    if (pending.length === 0) return '';
+    return pending.reduce((first, connection) => (connection.trace.graceMs < first.trace.graceMs ? connection : first)).serverId;
+  });
+  const grace = useGame((game) => {
+    if (!canReadTrace(game, content)) return -1;
+    const pending = game.connections.filter((connection) => connection.trace.status === 'pending').map((connection) => connection.trace.graceMs);
+    return pending.length > 0 ? Math.ceil(Math.min(...pending) / 1000) : -1;
+  });
+  if (!where && noticed) {
+    return (
+      <p class="viewer__trace viewer__trace--noticed" role="status">
+        <span class="viewer__trace-dot" aria-hidden="true" />
+        <span>
+          Noticed on {findServer(content, noticed)?.name ?? noticed}
+          {grace >= 0 ? (
+            <>
+              {' '}· trace in <span class="data">{clock(grace)}</span>
+            </>
+          ) : (
+            ' · trace about to start'
+          )}
+        </span>
+      </p>
+    );
+  }
   if (!where) return null;
   const name = findServer(content, where)?.name ?? where;
   return (
-    <p class="viewer__trace" role="status">
+    <p class="viewer__trace viewer__trace--active" role="status">
       <span class="viewer__trace-dot" aria-hidden="true" />
       <span>
         Trace underway on {name}

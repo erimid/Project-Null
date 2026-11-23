@@ -1,0 +1,84 @@
+/* Polish after the walk through the early job, the route bar, the trace states and the finale. */
+
+/* Noticed: a monitor has seen you and the trace has not started. Amber, between mint and red. */
+.route__time.is-noticed {
+  color: #ffc45c;
+}
+
+.route__time.is-noticed .data {
+  color: #ffc45c;
+}
+
+.dock__stat--trace.is-noticed .dock__value {
+  color: #ffc45c;
+}
+
+.dock__stat--trace.is-noticed .dock__light {
+  background: #ffc45c;
+  box-shadow: 0 0 10px rgba(255, 196, 92, 0.8);
+  animation: light-blink 1.2s steps(2, jump-none) infinite;
+}
+
+.viewer__trace--noticed {
+  border-color: rgba(255, 196, 92, 0.5);
+  background: rgba(40, 28, 6, 0.92);
+  color: #ffc45c;
+}
+
+.viewer__trace--noticed .viewer__trace-dot {
+  background: #ffc45c;
+  box-shadow: 0 0 8px #ffc45c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock__stat--trace.is-noticed .dock__light {
+    animation: none;
+  }
+}
+
+/* On a phone the alarm plate sits right above the reader and already says it: the red strip would say it twice. */
+.is-phone .viewer__trace--active {
+  display: none;
+}
+
+/* The address book's heading wraps on a narrow screen instead of pushing the page wide. */
+.is-phone .map__book-head {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+.is-phone .map__book-head .map__heading {
+  flex-basis: 100%;
+}
+
+.is-phone .map__book-head .map__sort {
+  margin: 0 auto 0 0;
+}
+
+/* Heist plan: the person mark sits on the line it belongs to. */
+.heist__ally {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.heist__ally > svg {
+  flex: none;
+  align-self: center;
+}
+
+/* A server's name in a narrow plan keeps to the left like the notes under it. */
+.heist__what {
+  justify-items: start;
+  text-align: left;
+}
+
+/* A long target name wraps to the left on a narrow card, not centred. */
+.jobhead__place {
+  text-align: left;
+}
+
+.heist__what .place,
+.jobhead__place .place {
+  text-align: left;
+}

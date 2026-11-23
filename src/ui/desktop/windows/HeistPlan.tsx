@@ -26,7 +26,8 @@ export function HeistPlan({ contract, live }: { contract: ContractDef; live: boo
   const vault = findServer(content, contract.targetId);
   const plan = live && game.contracts.heist ? game.contracts.heist : planHeist(game, contract)!;
   const status = live ? heistStatus(game) : plan.holds.map((hold) => ({ ...hold, held: !!hold.ally }));
-  const need = heistLines(game, contract);
+  // Once taken, the plan that was made counts, not what a new one would be.
+  const need = live ? plan.holds.filter((hold) => !hold.ally).length + 1 : heistLines(game, contract);
   const have = maxConnections(game, content);
   const lines = [...status.filter((hold) => !hold.ally).map((hold) => hold.targetId), contract.targetId];
   const order = (orders.get(contract.id) ?? []).filter((id) => lines.includes(id));
@@ -109,7 +110,7 @@ export function HeistPlan({ contract, live }: { contract: ContractDef; live: boo
       <p class="heist__head">
         <Icon name="route" size={16} />
         <span>
-          Heist · <span class="data">{need}</span> lines at once
+          Heist · <span class="data">{need}</span> {need === 1 ? 'line' : 'lines at once'}
           {need > have ? <span class="heist__short"> · your gateway holds {have}</span> : null}
         </span>
       </p>
@@ -118,12 +119,14 @@ export function HeistPlan({ contract, live }: { contract: ContractDef; live: boo
         .filter((hold) => hold.ally)
         .map((hold) => (
           <p key={hold.targetId} class={`heist__ally${hold.allyMs !== undefined && hold.allyMs <= 0 ? ' is-gone' : ''}`}>
-            <Icon name="person" size={14} /> {allyLine(hold)}
+            <Icon name="person" size={14} />
+            <span>{allyLine(hold)}</span>
           </p>
         ))}
       {missing.map((absent) => (
         <p key={absent.targetId} class="heist__ally is-absent">
-          <Icon name="person" size={14} /> {absent.name} could have held {serverName(absent.targetId)}. Not this time.
+          <Icon name="person" size={14} />
+          <span>{absent.name} could have held {serverName(absent.targetId)}. Not this time.</span>
         </p>
       ))}
       {!live && (
