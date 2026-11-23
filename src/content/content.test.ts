@@ -436,7 +436,7 @@ describe('Act 1 and the written jobs', () => {
   });
 
   it('never says the secret name before Act 3 reads it out, and only in the last pieces of the story', () => {
-    const hide = (value: unknown) => JSON.stringify(value).replace(/PROJECT_N████\.dat/g, '').replace(/P R O J E C T +N/g, '');
+    const hide = (value: unknown) => JSON.stringify(value).replace(/PROJECT_N███\.dat/g, '').replace(/P R O J E C T +N/g, '');
     // What is only read once the three lines are side by side: the last job of Act 3 and everything after.
     const afterName = linesOf(story).flatMap((line) => {
       const at = line.beats.findIndex((beat) => beat.id === 'a3-name');
