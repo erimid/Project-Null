@@ -317,6 +317,7 @@ function RouteTime({ connectionId, total, tracker, change }: { connectionId?: st
     const connection = game.connections.find((item) => item.id === connectionId);
     return connection ? Math.ceil(traceReport(connection.trace).remainingMs / 1000) : 0;
   });
+  const grace = useGame((game) => Math.ceil((game.connections.find((item) => item.id === connectionId)?.trace.graceMs ?? 0) / 1000));
   if (!connectionId) {
     const moved = change === null || Math.abs(change) < 500 ? null : change;
     return (
@@ -344,17 +345,17 @@ function RouteTime({ connectionId, total, tracker, change }: { connectionId?: st
       </span>
     );
   }
+  if (status === 'pending') {
+    return (
+      <span class="route__time is-noticed" data-tip="The monitor has seen you. The trace starts when this runs out; leave before then and nothing follows you.">
+        Noticed {tracker ? <span class="data">trace in {clock(grace * 1000)}</span> : <span class="route__if"> · trace about to start</span>}
+      </span>
+    );
+  }
   return (
-    <span
-      class="route__time is-safe"
-      data-tip={
-        status === 'pending'
-          ? 'You have been noticed. A trace starts in a moment.'
-          : `Nobody is tracing this connection.${tracker ? ` If they start, they need about ${clock(total)}.` : ''}`
-      }
-    >
-      {status === 'pending' ? 'Noticed: trace about to start' : 'No trace'}
-      {status !== 'pending' && tracker && <span class="route__if"> · {clock(total)} if they start</span>}
+    <span class="route__time is-safe" data-tip={`Nobody is tracing this connection.${tracker ? ` If they start, they need about ${clock(total)}.` : ''}`}>
+      No trace
+      {tracker && <span class="route__if"> · {clock(total)} if they start</span>}
     </span>
   );
 }
@@ -653,11 +654,15 @@ export function MapWindow() {
   const best = live || !planner ? [] : bestRoute(game, content, fillTarget, planner.version);
   const canFill = best.length > 0 && best.join() !== game.route.join();
   const connectedTo = selected ? game.connections.some((c) => c.serverId === selected.id) : false;
+  const relays = (count: number) => `${count} ${count === 1 ? 'relay' : 'relays'}`;
+  // The title bar carries the short version, for a phone where the route bar is further down the page.
   const note = live
-    ? `${traced ? 'being traced' : 'connected'} · ${live.route.length === 0 ? 'direct' : `${live.route.length} ${live.route.length === 1 ? 'relay' : 'relays'}`}`
+    ? `${traced ? 'being traced' : live.trace.status === 'pending' ? 'noticed' : 'connected'} · ${live.route.length === 0 ? 'direct' : relays(live.route.length)}`
     : game.route.length === 0
       ? 'no relays planned'
-      : `${game.route.length} ${game.route.length === 1 ? 'relay' : 'relays'} planned`;
+      : target && tracker
+        ? `${relays(game.route.length)} · trace ${clock(traceTotal)}`
+        : `${relays(game.route.length)} planned`;
 
   return (
     <Window id="map" note={note}>
