@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { deliverContract } from '../core/contracts';
 import { startContract } from '../core/stages';
-import { heistAttacker, planHeist } from '../core/heists';
+import { conditionMet, heistAttacker, planHeist } from '../core/heists';
 import { offeredChoices, reachEnding } from '../core/endings';
 import { advanceStory, beatPassed, storyOffered } from '../core/story';
 import { AI_TRUSTED } from '../core/patrons';
@@ -194,3 +194,31 @@ describe('The world after', () => {
     expect(state.ending?.id).toBe('treaty');
   });
 });
+
+describe('Asked, not just delivered', () => {
+  it('asks every story job with a choice as a question, naming the usual way', () => {
+    for (const contract of contracts.filter((item) => item.story && item.choices?.length)) {
+      expect(contract.decide ?? contract.ending, contract.id).toBeDefined();
+    }
+  });
+
+  it('spells out the treaty as promises that agree with what it takes', () => {
+    const treaty = asking.choices!.find((choice) => choice.id === 'treaty')!;
+    const pledges = treaty.pledges!;
+    const sides = ['office', 'daylight', 'calder', 'ais'] as const;
+    const levels: Record<string, number[]> = { office: [0, 4], daylight: [0, 4], calder: [0, 4], ais: [0, 18] };
+    for (let mask = 0; mask < 16; mask++) {
+      for (const ledger of ['default', 'daylight', 'keep']) {
+        const state = fresh();
+        sides.forEach((side, i) => (state.patrons.standing[side] = levels[side]![(mask >> i) & 1]!));
+        state.patrons.choices['story-ledger'] = ledger;
+        state.contracts.completed.push('story-ledger');
+        if (ledger === 'keep' && mask % 2 === 0) state.player.files.push({ name: 'LEDGER_checkpoint.arc', sizeGq: 1, from: CLIENT_FILE });
+        const met = pledges.lines.map((pledge) => conditionMet(state, pledge.when));
+        const promised = pledges.lines.every((pledge, i) => !pledge.required || met[i]) && pledges.lines.filter((pledge, i) => !pledge.required && met[i]).length >= pledges.count;
+        expect(promised, `mask ${mask}, ledger ${ledger}`).toBe(conditionMet(state, treaty.when));
+      }
+    }
+  });
+});
+

@@ -952,7 +952,14 @@
         }
       }
     ],
-    "patron": "calder"
+    "patron": "calder",
+    "decide": {
+      "question": "Hollis Lane wants the file back. Do you give it up?",
+      "way": {
+        "label": "Hand it over",
+        "note": "Deliver the file to Hollis Lane, as asked."
+      }
+    }
   },
   {
     "id": "story-ledger",
@@ -1011,7 +1018,14 @@
         "keep": true
       }
     ],
-    "patron": "ais"
+    "patron": "ais",
+    "decide": {
+      "question": "You hold Ledger's checkpoint. Who should have it?",
+      "way": {
+        "label": "Give it to Vesper",
+        "note": "Deliver the checkpoint to Vesper, as asked."
+      }
+    }
   },
   {
     "id": "story-reclass",
@@ -1159,7 +1173,14 @@
         }
       }
     ],
-    "patron": "office"
+    "patron": "office",
+    "decide": {
+      "question": "The Office wants the São Paulo node. What do you tell them?",
+      "way": {
+        "label": "Give them the node",
+        "note": "Send the Office the address of Vesper's node."
+      }
+    }
   },
   {
     "id": "act3-diligence",
@@ -1198,18 +1219,11 @@
     "minRating": 105,
     "story": true,
     "summary": "Copy the forecasting system from its annex. The annex is watched from the ministry's own desk.",
-    "brief": "The diligence was satisfactory. We would like the thing itself.\n\nIt is at an annex outside Delft. The annex takes its monitoring from the ministry's desk, so you will want to be in both at once.\n\nThe fee is the largest this desk has ever paid. It was approved without discussion, which has not happened before. Copy ORRERY_checkpoint.arc and deliver it to us. We would not recommend delivering it anywhere else.\n\nSpecial Claims, Calder Reinsurance",
+    "brief": "The diligence was satisfactory. We would like the thing itself.\n\nIt is at an annex outside Delft. The annex takes its monitoring from the ministry's desk: hold that desk as its administrator and the annex stops watching. Be in both at once, or be quick.\n\nThe fee is the largest this desk has ever paid. It was approved without discussion, which has not happened before. Copy ORRERY_checkpoint.arc and deliver it to us. We would not recommend delivering it anywhere else.\n\nSpecial Claims, Calder Reinsurance",
     "objective": {
       "kind": "steal",
       "file": "ORRERY_checkpoint.arc"
     },
-    "twists": [
-      {
-        "kind": "link",
-        "layer": "monitor",
-        "fromId": "orrery-ministry"
-      }
-    ],
     "choices": [
       {
         "id": "vesper",
@@ -1235,7 +1249,36 @@
         }
       }
     ],
-    "patron": "calder"
+    "patron": "calder",
+    "heist": {
+      "holds": [
+        {
+          "targetId": "orrery-ministry",
+          "layer": "monitor",
+          "note": "The ministry's desk. The annex takes its monitoring from here.",
+          "ally": {
+            "name": "Wick",
+            "seconds": 30,
+            "when": {
+              "flags": [
+                "story:a3-wick-ask"
+              ],
+              "notFlags": [
+                "station-taken"
+              ]
+            }
+          }
+        }
+      ],
+      "retryFine": 1000
+    },
+    "decide": {
+      "question": "Calder Re is waiting for the checkpoint. Who gets it?",
+      "way": {
+        "label": "Deliver to Calder Re",
+        "note": "Hand the forecasting system to the people who paid for it."
+      }
+    }
   },
   {
     "id": "act3-witnesses",
@@ -1321,7 +1364,14 @@
         }
       }
     ],
-    "patron": "daylight"
+    "patron": "daylight",
+    "decide": {
+      "question": "You have the register. Who gets it?",
+      "way": {
+        "label": "Give it all to Daylight",
+        "note": "Hand Daylight the whole register to publish."
+      }
+    }
   },
   {
     "id": "act3-clerk",
@@ -1686,6 +1736,75 @@
               "files": [
                 "LEDGER_checkpoint.arc"
               ]
+            }
+          ]
+        },
+        "pledges": {
+          "count": 3,
+          "lines": [
+            {
+              "line": "Ledger will draft the terms",
+              "required": true,
+              "when": {
+                "anyOf": [
+                  {
+                    "choices": {
+                      "story-ledger": "default"
+                    },
+                    "standing": {
+                      "ais": 18
+                    }
+                  },
+                  {
+                    "choices": {
+                      "story-ledger": "daylight"
+                    },
+                    "standing": {
+                      "daylight": 4
+                    }
+                  },
+                  {
+                    "choices": {
+                      "story-ledger": "keep"
+                    },
+                    "files": [
+                      "LEDGER_checkpoint.arc"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "line": "The Office will sit at the table",
+              "when": {
+                "standing": {
+                  "office": 4
+                }
+              }
+            },
+            {
+              "line": "Daylight will publish the terms",
+              "when": {
+                "standing": {
+                  "daylight": 4
+                }
+              }
+            },
+            {
+              "line": "Calder Re will underwrite them",
+              "when": {
+                "standing": {
+                  "calder": 4
+                }
+              }
+            },
+            {
+              "line": "Vesper will speak for the machines",
+              "when": {
+                "standing": {
+                  "ais": 18
+                }
+              }
             }
           ]
         }

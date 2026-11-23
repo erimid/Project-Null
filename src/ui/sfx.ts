@@ -232,6 +232,12 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
   // The moment and the ending have the whole screen, and play their own (see nameLetter, nameWhole and endingChord).
   nameRead: () => {},
   ended: () => {},
+  // A held breath let out: a falling pair, then a low warning.
+  allyLetGo: () =>
+    play([
+      { freq: 660, seconds: 0.14, wave: 'triangle', to: 440 },
+      { freq: 330, at: 0.16, seconds: 0.3, wave: 'square', level: 0.06 },
+    ]),
 };
 
 /** Many quiet voices settling on the same note, a little out of tune with each other: Chorus. */

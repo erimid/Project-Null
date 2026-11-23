@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { availableContracts, createGame, deserializeGame, postJobs, securityOf, serializeGame, syncWithContent, worldFor, type Connection, type Content, type GameState } from '../core';
 import { abandonContract, punish } from '../core/contracts';
-import { HEIST_PAY, HEIST_TIER, LOCKDOWN, heistLines, heistRefusal, postHeist } from '../core/heists';
+import { HEIST_PAY, HEIST_TIER, LOCKDOWN, absentAllies, advanceHeist, heistLines, heistRefusal, postHeist } from '../core/heists';
 import { startContract } from '../core/stages';
 import { ContentError, checkContent, parseContracts } from './schema';
 import { assets, companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, type ContractDef } from './index';
@@ -73,6 +73,39 @@ describe('heists', () => {
     expect(securityOf(state, vault).firewall).toBe(LOCKDOWN);
     // Other servers are untouched.
     expect(securityOf(state, desk1)).toEqual(desk1.security);
+  });
+
+  it('let a timed ally hold a door only so long once the player is inside the vault', () => {
+    const timed: ContractDef = {
+      ...HEIST,
+      id: 'timed-heist',
+      heist: { holds: [HEIST.heist!.holds[0]!, { ...HEIST.heist!.holds[1]!, ally: { name: 'Wick', seconds: 30, when: {} } }] },
+    };
+    const state = newGame();
+    const local: Content = { ...content, contracts: [...content.contracts, timed] };
+    state.contracts.activeId = timed.id;
+    startContract(state, local, timed);
+    expect(absentAllies(state, timed)).toEqual([]);
+    expect(securityOf(state, vault).monitor).toBe(0);
+    // The clock only runs while the player is in the vault.
+    advanceHeist(state, 40_000);
+    expect(securityOf(state, vault).monitor).toBe(0);
+    logIn(state, vault.id);
+    advanceHeist(state, 20_000);
+    expect(securityOf(state, vault).monitor).toBe(0);
+    expect(state.contracts.heist!.holds[1]!.allyMs).toBe(10_000);
+    advanceHeist(state, 15_000);
+    expect(securityOf(state, vault).monitor).toBe(LOCKDOWN);
+    // Holding the desk yourself still works after they let go.
+    logIn(state, desk2.id);
+    expect(securityOf(state, vault).monitor).toBe(0);
+  });
+
+  it('say who would have held a door, had things gone differently', () => {
+    const state = newGame();
+    expect(absentAllies(state, HEIST)).toEqual([{ targetId: desk2.id, name: 'Daylight' }]);
+    state.patrons.standing.daylight = 5;
+    expect(absentAllies(state, HEIST)).toEqual([]);
   });
 
   it('need a line for each hold nobody else keeps, and one for the vault', () => {

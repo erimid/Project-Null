@@ -763,7 +763,9 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
         act({ type: 'disconnectAll' });
         return true;
       }
-      const heist = contract.heist && state.contracts.heist ? heistStatus(state).filter((hold) => !hold.ally) : [];
+      // A timed ally lets go partway, so the bot holds that desk itself when it has a line spare.
+      const spare = maxConnections(state, content) > heistLines(state, contract);
+      const heist = contract.heist && state.contracts.heist ? heistStatus(state).filter((hold) => !hold.ally || (spare && hold.allyMs !== undefined)) : [];
       if (heist.length > 0) {
         // Take every desk nobody is keeping for you, quietest first, then the vault.
         const order = [...heist].sort((a, b) => (findServer(content, a.targetId)?.security.monitor ?? 0) - (findServer(content, b.targetId)?.security.monitor ?? 0));

@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { heistLines, heistStatus, maxConnections, planHeist, securityOf } from '../../../core';
+import { absentAllies, heistAttacker, heistLines, heistStatus, loadedPrograms, maxConnections, planHeist, securityOf } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { useWorld } from '../../hooks';
 import { content, session } from '../../session';
@@ -47,6 +47,21 @@ export function HeistPlan({ contract, live }: { contract: ContractDef; live: boo
     return result.ok;
   };
   const vaultSecurity = vault ? securityOf(game, vault) : undefined;
+  const serverName = (id: string) => findServer(content, id)?.name ?? id;
+  // Before it is taken: who is coming, who is not, who will knock, and what the player brings.
+  const missing = absentAllies(game, contract);
+  const knocks = !live && heistAttacker(game, contract) !== undefined;
+  const slowBy = plan.slow && plan.slow > 1 ? Math.round((plan.slow - 1) * 100) : 0;
+  const kit = loadedPrograms(game, content).map((program) => program.name);
+  const allyLine = (hold: (typeof status)[number]) => {
+    const where = serverName(hold.targetId);
+    const what = `the vault's ${LAYER_WORDS[hold.layer]}`;
+    if (hold.allyMs === undefined) return <>{hold.ally} holds {where} for you: {what} is off.</>;
+    const seconds = Math.ceil(hold.allyMs / 1000);
+    if (!live) return <>{hold.ally} holds {where} for the first <span class="data">{seconds}s</span> you are inside the vault. After that it is yours to hold, or be quick.</>;
+    if (seconds > 0) return <>{hold.ally} holds {where} for you: <span class="data">{seconds}s</span> left.</>;
+    return <>{hold.ally} has let go of {where}. Hold it yourself, or {what} is back.</>;
+  };
 
   const row = (id: string, index: number) => {
     const server = findServer(content, id);
@@ -102,10 +117,24 @@ export function HeistPlan({ contract, live }: { contract: ContractDef; live: boo
       {status
         .filter((hold) => hold.ally)
         .map((hold) => (
-          <p key={hold.targetId} class="heist__ally">
-            <Icon name="person" size={14} /> {hold.ally} holds {findServer(content, hold.targetId)?.name ?? hold.targetId} for you: the vault's {LAYER_WORDS[hold.layer]} is off.
+          <p key={hold.targetId} class={`heist__ally${hold.allyMs !== undefined && hold.allyMs <= 0 ? ' is-gone' : ''}`}>
+            <Icon name="person" size={14} /> {allyLine(hold)}
           </p>
         ))}
+      {missing.map((absent) => (
+        <p key={absent.targetId} class="heist__ally is-absent">
+          <Icon name="person" size={14} /> {absent.name} could have held {serverName(absent.targetId)}. Not this time.
+        </p>
+      ))}
+      {!live && (
+        <ul class="heist__brings">
+          {knocks && <li class="is-warn">Someone will come for your gateway while you are out. You will not know who until they knock.</li>}
+          {slowBy > 0 && <li>Friends are slowing the traces on this job: they run <span class="data">{slowBy}%</span> slower.</li>}
+          <li>
+            You bring <span class="data">{have}</span> {have === 1 ? 'line' : 'lines'} and {kit.length === 0 ? 'no programs loaded' : <>{kit.length === 1 ? 'one program' : `${kit.length} programs`} loaded: <span class="data">{kit.join(', ')}</span></>}.
+          </li>
+        </ul>
+      )}
       {live && vaultSecurity && (
         <p class="heist__vault data">
           Vault now: firewall {vaultSecurity.firewall} · monitor {vaultSecurity.monitor} · proxy {vaultSecurity.proxy}

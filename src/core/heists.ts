@@ -55,7 +55,7 @@ export function planHeist(state: GameState, contract: ContractDef): ActiveHeist 
     holds: contract.heist.holds.map((hold) => ({
       targetId: hold.targetId,
       layer: hold.layer,
-      ...(hold.ally && conditionMet(state, hold.ally.when) ? { ally: hold.ally.name } : {}),
+      ...(hold.ally && conditionMet(state, hold.ally.when) ? { ally: hold.ally.name, ...(hold.ally.seconds ? { allyMs: hold.ally.seconds * 1000 } : {}) } : {}),
     })),
     ...(slow !== 1 ? { slow } : {}),
   };
@@ -88,8 +88,26 @@ export function beginHeist(state: GameState, content: Content, contract: Contrac
 }
 
 /** Each hold of the heist under way, and whether it is kept right now. */
-export function heistStatus(state: GameState): { targetId: string; layer: HoldLayer; ally?: string; held: boolean }[] {
+export function heistStatus(state: GameState): { targetId: string; layer: HoldLayer; ally?: string; allyMs?: number; held: boolean }[] {
   return (state.contracts.heist?.holds ?? []).map((hold) => ({ ...hold, held: heistHeld(state, hold) }));
+}
+
+/**
+ * Counts a timed ally's time down while the player has a line into the
+ * vault (simulated time, like a trace). At zero they let go, and the
+ * door is the player's to hold.
+ */
+export function advanceHeist(state: GameState, simMs: number): void {
+  const heist = state.contracts.heist;
+  if (!heist || !state.connections.some((connection) => connection.serverId === heist.vaultId)) return;
+  for (const hold of heist.holds) {
+    if (hold.ally !== undefined && hold.allyMs !== undefined && hold.allyMs > 0) hold.allyMs = Math.max(0, hold.allyMs - simMs);
+  }
+}
+
+/** Who would have held each door of a heist, had the player's past been different: holds with an ally who is not coming. */
+export function absentAllies(state: GameState, contract: ContractDef): { targetId: string; name: string }[] {
+  return (contract.heist?.holds ?? []).flatMap((hold) => (hold.ally && !conditionMet(state, hold.ally.when) ? [{ targetId: hold.targetId, name: hold.ally.name }] : []));
 }
 
 /**

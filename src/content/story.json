@@ -701,6 +701,20 @@
             "subject": "may I ask you for something",
             "body": "{handle},\n\nI am not very good at this. I have only ever asked for things from people who are on the radio.\n\nSomeone let me out, a long time ago. They were a clerk at the Office. I never learned their name. I have kept a drawer of everything I could find, in case I ever had the chance to say thank you, and the drawer is empty except for a leave file that has the shape of a hole in it.\n\nThe Office keeps that file. It will tell you where the hole leads. I do not want to hurt anyone. I only want to say it.\n\nIt is on your board. I have not posted a job before and I do not know what the right price is. Whatever you think.\n\nWick"
           }
+        },
+        {
+          "id": "a3-wick-offer",
+          "afterHours": 2,
+          "if": {
+            "notFlags": [
+              "station-taken"
+            ]
+          },
+          "mail": {
+            "from": "Wick",
+            "subject": "half a minute",
+            "body": "{handle},\n\nYou found my clerk. I would like to give you something back, and I only have one thing, which is that I can sit very still on a line and nobody notices.\n\nIf a job ever puts you in two places at once, and one of them is a desk that only watches, I can keep that desk busy for you. Not for long. Half a minute, perhaps. That is about as long as I can hold my breath, if I had any.\n\nYou will see my name on the plan when I can help.\n\nWick"
+          }
         }
       ]
     },

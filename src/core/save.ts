@@ -219,6 +219,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   // 29 -> 30: story lines remember their beat by id as well as by place, and whether its needs letter went out.
   // Nothing to move: the ids are filled in on load (see backfillStoryFlags), since only the content knows them.
   29: (old) => old,
+  // 30 -> 31: a heist ally may hold a door for a while only (allyMs). A heist under way in an old save has none.
+  30: (old) => old,
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {

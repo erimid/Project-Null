@@ -273,6 +273,17 @@ export interface ChoiceDef {
   readonly when?: ConditionDef;
   /** The ending of the story this choice brings (see endings.json). */
   readonly ending?: string;
+  /**
+   * What this way of finishing rests on, said as commitments the player can
+   * see ("Ledger will draft the terms"). Shown only: `when` is what decides.
+   * Every `required` one must hold, and at least `count` of the rest.
+   */
+  readonly pledges?: PledgesDef;
+}
+
+export interface PledgesDef {
+  readonly count: number;
+  readonly lines: readonly { readonly line: string; readonly when: ConditionDef; readonly required?: boolean }[];
 }
 
 export interface ContractDef {
@@ -328,6 +339,12 @@ export interface ContractDef {
   readonly when?: ConditionDef;
   /** Offered sooner to a player who followed a lead (see LeadDef). */
   readonly lead?: LeadDef;
+  /**
+   * A job whose ending is a decision: delivering it is asked as a question,
+   * every way spelled out, two presses to answer. `way` names the usual
+   * delivery ("Give them the node").
+   */
+  readonly decide?: { readonly question: string; readonly way: { readonly label: string; readonly note: string } };
   /** The ending of the story that finishing it the usual way brings (see endings.json). */
   readonly ending?: string;
 }
@@ -367,8 +384,12 @@ export interface HeistHoldDef {
   readonly layer: HoldLayer;
   /** What this server is, in a line for the planning screen. */
   readonly note: string;
-  /** Someone who holds it for you when `when` holds: the player need not. */
-  readonly ally?: { readonly name: string; readonly when: ConditionDef };
+  /**
+   * Someone who holds it for you when `when` holds: the player need not.
+   * With `seconds`, they hold it only that long once the player is inside
+   * the vault, and then it is the player's to hold or to be gone.
+   */
+  readonly ally?: { readonly name: string; readonly when: ConditionDef; readonly seconds?: number };
 }
 
 /** Someone sent against the player when the heist is taken, if `when` holds: a rival (or "chorus") at the gateway. */
@@ -878,7 +899,25 @@ function parseChoice(file: string, where: string, value: unknown): ChoiceDef {
     ...(raw['standing'] === undefined ? {} : { standing: standingMap(file, where, raw['standing']) }),
     ...(raw['when'] === undefined ? {} : { when: parseCondition(file, where, raw['when']) }),
     ...(raw['ending'] === undefined ? {} : { ending: text(file, where, raw, 'ending') }),
+    ...(raw['pledges'] === undefined ? {} : { pledges: parsePledges(file, where, raw['pledges']) }),
   };
+}
+
+function parsePledges(file: string, where: string, value: unknown): PledgesDef {
+  const raw = entry(file, `${where} pledges`, value);
+  const lines = list(file, `${where} pledges`, raw, 'lines').map((item, i) => {
+    const at = `${where} pledge ${i + 1}`;
+    const line = entry(file, at, item);
+    return { line: text(file, at, line, 'line'), when: parseCondition(file, at, line['when']), ...(line['required'] === undefined ? {} : { required: flag(file, at, line, 'required') }) };
+  });
+  const optional = lines.filter((line) => !line.required).length;
+  return { count: num(file, `${where} pledges`, raw, 'count', 0, optional), lines };
+}
+
+function parseDecide(file: string, where: string, value: unknown): NonNullable<ContractDef['decide']> {
+  const raw = entry(file, `${where} decide`, value);
+  const way = entry(file, `${where} decide way`, raw['way']);
+  return { question: text(file, `${where} decide`, raw, 'question'), way: { label: text(file, `${where} decide way`, way, 'label'), note: text(file, `${where} decide way`, way, 'note') } };
 }
 
 function standingMap(file: string, where: string, value: unknown): Record<string, number> {
@@ -939,7 +978,11 @@ function parseHeist(file: string, where: string, value: unknown): HeistDef {
     let ally: HeistHoldDef['ally'];
     if (hold['ally'] !== undefined) {
       const raw = entry(file, `${at} ally`, hold['ally']);
-      ally = { name: text(file, `${at} ally`, raw, 'name'), when: parseCondition(file, `${at} ally`, raw['when']) };
+      ally = {
+        name: text(file, `${at} ally`, raw, 'name'),
+        when: parseCondition(file, `${at} ally`, raw['when']),
+        ...(raw['seconds'] === undefined ? {} : { seconds: num(file, `${at} ally`, raw, 'seconds', 5, 600) }),
+      };
     }
     return { targetId: text(file, at, hold, 'targetId'), layer: layer as HoldLayer, note: text(file, at, hold, 'note'), ...(ally ? { ally } : {}) };
   });
@@ -998,6 +1041,7 @@ export function parseContracts(data: unknown, file = 'contracts.json'): Contract
       ...(raw['heist'] === undefined ? {} : { heist: parseHeist(file, where, raw['heist']) }),
       ...(raw['when'] === undefined ? {} : { when: parseCondition(file, where, raw['when']) }),
       ...(raw['lead'] === undefined ? {} : { lead: parseLead(file, where, raw['lead']) }),
+      ...(raw['decide'] === undefined ? {} : { decide: parseDecide(file, where, raw['decide']) }),
       ...(raw['ending'] === undefined ? {} : { ending: text(file, where, raw, 'ending') }),
     };
   });
