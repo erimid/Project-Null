@@ -13,6 +13,7 @@ import { noteIntrusion } from './trace';
 import { needsMemory } from './loadout';
 import { SURGE_SPEED } from './moves';
 import { fileDef, findAccount, securityOf, findConnection, findProgram, findServer, ownedProgram, once, sendMail, type Content } from './world';
+import { rewriteOnCopy } from './stages';
 
 /** A program this many levels below a layer can't touch it at all. */
 export const MAX_LEVEL_GAP = 2;
@@ -330,13 +331,16 @@ function finish(state: GameState, content: Content, connection: Connection, task
       if (fileDef(content, connection.serverId, file.name)?.program && content.programs.some((item) => item.kind === 'decompile')) {
         once(state, 'decompiling', () => sendMail(state, content, 'decompiling'));
       }
+      // A file the job rewrites as it is copied comes home saying something else.
+      const rewritten = rewriteOnCopy(state, content, connection.serverId, file.name);
+      const said = rewritten ?? file.text;
       state.player.files.push({
         name: file.name,
         sizeGq: file.sizeGq,
         from: connection.serverId,
         takenMs: state.clock.gameTimeMs,
         ...(file.encrypted ? { encrypted: file.encrypted } : {}),
-        ...(file.text ? { text: file.text } : {}),
+        ...(said ? { text: said } : {}),
       });
       if (!tidy) serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file copied: ${file.name}`, byPlayer: true });
       return;

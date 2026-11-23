@@ -208,9 +208,36 @@ export type TwistDef =
   /** For a while, one of the stage target's layers is run from another server (see ServerLinkDef). */
   | { readonly kind: 'link'; readonly layer: LinkLayer; readonly fromId: string }
   /** A new file appears on the stage's target (a note left for the player, a backup copy). */
-  | { readonly kind: 'drop'; readonly file: string; readonly sizeGq: number; readonly text?: string; readonly folder?: string };
+  | { readonly kind: 'drop'; readonly file: string; readonly sizeGq: number; readonly text?: string; readonly folder?: string }
+  /**
+   * The file changes while it is copied: the copy that reaches the gateway
+   * says `text`, whatever the server's own file says. Sets the flag
+   * `rewritten:<server>/<file>` when it happens.
+   */
+  | { readonly kind: 'rewrite'; readonly file: string; readonly text: string }
+  /** The client pays before anything is done, and a letter says so. */
+  | { readonly kind: 'paid'; readonly pay: number; readonly mail: LetterDef }
+  /** A log line turns up on the target dated `minutesAhead` game minutes in the future: something written down before it happened. */
+  | { readonly kind: 'log'; readonly text: string; readonly minutesAhead: number };
 
-export const TWIST_KINDS = ['raise', 'move', 'link', 'drop'] as const;
+export const TWIST_KINDS = ['raise', 'move', 'link', 'drop', 'rewrite', 'paid', 'log'] as const;
+
+/** A letter written into the content itself (a twist's, a story beat's). {handle} is filled in. */
+export interface LetterDef {
+  readonly from: string;
+  readonly subject: string;
+  readonly body: string;
+}
+
+/**
+ * A lead an observant player can follow early: once `when` holds (often
+ * a `read` condition: a clue file opened), the rating gate drops to
+ * `minRating`.
+ */
+export interface LeadDef {
+  readonly when: ConditionDef;
+  readonly minRating: number;
+}
 
 /**
  * One step of a contract after the first. The first step is the
@@ -299,6 +326,8 @@ export interface ContractDef {
   readonly heist?: HeistDef;
   /** Only offered while this holds (see ConditionDef). */
   readonly when?: ConditionDef;
+  /** Offered sooner to a player who followed a lead (see LeadDef). */
+  readonly lead?: LeadDef;
   /** The ending of the story that finishing it the usual way brings (see endings.json). */
   readonly ending?: string;
 }
@@ -320,6 +349,8 @@ export interface ConditionDef {
   readonly choices?: Readonly<Record<string, string>>;
   /** Files the player must hold on the gateway, by name. */
   readonly files?: readonly string[];
+  /** Files the player must have opened and read, as "serverId/file name" (see core/story.ts noteClue). */
+  readonly read?: readonly string[];
   /** At least one of these must hold. */
   readonly anyOf?: readonly ConditionDef[];
   /** At least `count` of these must hold. */
@@ -798,7 +829,20 @@ function parseTwist(file: string, where: string, value: unknown): TwistDef {
       ...(raw['folder'] === undefined ? {} : { folder: parseFolder(file, `${where} twist`, raw['folder']) }),
     };
   }
+  if (kind === 'rewrite') return { kind, file: text(file, `${where} twist`, raw, 'file'), text: text(file, `${where} twist`, raw, 'text') };
+  if (kind === 'paid') return { kind, pay: num(file, `${where} twist`, raw, 'pay', 1, 10_000_000), mail: parseLetter(file, `${where} twist`, raw['mail']) };
+  if (kind === 'log') return { kind, text: text(file, `${where} twist`, raw, 'text'), minutesAhead: num(file, `${where} twist`, raw, 'minutesAhead', 1, 10_000) };
   throw new ContentError(file, `${where}: twist kind "${kind}" is not one of ${TWIST_KINDS.join(', ')}`);
+}
+
+export function parseLetter(file: string, where: string, value: unknown): LetterDef {
+  const raw = entry(file, `${where} mail`, value);
+  return { from: text(file, `${where} mail`, raw, 'from'), subject: text(file, `${where} mail`, raw, 'subject'), body: text(file, `${where} mail`, raw, 'body') };
+}
+
+export function parseLead(file: string, where: string, value: unknown): LeadDef {
+  const raw = entry(file, `${where} lead`, value);
+  return { when: parseCondition(file, `${where} lead`, raw['when']), minRating: num(file, `${where} lead`, raw, 'minRating', 0, 1000) };
 }
 
 export function parseStage(file: string, where: string, value: unknown): StageDef {
@@ -847,7 +891,7 @@ function standingMap(file: string, where: string, value: unknown): Record<string
 
 export function parseCondition(file: string, where: string, value: unknown): ConditionDef {
   const raw = entry(file, `${where} when`, value);
-  const known = ['flags', 'notFlags', 'standing', 'below', 'choices', 'files', 'anyOf', 'atLeast'];
+  const known = ['flags', 'notFlags', 'standing', 'below', 'choices', 'files', 'read', 'anyOf', 'atLeast'];
   for (const key of Object.keys(raw)) if (!known.includes(key)) throw new ContentError(file, `${where}: "when" has unknown part "${key}"`);
   const texts = (key: string) => list(file, `${where} when`, raw, key).map((item) => {
     if (typeof item !== 'string' || item.trim() === '') throw new ContentError(file, `${where}: "when" ${key} must be text`);
@@ -865,6 +909,14 @@ export function parseCondition(file: string, where: string, value: unknown): Con
     ...(raw['below'] === undefined ? {} : { below: standingMap(file, `${where} when below`, raw['below']) }),
     ...(raw['choices'] === undefined ? {} : { choices: choices(raw['choices']) }),
     ...(raw['files'] === undefined ? {} : { files: texts('files') }),
+    ...(raw['read'] === undefined
+      ? {}
+      : {
+          read: texts('read').map((ref) => {
+            if (!/^[^/]+\/.+$/.test(ref)) throw new ContentError(file, `${where}: "when" read "${ref}" must be "serverId/file name"`);
+            return ref;
+          }),
+        }),
     ...(raw['anyOf'] === undefined ? {} : { anyOf: list(file, `${where} when`, raw, 'anyOf').map((item, i) => parseCondition(file, `${where} anyOf ${i + 1}`, item)) }),
     ...(raw['atLeast'] === undefined
       ? {}
@@ -945,6 +997,7 @@ export function parseContracts(data: unknown, file = 'contracts.json'): Contract
           })()),
       ...(raw['heist'] === undefined ? {} : { heist: parseHeist(file, where, raw['heist']) }),
       ...(raw['when'] === undefined ? {} : { when: parseCondition(file, where, raw['when']) }),
+      ...(raw['lead'] === undefined ? {} : { lead: parseLead(file, where, raw['lead']) }),
       ...(raw['ending'] === undefined ? {} : { ending: text(file, where, raw, 'ending') }),
     };
   });
@@ -1235,7 +1288,19 @@ function checkStage(servers: readonly ServerDef[], where: string, stage: StageDe
       if (twist.kind === 'move' && !from!.files.some((item) => item.name === twist.file)) fail(`twist moves "${twist.file}", which ${twist.fromId} does not have`);
       if (twist.kind === 'link' && !from!.accounts.some((account) => account.role === 'admin')) fail(`${twist.fromId} has no admin account to hold the link with`);
     }
+    if (twist.kind === 'rewrite' && !target!.files.some((item) => item.name === twist.file) && !arrives(twist.file)) fail(`twist rewrites "${twist.file}", which ${stage.targetId} does not have`);
   }
+}
+
+/** Checks every "read" a condition names: "serverId/file name" for a file that exists. */
+export function checkReads(servers: readonly ServerDef[], file: string, where: string, condition: ConditionDef | undefined): void {
+  if (!condition) return;
+  for (const ref of condition.read ?? []) {
+    const cut = ref.indexOf('/');
+    const server = servers.find((item) => item.id === ref.slice(0, cut));
+    if (!server || !server.files.some((item) => item.name === ref.slice(cut + 1))) throw new ContentError(file, `${where}: "when" read "${ref}" is not a file on a server`);
+  }
+  for (const part of [...(condition.anyOf ?? []), ...(condition.atLeast?.of ?? [])]) checkReads(servers, file, where, part);
 }
 
 /** Checks that the data files agree with each other. */
@@ -1255,6 +1320,9 @@ export function checkContent(
       if (!other.accounts.some((account) => account.role === 'admin')) throw new ContentError('contracts.json', `${where}: heist hold ${other.id} has no admin account to hold`);
     }
     if (contract.heist && contract.stages) throw new ContentError('contracts.json', `${where}: a heist is done all at once, so it cannot have stages`);
+    checkReads(servers, 'contracts.json', where, contract.when);
+    checkReads(servers, 'contracts.json', `${where} lead`, contract.lead?.when);
+    if (contract.lead && contract.lead.minRating >= contract.minRating) throw new ContentError('contracts.json', `${where}: a lead must lower the rating gate`);
   }
   if (contracts.length > 0 && !servers.some((server) => server.kind === 'board')) {
     throw new ContentError('servers/', 'there are contracts but no board server to post them on');

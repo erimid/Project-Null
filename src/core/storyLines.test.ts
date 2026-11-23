@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { advanceStory, aiTrust, beatPassed, beatsSeen, currentBeat, storyComplete, storyOffered } from './story';
+import { advanceStory, aiTrust, beatPassed, beatsSeen, currentBeat, storyComplete, storyOffered, storyWaits } from './story';
+import { readFile } from './phish';
 import { availableContracts, createGame, deserializeGame, serializeGame, STATE_VERSION, syncWithContent, type Content, type GameState } from './index';
 import { content as base, testServers } from './testWorld';
 import { parseStory, storyOf, checkStory, type StoryLine } from '../content/story';
@@ -226,7 +227,7 @@ describe('Story lines in saves', () => {
     file.state.story = { beat: 2, arrived: true, lastMs: 1234, offered: ['sc-a'] };
     const loaded = syncWithContent(deserializeGame(JSON.stringify(file)).state, content);
     expect(loaded.version).toBe(STATE_VERSION);
-    expect(loaded.story).toEqual({ lines: { main: { beat: 2, arrived: true, lastMs: 1234 } }, offered: ['sc-a'] });
+    expect(loaded.story).toEqual({ lines: { main: { beat: 2, arrived: true, lastMs: 1234, id: 'b2' } }, offered: ['sc-a'] });
     expect(beatPassed(loaded, 'b0')).toBe(true);
     expect(beatPassed(loaded, 'b1')).toBe(true);
     expect(beatPassed(loaded, 'b2')).toBe(false);
@@ -270,5 +271,99 @@ describe('Story file', () => {
     expect(() => checkStory(wrongPatron, testServers, storyContracts, [], ['ais'])).toThrow(/not a patron/);
     const twice = parseStory({ lines: [{ id: 'main', beats: [{ id: 'a', contractId: 'sc-a' }] }, { id: 'o', beats: [{ id: 'b', contractId: 'sc-a' }] }] });
     expect(() => checkStory(twice, testServers, storyContracts, [], ['ais'])).toThrow(/already offered/);
+  });
+});
+
+describe('Leads, needs and beats remembered by id', () => {
+  it('lets a player who read the clue get the next beat sooner, and leaves the rest at the usual rating', () => {
+    const content = world([
+      { id: 'main', beats: [{ id: 'early', minRating: 20, lead: { when: { read: ['corp/secret.dat'] }, minRating: 5 }, mail: mail('early') }] },
+    ]);
+    const curious = game(content, 6);
+    const busy = game(content, 6);
+    advanceStory(busy, content);
+    expect(subjects(busy)).toEqual([]);
+    // A file nobody asks about is not remembered; the clue is.
+    curious.player.files.push({ name: 'secret.dat', sizeGq: 5, from: 'corp' });
+    expect(readFile(curious, content, 'corp', 'secret.dat')).toBe(null);
+    expect(curious.flags).toContain('read:corp/secret.dat');
+    expect(readFile(curious, content, 'corp', 'nothing.dat')).not.toBe(null);
+    advanceStory(curious, content);
+    expect(subjects(curious)).toEqual(['early']);
+    busy.player.rating = 20;
+    advanceStory(busy, content);
+    expect(subjects(busy)).toEqual(['early']);
+  });
+
+  it('lowers a written contract the board offers for a player who followed its lead', () => {
+    const lead: ContractDef = { ...storyContracts[0]!, id: 'board-lead', story: false, minRating: 30, lead: { when: { flags: ['seen-it'] }, minRating: 2 } };
+    const content: Content = { ...world([{ id: 'main', beats: [{ id: 'm', mail: mail('m') }] }]), contracts: [...base.contracts, lead] };
+    const state = game(content, 3);
+    expect(availableContracts(state, content).some((contract) => contract.id === 'board-lead')).toBe(false);
+    state.flags.push('seen-it');
+    expect(availableContracts(state, content).some((contract) => contract.id === 'board-lead')).toBe(true);
+  });
+
+  it('holds a ready beat until the player has what it needs, says once what is missing, and lists it for the board', () => {
+    const content = world([
+      {
+        id: 'main',
+        beats: [
+          {
+            id: 'go',
+            contractId: 'sc-a',
+            mail: mail('go'),
+            needs: [
+              { note: 'The key from the Office', when: { flags: ['key'] } },
+              { note: 'A name people know', rating: 10 },
+            ],
+            waitMail: { from: 'Vesper', subject: 'not yet', body: 'Missing:\n{needs}' },
+          },
+        ],
+      },
+    ]);
+    const h = game(content, 4);
+    advanceStory(h, content);
+    advanceStory(h, content);
+    expect(subjects(h)).toEqual(['not yet']);
+    expect(h.messages.at(-1)!.body).toBe('Missing:\n- The key from the Office\n- A name people know');
+    expect(storyOffered(h)).toEqual([]);
+    expect(storyWaits(h, content)).toEqual([{ lineId: 'main', beatId: 'go', needs: [{ note: 'The key from the Office', met: false }, { note: 'A name people know', met: false }] }]);
+    h.flags.push('key');
+    advanceStory(h, content);
+    expect(storyWaits(h, content)[0]!.needs.map((need) => need.met)).toEqual([true, false]);
+    expect(subjects(h)).toEqual(['not yet']);
+    h.player.rating = 10;
+    advanceStory(h, content);
+    expect(subjects(h)).toEqual(['not yet', 'go']);
+    expect(storyOffered(h)).toEqual(['sc-a']);
+    expect(storyWaits(h, content)).toEqual([]);
+  });
+
+  it('keeps a save on its beat when new beats are written in ahead of it', () => {
+    const before = world([{ id: 'main', beats: [{ id: 'a', mail: mail('a') }, { id: 'b', contractId: 'sc-a', mail: mail('b') }, { id: 'c', mail: mail('c') }] }]);
+    const h = game(before);
+    advanceStory(h, before);
+    expect(h.story.lines.main).toMatchObject({ beat: 1, id: 'b', arrived: true });
+    const after = world([
+      { id: 'main', beats: [{ id: 'new1', mail: mail('new1') }, { id: 'a', mail: mail('a') }, { id: 'new2', mail: mail('new2') }, { id: 'b', contractId: 'sc-a', mail: mail('b') }, { id: 'c', mail: mail('c') }] },
+    ]);
+    const loaded = syncWithContent(deserializeGame(serializeGame(h, '2030-01-01T00:00:00Z')).state, after);
+    expect(loaded.story.lines.main).toMatchObject({ beat: 3, id: 'b', arrived: true });
+    loaded.contracts.completed.push('sc-a');
+    advanceStory(loaded, after);
+    // The new beats behind it are not sent; the line carries on after "b".
+    expect(subjects(loaded)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('checks leads and needs as it reads the story', () => {
+    expect(() => parseStory({ lines: [{ id: 'main', beats: [{ id: 'x', mail: mail('x'), waitMail: mail('w') }] }] })).toThrow(/only a beat with needs/);
+    expect(() => parseStory({ lines: [{ id: 'main', beats: [{ id: 'x', mail: mail('x'), needs: [{ note: 'n' }] }] }] })).toThrow(/must check something/);
+    const low = world([{ id: 'main', beats: [{ id: 'x', minRating: 3, lead: { when: {}, minRating: 5 }, mail: mail('x') }] }]);
+    expect(() => checkStory(low.story, low.servers, low.contracts, [])).toThrow(/must lower the rating gate/);
+    const bad = world([{ id: 'main', beats: [{ id: 'x', lead: { when: { read: ['corp/nope.dat'] }, minRating: 0 }, minRating: 2, mail: mail('x') }] }]);
+    expect(() => checkStory(bad.story, bad.servers, bad.contracts, [])).toThrow(/not a file on a server/);
+    const heist = world([{ id: 'main', beats: [{ id: 'x', mail: mail('x'), needs: [{ note: 'n', linesFor: 'sc-a' }] }] }]);
+    expect(() => checkStory(heist.story, heist.servers, heist.contracts, [])).toThrow(/not a heist contract/);
   });
 });

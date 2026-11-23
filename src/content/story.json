@@ -323,7 +323,7 @@
         },
         {
           "id": "a4-wren-asks",
-          "minRating": 112,
+          "minRating": 110,
           "afterHours": 4,
           "when": {
             "notFlags": [
@@ -351,7 +351,6 @@
         },
         {
           "id": "a4-lantern",
-          "minRating": 114,
           "afterHours": 6,
           "contractId": "act4-lantern",
           "mail": {
@@ -378,7 +377,17 @@
             "subject": "the asking",
             "body": "{handle},\n\nThe job is on your board, and it is the last one I will send you. I have written everything I know about it in the brief. I will say one thing here, where nobody else can read it.\n\nYou have spent a long time being asked by other people. The Office, the reinsurer, Daylight, me. You were never asked by the thing the asking was about. It is about to ask you.\n\nI am afraid. I would like you to know that, because I think it is something I should have said earlier.\n\n— V"
           },
-          "minRating": 116
+          "needs": [
+            {
+              "note": "Enough lines open at once for every door nobody is holding for you. More connection ports will do it, and so will someone willing to hold a door.",
+              "linesFor": "act4-asking"
+            }
+          ],
+          "waitMail": {
+            "from": "Vesper",
+            "subject": "not yet, and why",
+            "body": "{handle},\n\nThe last job is ready, and I am not putting it on your board yet. If I did, you would take it, and you would go in short.\n\nThis is what is missing:\n\n{needs}\n\nThat is the whole list. Nobody else's errands first. When you have it, the job is yours."
+          }
         }
       ]
     },

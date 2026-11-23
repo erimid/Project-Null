@@ -9,7 +9,7 @@ import { beginHeist } from './heists';
 import type { ContractDef, ObjectiveDef, StageDef, TwistDef } from '../content/schema';
 import { evidenceCount } from './forensics';
 import { CLIENT_FILE, type GameState } from './state';
-import { fileDef, findServer, securityOf, sendMail, type Content } from './world';
+import { fileDef, findServer, securityOf, sendLetter, sendMail, type Content } from './world';
 import { beginKind, beginRace, checkRace, kindMet, kindPossible } from './kinds';
 
 /** True if this goal is the step of the active contract being worked on now. */
@@ -116,6 +116,17 @@ function applyTwist(state: GameState, content: Content, targetId: string, twist:
   const server = state.servers[targetId];
   if (!server) return;
   const now = state.clock.gameTimeMs;
+  // These change nothing about the server's guard.
+  if (twist.kind === 'rewrite') return; // Happens as the file is copied (see rewriteOnCopy).
+  if (twist.kind === 'paid') {
+    state.player.balance += twist.pay;
+    sendLetter(state, twist.mail);
+    return;
+  }
+  if (twist.kind === 'log') {
+    server.logs.push({ id: state.nextId++, timeMs: now + twist.minutesAhead * 60_000, text: twist.text, byPlayer: false });
+    return;
+  }
   const untilMs = now + ALERT_HOURS * 3_600_000;
   const alert = server.alert && server.alert.untilMs > now ? server.alert : { raise: {}, untilMs };
   alert.untilMs = Math.max(alert.untilMs, untilMs);
@@ -155,6 +166,23 @@ function applyTwist(state: GameState, content: Content, targetId: string, twist:
       return;
     }
   }
+}
+
+/**
+ * What a copy of this file says if the step under way rewrites it as it is
+ * copied, or undefined. Sets the flag `rewritten:<server>/<file>` (see TwistDef).
+ */
+export function rewriteOnCopy(state: GameState, content: Content, serverId: string, name: string): string | undefined {
+  const id = state.contracts.activeId;
+  const contract = id === null ? undefined : content.contracts.find((item) => item.id === id);
+  if (!contract) return undefined;
+  const stage = stagesOf(contract)[state.contracts.stage];
+  if (!stage || stage.targetId !== serverId) return undefined;
+  const twist = (stage.twists ?? []).find((item) => item.kind === 'rewrite' && item.file === name);
+  if (!twist || twist.kind !== 'rewrite') return undefined;
+  const flag = `rewritten:${serverId}/${name}`;
+  if (!state.flags.includes(flag)) state.flags.push(flag);
+  return twist.text;
 }
 
 /** Starts a step: what the client sends, what changes in the world, and the client's note. */

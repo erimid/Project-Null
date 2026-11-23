@@ -139,7 +139,7 @@ export { beginRaid, findRival, holdOffMs, untraceable, raidBarrier, raidPortAngl
 export type { RaidReport } from './raid';
 export { endingOf, findEnding, offeredChoices, patronGone, reachEnding } from './endings';
 export { advanceChorus, chorusAwake, chorusTargets, freeServer, isTaken, storyQuietMs, takeServer } from './chorus';
-export { AI_TRUST, advanceStory, aiTrust, beatPassed, beatsSeen, currentBeat, storyComplete, storyOffered } from './story';
+export { AI_TRUST, advanceStory, aiTrust, beatPassed, beatsSeen, currentBeat, gateRating, needMet, storyComplete, storyOffered, storyWaits, type StoryWait } from './story';
 export { REGIONS, fill, generateCompanies, regionOf, worldFor } from './generate';
 export type { Region } from './generate';
 export { isJob, tierForRating } from './jobs';

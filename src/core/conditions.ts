@@ -7,6 +7,9 @@ import type { ConditionDef } from '../content/schema';
 import { DEFAULT_CHOICE, standingWith } from './patrons';
 import type { GameState } from './state';
 
+/** The flag set once the player has read a file some condition asks about ("serverId/file name"). */
+export const readClueFlag = (ref: string): string => `read:${ref}`;
+
 /** True if every part of a condition holds. No condition holds always. */
 export function conditionMet(state: GameState, condition: ConditionDef | undefined): boolean {
   if (!condition) return true;
@@ -16,6 +19,7 @@ export function conditionMet(state: GameState, condition: ConditionDef | undefin
   if (Object.entries(condition.below ?? {}).some(([id, most]) => standingWith(state, id) > most)) return false;
   if (Object.entries(condition.choices ?? {}).some(([id, choice]) => (state.patrons.choices[id] ?? (state.contracts.completed.includes(id) ? DEFAULT_CHOICE : undefined)) !== choice)) return false;
   if (condition.files?.some((name) => !state.player.files.some((file) => file.name === name))) return false;
+  if (condition.read?.some((ref) => !state.flags.includes(readClueFlag(ref)))) return false;
   if (condition.anyOf && !condition.anyOf.some((part) => conditionMet(state, part))) return false;
   if (condition.atLeast && condition.atLeast.of.filter((part) => conditionMet(state, part)).length < condition.atLeast.count) return false;
   return true;

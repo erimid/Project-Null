@@ -16,7 +16,7 @@ import { JOB_COOL, coolHeat, coolWithTime, wanted } from './wanted';
 import { isJob, postLegend, refreshJobs } from './jobs';
 import { noteIntrusion } from './trace';
 import { maybeScheduleRaid } from './raid';
-import { advanceStory } from './story';
+import { advanceStory, gateRating } from './story';
 import { advanceChorus } from './chorus';
 import { reachEnding } from './endings';
 import { printEditions, reportContract } from './news';
@@ -86,8 +86,8 @@ export function nextContractRating(state: GameState, content: Content): number |
   const left = content.contracts.filter(
     (contract) => !contract.story && !state.contracts.completed.includes(contract.id) && objectivePossible(state, content, contract),
   );
-  if (left.length === 0 || left.some((contract) => contract.minRating <= state.player.rating)) return undefined;
-  return Math.min(...left.map((contract) => contract.minRating));
+  if (left.length === 0 || left.some((contract) => gateRating(state, contract) <= state.player.rating)) return undefined;
+  return Math.min(...left.map((contract) => gateRating(state, contract)));
 }
 
 export function isLyingLow(state: GameState): boolean {
@@ -117,9 +117,9 @@ export function availableContracts(state: GameState, content: Content): Contract
   const story = content.contracts.filter((contract) => contract.story && state.story.offered.includes(contract.id) && !taken(contract));
   // Lying low is a state, not a wait: only the standing jobs are offered, and they pay less (see deliverContract).
   if (isLyingLow(state)) return jobs;
-  const offered = open.filter((contract) => contract.minRating <= state.player.rating);
+  const offered = open.filter((contract) => gateRating(state, contract) <= state.player.rating);
   if (offered.length > 0 || jobs.length > 0 || story.length > 0 || state.contracts.activeId !== null) return [...offered, ...jobs, ...story];
-  const easiest = [...open].sort((a, b) => a.minRating - b.minRating)[0];
+  const easiest = [...open].sort((a, b) => gateRating(state, a) - gateRating(state, b))[0];
   return [...(easiest ? [easiest] : []), ...jobs, ...story];
 }
 

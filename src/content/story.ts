@@ -18,7 +18,7 @@
  * Every beat that passes sets the flag `story:<beat id>`, so any condition
  * anywhere (another line, a contract's `when`, a heist ally) can wait on it.
  */
-import { parseCondition, type ConditionDef, type ContractDef, type ServerDef } from './schema';
+import { checkReads, parseCondition, type ConditionDef, type ContractDef, type LeadDef, type ServerDef } from './schema';
 import type { RivalDef } from './rivals';
 
 /** One message a beat sends to the player's inbox when it arrives. */
@@ -46,6 +46,24 @@ export interface StoryLapse {
   readonly take?: readonly string[];
   /** A letter sent once, this many game hours after the beat arrived, to say the turn is coming. */
   readonly warn?: { readonly hours: number; readonly mail: StoryMail };
+}
+
+/**
+ * Something the player must have in hand before a beat arrives: the
+ * story waits on readiness, not on more ordinary work. `note` says what
+ * it is, in the voice of whoever is waiting ("A third line, or someone to
+ * hold the door"). At least one of the checks is given; all must hold.
+ */
+export interface StoryNeed {
+  readonly note: string;
+  /** Something about the story so far. */
+  readonly when?: ConditionDef;
+  /** Lines the gateway can hold open at once. */
+  readonly lines?: number;
+  /** Enough lines for this heist contract, counting the allies who would hold doors for the player. */
+  readonly linesFor?: string;
+  /** Least rating. */
+  readonly rating?: number;
 }
 
 /** One step of the story. */
@@ -85,6 +103,12 @@ export interface StoryBeat {
   readonly lapse?: StoryLapse;
   /** True for a beat where the name is glimpsed. Nothing in the rules depends on it. */
   readonly reveal?: boolean;
+  /** Arrives sooner for a player who followed a lead: the rating gate drops (see LeadDef). */
+  readonly lead?: LeadDef;
+  /** What the player must have in hand before the beat arrives. The board says what is still missing. */
+  readonly needs?: readonly StoryNeed[];
+  /** Sent once, when everything but the needs is ready. {needs} becomes the list of what is still missing. */
+  readonly waitMail?: StoryMail;
 }
 
 /** A run of beats that moves on its own. */
@@ -203,7 +227,33 @@ function parseLapse(where: string, raw: unknown): StoryLapse {
   };
 }
 
-const BEAT_KEYS = ['id', 'minRating', 'afterHours', 'requires', 'when', 'if', 'mail', 'contractId', 'raid', 'set', 'clear', 'standing', 'floor', 'take', 'free', 'chorus', 'lapse', 'reveal'];
+const BEAT_KEYS = ['id', 'minRating', 'afterHours', 'requires', 'when', 'if', 'mail', 'contractId', 'raid', 'set', 'clear', 'standing', 'floor', 'take', 'free', 'chorus', 'lapse', 'reveal', 'lead', 'needs', 'waitMail'];
+
+function parseLead(where: string, raw: unknown): LeadDef {
+  if (!isObj(raw)) throw new StoryError(`${where}: lead must be an object`);
+  const minRating = optNum(`${where} lead`, raw, 'minRating', 0);
+  if (minRating === undefined || raw.when === undefined) throw new StoryError(`${where}: a lead needs "when" and "minRating"`);
+  return { when: condition(`${where} lead`, raw.when), minRating };
+}
+
+function parseNeeds(where: string, raw: unknown): StoryNeed[] {
+  if (!Array.isArray(raw) || raw.length === 0) throw new StoryError(`${where}: "needs" must be a non-empty list`);
+  return raw.map((item, i) => {
+    const at = `${where} need ${i + 1}`;
+    if (!isObj(item)) throw new StoryError(`${at} must be an object`);
+    for (const key of Object.keys(item)) if (!['note', 'when', 'lines', 'linesFor', 'rating'].includes(key)) throw new StoryError(`${at}: unknown part "${key}"`);
+    const lines = optNum(at, item, 'lines', 1);
+    const rating = optNum(at, item, 'rating', 0);
+    if (item.when === undefined && lines === undefined && item.linesFor === undefined && rating === undefined) throw new StoryError(`${at}: a need must check something (when, lines, linesFor or rating)`);
+    return {
+      note: str(at, item, 'note'),
+      ...(item.when === undefined ? {} : { when: condition(at, item.when) }),
+      ...(lines === undefined ? {} : { lines }),
+      ...(item.linesFor === undefined ? {} : { linesFor: str(at, item, 'linesFor') }),
+      ...(rating === undefined ? {} : { rating }),
+    };
+  });
+}
 
 function parseBeat(raw: unknown, index: number, seen: Set<string>): StoryBeat {
   if (!isObj(raw)) throw new StoryError(`beat ${index} must be an object`);
@@ -217,6 +267,7 @@ function parseBeat(raw: unknown, index: number, seen: Set<string>): StoryBeat {
     throw new StoryError(`${where}: a beat must do something (mail, contractId, raid, set, clear, standing, take or free)`);
   }
   if (raw.lapse !== undefined && raw.contractId === undefined) throw new StoryError(`${where}: only a beat with a contract can lapse`);
+  if (raw.waitMail !== undefined && raw.needs === undefined) throw new StoryError(`${where}: only a beat with needs can send a waitMail`);
   const minRating = optNum(where, raw, 'minRating', 0);
   const afterHours = optNum(where, raw, 'afterHours', 0);
   const set = flagList(where, raw, 'set');
@@ -243,6 +294,9 @@ function parseBeat(raw: unknown, index: number, seen: Set<string>): StoryBeat {
     ...(chorus === undefined ? {} : { chorus }),
     ...(raw.lapse === undefined ? {} : { lapse: parseLapse(where, raw.lapse) }),
     ...(raw.reveal === undefined ? {} : { reveal: raw.reveal === true }),
+    ...(raw.lead === undefined ? {} : { lead: parseLead(where, raw.lead) }),
+    ...(raw.needs === undefined ? {} : { needs: parseNeeds(where, raw.needs) }),
+    ...(raw.waitMail === undefined ? {} : { waitMail: parseMail(`${where} waitMail`, raw.waitMail) }),
   };
 }
 
@@ -278,6 +332,8 @@ function conditionsOf(story: StoryDef): { where: string; condition: ConditionDef
     ...line.beats.flatMap((beat) => [
       ...(beat.when ? [{ where: `story beat "${beat.id}"`, condition: beat.when }] : []),
       ...(beat.if ? [{ where: `story beat "${beat.id}" if`, condition: beat.if }] : []),
+      ...(beat.lead ? [{ where: `story beat "${beat.id}" lead`, condition: beat.lead.when }] : []),
+      ...(beat.needs ?? []).flatMap((need, i) => (need.when ? [{ where: `story beat "${beat.id}" need ${i + 1}`, condition: need.when }] : [])),
     ]),
   ]);
 }
@@ -328,6 +384,10 @@ export function checkStory(
     checkFlags(where, beat.clear);
     checkFlags(`${where} lapse`, beat.lapse?.set);
     checkPatrons(where, [...Object.keys(beat.standing ?? {}), ...Object.keys(beat.floor ?? {})]);
+    if (beat.lead && beat.lead.minRating >= (beat.minRating ?? 0)) throw new StoryError(`${where}: a lead must lower the rating gate`);
+    for (const need of beat.needs ?? []) {
+      if (need.linesFor !== undefined && !contractById.get(need.linesFor)?.heist) throw new StoryError(`${where}: need linesFor "${need.linesFor}" is not a heist contract`);
+    }
   }
   for (const contract of contracts) {
     for (const attacker of contract.heist?.attackers ?? []) {
@@ -337,6 +397,7 @@ export function checkStory(
     }
   }
   for (const { where, condition } of conditionsOf(story)) {
+    checkReads(servers, 'story.json', where, condition);
     checkFlags(where, condition.flags);
     checkFlags(where, condition.notFlags);
     checkPatrons(where, [...Object.keys(condition.standing ?? {}), ...Object.keys(condition.below ?? {})]);

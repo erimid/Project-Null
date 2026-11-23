@@ -6,6 +6,7 @@
 import type { AskDef, FactDef, FileRef, PersonDef } from '../content/people';
 import type { GameState } from './state';
 import { currentStage, readFlag } from './stages';
+import { noteClue } from './story';
 import { findServer, securityOf, sendMail, type Content } from './world';
 
 export const findPerson = (content: Content, id: string): PersonDef | undefined =>
@@ -83,6 +84,7 @@ export function readFile(state: GameState, content: Content, serverId: string, n
   if (!canRead(state, content, serverId, name)) return 'You cannot read that file from here.';
   learnFrom(state, content, serverId, name);
   noteRead(state, content, serverId, name);
+  noteClue(state, content, serverId, name);
   return null;
 }
 
@@ -96,6 +98,7 @@ export function readEverything(state: GameState, content: Content, serverId: str
     if (!canRead(state, content, serverId, file.name)) continue;
     learned += learnFrom(state, content, serverId, file.name);
     noteRead(state, content, serverId, file.name);
+    noteClue(state, content, serverId, file.name);
   }
   return learned;
 }

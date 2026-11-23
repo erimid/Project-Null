@@ -1872,6 +1872,39 @@ button.socket:not(:disabled):hover {
   color: var(--mint);
 }
 
+.jobboard__waits {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+}
+
+.jobboard__waits .icon {
+  color: var(--mint);
+  margin-top: 2px;
+}
+
+.jobboard__needs {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.jobboard__needs li {
+  color: var(--text-dim);
+}
+
+.jobboard__needs li.is-met {
+  color: var(--mint);
+}
+
+.jobboard__tick {
+  display: inline-block;
+  width: 1.2em;
+}
+
 .jobboard__sortlabel {
   font-size: 13px;
   letter-spacing: 0.06em;
