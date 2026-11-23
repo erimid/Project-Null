@@ -1,28 +1,28 @@
 /* The living world: news tags on job cards, marks in the address book, the Wire. */
 
 .row__tag--warn {
-  border-color: rgba(255, 196, 92, 0.55);
-  color: #ffc45c;
+  border-color: rgb(var(--amber-rgb) / 0.55);
+  color: var(--amber);
 }
 
 .jobcard__news {
   margin: 2px 0 4px;
   font-size: 13px;
   font-style: italic;
-  color: #ffd998;
+  color: var(--amber-text);
 }
 
 .address__mark {
   margin-left: 6px;
   padding: 0 6px;
-  border: 1px solid rgba(255, 196, 92, 0.45);
+  border: 1px solid rgb(var(--amber-rgb) / 0.45);
   border-radius: var(--radius-pill);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .address__mark--taken {
@@ -33,9 +33,9 @@
 .map__mark {
   margin: 8px 0 4px;
   padding: 6px 10px;
-  border-left: 3px solid #ffc45c;
+  border-left: 3px solid var(--amber);
   font-size: 13px;
-  color: #ffd998;
+  color: var(--amber-text);
 }
 
 /* Patrons: the chip on a job card and the Contacts tab of the Gateway. */
@@ -50,8 +50,8 @@
   text-transform: uppercase;
   color: var(--text-muted);
 }
-.jobcard__patron.is-trusted { border-color: rgba(78, 230, 200, 0.5); color: var(--mint); }
-.jobcard__patron.is-inner-circle { border-color: rgba(78, 230, 200, 0.8); color: var(--mint-text); background: rgba(78, 230, 200, 0.12); }
+.jobcard__patron.is-trusted { border-color: rgb(var(--mint-rgb) / 0.5); color: var(--mint); }
+.jobcard__patron.is-inner-circle { border-color: rgb(var(--mint-rgb) / 0.8); color: var(--mint-text); background: rgb(var(--mint-rgb) / 0.12); }
 
 .contacts { display: flex; flex-direction: column; gap: 12px; }
 .contacts__list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
@@ -59,27 +59,27 @@
   padding: 10px 12px;
   border: 1px solid var(--line-soft);
   border-radius: 10px;
-  background: rgba(95, 212, 255, 0.03);
+  background: rgb(var(--cyan-rgb) / 0.03);
 }
-.contact.is-cold { border-color: rgba(255, 59, 78, 0.35); }
-.contact.is-inner-circle { border-color: rgba(78, 230, 200, 0.55); }
+.contact.is-cold { border-color: rgb(var(--red-rgb) / 0.35); }
+.contact.is-inner-circle { border-color: rgb(var(--mint-rgb) / 0.55); }
 .contact__head { display: flex; align-items: center; gap: 8px; color: var(--text-bright); }
 .contact__name { font-size: 16px; }
 .contact__level { margin-left: auto; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); }
 .contact.is-cold .contact__level { color: var(--red); }
 .contact.is-trusted .contact__level, .contact.is-inner-circle .contact__level { color: var(--mint); }
 .contact__title { margin: 2px 0 8px; font-size: 13px; color: var(--text-muted); }
-.contact__bar { position: relative; height: 6px; border-radius: 3px; background: rgba(95, 212, 255, 0.12); }
+.contact__bar { position: relative; height: 6px; border-radius: 3px; background: rgb(var(--cyan-rgb) / 0.12); }
 .contact__fill { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: linear-gradient(90deg, var(--cyan), var(--mint)); transition: width 0.4s ease; }
 .contact.is-cold .contact__fill { background: var(--red); }
-.contact__tick { position: absolute; top: -2px; bottom: -2px; width: 1px; background: rgba(230, 247, 255, 0.45); }
+.contact__tick { position: absolute; top: -2px; bottom: -2px; width: 1px; background: rgb(var(--bright-rgb) / 0.45); }
 .contact__blurb { margin: 8px 0; font-size: 13px; color: var(--text); }
 .contact__perks { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--text-dim); }
 .contact__perks li { padding: 2px 0; }
 .contact__perks li.is-on { color: var(--text-bright); }
 .contact__perk-at { display: inline-block; min-width: 92px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
 .contact__perks li.is-on .contact__perk-at { color: var(--mint); }
-.contact__warn { margin: 6px 0 0; font-size: 12px; color: #ffc45c; }
+.contact__warn { margin: 6px 0 0; font-size: 12px; color: var(--amber); }
 .contacts__choices { margin: 0; padding: 0; list-style: none; }
 .contacts__choices li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
 .contacts__choice-title { color: var(--text); }
@@ -88,17 +88,17 @@
 
 /* The rivals ladder on the Backroom. */
 .ladder { display: flex; flex-direction: column; gap: 10px; }
-.ladder__decide { padding: 10px 12px; border: 1px solid rgba(78, 230, 200, 0.55); border-radius: 10px; background: rgba(78, 230, 200, 0.06); }
+.ladder__decide { padding: 10px 12px; border: 1px solid rgb(var(--mint-rgb) / 0.55); border-radius: 10px; background: rgb(var(--mint-rgb) / 0.06); }
 .ladder__decide p { margin: 4px 0 8px; color: var(--text); }
 .ladder__choices { display: flex; flex-wrap: wrap; gap: 8px; }
 .ladder__list { margin: 0; padding: 0; list-style: none; counter-reset: none; }
 .ladder__row { display: flex; align-items: center; gap: 10px; padding: 5px 8px; border-bottom: 1px solid var(--line-soft); font-size: 15px; color: var(--text); }
-.ladder__row.is-you { border: 1px solid var(--cyan); border-radius: 6px; background: rgba(95, 212, 255, 0.08); color: var(--text-bright); font-weight: 700; }
+.ladder__row.is-you { border: 1px solid var(--cyan); border-radius: 6px; background: rgb(var(--cyan-rgb) / 0.08); color: var(--text-bright); font-weight: 700; }
 .ladder__row.is-sold { color: var(--text-dim); }
 .ladder__place { width: 24px; text-align: right; color: var(--text-dim); }
 .ladder__handle { flex: 1; }
 .ladder__outcome { padding: 0 6px; border: 1px solid var(--line); border-radius: var(--radius-pill); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
-.ladder__row.is-truce .ladder__outcome, .ladder__row.is-relay .ladder__outcome { border-color: rgba(78, 230, 200, 0.5); color: var(--mint); }
+.ladder__row.is-truce .ladder__outcome, .ladder__row.is-relay .ladder__outcome { border-color: rgb(var(--mint-rgb) / 0.5); color: var(--mint); }
 .ladder__score { min-width: 36px; text-align: right; color: var(--cyan); }
 .ladder__moves { margin: 0; padding: 0; list-style: none; font-size: 14px; color: var(--text); }
 .ladder__moves li { padding: 3px 0; }
@@ -110,9 +110,9 @@
   gap: 10px;
   margin: 0 0 12px;
   padding: 10px 12px;
-  border: 1px solid rgba(78, 230, 200, 0.22);
+  border: 1px solid rgb(var(--mint-rgb) / 0.22);
   border-radius: 8px;
-  background: rgba(78, 230, 200, 0.05);
+  background: rgb(var(--mint-rgb) / 0.05);
 }
 
 .watch__label {
@@ -166,9 +166,9 @@ li:has(> .logline__follow) {
   gap: 8px;
   margin: 8px 0;
   padding: 10px 12px;
-  border: 1px solid rgba(255, 59, 78, 0.28);
+  border: 1px solid rgb(var(--red-rgb) / 0.28);
   border-radius: 8px;
-  background: rgba(255, 59, 78, 0.05);
+  background: rgb(var(--red-rgb) / 0.05);
 }
 
 .heist__head {
@@ -204,15 +204,15 @@ li:has(> .logline__follow) {
   gap: 10px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: rgba(95, 212, 255, 0.05);
+  background: rgb(var(--cyan-rgb) / 0.05);
 }
 
 .heist__line.is-held {
-  background: rgba(78, 230, 200, 0.1);
+  background: rgb(var(--mint-rgb) / 0.1);
 }
 
 .heist__line.is-vault {
-  border: 1px dashed rgba(255, 59, 78, 0.35);
+  border: 1px dashed rgb(var(--red-rgb) / 0.35);
 }
 
 .heist__step {
@@ -252,7 +252,7 @@ li:has(> .logline__follow) {
 }
 
 .heist__brings .is-warn {
-  color: var(--amber, #ffc24b);
+  color: var(--amber, var(--amber));
 }
 
 .heist__state {
@@ -283,7 +283,7 @@ li:has(> .logline__follow) {
   gap: 8px;
   padding: 6px 10px;
   border-radius: 6px;
-  background: rgba(95, 212, 255, 0.06);
+  background: rgb(var(--cyan-rgb) / 0.06);
 }
 
 .datadesk__kind.is-up .datadesk__swing {
@@ -300,7 +300,7 @@ li:has(> .logline__follow) {
   justify-content: space-between;
   gap: 12px;
   padding: 8px 4px;
-  border-bottom: 1px solid rgba(95, 212, 255, 0.08);
+  border-bottom: 1px solid rgb(var(--cyan-rgb) / 0.08);
 }
 
 .datadesk__what {
@@ -406,7 +406,7 @@ li:has(> .logline__follow) {
 }
 
 .card--asset.is-owned {
-  border-color: rgba(78, 230, 200, 0.4);
+  border-color: rgb(var(--mint-rgb) / 0.4);
 }
 
 .card--asset.is-locked .card__blurb {

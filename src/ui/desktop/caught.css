@@ -10,7 +10,7 @@
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 46%, #1a0508 0%, #0a0205 55%, #030103 100%);
+  background: radial-gradient(circle at 50% 46%, var(--red-deep) 0%, #0a0205 55%, #030103 100%);
   cursor: pointer;
   animation: caught-in 0.18s ease-out both;
 }
@@ -30,7 +30,7 @@
 .caught__static {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(0deg, rgba(255, 59, 78, 0.05) 0 1px, transparent 1px 3px);
+  background: repeating-linear-gradient(0deg, rgb(var(--red-rgb) / 0.05) 0 1px, transparent 1px 3px);
   pointer-events: none;
 }
 
@@ -40,7 +40,7 @@
   left: 0;
   right: 0;
   height: 22%;
-  background: linear-gradient(180deg, transparent, rgba(255, 59, 78, 0.16), transparent);
+  background: linear-gradient(180deg, transparent, rgb(var(--red-rgb) / 0.16), transparent);
   animation: caught-roll 0.9s linear infinite;
 }
 
@@ -67,31 +67,31 @@
 }
 
 .caught__disc {
-  fill: rgba(255, 59, 78, 0.045);
-  stroke: rgba(255, 59, 78, 0.5);
+  fill: rgb(var(--red-rgb) / 0.045);
+  stroke: rgb(var(--red-rgb) / 0.5);
   stroke-width: 1;
 }
 
 .caught__grid {
   fill: none;
-  stroke: rgba(255, 110, 124, 0.2);
+  stroke: rgb(var(--red-rgb) / 0.2);
   stroke-width: 0.5;
 }
 
 .caught__grid--back {
-  stroke: rgba(255, 110, 124, 0.07);
+  stroke: rgb(var(--red-rgb) / 0.07);
 }
 
 .caught__coast {
   fill: none;
-  stroke: rgba(255, 170, 178, 0.6);
+  stroke: rgb(var(--red-text-rgb) / 0.6);
   stroke-width: 1;
   stroke-linejoin: round;
 }
 
 .caught__land {
   fill: none;
-  stroke: rgba(255, 150, 160, 0.32);
+  stroke: rgb(var(--red-text-rgb) / 0.32);
   stroke-width: 1.5;
   stroke-linecap: round;
 }
@@ -105,45 +105,45 @@
 }
 
 .caught__arc.is-standing {
-  stroke: #4ee6c8;
+  stroke: var(--mint);
   stroke-width: 2;
   opacity: 0.85;
 }
 
 .caught__arc.is-burning {
-  stroke: #ff3b4e;
+  stroke: var(--red);
   stroke-width: 3.5;
-  filter: drop-shadow(0 0 6px #ff3b4e);
+  filter: drop-shadow(0 0 6px var(--red));
 }
 
 .caught__arc.is-gone {
-  stroke: #ff3b4e;
+  stroke: var(--red);
   stroke-width: 1;
   stroke-dasharray: 2 6;
   opacity: 0.3;
 }
 
 .caught__dot {
-  fill: #4ee6c8;
+  fill: var(--mint);
 }
 
 .caught__dot.is-reached {
-  fill: #ff3b4e;
+  fill: var(--red);
 }
 
 .caught__dot.is-home {
-  stroke: #e6f7ff;
+  stroke: var(--text-bright);
   stroke-width: 1.5;
 }
 
 .caught__dot.is-hit {
-  fill: #ff3b4e;
-  filter: drop-shadow(0 0 10px #ff3b4e);
+  fill: var(--red);
+  filter: drop-shadow(0 0 10px var(--red));
 }
 
 .caught__head {
   fill: #fff;
-  filter: drop-shadow(0 0 8px #ff3b4e) drop-shadow(0 0 16px #ff3b4e);
+  filter: drop-shadow(0 0 8px var(--red)) drop-shadow(0 0 16px var(--red));
 }
 
 .caught__trail {
@@ -157,7 +157,7 @@
   font-family: var(--font-data);
   font-size: clamp(12px, 1.7vmin, 16px);
   letter-spacing: 0.22em;
-  color: rgba(255, 194, 200, 0.8);
+  color: rgb(var(--red-text-rgb) / 0.8);
 }
 
 .caught__words {
@@ -206,9 +206,9 @@
   line-height: 1.2;
   color: #fff;
   text-shadow:
-    0 0 18px rgba(255, 59, 78, 0.9),
-    3px 0 0 rgba(255, 59, 78, 0.6),
-    -3px 0 0 rgba(95, 212, 255, 0.35);
+    0 0 18px rgb(var(--red-rgb) / 0.9),
+    3px 0 0 rgb(var(--red-rgb) / 0.6),
+    -3px 0 0 rgb(var(--cyan-rgb) / 0.35);
 }
 
 .caught__words span {

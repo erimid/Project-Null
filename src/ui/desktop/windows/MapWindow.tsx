@@ -49,6 +49,9 @@ import { activeConnection, deskStore, useDesk } from '../deskStore';
 import { lit, useGuide } from '../guide';
 import { Window } from '../Window';
 import { windows } from '../windowStore';
+import { createPortal } from 'preact/compat';
+import type { ComponentChildren } from 'preact';
+import { useHost } from '../dockStore';
 
 const KIND_LABELS: Record<ServerDef['kind'], string> = {
   gateway: 'Your gateway',
@@ -385,6 +388,9 @@ export function MapWindow() {
   const desk = useDesk();
   const game = useWorld((state) => state);
   const guide = useGuide();
+  // A docked design with a side column shows the address book there, not in this window.
+  const bookHost = useHost('book');
+  const inBook = (book: ComponentChildren) => (bookHost ? createPortal(<div class="map map--book">{book}</div>, bookHost) : book);
   const [notice, setNotice] = useState('');
   // Servers Chorus has only just taken, and where it reached each from: the globe shows it happen.
   const [fresh, setFresh] = useState<readonly { id: string; from?: string }[]>([]);
@@ -695,7 +701,7 @@ export function MapWindow() {
 
   return (
     <Window id="map" note={note}>
-      <div class={`map${hasRoom ? ' has-legs' : ''}`}>
+      <div class={`map${hasRoom ? ' has-legs' : ''}${bookHost ? ' map--nobook' : ''}`}>
         <div class="map__globe">
           <Globe
             dots={dots}
@@ -766,6 +772,7 @@ export function MapWindow() {
           </div>
         </div>
 
+        {inBook(
         <div class="map__side">
           <div class="map__book-head">
             <h3 class="map__heading">Address book</h3>
@@ -1043,7 +1050,8 @@ export function MapWindow() {
               {notice}
             </p>
           )}
-        </div>
+        </div>,
+        )}
 
         <div class="route">
           <span class="route__label" data-tip="The path your connection takes, from you to the target. A trace follows it back one step at a time.">

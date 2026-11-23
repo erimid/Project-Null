@@ -2,32 +2,32 @@
 
 /* Noticed: a monitor has seen you and the trace has not started. Amber, between mint and red. */
 .route__time.is-noticed {
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .route__time.is-noticed .data {
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .dock__stat--trace.is-noticed .dock__value {
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .dock__stat--trace.is-noticed .dock__light {
-  background: #ffc45c;
-  box-shadow: 0 0 10px rgba(255, 196, 92, 0.8);
+  background: var(--amber);
+  box-shadow: 0 0 10px rgb(var(--amber-rgb) / 0.8);
   animation: light-blink 1.2s steps(2, jump-none) infinite;
 }
 
 .viewer__trace--noticed {
-  border-color: rgba(255, 196, 92, 0.5);
-  background: rgba(40, 28, 6, 0.92);
-  color: #ffc45c;
+  border-color: rgb(var(--amber-rgb) / 0.5);
+  background: rgb(var(--amber-deep-rgb) / 0.92);
+  color: var(--amber);
 }
 
 .viewer__trace--noticed .viewer__trace-dot {
-  background: #ffc45c;
-  box-shadow: 0 0 8px #ffc45c;
+  background: var(--amber);
+  box-shadow: 0 0 8px var(--amber);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -12,10 +12,10 @@
   padding: 7px 11px;
   border: 1px solid var(--line-strong);
   border-radius: 9px;
-  background: rgba(6, 17, 29, 0.97);
+  background: rgb(var(--panel-rgb) / 0.97);
   box-shadow:
     0 10px 26px rgba(0, 0, 0, 0.6),
-    0 0 18px rgba(95, 212, 255, 0.08);
+    0 0 18px rgb(var(--cyan-rgb) / 0.08);
   color: var(--text-bright);
   font-size: 14px;
   line-height: 1.3;
@@ -52,16 +52,16 @@
 
 .window__help-btn.is-open {
   color: var(--mint);
-  background: rgba(78, 230, 200, 0.12);
+  background: rgb(var(--mint-rgb) / 0.12);
 }
 
 .window__help {
   flex: none;
   margin: 10px 12px 0;
   padding: 12px 14px 10px;
-  border: 1px solid rgba(78, 230, 200, 0.4);
+  border: 1px solid rgb(var(--mint-rgb) / 0.4);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgba(78, 230, 200, 0.09), rgba(78, 230, 200, 0.03));
+  background: linear-gradient(180deg, rgb(var(--mint-rgb) / 0.09), rgb(var(--mint-rgb) / 0.03));
   color: var(--text);
   animation: help-card-in 0.22s ease-out;
   /* Never more than half the window; the rest scrolls. */
@@ -130,7 +130,7 @@
 .tour__shade {
   position: absolute;
   inset: 0;
-  background: rgba(1, 5, 10, 0.72);
+  background: rgb(var(--bg-rgb) / 0.72);
   animation: fade-in 0.25s ease-out;
 }
 
@@ -140,9 +140,9 @@
   border: 2px solid var(--mint);
   border-radius: 12px;
   box-shadow:
-    0 0 0 9999px rgba(1, 5, 10, 0.72),
-    0 0 24px rgba(78, 230, 200, 0.45),
-    inset 0 0 18px rgba(78, 230, 200, 0.18);
+    0 0 0 9999px rgb(var(--bg-rgb) / 0.72),
+    0 0 24px rgb(var(--mint-rgb) / 0.45),
+    inset 0 0 18px rgb(var(--mint-rgb) / 0.18);
   pointer-events: none;
   transition:
     left 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -154,7 +154,7 @@
 
 @keyframes tour-pulse {
   50% {
-    border-color: rgba(78, 230, 200, 0.55);
+    border-color: rgb(var(--mint-rgb) / 0.55);
   }
 }
 
@@ -164,10 +164,10 @@
   padding: 16px 18px 14px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-window);
-  background: rgba(6, 17, 29, 0.98);
+  background: rgb(var(--panel-rgb) / 0.98);
   box-shadow:
     0 18px 50px rgba(0, 0, 0, 0.7),
-    0 0 30px rgba(95, 212, 255, 0.1);
+    0 0 30px rgb(var(--cyan-rgb) / 0.1);
   transition:
     left 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
     top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -275,7 +275,7 @@
   border: 1px solid var(--mint);
   border-radius: var(--radius-pill);
   background: var(--bar);
-  box-shadow: 0 0 18px rgba(78, 230, 200, 0.25);
+  box-shadow: 0 0 18px rgb(var(--mint-rgb) / 0.25);
   pointer-events: none;
 }
 
@@ -306,10 +306,10 @@
 @keyframes guided {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(78, 230, 200, 0.5);
+    box-shadow: 0 0 0 0 rgb(var(--mint-rgb) / 0.5);
   }
   50% {
-    box-shadow: 0 0 16px 5px rgba(78, 230, 200, 0.45);
+    box-shadow: 0 0 16px 5px rgb(var(--mint-rgb) / 0.45);
   }
 }
 

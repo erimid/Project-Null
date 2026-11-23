@@ -17,7 +17,7 @@ import { ON_DEMAND, WINDOW_DEFS, WINDOW_IDS, useWindows, windows, type WindowId 
 const MAIN: readonly WindowId[] = ['server', 'map', 'gateway', 'messages'];
 
 /** Little numbers on a tab: programs running, unread mail, skill points to spend. */
-function useCounts(): Partial<Record<WindowId, { n: number; tone: string; label: string }>> {
+export function useCounts(): Partial<Record<WindowId, { n: number; tone: string; label: string }>> {
   const running = useGame((game) => game.tasks.length);
   const unread = useGame((game) => game.messages.filter((message) => !message.read).length);
   const points = useGame((game) => pointsFree(game, content));

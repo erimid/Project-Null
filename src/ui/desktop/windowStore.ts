@@ -324,6 +324,10 @@ export const windows = {
     const where = keepPosition ? {} : { x: restore.x, y: restore.y };
     set(patch(id, { ...where, w: restore.w, h: restore.h, restore: null, zone: null }), !keepPosition);
   },
+  /** A docked design lets go of it: it floats at this place and size, in front. */
+  floatAt(id: WindowId, rect: Rect): void {
+    set(patch(id, { ...rect, open: true, minimized: false, z: topZ() + 1, restore: null, zone: null, desk: null }), true);
+  },
   /** While dragging. Call `settle` when the drag ends. */
   move(id: WindowId, x: number, y: number): void {
     set(patch(id, { x, y, desk: null }), false);

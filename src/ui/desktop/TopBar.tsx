@@ -7,6 +7,7 @@ import { lit, useGuide } from './guide';
 import { GuideCard } from './GuideCard';
 import { useLayout } from './layout';
 import { windows } from './windowStore';
+import { useDockDesign } from './dockStore';
 
 /**
  * Top bar: one tab per connected server (each is its own connection),
@@ -22,6 +23,8 @@ export function TopBar() {
   const contract = activeContract(game, content);
   const done = contract !== undefined && objectiveMet(game, content, contract);
   const steps = contract ? stagesOf(contract) : [];
+  // A docked design keeps the contract on show in its side column, so the bar has no button for it.
+  const docked = useDockDesign() !== null;
 
   return (
     <header class="tabbar">
@@ -62,7 +65,7 @@ export function TopBar() {
         +
       </button>
       {onDesk && <GuideCard bar />}
-      {contract ? (
+      {docked ? null : contract ? (
         <button
           type="button"
           class={`tabbar__contract tabbar__contract--live${done ? ' is-done' : ''}${desk.contractOpen ? ' is-open' : ''}${lit(guide, 'deliver')}`}

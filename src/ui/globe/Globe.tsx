@@ -67,8 +67,9 @@ export const C = SIZE / 2;
 /** Radius of the globe at zoom 1, in drawing units. */
 export const BASE_RADIUS = 200;
 const ZOOMS = [1, 1.6, 2.5] as const;
-const COLORS = { mint: '#4ee6c8', cyan: '#5fd4ff', red: '#ff3b4e', violet: '#c48bff' } as const;
-const AMBER = '#ffc45c';
+// Theme colours, so the globe follows the colour theme. Violet is a story colour and stays.
+const COLORS = { mint: 'var(--mint)', cyan: 'var(--cyan)', red: 'var(--red)', violet: '#c48bff' } as const;
+const AMBER = 'var(--amber)';
 /** Radius of a trouble ring, and its length all the way round. */
 const RING = 9;
 const RING_LENGTH = 2 * Math.PI * RING;
@@ -344,23 +345,23 @@ export function Globe({ dots, arcs, focus, onPick, pins = [], overlay }: Props) 
       >
         <defs>
           <radialGradient id="globe-atmosphere" cx="50%" cy="50%" r="50%">
-            <stop offset="78%" stop-color="#5fd4ff" stop-opacity="0" />
-            <stop offset="88%" stop-color="#5fd4ff" stop-opacity="0.16" />
-            <stop offset="100%" stop-color="#5fd4ff" stop-opacity="0" />
+            <stop offset="78%" stop-color="var(--cyan)" stop-opacity="0" />
+            <stop offset="88%" stop-color="var(--cyan)" stop-opacity="0.16" />
+            <stop offset="100%" stop-color="var(--cyan)" stop-opacity="0" />
           </radialGradient>
           <radialGradient id="globe-body" cx="40%" cy="35%" r="70%">
-            <stop offset="0%" stop-color="#0d2c46" />
-            <stop offset="100%" stop-color="#040c16" />
+            <stop offset="0%" stop-color="var(--panel-hi2)" />
+            <stop offset="100%" stop-color="var(--bg)" />
           </radialGradient>
         </defs>
         <circle cx={C} cy={C} r={R * 1.18} fill="url(#globe-atmosphere)" />
-        <path d={grid.back} fill="none" stroke="#5fd4ff" stroke-width="0.8" opacity="0.14" />
+        <path d={grid.back} fill="none" stroke="var(--cyan)" stroke-width="0.8" opacity="0.14" />
         <circle cx={C} cy={C} r={R} fill="url(#globe-body)" opacity="0.82" />
-        <path d={land} stroke="#2f9ccc" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.5" />
-        <path d={grid.front} fill="none" stroke="#5fd4ff" stroke-width="1" opacity="0.28" />
-        <path d={border} fill="none" stroke="#5fd4ff" stroke-width="0.7" stroke-linejoin="round" opacity="0.3" />
-        <path d={coast} fill="none" stroke="#7fe0ff" stroke-width="1.1" stroke-linejoin="round" opacity="0.85" />
-        <circle cx={C} cy={C} r={R} fill="none" stroke="#5fd4ff" stroke-width="1.6" opacity="0.9" />
+        <path d={land} stroke="var(--cyan-low)" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.5" />
+        <path d={grid.front} fill="none" stroke="var(--cyan)" stroke-width="1" opacity="0.28" />
+        <path d={border} fill="none" stroke="var(--cyan)" stroke-width="0.7" stroke-linejoin="round" opacity="0.3" />
+        <path d={coast} fill="none" stroke="var(--cyan-hi)" stroke-width="1.1" stroke-linejoin="round" opacity="0.85" />
+        <circle cx={C} cy={C} r={R} fill="none" stroke="var(--cyan)" stroke-width="1.6" opacity="0.9" />
 
         {arcs.map((arc, index) => (
           <path

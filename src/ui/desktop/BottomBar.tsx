@@ -1,4 +1,5 @@
 import { canReadTrace, findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, pointsFree, traceHeld, traceReport, tracesByUrgency, WANTED_LEVELS, wantedEffects, wantedLevel, whyNotMove, type GameState } from '../../core';
+import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { formatDay, formatTime, ratingStep } from '../format';
 import { useGame, useWorld } from '../hooks';
@@ -204,7 +205,16 @@ export function WantedStat() {
   );
 }
 
-export function BottomBar() {
+interface BarProps {
+  /** A docked design: the windows are reached from its rail or sidebar, so the layouts and window tabs are left off. */
+  docked?: boolean;
+  /** The bar is at the top of the screen: what pops out of it opens downwards. */
+  top?: boolean;
+  /** Drawn in the middle of the bar (the connection tabs, when one bar does both jobs). */
+  middle?: ComponentChildren;
+}
+
+export function BottomBar({ docked = false, top = false, middle }: BarProps = {}) {
   const balance = useGame((game) => Math.floor(game.player.balance).toLocaleString('en-US'));
   // Flash the figure green or red when it changes, but not when the bar first appears.
   const amount = useGame((game) => game.player.balance);
@@ -238,11 +248,12 @@ export function BottomBar() {
   const tabs = WINDOW_IDS.filter((id) => (ON_DEMAND.includes(id) ? layouts[id].open : id !== 'server' || connected));
 
   return (
-    <footer class={`dock${tracing ? ' is-tracing' : ''}`}>
+    <footer class={`dock${tracing ? ' is-tracing' : ''}${docked ? ' dock--docked' : ''}${top ? ' dock--top' : ''}`}>
       <TraceAlarm />
       <GameMenu />
-      <DeskSwitch />
-      <nav class="dock__tabs" aria-label="Windows" data-tour="tabs">
+      {middle}
+      {!docked && <DeskSwitch />}
+      {!docked && <nav class="dock__tabs" aria-label="Windows" data-tour="tabs">
         {tabs.map((id) => (
           <button
             key={id}
@@ -258,8 +269,8 @@ export function BottomBar() {
             {id === 'skills' && points > 0 && <span class="count count--mint data" aria-label={`${points} to spend`}>{points}</span>}
           </button>
         ))}
-      </nav>
-      <span class="dock__spacer" />
+      </nav>}
+      {!middle && <span class="dock__spacer" />}
       <div
         class={`dock__stat dock__stat--trace${tracing ? ' is-tracing' : noticed ? ' is-noticed' : ''}`}
         data-tour="trace"

@@ -3,27 +3,63 @@
  * Rule: the sans font is for titles, tabs, menus and buttons. The mono font
  * is only for data (file names, readouts, timers, addresses).
  */
-:root {
+:root,
+.moment,
+.caught {
+  /*
+   * The colours of the first theme, "Deep Signal". Another theme writes its own values for
+   * every one of these on the page root (see themes.ts). The story and caught screens name
+   * these again so that they stay dark under any theme.
+   */
   --bg: #03080f;
+  --bg-rgb: 3 8 15;
   --bg-glow: #0b2236;
   --bar: rgba(5, 13, 23, 0.92);
   --panel: #06111d;
-
-  --line: rgba(95, 212, 255, 0.22);
-  --line-soft: rgba(95, 212, 255, 0.18);
-  --line-strong: rgba(95, 212, 255, 0.4);
+  --panel-rgb: 6 17 29;
+  --panel-hi: #0a1c2c;
+  --panel-hi2: #0e2d45;
 
   --cyan: #5fd4ff;
+  --cyan-rgb: 95 212 255;
+  --cyan-hi: #7fe0ff;
+  --cyan-low: #2f9ccc;
+  --on-cyan: #04121a;
   --text-bright: #e6f7ff;
+  --bright-rgb: 230 247 255;
   --text: #a9dcef;
   --text-muted: #8fb8cc;
+  --muted-rgb: 143 184 204;
   --text-dim: #5d8aa3;
+  --text-faint: #3d5e70;
 
   --mint: #4ee6c8;
+  --mint-rgb: 78 230 200;
   --mint-text: #c9fff3;
+  --mint-deep: #072019;
+  --mint-deep-rgb: 7 40 36;
+  --on-mint: #04221d;
   --red: #ff3b4e;
+  --red-rgb: 255 59 78;
   --red-text: #ffc2c8;
+  --red-text-rgb: 255 194 200;
+  --red-soft: #ff8a95;
+  --red-muted: #b9808a;
+  --red-deep: #1a0508;
+  --red-deep-rgb: 46 7 13;
+  --amber: #ffc45c;
+  --amber-rgb: 255 196 92;
+  --amber-text: #ffd998;
+  --amber-text-rgb: 255 226 165;
+  --amber-deep: #241a08;
+  --amber-deep-rgb: 40 28 6;
 
+  --line: rgb(var(--cyan-rgb) / 0.22);
+  --line-soft: rgb(var(--cyan-rgb) / 0.18);
+  --line-strong: rgb(var(--cyan-rgb) / 0.4);
+}
+
+:root {
   --font-ui: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
   --font-data: 'Share Tech Mono', ui-monospace, 'Cascadia Mono', Menlo, monospace;
 

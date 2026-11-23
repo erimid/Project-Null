@@ -15,7 +15,7 @@
   align-self: center;
   border: 1px solid var(--line-soft);
   border-radius: 10px;
-  background: rgba(95, 212, 255, 0.04);
+  background: rgb(var(--cyan-rgb) / 0.04);
 }
 
 .desks__btn {
@@ -50,13 +50,13 @@
 
 .desks__btn:not(:disabled):hover {
   color: var(--text-bright);
-  background: rgba(95, 212, 255, 0.08);
+  background: rgb(var(--cyan-rgb) / 0.08);
 }
 
 .desks__btn.is-current {
   color: var(--mint-text);
-  background: rgba(78, 230, 200, 0.14);
-  box-shadow: inset 0 0 0 1px rgba(78, 230, 200, 0.45);
+  background: rgb(var(--mint-rgb) / 0.14);
+  box-shadow: inset 0 0 0 1px rgb(var(--mint-rgb) / 0.45);
 }
 
 .desks__btn.is-current .desks__pic rect.is-main {
@@ -86,11 +86,11 @@ button.tabbar__contract--live {
 }
 
 button.tabbar__contract--live:hover {
-  background: rgba(95, 212, 255, 0.06);
+  background: rgb(var(--cyan-rgb) / 0.06);
 }
 
 button.tabbar__contract--live.is-open {
-  background: rgba(95, 212, 255, 0.1);
+  background: rgb(var(--cyan-rgb) / 0.1);
   border-bottom-color: var(--cyan);
 }
 
@@ -143,20 +143,20 @@ button.tabbar__contract--live.is-done:not(.is-open) .tabbar__contract-label {
   flex-direction: column;
   max-width: calc(100% - 24px);
   max-height: calc(100% - 12px);
-  border: 1px solid rgba(95, 212, 255, 0.6);
+  border: 1px solid rgb(var(--cyan-rgb) / 0.6);
   border-top: 0;
   border-radius: 0 0 var(--radius-window) var(--radius-window);
   background: var(--panel);
   box-shadow:
     0 24px 50px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(3, 8, 15, 0.8);
+    0 0 0 1px rgb(var(--bg-rgb) / 0.8);
   overflow: hidden;
   transform-origin: top right;
   animation: contract-drop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
 
 .contractpanel.is-done {
-  border-color: rgba(78, 230, 200, 0.7);
+  border-color: rgb(var(--mint-rgb) / 0.7);
 }
 
 @keyframes contract-drop {
@@ -174,14 +174,14 @@ button.tabbar__contract--live.is-done:not(.is-open) .tabbar__contract-label {
   height: 38px;
   padding: 0 8px 0 16px;
   border-bottom: 1px solid var(--line-soft);
-  background: rgba(95, 212, 255, 0.05);
+  background: rgb(var(--cyan-rgb) / 0.05);
   font-size: 16px;
   font-weight: 600;
   color: var(--text-bright);
 }
 
 .contractpanel.is-done .contractpanel__title {
-  background: rgba(78, 230, 200, 0.08);
+  background: rgb(var(--mint-rgb) / 0.08);
 }
 
 .contractpanel__body {
@@ -192,7 +192,7 @@ button.tabbar__contract--live.is-done:not(.is-open) .tabbar__contract-label {
   padding: 14px 16px 16px;
   overflow: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(95, 212, 255, 0.3) transparent;
+  scrollbar-color: rgb(var(--cyan-rgb) / 0.3) transparent;
 }
 
 /* On a phone or tablet it takes the width of the screen, under the top bar. */
@@ -209,7 +209,7 @@ button.tabbar__contract--live.is-done:not(.is-open) .tabbar__contract-label {
 .desktop--tablet .contractpanel {
   left: auto;
   width: min(480px, 100%);
-  border-left: 1px solid rgba(95, 212, 255, 0.6);
+  border-left: 1px solid rgb(var(--cyan-rgb) / 0.6);
 }
 
 .desktop--phone .contractpanel__body {

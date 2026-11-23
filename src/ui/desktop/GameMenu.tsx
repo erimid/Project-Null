@@ -6,6 +6,7 @@ import { hintStore, useHints } from './hintStore';
 import { useLayout } from './layout';
 import { snapping, useSnapping } from './snapStore';
 import { windows } from './windowStore';
+import { look, useLook } from './lookStore';
 
 const SHORTCUTS: readonly (readonly [string, string])[] = [
   ['Space', 'Pause or resume'],
@@ -23,6 +24,7 @@ export function GameMenu() {
   const snap = useSnapping();
   const layout = useDeskLayout();
   const desk = useLayout() === 'desk';
+  const lookNow = useLook();
   const root = useRef<HTMLDivElement>(null);
 
   // Clicking anywhere else, or Esc, closes it.
@@ -82,6 +84,13 @@ export function GameMenu() {
             Tour of the desk
             <span class="menu__item-note">What everything on screen is for</span>
           </button>
+          <h3 class="menu__heading">Look</h3>
+          <div class="menu__sound">
+            <button type="button" class={`btn${lookNow.bar ? ' btn--go' : ''}`} aria-pressed={lookNow.bar} onClick={() => look.setBar(!lookNow.bar)}>
+              {lookNow.bar ? 'On' : 'Off'}
+            </button>
+            <span class="menu__item-note">The test bar at the top of the screen: swap desk designs and colour themes with one press</span>
+          </div>
           <h3 class="menu__heading">Hints</h3>
           <div class="menu__sound">
             <button

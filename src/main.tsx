@@ -8,12 +8,16 @@ import '@fontsource/share-tech-mono/latin-400.css';
 
 import './ui/desktop/theme.css';
 import { Desktop } from './ui/desktop/Desktop';
+import { look } from './ui/desktop/lookStore';
 import { session } from './ui/session';
 import { startMusic } from './ui/music';
 import { startSfx } from './ui/sfx';
 
 // While developing, the running game can be reached from the browser's console and from browser tests. Not in the built game.
-if (import.meta.env.DEV) (window as unknown as { __session?: typeof session }).__session = session;
+if (import.meta.env.DEV) Object.assign(window, { __session: session, __look: look });
+
+// The chosen colour theme goes on before anything is drawn.
+look.start();
 
 // Load the last game (or start a new one) before drawing anything.
 void session.start().then(() => {

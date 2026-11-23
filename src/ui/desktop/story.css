@@ -110,7 +110,7 @@
   font-size: clamp(16px, 2.4vw, 24px);
   font-weight: 500;
   line-height: 1.4;
-  color: var(--text-bright, #e8f4ff);
+  color: var(--text-bright, var(--text-bright));
 }
 
 .moment--name .moment__line {
@@ -148,12 +148,12 @@
 
 .moment--quiet {
   --ending: #8fb4d6;
-  --ending-dark: #0b1722;
+  --ending-dark: var(--panel-hi);
 }
 
 .moment--daylight {
-  --ending: #ffd27a;
-  --ending-dark: #241a08;
+  --ending: var(--amber-text);
+  --ending-dark: var(--amber-deep);
 }
 
 .moment--unbound {
@@ -162,8 +162,8 @@
 }
 
 .moment--treaty {
-  --ending: #4ee6c8;
-  --ending-dark: #072019;
+  --ending: var(--mint);
+  --ending-dark: var(--mint-deep);
 }
 
 .moment--chorus {
@@ -380,7 +380,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .asking__way {
@@ -404,14 +404,14 @@
 
 .asking__way:hover,
 .asking__way:focus-visible {
-  border-color: #ffc45c;
-  background: rgba(255, 196, 92, 0.08);
+  border-color: var(--amber);
+  background: rgb(var(--amber-rgb) / 0.08);
 }
 
 .asking__way.is-armed {
-  border-color: #ffc45c;
-  background: rgba(255, 196, 92, 0.14);
-  box-shadow: 0 0 18px rgba(255, 196, 92, 0.25);
+  border-color: var(--amber);
+  background: rgb(var(--amber-rgb) / 0.14);
+  box-shadow: 0 0 18px rgb(var(--amber-rgb) / 0.25);
 }
 
 .asking__name {
@@ -440,7 +440,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #ffc45c;
+  color: var(--amber);
 }
 
 .asking__way.is-shut {
