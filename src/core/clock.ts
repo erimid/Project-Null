@@ -5,6 +5,7 @@
  * connection is open the clock is locked to 1× (no pause, no speed-up),
  * so trace timers stay tense.
  */
+import { advanceHeist } from './heists';
 import { caught, pullOut } from './actions';
 import { activeContract, postJobs } from './contracts';
 import { advanceContract } from './stages';
@@ -38,6 +39,7 @@ export function tick(state: GameState, realMs: number, content: Content): number
 
   const sighted = state.connections.filter((connection) => connection.monitor.blindMs <= 0);
   advanceTasks(state, content, simMs);
+  if (state.contracts.heist) advanceHeist(state, simMs);
   for (const connection of [...state.connections]) {
     // A monitor blinded during this tick starts its blind time on the next one.
     if (connection.monitor.blindMs > 0 && sighted.includes(connection)) continue;

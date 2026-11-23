@@ -30,7 +30,7 @@ export function Alerts() {
     const timers = new Set<ReturnType<typeof setTimeout>>();
     const stop = session.subscribeEvents((event) => {
       if (event.type === 'moduleGained' && event.bought) return;
-      const shown = ['disconnected', 'promoted', 'pointEarned', 'moduleGained', 'raidStarted', 'barrierFell', 'portShut', 'raidEnded', 'stepDone', 'serverTaken'];
+      const shown = ['disconnected', 'promoted', 'pointEarned', 'moduleGained', 'raidStarted', 'barrierFell', 'portShut', 'raidEnded', 'stepDone', 'serverTaken', 'allyLetGo'];
       if (!shown.includes(event.type)) return;
       const chorus = content.chorus?.rival.handle;
       const alert: Alert = event.type === 'serverTaken'
@@ -53,6 +53,8 @@ export function Alerts() {
           : event.result === 'held'
           ? { id: nextId++, severe: false, good: true, opens: 'messages', title: 'Held off', text: `${event.who} gave up. Nothing is missing.` }
           : { id: nextId++, severe: false, title: 'Plug pulled', text: `${event.who} got nothing, and nor did you.` }
+        : event.type === 'allyLetGo'
+        ? { id: nextId++, severe: true, opens: 'contract' as const, title: `${event.who} let go`, text: `${event.server} is yours to hold now, or be quick.` }
         : event.type === 'stepDone'
         ? { id: nextId++, severe: false, good: true, opens: 'contract' as const, title: `Step ${event.step} of ${event.of} done`, text: 'The client has sent the next step.' }
         : event.type === 'promoted'

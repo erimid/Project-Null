@@ -351,9 +351,14 @@ export function securityOf(state: GameState, server: ServerDef): SecurityDef {
   return { password: up('password'), proxy: up('proxy'), firewall: up('firewall'), monitor: up('monitor') };
 }
 
+/** True while an ally is keeping a heist's hold: always, or for a timed ally until their time runs out. */
+export function allyHolding(hold: { ally?: string; allyMs?: number }): boolean {
+  return hold.ally !== undefined && (hold.allyMs === undefined || hold.allyMs > 0);
+}
+
 /** True while a heist's hold is kept: an ally has it, or the player is logged in there as its administrator. */
-export function heistHeld(state: GameState, hold: { targetId: string; ally?: string }): boolean {
-  return hold.ally !== undefined || state.connections.some((connection) => connection.serverId === hold.targetId && connection.role === 'admin');
+export function heistHeld(state: GameState, hold: { targetId: string; ally?: string; allyMs?: number }): boolean {
+  return allyHolding(hold) || state.connections.some((connection) => connection.serverId === hold.targetId && connection.role === 'admin');
 }
 
 /** The layer of a server that is run from another server right now, if any. */

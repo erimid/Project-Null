@@ -3,7 +3,7 @@
  * game before and after each change. Alerts and sounds listen to these,
  * so the simulation itself never needs to know about either.
  */
-import { activeContract, findEnding, findRival, readFlag, findServer, pointsAt, pointsSpent, raidReport, stageIndex, stagesOf, type Content, type GameState } from '../core';
+import { activeContract, allyHolding, findEnding, findRival, readFlag, findServer, pointsAt, pointsSpent, raidReport, stageIndex, stagesOf, type Content, type GameState } from '../core';
 import { gameInfo, linesOf } from '../content';
 
 const titleOf = (rating: number) => gameInfo.ratings.findLast((level) => rating >= level.min)?.title;
@@ -48,7 +48,9 @@ export type GameEvent =
   /** The player has just read the file that holds the struck-out name. */
   | { readonly type: 'nameRead' }
   /** The story reached one of its endings. */
-  | { readonly type: 'ended'; readonly id: string; readonly name: string };
+  | { readonly type: 'ended'; readonly id: string; readonly name: string }
+  /** An ally who was holding a heist's door for a while let go of it. */
+  | { readonly type: 'allyLetGo'; readonly who: string; readonly server: string };
 
 /** The parts of the game that events are worked out from. */
 export interface Snapshot {
@@ -82,6 +84,9 @@ export interface Snapshot {
   readonly named: boolean;
   /** The ending the story reached, if it has. */
   readonly ending: string | null;
+  /** The heist under way (its vault), and the doors allies are holding in it, as "ally@server". */
+  readonly heist: string;
+  readonly allies: readonly string[];
 }
 
 /** The flags that say the name has been read: the last thing read in each job whose story beat is a reveal. */
@@ -115,6 +120,8 @@ export function snapshot(state: GameState, content?: Content): Snapshot {
     taken: [...state.chorus.taken],
     named: !!content && (nameFlagsOf.get(content) ?? nameFlagsOf.set(content, nameFlags(content)).get(content)!).some((flag) => state.flags.includes(flag)),
     ending: state.ending?.id ?? null,
+    heist: state.contracts.heist?.vaultId ?? '',
+    allies: (state.contracts.heist?.holds ?? []).filter((hold) => allyHolding(hold)).map((hold) => `${hold.ally}@${hold.targetId}`),
     connections: new Map(
       state.connections.map((c) => [c.id, { serverId: c.serverId, tracing: c.trace.status === 'active', user: c.user }]),
     ),
@@ -205,6 +212,15 @@ export function diff(before: Snapshot, after: Snapshot, content: Content, byCloc
   const [jobAfter, stepAfter, steps] = after.stage.split(':');
   if (jobAfter && jobAfter === jobBefore && Number(stepAfter) > Number(stepBefore)) {
     events.push({ type: 'stepDone', step: Number(stepAfter), of: Number(steps) });
+  }
+
+  // A timed ally letting go, while the heist goes on.
+  if (after.heist !== '' && after.heist === before.heist) {
+    for (const held of before.allies) {
+      if (after.allies.includes(held)) continue;
+      const [who, serverId] = held.split('@') as [string, string];
+      events.push({ type: 'allyLetGo', who, server: name(serverId) });
+    }
   }
 
   // The story's own moments. An ending that hands Chorus everything is one event, not a hundred.

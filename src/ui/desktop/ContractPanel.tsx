@@ -1,4 +1,4 @@
-import { TWISTS, activeContract, findEnding, offeredChoices, activeLegend, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
+import { TWISTS, activeContract, conditionMet, findEnding, offeredChoices, activeLegend, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
 import { findServer, type ContractDef } from '../../core/content';
 import { formatMoney } from '../format';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
@@ -141,14 +141,31 @@ export function ContractPanel() {
 
   // The job that ends the story asks its question in full, not as a row of buttons.
   const ways = contract.choices ?? [];
-  const asking = contract.ending !== undefined || ways.some((choice) => choice.ending !== undefined);
-  const usual = findEnding(content, contract.ending)?.way;
+  // So does any job whose delivery is a decision (decide): every way named, two presses to answer.
+  const asking = contract.ending !== undefined || ways.some((choice) => choice.ending !== undefined) || contract.decide !== undefined;
+  const usual = contract.decide?.way ?? findEnding(content, contract.ending)?.way;
   const open_ = offeredChoices(game, contract);
+  const pledgesOf = (choice: (typeof ways)[number]) =>
+    choice.pledges?.lines.map((pledge) => ({ line: pledge.line, met: conditionMet(game, pledge.when), required: !!pledge.required }));
   const answers = [
-    { id: '', label: usual?.label ?? 'Deliver', note: usual?.note ?? 'Hand the job in the usual way.', pay: contract.pay },
-    ...open_.map((choice) => ({ id: choice.id, label: choice.label, note: choice.note, pay: choice.pay })),
+    { id: '', label: usual?.label ?? 'Deliver', note: usual?.note ?? 'Hand the job in the usual way.', pay: contract.pay, pledges: undefined },
+    ...open_.map((choice) => ({ id: choice.id, label: choice.label, note: choice.note, pay: choice.pay, pledges: pledgesOf(choice) })),
   ];
-  const closed = ways.length - open_.length;
+  // A closed way that rests on commitments is shown with them, so the player can see what it would take.
+  const shut = ways.filter((choice) => !open_.includes(choice) && choice.pledges);
+  const closed = ways.length - open_.length - shut.length;
+  const pledgeList = (pledges: ReturnType<typeof pledgesOf>, count?: number) =>
+    pledges && (
+      <ul class="asking__pledges">
+        {pledges.map((pledge) => (
+          <li key={pledge.line} class={pledge.met ? 'is-met' : undefined}>
+            <span aria-label={pledge.met ? 'Promised' : 'Not yet'}>{pledge.met ? '✓' : '○'}</span> {pledge.line}
+            {pledge.required ? <span class="asking__must"> (needed)</span> : null}
+          </li>
+        ))}
+        {count !== undefined && <li class="asking__count">plus any {count} of the other promises</li>}
+      </ul>
+    );
 
   const note = done ? 'ready to deliver' : steps.length > 1 ? `step ${current + 1} of ${steps.length}` : 'in progress';
 
@@ -300,7 +317,7 @@ export function ContractPanel() {
       </div>
       {asking && done && (
         <div class="asking" role="group" aria-label="What should happen">
-          <p class="asking__head">You have the core. What should happen?</p>
+          <p class="asking__head">{contract.decide?.question ?? 'You have the core. What should happen?'}</p>
           {answers.map((answer) => (
             <button
               key={answer.id}
@@ -312,8 +329,17 @@ export function ContractPanel() {
               <span class="asking__name">{answer.label}</span>
               <span class="asking__pay data">{formatMoney(answer.pay)}</span>
               <span class="asking__note">{answer.note}</span>
+              {pledgeList(answer.pledges)}
               {armed === answer.id && <span class="asking__confirm">Press again to answer. It cannot be taken back.</span>}
             </button>
+          ))}
+          {shut.map((choice) => (
+            <div key={choice.id} class="asking__way is-shut" aria-disabled="true">
+              <span class="asking__name">{choice.label}</span>
+              <span class="asking__pay data">closed</span>
+              <span class="asking__note">{choice.note} It would take these promises:</span>
+              {pledgeList(pledgesOf(choice), choice.pledges!.count)}
+            </div>
           ))}
           {closed > 0 && (
             <p class="asking__closed">

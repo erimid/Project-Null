@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 30;
+export const STATE_VERSION = 31;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -144,7 +144,8 @@ export interface ContractsState {
 /** A heist being worked on: the vault and who holds which of its layers. */
 export interface ActiveHeist {
   vaultId: string;
-  holds: { targetId: string; layer: 'firewall' | 'monitor' | 'proxy'; ally?: string }[];
+  /** `allyMs`: how much longer a timed ally holds it, counted down while the player is inside the vault. Missing = for the whole job. */
+  holds: { targetId: string; layer: 'firewall' | 'monitor' | 'proxy'; ally?: string; allyMs?: number }[];
   /** Traces run this many times slower while it is under way, from help the player earned. Missing = 1. */
   slow?: number;
 }

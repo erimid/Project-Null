@@ -233,6 +233,28 @@ li:has(> .logline__follow) {
   color: var(--text-dim);
 }
 
+.heist__ally.is-absent {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.heist__ally.is-gone {
+  color: var(--red-text);
+}
+
+.heist__brings {
+  margin: 4px 0 0;
+  padding: 0 0 0 18px;
+  font-size: 13px;
+  color: var(--text-dim);
+  display: grid;
+  gap: 2px;
+}
+
+.heist__brings .is-warn {
+  color: var(--amber, #ffc24b);
+}
+
 .heist__state {
   grid-column: 2;
   display: flex;

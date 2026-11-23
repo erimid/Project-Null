@@ -16,6 +16,15 @@ function eventsOf(state: GameState, change: () => void) {
 const company = (state: GameState, skip = 0) => content.servers.filter((server) => server.kind === 'company' && !state.chorus.taken.includes(server.id))[skip]!;
 
 describe('story events', () => {
+  it('says when a timed ally lets go of a heist door, and not when the heist ends', () => {
+    const state = fresh();
+    state.contracts.heist = { vaultId: 'orrery-vault', holds: [{ targetId: 'orrery-ministry', layer: 'monitor', ally: 'Wick', allyMs: 500 }] };
+    const ministry = content.servers.find((server) => server.id === 'orrery-ministry')!;
+    expect(eventsOf(state, () => (state.contracts.heist!.holds[0]!.allyMs = 0))).toContainEqual({ type: 'allyLetGo', who: 'Wick', server: ministry.name });
+    state.contracts.heist.holds[0]!.allyMs = 500;
+    expect(eventsOf(state, () => (state.contracts.heist = null)).some((event) => event.type === 'allyLetGo')).toBe(false);
+  });
+
   it('says which server Chorus took, and where it reached from', () => {
     const state = fresh();
     const first = company(state);

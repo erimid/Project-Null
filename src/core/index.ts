@@ -53,6 +53,7 @@ export {
   fileContent,
   folderOf,
   linkOf,
+  allyHolding,
   openedContent,
   securityOf,
   findConnection,
@@ -151,7 +152,7 @@ export type { Action, ActionResult } from './actions';
 export { SAVE_FORMAT, SaveError, deserializeGame, readSummary, serializeGame, summarize } from './save';
 export type { LoadedGame, Migration, SaveFile, SaveSummary } from './save';
 export { GUARD_RINGS, foundFlag, guardRingAngle, guardSetbackMs, holdNeedMs, raceProgress } from './kinds';
-export { HEIST_PAY, HEIST_TIER, LOCKDOWN, burnHeist, conditionMet, heistAttacker, heistLines, heistRefusal, heistStatus, planHeist } from './heists';
+export { HEIST_PAY, HEIST_TIER, LOCKDOWN, burnHeist, conditionMet, heistAttacker, heistLines, heistRefusal, heistStatus, planHeist, absentAllies, advanceHeist } from './heists';
 export { CLIENT_PREMIUM, DATA_BOARD, dataKind, priceBoard, quote } from './data';
 export type { Quote } from './data';
 export {
