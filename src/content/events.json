@@ -12,10 +12,26 @@
       "Bids are held from your account. If someone goes over you, the money comes straight back."
     ],
     "letters": {
-      "outbid": { "from": "Lowtide", "subject": "Outbid: {lot}", "body": "{who} has gone to {price} on {lot}. Your bid is back in your account.\n\nThe lot is still open if you want it." },
-      "won": { "from": "Lowtide", "subject": "Yours: {lot}", "body": "The clock ran out and yours was the highest bid. {lot} for {price} credits.\n\nIt has been sent on. Pleasure." },
-      "lost": { "from": "Lowtide", "subject": "Sold: {lot}", "body": "{lot} went to {who} for {price} credits.\n\nThere will be another lot." },
-      "bought": { "from": "Lowtide", "subject": "Yours: {lot}", "body": "{lot}, bought outright for {price} credits. The bidding is closed and the others have been told.\n\nIt has been sent on." }
+      "outbid": {
+        "from": "Lowtide",
+        "subject": "Outbid: {lot}",
+        "body": "{who} has gone to {price} on {lot}. Your bid is back in your account.\n\nThe lot is still open if you want it."
+      },
+      "won": {
+        "from": "Lowtide",
+        "subject": "Yours: {lot}",
+        "body": "The clock ran out and yours was the highest bid. {lot} for {price} credits.\n\nIt has been sent on. Pleasure."
+      },
+      "lost": {
+        "from": "Lowtide",
+        "subject": "Sold: {lot}",
+        "body": "{lot} went to {who} for {price} credits.\n\nThere will be another lot."
+      },
+      "bought": {
+        "from": "Lowtide",
+        "subject": "Yours: {lot}",
+        "body": "{lot}, bought outright for {price} credits. The bidding is closed and the others have been told.\n\nIt has been sent on."
+      }
     },
     "words": {}
   },
@@ -32,18 +48,39 @@
       "We do not hide who else is on it. It keeps everyone honest."
     ],
     "job": {
-      "titles": ["Open bounty", "Bounty: first one in", "First to the file"],
-      "summaries": ["Copy {file} from {company} before the others do."],
-      "briefs": [
-        "Open bounty, posted by Glasshouse.\n\nCopy {file} from {company} in {city} and hand it in. We have told several runners and we pay only the first: {runners} are already on it.\n\nOur page in the Undertow browser shows how far each of them has got. When one of them finishes, this is closed."
+      "titles": [
+        "Open bounty",
+        "Bounty: first one in",
+        "First to the file",
+        "Open to all comers"
       ],
-      "clients": ["Glasshouse"]
+      "summaries": [
+        "Copy {file} from {company} before the others do.",
+        "Be first to bring {file} out of {company}."
+      ],
+      "briefs": [
+        "Open bounty, posted by Glasshouse.\n\nCopy {file} from {company} in {city} and hand it in. We have told several runners and we pay only the first: {runners} are already on it.\n\nOur page in the Undertow browser shows how far each of them has got. When one of them finishes, this is closed.",
+        "Glasshouse wants {file} out of {company} in {city}, and has said so to anyone who will listen.\n\nOnly the first copy handed in is paid for. {runners} have a head start on you. Our page in the Undertow browser shows where each of them has got to.\n\nIf one of them hands it in before you, the job comes off your board and that is that."
+      ],
+      "clients": [
+        "Glasshouse"
+      ]
     },
     "letters": {
-      "stoodDown": { "from": "{who}", "subject": "That bounty", "body": "Saw your name was near the Glasshouse bounty. I owed you one, so I have pulled out of it.\n\nThat makes us even." }
+      "stoodDown": {
+        "from": "{who}",
+        "subject": "That bounty",
+        "body": "Saw your name was near the Glasshouse bounty. I owed you one, so I have pulled out of it.\n\nThat makes us even."
+      }
     },
     "words": {
-      "progress": ["is still looking for a way in", "has a route and is knocking", "is past the front door", "is inside and looking for the file", "is copying"]
+      "progress": [
+        "is still looking for a way in",
+        "has a route and is knocking",
+        "is past the front door",
+        "is inside and looking for the file",
+        "is copying"
+      ]
     }
   },
   "dump": {
@@ -60,14 +97,27 @@
       "Be careful: they know something has leaked, and they are watching the network harder than usual."
     ],
     "job": {
-      "titles": ["While the door is open", "Quick, before the reset", "Logins are out"],
-      "summaries": ["{goal}"],
+      "titles": [
+        "While the door is open",
+        "Quick, before the reset",
+        "Logins are out",
+        "Use them while they work"
+      ],
+      "summaries": [
+        "{goal}"
+      ],
       "briefs": [
-        "You will have seen that the logins for {company} are out. I have wanted something from there for a while and I am not going to get a better day.\n\n{goal}\n\nIt has to be done before they reset the passwords. They are watching harder than usual, so do not take all day over it."
+        "You will have seen that the logins for {company} are out. I have wanted something from there for a while and I am not going to get a better day.\n\n{goal}\n\nIt has to be done before they reset the passwords. They are watching harder than usual, so do not take all day over it.",
+        "Every login at {company} is on Glasshouse this morning. I am not the only one who has noticed, but I may be the only one who knows what is worth having there.\n\n{goal}\n\nThe logins die when the company resets them, and it is already watching its network harder than usual. Be quick and be tidy.",
+        "I have been waiting for a way into {company} for a year, and somebody has just published one.\n\n{goal}\n\nUse the leaked logins while they last. Once the passwords are reset this job is worth nothing to either of us."
       ]
     },
     "letters": {
-      "over": { "from": "Glasshouse", "subject": "Closed: {company}", "body": "{company} has reset every password. The logins we passed you no longer work and have been taken out of your address book." }
+      "over": {
+        "from": "Glasshouse",
+        "subject": "Closed: {company}",
+        "body": "{company} has reset every password. The logins we passed you no longer work and have been taken out of your address book."
+      }
     },
     "words": {}
   },
@@ -85,18 +135,39 @@
       "The inventory of what was taken is held at {company}."
     ],
     "job": {
-      "titles": ["What was seized", "The seizure list", "Who lost what"],
-      "summaries": ["Copy {file} from {company}."],
-      "briefs": [
-        "{shop} was raided, and a lot of people had things on that shelf that they would rather not have listed anywhere.\n\nThe list of what was seized is at {company} in {city}, the firm that stores it. Copy {file} and hand it in. I want to know whose name is on it before anyone else does."
+      "titles": [
+        "What was seized",
+        "The seizure list",
+        "Who lost what",
+        "After the raid"
       ],
-      "clients": ["A worried customer", "A seller with stock there", "Someone on the list"]
+      "summaries": [
+        "Copy {file} from {company}."
+      ],
+      "briefs": [
+        "{shop} was raided, and a lot of people had things on that shelf that they would rather not have listed anywhere.\n\nThe list of what was seized is at {company} in {city}, the firm that stores it. Copy {file} and hand it in. I want to know whose name is on it before anyone else does.",
+        "I had an order in at {shop} when the doors came off. It will be on the list of what was seized, with my name beside it.\n\nThat list is held at {company} in {city}. Copy {file} and hand it in. I need to know how bad it is before I decide whether to leave town.",
+        "Everybody who ever bought from {shop} wants to know the same thing this week, and I intend to be the one who can tell them.\n\n{company} in {city} is storing what was taken. The inventory is {file}. Bring me a copy."
+      ],
+      "clients": [
+        "A worried customer",
+        "A seller with stock there",
+        "Someone on the list"
+      ]
     },
     "letters": {
-      "over": { "from": "Halyard", "subject": "{shop} is back", "body": "{shop} is selling again, with less on the shelf and no comment on where it has been. Prices elsewhere are back to normal." }
+      "over": {
+        "from": "Halyard",
+        "subject": "{shop} is back",
+        "body": "{shop} is selling again, with less on the shelf and no comment on where it has been. Prices elsewhere are back to normal."
+      }
     },
     "words": {
-      "files": ["seizure-inventory-{n}.txt", "lots-held-{n}.txt", "evidence-list-{n}.txt"],
+      "files": [
+        "seizure-inventory-{n}.txt",
+        "lots-held-{n}.txt",
+        "evidence-list-{n}.txt"
+      ],
       "texts": [
         "INVENTORY OF ITEMS HELD\nRef {n}\n\nTaken from the premises trading as {shop}.\n\n14 storage units, sealed\n3 racks, part numbers removed\n1 ledger of customer orders, 212 entries\n1 ledger of supplier payments\n\nCustomer ledger to be reviewed within 10 working days. Not to be released without a signature."
       ]
@@ -115,16 +186,35 @@
       "The pay is poor. The favour is not: {who} will stand down from one race against you, or warn you before a raid, whichever comes first."
     ],
     "job": {
-      "titles": ["A favour for {who}", "{who} left a trail", "Clean up for {who}"],
-      "summaries": ["Remove {who}'s lines from the log at {company}."],
+      "titles": [
+        "A favour for {who}",
+        "{who} left a trail",
+        "Clean up for {who}"
+      ],
+      "summaries": [
+        "Remove {who}'s lines from the log at {company}."
+      ],
       "briefs": [
-        "{who} went through {company} in {city} and left in a hurry.\n\nGet in and delete every line in the access log that has {who} in it. The money is whatever {who} could find. The favour is worth more: one race stood down from, or one warning before a raid."
+        "{who} went through {company} in {city} and left in a hurry.\n\nGet in and delete every line in the access log that has {who} in it. The money is whatever {who} could find. The favour is worth more: one race stood down from, or one warning before a raid.",
+        "This one is not from a client. It is from {who}.\n\n{who} got out of {company} in {city} with the trace a breath behind, and the access log still has the lot. Delete every line with {who} in it.\n\nThe pay is thin. What you are really earning is a favour: {who} stands down from one race against you, or warns you before one raid."
       ]
     },
     "letters": {
-      "owed": { "from": "{who}", "subject": "I owe you", "body": "The log at {company} is clean. I checked.\n\nI owe you one, {handle}. You will know when I pay it." },
-      "warning": { "from": "{who}", "subject": "Someone is coming", "body": "{raider} has been asking for your address, and somebody sold it. Expect them at your gateway the next time you are offline.\n\nGet your defence ready. That is my debt paid." },
-      "stoodDown": { "from": "{who}", "subject": "It is yours", "body": "I was offered the same job you just took. I have told the client I am out.\n\nNo race. That is my debt paid." }
+      "owed": {
+        "from": "{who}",
+        "subject": "I owe you",
+        "body": "The log at {company} is clean. I checked.\n\nI owe you one, {handle}. You will know when I pay it."
+      },
+      "warning": {
+        "from": "{who}",
+        "subject": "Someone is coming",
+        "body": "{raider} has been asking for your address, and somebody sold it. Expect them at your gateway the next time you are offline.\n\nGet your defence ready. That is my debt paid."
+      },
+      "stoodDown": {
+        "from": "{who}",
+        "subject": "It is yours",
+        "body": "I was offered the same job you just took. I have told the client I am out.\n\nNo race. That is my debt paid."
+      }
     },
     "words": {}
   },
@@ -142,23 +232,73 @@
       "Halyard asks runners to say so when a posting smells wrong. If it is a trap, the warning is paid for. If it is not, the client will take the work elsewhere."
     ],
     "job": {
-      "titles": ["Private offer", "Work, if you want it", "A direct offer"],
-      "summaries": ["{goal}"],
+      "titles": [
+        "Private offer",
+        "Work, if you want it",
+        "A direct offer",
+        "Off the books"
+      ],
+      "summaries": [
+        "{goal}"
+      ],
       "briefs": [
-        "A private offer, not through a fixer.\n\n{goal}\n\n{company} is {trade} in {city}. I am paying {pay} credits because I want it done soon and without questions.\n\nMy posting is on Lowtide, in your Undertow browser, if you want to look me over first."
+        "A private offer, not through a fixer.\n\n{goal}\n\n{company} is {trade} in {city}. I am paying {pay} credits because I want it done soon and without questions.\n\nMy posting is on Lowtide, in your Undertow browser, if you want to look me over first.",
+        "This did not come through Halyard or anyone else. It came straight to you.\n\n{goal}\n\nThe target is {company}, {trade} in {city}. The money is {pay} credits, which is more than the job is worth, and I am told that is how one gets it done this week and not next.\n\nLook me up on Lowtide, in your Undertow browser, before you say yes."
       ]
     },
     "letters": {
-      "sting": { "from": "Halyard", "subject": "That offer was a trap", "body": "The private offer you took was bait. There was never a client. The company's security firm posted it, and they started tracing the moment you connected.\n\nGet out of there now if you are still in. The job is gone, and it has cost you {fine} credits in fees to people who will forget they saw your address.\n\nNext time, look at who is asking: how old the account is, whether the money makes sense, whether they even know what the company does." },
-      "rightCall": { "from": "Halyard", "subject": "Good call", "body": "You were right about that posting. It was bait, put up by a security firm. I have had it taken down and told the others.\n\n{pay} credits for the warning. It saved somebody a bad night." },
-      "wrongCall": { "from": "Halyard", "subject": "That one was real", "body": "I looked into the posting you flagged. It checked out: a real client with real money. They have seen the fuss and taken the work elsewhere.\n\nNo harm done, but look twice before you call the next one." }
+      "sting": {
+        "from": "Halyard",
+        "subject": "That offer was a trap",
+        "body": "The private offer you took was bait. There was never a client. The company's security firm posted it, and they started tracing the moment you connected.\n\nGet out of there now if you are still in. The job is gone, and it has cost you {fine} credits in fees to people who will forget they saw your address.\n\nNext time, look at who is asking: how old the account is, whether the money makes sense, whether they even know what the company does."
+      },
+      "rightCall": {
+        "from": "Halyard",
+        "subject": "Good call",
+        "body": "You were right about that posting. It was bait, put up by a security firm. I have had it taken down and told the others.\n\n{pay} credits for the warning. It saved somebody a bad night."
+      },
+      "wrongCall": {
+        "from": "Halyard",
+        "subject": "That one was real",
+        "body": "I looked into the posting you flagged. It checked out: a real client with real money. They have seen the fuss and taken the work elsewhere.\n\nNo harm done, but look twice before you call the next one."
+      }
     },
     "words": {
-      "newAccounts": ["Account opened today. No jobs closed", "Account opened yesterday. No jobs closed", "New account. No history"],
-      "oldAccounts": ["Account {years} years old. {jobs} jobs closed, none disputed", "Member for {years} years. {jobs} jobs closed"],
-      "newClients": ["A new client", "A generous stranger", "Someone in a hurry"],
-      "oldClients": ["A private client", "A long-standing account", "A client who pays well"],
-      "trades": ["freight=a haulage firm", "clinic=a private clinic", "law=a law practice", "retail=a shop chain", "energy=an energy supplier", "credit=a credit union", "engineering=an engineering firm", "school=a school", "hotel=a hotel group", "broadcast=a broadcaster", "lab=a testing laboratory", "council=a local council", "bank=a private bank", "auction=an auction house"]
+      "newAccounts": [
+        "Account opened today. No jobs closed",
+        "Account opened yesterday. No jobs closed",
+        "New account. No history"
+      ],
+      "oldAccounts": [
+        "Account {years} years old. {jobs} jobs closed, none disputed",
+        "Member for {years} years. {jobs} jobs closed"
+      ],
+      "newClients": [
+        "A new client",
+        "A generous stranger",
+        "Someone in a hurry"
+      ],
+      "oldClients": [
+        "A private client",
+        "A long-standing account",
+        "A client who pays well"
+      ],
+      "trades": [
+        "freight=a haulage firm",
+        "clinic=a private clinic",
+        "law=a law practice",
+        "retail=a shop chain",
+        "energy=an energy supplier",
+        "credit=a credit union",
+        "engineering=an engineering firm",
+        "school=a school",
+        "hotel=a hotel group",
+        "broadcast=a broadcaster",
+        "lab=a testing laboratory",
+        "council=a local council",
+        "bank=a private bank",
+        "auction=an auction house"
+      ]
     }
   }
 }

@@ -9,7 +9,7 @@ import { advanceContract, startContract } from '../core/stages';
 import type { Job } from '../core/state';
 import type { ContractDef } from './schema';
 import { parseSeries } from './series';
-import { assets, companies, contracts, events, gameInfo, hardware, ladder, mail, models, modules, news, patrons, people, programs, rivals, series, servers, skills, story, tuning } from './index';
+import { assets, companies, sectorsOf, contracts, events, gameInfo, hardware, ladder, mail, models, modules, news, patrons, people, programs, rivals, series, servers, skills, story, tuning } from './index';
 
 const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, events, series, assets, rules: tuning };
 const SEED = 31;
@@ -54,6 +54,23 @@ describe('briefs by trade', () => {
     }
   });
 
+  it('every trade has two briefs of its own for each kind it can be asked for, using only what such a job can fill in', () => {
+    const can: Record<string, readonly string[]> = { steal: ['company', 'city', 'tier', 'file'], destroy: ['company', 'city', 'tier', 'file'], record: ['company', 'city', 'tier', 'key', 'column', 'value', 'records'] };
+    for (const sector of sectorsOf(companies)) {
+      for (const kind of ['steal', 'destroy', 'record'] as const) {
+        if (kind === 'record' && !sector.records) continue;
+        const own = pools.trades?.[sector.id]?.[kind];
+        expect(own?.briefs?.length ?? 0, `${sector.id} ${kind}`).toBeGreaterThanOrEqual(2);
+        expect(own?.titles?.length ?? 0, `${sector.id} ${kind}`).toBeGreaterThanOrEqual(2);
+        for (const line of [...(own?.briefs ?? []), ...(own?.titles ?? [])]) {
+          for (const [, name] of line.matchAll(/\{(\w+)\}/g)) expect(can[kind], `${sector.id} ${kind}: {${name}}`).toContain(name);
+        }
+      }
+    }
+    for (const kind of ['steal', 'destroy', 'record'] as const) expect(pools[kind].briefs.length, kind).toBeGreaterThanOrEqual(6);
+    for (const [kind, wording] of Object.entries(pools.kinds ?? {})) expect(wording!.briefs.length, kind).toBeGreaterThanOrEqual(6);
+  });
+
   it('a job against a company in such a trade is sometimes worded for it, and sometimes not', () => {
     const jobs = seen(newGame(60), 40).filter((job) => !job.stages && !job.patron && !job.regular && ['steal', 'destroy', 'record'].includes(job.objective.kind));
     const own = (job: Job): boolean | undefined => {
@@ -84,6 +101,18 @@ describe('briefs by trade', () => {
 describe('regular clients', () => {
   const regulars = regularsOf(content);
   const lowest = Math.min(...regulars.map((regular) => regular.minRating));
+
+  it('there are eight, each with a name, a voice and a first and a later way of opening', () => {
+    expect(regulars.length).toBe(8);
+    expect(new Set(regulars.map((regular) => regular.name)).size).toBe(8);
+    for (const regular of regulars) {
+      expect(regular.intros.length, regular.id).toBeGreaterThanOrEqual(2);
+      expect(regular.again.length, regular.id).toBeGreaterThanOrEqual(2);
+      // No regular shares a name with a patron or a client the board already uses.
+      expect(patrons.some((patron) => patron.name === regular.name)).toBe(false);
+      for (const line of [...regular.intros, ...regular.again]) for (const [, name] of line.matchAll(/\{(\w+)\}/g)) expect(['company', 'city', 'times']).toContain(name);
+    }
+  });
 
   it('none posts below the rating they start at', () => {
     expect(lowest).toBeGreaterThanOrEqual(10);
