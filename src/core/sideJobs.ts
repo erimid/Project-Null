@@ -32,10 +32,10 @@ import type { Content } from './world';
 
 /** The rating each side kind opens at, and what it pays as a share of an ordinary job against the same company. */
 export const SIDE_RULES: Readonly<Record<SideKind, { rating: number; pay: number }>> = {
-  deliver: { rating: 10, pay: 1.1 },
+  deliver: { rating: 10, pay: 1.2 },
   leak: { rating: 20, pay: 1.2 },
   wipe: { rating: 25, pay: 1.6 },
-  round: { rating: 30, pay: 0.8 },
+  round: { rating: 30, pay: 1.0 },
   borrow: { rating: 35, pay: 1.3 },
 };
 /** Share of board jobs that are a side kind, for each kind the player's rating has opened. */
