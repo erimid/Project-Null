@@ -42,6 +42,7 @@ export function DockNav() {
           <button
             key={id}
             type="button"
+            data-window={id}
             class={`rail__btn${lit(id) ? ' is-front' : ''}`}
             aria-pressed={lit(id)}
             data-sfx="tab"
