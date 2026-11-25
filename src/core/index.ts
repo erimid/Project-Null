@@ -149,6 +149,8 @@ export { ADDRESS_PRICE, addressPrice, ladderPlace, ladderRival, ladderRows, priv
 export type { LadderRow } from './ladder';
 export { EVENTS_RATING, EVENT_HOURS, EVENT_PATH, YOU, advanceEvents, buyNowPrice, eventJob, eventPage, nextBid, owedBy } from './events';
 export type { EventButton, EventPage } from './events';
+export { SERIES_GAP_HOURS, advanceSeries, seriesDone, seriesLine, seriesOf, seriesOpen } from './series';
+export { REGULAR_MOST, REGULAR_SHARE, REGULAR_STEP, jobsFor, regularOf, regularsOf } from './regulars';
 export { CRACKDOWN_PRICES, isShut, shutMarket } from './market';
 export { EDITION_HOUR, editionDay, editionTimeMs, hasFirm, inTheNews, latestEdition, markServer, serverMark } from './news';
 export type { Action, ActionResult } from './actions';

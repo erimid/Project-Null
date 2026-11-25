@@ -228,6 +228,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   },
   // 32 -> 33: darknet events. None is under way in an old save; the first is decided on the next clock check.
   32: (old) => ({ ...old, events: { current: null, nextMs: 0, last: null, recent: [], owed: [], warned: false } }),
+  // 33 -> 34: regular clients and side stories. Nobody has worked for either yet.
+  33: (old) => ({ ...old, contracts: { ...(old.contracts as Record<string, unknown>), regulars: {}, series: {} } }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -477,6 +479,10 @@ function checkState(raw: Obj): GameState {
     !isNum(contracts.takenMs) ||
     !isNum(contracts.windowUntilMs) ||
     typeof contracts.termsBroken !== 'boolean' ||
+    !isObj(contracts.regulars) ||
+    !Object.values(contracts.regulars).every(isNum) ||
+    !isObj(contracts.series) ||
+    !Object.values(contracts.series).every((item) => isObj(item) && isNum(item.done) && isNum(item.atMs)) ||
     !isList(contracts.burned, isText) ||
     !(
       contracts.heist === null ||

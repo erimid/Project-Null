@@ -47,6 +47,7 @@ interface Way {
   readonly choices?: Readonly<Record<string, string>>;
   readonly shun?: (contract: ContractDef, state: GameState) => boolean;
   readonly maxMinutes?: number;
+  readonly maxContracts?: number;
 }
 
 /** A player who minds whom they hurt: once the sides are in play, no board job against a company one of them looks after. */
@@ -70,7 +71,7 @@ function run(name: string, profile: Profile, seed: number, way: Way = {}): Run {
   let live: GameState | undefined;
   let finale: Run['finale'];
   const options: CareerOptions = {
-    maxContracts: 400,
+    maxContracts: way.maxContracts ?? 400,
     maxMinutes: way.maxMinutes ?? 420,
     untilRating: 9999,
     ratings: gameInfo.ratings,
@@ -114,7 +115,8 @@ const LEFT_WICK: Way = {
   shun: (contract, state) => (contract.id === 'act3-clerk' && !state.flags.includes('station-taken')) || contract.id === 'act3-deadair',
 };
 /** Reads the letter that opens Act 3 and never touches a story job again. */
-const DEAF: Way = { shun: (contract) => /^act[34]-/.test(contract.id), maxMinutes: 1500 };
+// With a fuller board at the top, someone who takes everything gets through more than 400 jobs before Chorus comes.
+const DEAF: Way = { shun: (contract) => /^act[34]-/.test(contract.id), maxMinutes: 1500, maxContracts: 600 };
 
 const SEEDS = [1, 7, 2034];
 
@@ -239,7 +241,7 @@ describe('The five endings, each reached by playing', () => {
 
   it('and is lost by someone who takes any work going, against whoever it hurts', () => {
     // Two sides cooled is what keeps the treaty out of reach; the bot's luck on the board decides how many do, so this seed is one where two did.
-    const careless = run('refuses, careless', PROFILES.typical, 13, { choices: { 'act3-ask': 'refuse' } });
+    const careless = run('refuses, careless', PROFILES.typical, 23, { choices: { 'act3-ask': 'refuse' } });
     expect(careless.finale!.offered).toContain('unbound');
     expect(careless.finale!.offered).not.toContain('treaty');
   });
