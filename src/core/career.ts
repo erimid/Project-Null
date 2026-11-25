@@ -12,6 +12,7 @@ import type { HardwareDef } from '../content/hardware';
 import { applyAction, type Action } from './actions';
 import { tick } from './clock';
 import { activeContract, availableContracts, isLyingLow, postJobs } from './contracts';
+import { seriesOf } from './series';
 import { buildBases, findModule, hasTrait, marketGrade, moduleSlots, partTaken } from './crafting';
 import { evidenceCount, isEvidence } from './forensics';
 import { worldFor } from './generate';
@@ -1087,8 +1088,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     const doable = offered
       .map((contract) => ({ contract, needs: needs(contract) }))
       .filter((item): item is { contract: ContractDef; needs: string[] } => {
-        // A story mission comes with its address; any other target has to be in the address book already.
-        if (item.needs === null || (!item.contract.story && !state.knownServers.includes(item.contract.targetId))) return false;
+        // A story mission comes with its address, and so does a part of a side story; any other target has to be in the address book already.
+        if (item.needs === null || (!item.contract.story && !seriesOf(content, item.contract.id) && !state.knownServers.includes(item.contract.targetId))) return false;
         return item.needs.reduce((sum, id) => sum + price(id), 0) <= state.player.balance;
       });
     if (options.note) for (const contract of offered) if (contract.story) note(`STORY ${contract.id} needs ${JSON.stringify(needs(contract))} (${(needs(contract) ?? []).reduce((sum, id) => sum + price(id), 0)}c of ${state.player.balance}c)`);

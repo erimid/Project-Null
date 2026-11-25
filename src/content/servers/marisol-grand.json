@@ -1,0 +1,137 @@
+{
+  "id": "marisol-grand",
+  "name": "Marisol Grand Hotel",
+  "kind": "company",
+  "owner": "Marisol Hotéis, S.A.",
+  "hostname": "MGH-FRONT-2",
+  "address": "94.132.48.21",
+  "city": "Porto",
+  "country": "Portugal",
+  "lat": 41.15,
+  "lon": -8.61,
+  "blurb": "Front office and night audit for a hotel that has seen better decades.",
+  "listed": false,
+  "security": {
+    "password": 2,
+    "proxy": 1,
+    "firewall": 2,
+    "monitor": 2
+  },
+  "traceSecondsPerHop": 14,
+  "relayDelay": 1.0,
+  "banner": [
+    "MARISOL GRAND HOTEL · PORTO",
+    "Front office system MGH-FRONT-2",
+    "Night audit runs at 03:00. Do not post charges while it runs."
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Lobby terminal"
+    },
+    {
+      "user": "frontdesk",
+      "role": "admin",
+      "name": "Front Office Manager"
+    }
+  ],
+  "files": [
+    {
+      "name": "welcome.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "Welcome to the Marisol Grand. Breakfast is served from 07:00 in the Azulejo Room. The lift on the river side is out of order. It has been out of order since 2031."
+      }
+    },
+    {
+      "name": "guest_register_2034.dat",
+      "sizeGq": 4,
+      "access": "admin"
+    },
+    {
+      "name": "room_charges_q1.dat",
+      "sizeGq": 3,
+      "access": "admin"
+    },
+    {
+      "name": "vip_handling_notes.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "front",
+      "content": {
+        "kind": "text",
+        "text": "VIP HANDLING. Room 412 is kept for the owner's guests and is never to be sold. Do not enter it in the register. Do not send housekeeping without ringing the manager first.\n\nIf a guest of 412 asks for an invoice, there is no invoice."
+      }
+    },
+    {
+      "name": "housekeeping_rota.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "front",
+      "content": {
+        "kind": "text",
+        "text": "Rota, week of 13 March. Floors 1 to 3: two staff. Floor 4: one, and not room 412. Night porter: T. Bessa, alone, 23:00 to 07:00."
+      }
+    },
+    {
+      "name": "night_audit_0309.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "audit",
+      "content": {
+        "kind": "text",
+        "text": "NIGHT AUDIT, 9 March 2034. Prepared 03:10 by I. Carvalho.\n\nRooms sold 61. Cash and cards agree with the register to the cent. Nothing to report.\n\n-- amended 08:40 by R. Teles, General Manager --\nCash short by 1,840. Auditor on duty to be held responsible."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 7300,
+      "text": "login frontdesk from 94.132.48.3"
+    },
+    {
+      "minutesAgo": 7290,
+      "text": "night audit closed by icarvalho"
+    },
+    {
+      "minutesAgo": 6960,
+      "text": "file changed: night_audit_0309.txt by rteles"
+    },
+    {
+      "minutesAgo": 6950,
+      "text": "logout frontdesk"
+    }
+  ],
+  "records": {
+    "title": "Reservations",
+    "columns": [
+      "Booking",
+      "Status"
+    ],
+    "rows": [
+      [
+        "MG-4120",
+        "house use"
+      ],
+      [
+        "MG-2207",
+        "checked in"
+      ],
+      [
+        "MG-3115",
+        "confirmed"
+      ],
+      [
+        "MG-1042",
+        "no show"
+      ],
+      [
+        "MG-4018",
+        "checked out"
+      ]
+    ]
+  }
+}

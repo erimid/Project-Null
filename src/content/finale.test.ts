@@ -22,10 +22,14 @@ import { findServer } from '../core/world';
 import { worldFor } from '../core/generate';
 import type { Content, GameState } from '../core';
 import type { ContractDef } from './schema';
-import { assets, chorus, companies, contracts, data, endings, gameInfo, hardware, ladder, linesOf, mail, models, modules, news, patrons, people, programs, rivals, servers, skills, story, tuning } from './index';
+import { assets, chorus, companies, contracts, data, endings, gameInfo, hardware, ladder, linesOf, mail, models, modules, news, patrons, people, programs, rivals, series, servers, skills, story, tuning } from './index';
 import { content as storyWorld, fresh, play } from './storyPlay';
 
-const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, data, assets, rules: tuning, chorus, endings };
+const withSide: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, series, data, assets, rules: tuning, chorus, endings };
+// The story's own balance is measured without the side stories: they are extra work for whoever wants it,
+// and are played through, in a whole game, by the last tests in this file.
+const SIDE = new Set(series.flatMap((tale) => tale.parts.map((part) => part.contract)));
+const written: Content = { ...withSide, contracts: contracts.filter((contract) => !SIDE.has(contract.id)), series: [] };
 
 const host = globalThis as { process?: { env: Record<string, string | undefined> }; console?: { log(text: string): void } };
 const wanted = Boolean(host.process?.env.STORY_REPORT);
@@ -48,6 +52,8 @@ interface Way {
   readonly shun?: (contract: ContractDef, state: GameState) => boolean;
   readonly maxMinutes?: number;
   readonly maxContracts?: number;
+  /** True to play with the side stories on the board. */
+  readonly side?: boolean;
 }
 
 /** A player who minds whom they hurt: once the sides are in play, no board job against a company one of them looks after. */
@@ -96,7 +102,7 @@ function run(name: string, profile: Profile, seed: number, way: Way = {}): Run {
       };
     },
   };
-  const report = playCareer(written, seed, profile, options);
+  const report = playCareer(way.side ? withSide : written, seed, profile, options);
   if (wanted) host.console?.log(`${name}\n${formatCareer(report)}\nfinale: ${JSON.stringify(finale)}\nstanding: ${JSON.stringify(live?.patrons.standing)}\n`);
   const result: Run = { report, state: live!, finale, late: report.jobs.filter((job) => /^act[34]-/.test(job.id)) };
   cache.set(key, result);
@@ -345,5 +351,26 @@ describe('Rules the story leans on', () => {
       expect(beat.lapse.hours, beat.id).toBeGreaterThanOrEqual(120);
       expect(beat.lapse.hours - beat.lapse.warn!.hours, beat.id).toBeGreaterThanOrEqual(48);
     }
+  });
+});
+
+describe('The side stories, played in a whole game', () => {
+  it('someone who takes all the work going finishes every one of them, part by part', () => {
+    const { report, state } = run('deaf, side stories', PROFILES.typical, 1, { ...DEAF, side: true });
+    expect(report.stuck).toEqual([]);
+    for (const tale of series) {
+      const done = tale.parts.map((part) => state.contracts.completed.indexOf(part.contract));
+      expect(done.every((at) => at >= 0), tale.id).toBe(true);
+      // In order: no part before the one it follows.
+      expect([...done].sort((a, b) => a - b), tale.id).toEqual(done);
+      // The client wrote as each part opened.
+      for (const part of tale.parts) if (part.invite) expect(state.messages.some((message) => message.from === tale.client && message.subject === part.invite!.subject), part.contract).toBe(true);
+    }
+  });
+
+  it('they are met along the way by someone playing the story, too', () => {
+    const { state } = run('obliging, side stories', PROFILES.typical, 2034, { ...OBLIGING, side: true });
+    const finished = series.filter((tale) => tale.parts.every((part) => state.contracts.completed.includes(part.contract)));
+    expect(finished.length).toBeGreaterThanOrEqual(5);
   });
 });

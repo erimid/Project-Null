@@ -1,0 +1,143 @@
+{
+  "id": "northlight",
+  "name": "Northlight Broadcasting",
+  "kind": "company",
+  "owner": "Northlight Kringkasting AS",
+  "hostname": "NLB-PLAYOUT-1",
+  "address": "158.39.74.6",
+  "city": "Tromsø",
+  "country": "Norway",
+  "lat": 69.65,
+  "lon": 18.96,
+  "blurb": "Newsroom and playout for a regional broadcaster. Whatever is in the running order goes to air.",
+  "listed": false,
+  "security": {
+    "password": 3,
+    "proxy": 2,
+    "firewall": 2,
+    "monitor": 2
+  },
+  "traceSecondsPerHop": 13,
+  "relayDelay": 1.0,
+  "banner": [
+    "NORTHLIGHT BROADCASTING",
+    "Playout and newsroom · NLB-PLAYOUT-1",
+    "The running order is locked 30 minutes before air. Changes after that need the duty editor."
+  ],
+  "accounts": [
+    {
+      "user": "playout",
+      "role": "admin",
+      "name": "Duty Editor"
+    }
+  ],
+  "files": [
+    {
+      "name": "schedule.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "TONIGHT. 19:00 News. 19:30 Weather and fishing. 20:00 Quiz. 21:00 To be confirmed. 22:00 Late news."
+      }
+    },
+    {
+      "name": "advertiser_accounts_2034.dat",
+      "sizeGq": 3,
+      "access": "admin"
+    },
+    {
+      "name": "source_list.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    },
+    {
+      "name": "newsroom_rota.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "newsroom",
+      "content": {
+        "kind": "text",
+        "text": "Duty editor this week: M. Sandvik. Night desk: nobody. The running order publishes itself at air time whether anyone is here or not."
+      }
+    },
+    {
+      "name": "style_notes.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "newsroom",
+      "content": {
+        "kind": "text",
+        "text": "Say 'the company said' and not 'the company claimed' unless Legal has agreed. Legal has not agreed to anything since January."
+      }
+    },
+    {
+      "name": "editorial_memo_0311.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "newsroom",
+      "content": {
+        "kind": "text",
+        "text": "FROM: Managing Director\nTO: Duty Editor\n11 March\n\nThe Brackley film does not go out on Thursday. It does not go out at all until I say so. I have had a call from a firm of solicitors in London and a second call from someone I play golf with.\n\nPut a repeat in the 21:00 slot. If Jonas asks, tell him it is a scheduling matter. If he asks twice, tell him it is a legal matter. Do not put either in writing. (I am aware that this is in writing.)"
+      }
+    },
+    {
+      "name": "unaired_brackley_cut.dat",
+      "sizeGq": 5,
+      "access": "admin"
+    },
+    {
+      "name": "legal_hold_note.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "newsroom",
+      "content": {
+        "kind": "text",
+        "text": "LEGAL HOLD. Item: 'What the Water Carried' (prod. J. Hale). Status: held at the request of the Managing Director. No lawyer has seen it. While this note is on the system, playout will refuse the item."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 3100,
+      "text": "login playout from 158.39.74.2"
+    },
+    {
+      "minutesAgo": 3080,
+      "text": "running order saved"
+    },
+    {
+      "minutesAgo": 3070,
+      "text": "logout playout"
+    }
+  ],
+  "records": {
+    "title": "Running order",
+    "columns": [
+      "Slot",
+      "Item"
+    ],
+    "rows": [
+      [
+        "1900",
+        "News"
+      ],
+      [
+        "1930",
+        "Weather and fishing"
+      ],
+      [
+        "2000",
+        "Quiz"
+      ],
+      [
+        "2100",
+        "Repeat: Coastal Gardens"
+      ],
+      [
+        "2200",
+        "Late news"
+      ]
+    ]
+  }
+}

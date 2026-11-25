@@ -1,0 +1,128 @@
+{
+  "id": "varrick-lowe",
+  "name": "Varrick & Lowe",
+  "kind": "company",
+  "owner": "Varrick & Lowe Auctioneers SA",
+  "hostname": "VL-SALEROOM-1",
+  "address": "185.84.21.130",
+  "city": "Geneva",
+  "country": "Switzerland",
+  "lat": 46.2,
+  "lon": 6.14,
+  "blurb": "Fine art auctioneers. Discreet about who sells, and more discreet about who buys.",
+  "listed": false,
+  "security": {
+    "password": 4,
+    "proxy": 3,
+    "firewall": 3,
+    "monitor": 3
+  },
+  "traceSecondsPerHop": 11,
+  "relayDelay": 1.0,
+  "banner": [
+    "VARRICK & LOWE · GENEVA",
+    "Saleroom system VL-SALEROOM-1",
+    "Lot status may not be changed once the catalogue has gone to print, except by a director."
+  ],
+  "accounts": [
+    {
+      "user": "saleroom",
+      "role": "admin",
+      "name": "Head of Sale"
+    }
+  ],
+  "files": [
+    {
+      "name": "catalogue.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "SPRING SALE. Lots 1 to 40: furniture. Lots 41 to 78: pictures. Lot 61, attributed to a follower of Hammershøi, 'Interior with Open Door', is the cover lot."
+      }
+    },
+    {
+      "name": "consignor_list_2034.dat",
+      "sizeGq": 3,
+      "access": "admin"
+    },
+    {
+      "name": "reserve_prices.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    },
+    {
+      "name": "telephone_bids_memo.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "sale",
+      "content": {
+        "kind": "text",
+        "text": "Telephone bidders for the spring sale are to be given paddle numbers above 900. Staff must not say a telephone bidder's name aloud in the room. This has happened twice."
+      }
+    },
+    {
+      "name": "condition_reports.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "sale",
+      "content": {
+        "kind": "text",
+        "text": "Lot 58: foxing. Lot 59: relined. Lot 61: clean. Suspiciously clean, says the restorer, who is not paid to say such things."
+      }
+    },
+    {
+      "name": "provenance_note_061.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "sale",
+      "content": {
+        "kind": "text",
+        "text": "LOT 61, PROVENANCE. 'Interior with Open Door'.\n\nGiven by the consignor: private collection, Aarhus, since 1921; by descent.\n\nChecked by us: nothing before 2029. The Aarhus family named in the papers say they sold a picture of that description in 1987 to a dealer, and that theirs had a woman in it. Ours has no woman in it.\n\nHead of Sale's note: the cover is printed. Leave the provenance as given."
+      }
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 2600,
+      "text": "login saleroom from 185.84.21.2"
+    },
+    {
+      "minutesAgo": 2590,
+      "text": "file opened: reserve_prices.dat"
+    },
+    {
+      "minutesAgo": 2585,
+      "text": "logout saleroom"
+    }
+  ],
+  "records": {
+    "title": "Lots",
+    "columns": [
+      "Lot",
+      "Status"
+    ],
+    "rows": [
+      [
+        "LOT-058",
+        "in sale"
+      ],
+      [
+        "LOT-059",
+        "in sale"
+      ],
+      [
+        "LOT-060",
+        "withdrawn"
+      ],
+      [
+        "LOT-061",
+        "in sale"
+      ],
+      [
+        "LOT-062",
+        "in sale"
+      ]
+    ]
+  }
+}

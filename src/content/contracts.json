@@ -2151,5 +2151,796 @@
         "text": "complaints received: 4,117\nresolved: 4,117\nresolved how: the complaint was removed"
       }
     ]
+  },
+  {
+    "id": "till-audit",
+    "title": "What the audit said",
+    "client": "Inês Carvalho",
+    "targetId": "marisol-grand",
+    "pay": 3000,
+    "rating": 1,
+    "minRating": 25,
+    "summary": "Read the night audit of 9 March at the Marisol Grand.",
+    "brief": "I was the night auditor at the Marisol Grand in Porto for eleven years. On the ninth of March my figures agreed to the cent. By nine the next morning they were 1,840 short and I was out of a job.\n\nThe audit is still on the front office system: night_audit_0309.txt. Read it. I want somebody other than me to see what it says at the bottom.",
+    "objective": {
+      "kind": "read",
+      "file": "night_audit_0309.txt"
+    }
+  },
+  {
+    "id": "till-charges",
+    "title": "Room 412",
+    "client": "Inês Carvalho",
+    "targetId": "marisol-grand",
+    "pay": 3400,
+    "rating": 1,
+    "minRating": 26,
+    "summary": "Copy the first quarter's room charges from the Marisol Grand.",
+    "brief": "So you saw it. Amended at 08:40, by the general manager, after I had gone home.\n\nThere is a room on the fourth floor that is never sold and always occupied. The people who stay in it pay in cash, at the desk, to Mr Teles and nobody else. I think that is where my 1,840 went, and a good deal more before it.\n\nCopy room_charges_q1.dat. If 412 took money this year, it will be in there, whatever the register says.",
+    "objective": {
+      "kind": "steal",
+      "file": "room_charges_q1.dat"
+    }
+  },
+  {
+    "id": "till-booking",
+    "title": "House use",
+    "client": "Inês Carvalho",
+    "targetId": "marisol-grand",
+    "pay": 3800,
+    "rating": 1,
+    "minRating": 28,
+    "summary": "Change booking MG-4120 at the Marisol Grand to \"paid in cash\".",
+    "brief": "It is all there. Forty-one nights in room 412 since January, charged and never banked.\n\nThe owners send their accountants on the first of the month, and the accountants only look at what the reservations table tells them to. Booking MG-4120 is the room. It says \"house use\", which means nobody asks.\n\nMake it say \"paid in cash\". Then they will ask.",
+    "objective": {
+      "kind": "record",
+      "key": "MG-4120",
+      "column": "Status",
+      "value": "paid in cash"
+    },
+    "choices": [
+      {
+        "id": "teles",
+        "label": "Warn the manager first",
+        "note": "Teles pays well to hear it before the accountants do. Inês gets nothing.",
+        "pay": 6200,
+        "rating": -1,
+        "reply": {
+          "from": "R. Teles",
+          "subject": "Understood",
+          "body": "I have seen what was changed, and I have changed it back. You will find the money in your account. You will not find me ungrateful, and you will not find me at this address again.\n\nPlease forget the Marisol Grand."
+        }
+      }
+    ]
+  },
+  {
+    "id": "air-memo",
+    "title": "Who pulled it",
+    "client": "Jonas Hale",
+    "targetId": "northlight",
+    "pay": 3600,
+    "rating": 1,
+    "minRating": 32,
+    "summary": "Read the managing director's memo at Northlight Broadcasting.",
+    "brief": "I make films for Northlight in Tromsø. I made one about a reservoir in England and what was in the water, and it was due out last Thursday at nine. At six they told me it was a scheduling matter.\n\nThere is a memo. There is always a memo. It will be in the newsroom folder: editorial_memo_0311.txt. Read it and tell me I am not imagining this.",
+    "objective": {
+      "kind": "read",
+      "file": "editorial_memo_0311.txt"
+    }
+  },
+  {
+    "id": "air-cut",
+    "title": "The only copy",
+    "client": "Jonas Hale",
+    "targetId": "northlight",
+    "pay": 4000,
+    "rating": 1,
+    "minRating": 34,
+    "summary": "Copy the unaired film from Northlight's playout server.",
+    "brief": "A man he plays golf with. Eighteen months of work.\n\nThey have locked me out of the edit suite, and the only finished copy is on the playout server: unaired_brackley_cut.dat. It is five gigabytes. Copy it before somebody decides it is safer deleted.",
+    "objective": {
+      "kind": "steal",
+      "file": "unaired_brackley_cut.dat"
+    }
+  },
+  {
+    "id": "air-hold",
+    "title": "Legal hold",
+    "client": "Jonas Hale",
+    "targetId": "northlight",
+    "pay": 4200,
+    "rating": 1,
+    "minRating": 36,
+    "summary": "Delete the legal hold note at Northlight.",
+    "brief": "I have the film. Now I want it on air, on the channel that paid for it.\n\nPlayout refuses any item with a legal hold on it. The hold is a text file: legal_hold_note.txt. No lawyer wrote it. Delete it.",
+    "objective": {
+      "kind": "destroy",
+      "file": "legal_hold_note.txt"
+    }
+  },
+  {
+    "id": "air-slot",
+    "title": "Nine o'clock",
+    "client": "Jonas Hale",
+    "targetId": "northlight",
+    "pay": 6000,
+    "rating": 2,
+    "minRating": 38,
+    "summary": "Put the film back on Northlight's server, then into the 21:00 slot.",
+    "brief": "Last part. I am sending you the film, with one caption added at the end. Upload it to the playout server.\n\nWhen it is there I will tell you where it goes.",
+    "objective": {
+      "kind": "plant",
+      "file": "what_the_water_carried.dat",
+      "sizeGq": 5
+    },
+    "stages": [
+      {
+        "targetId": "northlight",
+        "objective": {
+          "kind": "record",
+          "key": "2100",
+          "column": "Item",
+          "value": "Film: What the Water Carried"
+        },
+        "brief": "It is on the server. Now the running order. Slot 2100 has a repeat about gardens in it.\n\nChange the item to \"Film: What the Water Carried\". Nobody is on the night desk. At nine o'clock playout will do what the table says."
+      }
+    ]
+  },
+  {
+    "id": "lab-retest",
+    "title": "Three passes",
+    "client": "Tomasz Bryl",
+    "targetId": "corran-analytical",
+    "pay": 4200,
+    "rating": 1,
+    "minRating": 38,
+    "summary": "Read the retest request for sample AF-0932 at Corran Analytical.",
+    "brief": "I run instrument 4 at Corran Analytical in Leuven. On the second of March I tested a batch of infant cereal and it failed. I know it failed. I was there.\n\nThe register now says it passed. There is a retest request in the quality folder, retest_request_0932.txt. I am not allowed to open it. You are not allowed either, which is why I am writing to you.",
+    "objective": {
+      "kind": "read",
+      "file": "retest_request_0932.txt"
+    }
+  },
+  {
+    "id": "lab-raw",
+    "title": "The instrument does not lie",
+    "client": "Tomasz Bryl",
+    "targetId": "corran-analytical",
+    "pay": 4800,
+    "rating": 1,
+    "minRating": 41,
+    "summary": "Copy the raw readings of 2 March from Corran Analytical.",
+    "brief": "A fresh portion supplied by the client. Of course it passed.\n\nThe instrument keeps its own readings, apart from the register, and nobody has thought to tidy those. The file is instrument_raw_0302.dat. Copy it. With that, it is no longer my word against the Quality Manager's.",
+    "objective": {
+      "kind": "steal",
+      "file": "instrument_raw_0302.dat"
+    }
+  },
+  {
+    "id": "lab-result",
+    "title": "Sign-off",
+    "client": "Tomasz Bryl",
+    "targetId": "corran-analytical",
+    "pay": 5400,
+    "rating": 1,
+    "minRating": 44,
+    "summary": "Change sample AF-0932 at Corran Analytical back to \"fail\".",
+    "brief": "Batch 7C is in the shops. I have checked.\n\nThe accreditation reviewer comes in April and pulls twenty results. I am going to make sure AF-0932 is one of them, and I want the table to tell the truth when she looks.\n\nSet the result for AF-0932 to \"fail\". She will ask why it does not match what the client was sent. That is the question I want asked.",
+    "objective": {
+      "kind": "record",
+      "key": "AF-0932",
+      "column": "Result",
+      "value": "fail"
+    },
+    "choices": [
+      {
+        "id": "rival",
+        "label": "Sell the readings to a rival food firm",
+        "note": "Pays more. The batch is recalled either way, but Tomasz is named as the source.",
+        "pay": 8200,
+        "rating": -1,
+        "reply": {
+          "from": "A buyer",
+          "subject": "Received with thanks",
+          "body": "The readings are everything you said. Our press office will make good use of them, and of the name of the technician who took them.\n\nPayment is enclosed. We were never in touch."
+        }
+      }
+    ]
+  },
+  {
+    "id": "tender-note",
+    "title": "Sealed bids",
+    "client": "Asha Rennick",
+    "targetId": "wensum-council",
+    "pay": 4600,
+    "rating": 1,
+    "minRating": 45,
+    "summary": "Read the procurement note of 14 February at Wensum Borough Council.",
+    "brief": "I have a roofing firm in Norwich with nine people in it. We bid for the leisure centre roof and lost by four hundred pounds, to a firm that put its bid in a day before the deadline.\n\nFour hundred pounds, on a job of that size, is not a coincidence. Somebody in procurement will have written something down. Look in the committee folder for tender_note_0214.txt.",
+    "objective": {
+      "kind": "read",
+      "file": "tender_note_0214.txt"
+    }
+  },
+  {
+    "id": "tender-bids",
+    "title": "Opened early",
+    "client": "Asha Rennick",
+    "targetId": "wensum-council",
+    "pay": 5200,
+    "rating": 1,
+    "minRating": 47,
+    "summary": "Copy the tender bids from Wensum Borough Council.",
+    "brief": "To get a feel for the market. I have been in this trade twenty years and I have never once been allowed a feel for the market.\n\nI want the bids themselves, with the dates on them: tender_bids_q1.dat. Copy it.",
+    "objective": {
+      "kind": "steal",
+      "file": "tender_bids_q1.dat"
+    }
+  },
+  {
+    "id": "tender-interest",
+    "title": "An interest undeclared",
+    "client": "Asha Rennick",
+    "targetId": "aldergate-finch",
+    "pay": 5600,
+    "rating": 1,
+    "minRating": 50,
+    "summary": "Read a file note at Aldergate & Finch.",
+    "brief": "Halloran Bros Roofing. The Chair of Planning is Councillor Halloran, who has declared no interests at all.\n\nIt may be a common name. A firm of solicitors in London set the company up, and they will know whose it is: Aldergate & Finch. I am told the note you want is called halloran_holdings_note.txt. Read it.",
+    "objective": {
+      "kind": "read",
+      "file": "halloran_holdings_note.txt"
+    },
+    "twists": [
+      {
+        "kind": "drop",
+        "file": "halloran_holdings_note.txt",
+        "sizeGq": 1,
+        "text": "FILE NOTE. Halloran Bros Roofing Ltd.\n\nShares held as follows: 50% Mr S. Halloran (director). 50% Mrs E. Halloran, held through a nominee at her husband's request, 'for reasons to do with his position on the Council'.\n\nWe advised that the holding should be declared. The client thanked us for our advice.",
+        "folder": "matters"
+      }
+    ]
+  },
+  {
+    "id": "tender-permit",
+    "title": "The last Thursday",
+    "client": "Asha Rennick",
+    "targetId": "wensum-council",
+    "pay": 6500,
+    "rating": 2,
+    "minRating": 53,
+    "summary": "Change application 24/0140 at Wensum Borough Council to \"deferred for review\".",
+    "brief": "His wife. Through a nominee.\n\nThe roof contract is confirmed at Thursday's committee, as application 24/0140. Once it is confirmed it takes a court to undo it. If it is deferred, it goes to the monitoring officer, and I will make sure the monitoring officer has plenty to read.\n\nSet the decision on 24/0140 to \"deferred for review\".",
+    "objective": {
+      "kind": "record",
+      "key": "24/0140",
+      "column": "Decision",
+      "value": "deferred for review"
+    },
+    "choices": [
+      {
+        "id": "contract",
+        "label": "Ask Halloran for the next contract instead",
+        "note": "Asha's firm gets the work that follows, and says nothing. Pays more. Word gets round.",
+        "pay": 9500,
+        "rating": -2,
+        "reply": {
+          "from": "Asha Rennick",
+          "subject": "I am not proud of this",
+          "body": "He agreed in under a minute, which tells you how often he has had this conversation.\n\nNine people keep their jobs. I have told myself that is what matters. Your money is enclosed. Please do not write to me again."
+        }
+      }
+    ]
+  },
+  {
+    "id": "lot-provenance",
+    "title": "Suspiciously clean",
+    "client": "Henrik Aalto",
+    "targetId": "varrick-lowe",
+    "pay": 5500,
+    "rating": 1,
+    "minRating": 55,
+    "summary": "Read the provenance note for lot 61 at Varrick & Lowe.",
+    "brief": "My grandmother owned a painting of a room with an open door and a woman standing in it. It was sold in 1987 when the farm went. I have a photograph of it over my desk.\n\nIt is on the cover of Varrick & Lowe's spring catalogue in Geneva, as lot 61. The woman is gone. I would like to know what the house knows about that. The file is provenance_note_061.txt, in the sale folder.",
+    "objective": {
+      "kind": "read",
+      "file": "provenance_note_061.txt"
+    }
+  },
+  {
+    "id": "lot-consignor",
+    "title": "Who is selling",
+    "client": "Henrik Aalto",
+    "targetId": "varrick-lowe",
+    "pay": 6000,
+    "rating": 1,
+    "minRating": 58,
+    "summary": "Copy the consignor list from Varrick & Lowe.",
+    "brief": "Ours had a woman in it. They know, and they have printed the cover anyway.\n\nSomebody painted her out so the picture could pass for a better painter's work. I want to know who is selling it. The house will never say. Their list will: consignor_list_2034.dat.",
+    "objective": {
+      "kind": "steal",
+      "file": "consignor_list_2034.dat"
+    }
+  },
+  {
+    "id": "lot-pigment",
+    "title": "What the laboratory found",
+    "client": "Henrik Aalto",
+    "targetId": "corran-analytical",
+    "pay": 6500,
+    "rating": 1,
+    "minRating": 61,
+    "summary": "Copy the pigment analysis of lot 61 from Corran Analytical.",
+    "brief": "The consignor is a dealer in Antwerp who has sold through them eleven times. That is all I need to know about him.\n\nBefore a sale like this the house has the paint tested. They used a laboratory in Leuven, Corran Analytical. The report is pigment_analysis_vl61.dat. If part of that canvas was painted last year, it will say so.",
+    "objective": {
+      "kind": "steal",
+      "file": "pigment_analysis_vl61.dat"
+    },
+    "twists": [
+      {
+        "kind": "drop",
+        "file": "pigment_analysis_vl61.dat",
+        "sizeGq": 2,
+        "folder": "quality"
+      }
+    ]
+  },
+  {
+    "id": "lot-withdraw",
+    "title": "Withdrawn",
+    "client": "Henrik Aalto",
+    "targetId": "varrick-lowe",
+    "pay": 8000,
+    "rating": 2,
+    "minRating": 64,
+    "summary": "Change lot 61 at Varrick & Lowe to \"withdrawn\".",
+    "brief": "Titanium white, in the middle of a picture from 1905. A patch the size of a standing woman.\n\nI could go to the newspapers, and I will. But the sale is on Saturday, and a painting that sells is a painting that disappears. If lot 61 is marked withdrawn, the porters will not carry it into the room.\n\nSet its status to \"withdrawn\".",
+    "objective": {
+      "kind": "record",
+      "key": "LOT-061",
+      "column": "Status",
+      "value": "withdrawn"
+    },
+    "choices": [
+      {
+        "id": "share",
+        "label": "Let it sell, and take a share",
+        "note": "The dealer pays you a share of the hammer price to say nothing. Henrik never sees the painting again.",
+        "pay": 14000,
+        "rating": -2,
+        "reply": {
+          "from": "A dealer in Antwerp",
+          "subject": "Lot 61",
+          "body": "It made a little over the high estimate. Your share is enclosed, as we discussed.\n\nYou have an eye for this business. If you ever tire of your own, write to me."
+        }
+      }
+    ]
+  },
+  {
+    "id": "cold-log",
+    "title": "Eleven hours warm",
+    "client": "Nadia Ferreira",
+    "targetId": "meridian-freight",
+    "pay": 6000,
+    "rating": 1,
+    "minRating": 60,
+    "summary": "Read the reefer log for 12 April at Meridian Freight.",
+    "brief": "I am a dispatcher at Meridian Freight in Singapore. In April four refrigerated containers of vaccine sat on our quay with the cooling off for eleven hours. I was told it was a power fault. There was no power fault. I was on shift.\n\nThe units keep a log. It was pulled off my screen the next morning, but nothing here is ever really deleted. Look for reefer_log_0412.txt.\n\nBe careful. The company has had auditors in and the system is tighter than it was.",
+    "objective": {
+      "kind": "read",
+      "file": "reefer_log_0412.txt"
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "password",
+        "by": 2
+      },
+      {
+        "kind": "raise",
+        "layer": "monitor",
+        "by": 2
+      },
+      {
+        "kind": "drop",
+        "file": "reefer_log_0412.txt",
+        "sizeGq": 1,
+        "text": "REEFER LOG, QUAY 6, 12 APRIL.\n\n02:14  units MF-R-771 to MF-R-774: cooling set to OFF at the yard console. User: ops-supervisor.\n13:20  cooling set to ON. User: ops-supervisor.\n13:25  cargo temperature 19°C. Limit 8°C.\n\nNo fault recorded. No alarm sent: alarms for quay 6 were muted at 02:10 by the same user."
+      }
+    ]
+  },
+  {
+    "id": "cold-claim",
+    "title": "Spoiled in transit",
+    "client": "Nadia Ferreira",
+    "targetId": "corvane-mutual",
+    "pay": 6500,
+    "rating": 1,
+    "minRating": 63,
+    "summary": "Copy claim CS-2291 from Corvane Mutual.",
+    "brief": "Switched off by hand, and the alarms muted four minutes before.\n\nThe cargo was written off and somebody claimed on it. The insurer is Corvane Mutual in Toronto. I want to see who was paid, and how much, and what they said had happened. The file is claim_cs_2291.dat.",
+    "objective": {
+      "kind": "steal",
+      "file": "claim_cs_2291.dat"
+    },
+    "twists": [
+      {
+        "kind": "drop",
+        "file": "claim_cs_2291.dat",
+        "sizeGq": 3
+      }
+    ]
+  },
+  {
+    "id": "cold-orders",
+    "title": "The second buyer",
+    "client": "Nadia Ferreira",
+    "targetId": "meridian-freight",
+    "pay": 7000,
+    "rating": 1,
+    "minRating": 66,
+    "summary": "Copy April's dispatch orders from Meridian Freight.",
+    "brief": "Paid in full within nine days, to a company that is not the one that owned the vaccine.\n\nHere is what I think. The cargo was never spoiled. It was declared spoiled, claimed for, and shipped on to somebody else. If I am right there is a second set of dispatch orders for those four containers: dispatch_orders_april.dat. Copy it.",
+    "objective": {
+      "kind": "steal",
+      "file": "dispatch_orders_april.dat"
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "password",
+        "by": 2
+      },
+      {
+        "kind": "raise",
+        "layer": "monitor",
+        "by": 2
+      },
+      {
+        "kind": "drop",
+        "file": "dispatch_orders_april.dat",
+        "sizeGq": 3
+      }
+    ]
+  },
+  {
+    "id": "cold-plant",
+    "title": "For the claims desk",
+    "client": "Nadia Ferreira",
+    "targetId": "corvane-mutual",
+    "pay": 8500,
+    "rating": 2,
+    "minRating": 69,
+    "summary": "Put the certified reefer log on Corvane Mutual's server.",
+    "brief": "Four containers, re-labelled and sent to a buyer in a country that was told there was none to be had. And the cooling really was off for eleven hours, so what arrived was worthless.\n\nCorvane's fraud people read whatever is attached to a claim. I am sending you the log and the second orders, in one file. Put it on their server. They will do the rest, and they have lawyers.",
+    "objective": {
+      "kind": "plant",
+      "file": "cs_2291_supplementary.dat",
+      "sizeGq": 2
+    },
+    "choices": [
+      {
+        "id": "owner",
+        "label": "Sell it back to Meridian's owner",
+        "note": "He pays a great deal for the only copy. Nadia is found out within the week.",
+        "pay": 15000,
+        "rating": -2,
+        "reply": {
+          "from": "Meridian Freight, Chairman's office",
+          "subject": "A private matter",
+          "body": "The file has been received and the matter is closed. Payment has been made.\n\nWe have also identified the member of staff concerned. You need not trouble yourself about her."
+        }
+      }
+    ]
+  },
+  {
+    "id": "keys-exports",
+    "title": "After hours",
+    "client": "Brigid Nolan",
+    "targetId": "gatehouse-perimeter",
+    "pay": 7000,
+    "rating": 1,
+    "minRating": 72,
+    "summary": "Read the after-hours export list at Gatehouse Managed Security.",
+    "brief": "I was a duty engineer at Gatehouse in Cork for six years. We run the firewalls for firms too small to run their own, and we know every hole in every one of them. That is the job.\n\nSince the new owners came, somebody has been exporting those holes at night. I saw the list once before I was let go: after_hours_exports.txt. Read it. They have tightened the console since I left, so go in properly.",
+    "objective": {
+      "kind": "read",
+      "file": "after_hours_exports.txt"
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "password",
+        "by": 2
+      },
+      {
+        "kind": "raise",
+        "layer": "monitor",
+        "by": 2
+      },
+      {
+        "kind": "drop",
+        "file": "after_hours_exports.txt",
+        "sizeGq": 1,
+        "text": "EXPORTS OUTSIDE CHANGE WINDOW (not for the client report)\n\n03 Feb 01:12  client_weak_points.dat  to external address  user: director2\n02 Mar 01:40  client_weak_points.dat  to external address  user: director2\n06 Apr 01:05  client_weak_points.dat  to external address  user: director2\n\nIncidents at client sites in the week after each export: 3, 4, 6.\nRenewal quotes issued to those clients, average increase: 40%.",
+        "folder": "ops"
+      }
+    ]
+  },
+  {
+    "id": "keys-list",
+    "title": "Weak points",
+    "client": "Brigid Nolan",
+    "targetId": "gatehouse-perimeter",
+    "pay": 7500,
+    "rating": 1,
+    "minRating": 75,
+    "summary": "Copy the client weak points file from Gatehouse.",
+    "brief": "Export the holes, wait for the break-ins, put the price up. Fourteen clients, and every one of them thanks Gatehouse for the warning.\n\nI need the file itself: client_weak_points.dat. It is four gigabytes and their monitor will notice, so have your route ready.",
+    "objective": {
+      "kind": "steal",
+      "file": "client_weak_points.dat"
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "password",
+        "by": 2
+      },
+      {
+        "kind": "raise",
+        "layer": "monitor",
+        "by": 2
+      },
+      {
+        "kind": "drop",
+        "file": "client_weak_points.dat",
+        "sizeGq": 4
+      }
+    ]
+  },
+  {
+    "id": "keys-quote",
+    "title": "Forty per cent",
+    "client": "Brigid Nolan",
+    "targetId": "wensum-council",
+    "pay": 8000,
+    "rating": 1,
+    "minRating": 78,
+    "summary": "Read Gatehouse's renewal quote at Wensum Borough Council.",
+    "brief": "One of the fourteen is a council in Norwich, and councils keep every piece of paper they are ever sent. Wensum Borough Council was broken into in March and had its renewal quote within the week.\n\nRead gatehouse_renewal_quote.txt on their planning server. I want the client's side of this in the client's own files.",
+    "objective": {
+      "kind": "read",
+      "file": "gatehouse_renewal_quote.txt"
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "monitor",
+        "by": 1
+      },
+      {
+        "kind": "raise",
+        "layer": "password",
+        "by": 1
+      },
+      {
+        "kind": "drop",
+        "file": "gatehouse_renewal_quote.txt",
+        "sizeGq": 1,
+        "text": "FROM: Gatehouse Managed Security\nTO: Wensum Borough Council\n\nFollowing the incident of 9 March, which our team detected and contained, we have reviewed your perimeter. To maintain cover at the level the present threat requires, your annual fee will rise from 38,000 to 54,500.\n\nWe would add that councils which have declined an upgrade have, in our experience, tended to suffer further incidents.",
+        "folder": "committee"
+      }
+    ]
+  },
+  {
+    "id": "keys-notice",
+    "title": "Notice to clients",
+    "client": "Brigid Nolan",
+    "targetId": "gatehouse-perimeter",
+    "pay": 9500,
+    "rating": 2,
+    "minRating": 81,
+    "summary": "Put a notice to clients on Gatehouse's own status page server.",
+    "brief": "\"Tended to suffer further incidents.\" In writing.\n\nEvery Gatehouse client reads the status page each morning. I have written them a notice: what was exported, when, and what happened next. Upload it to the console and it goes out with the morning status.\n\nAfter that I expect to be hard to reach for a while.",
+    "objective": {
+      "kind": "plant",
+      "file": "notice_to_clients.dat",
+      "sizeGq": 1
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "password",
+        "by": 2
+      },
+      {
+        "kind": "raise",
+        "layer": "monitor",
+        "by": 2
+      }
+    ],
+    "choices": [
+      {
+        "id": "lowtide",
+        "label": "Sell the weak points on Lowtide",
+        "note": "Fourteen firms' holes to the highest bidder. Pays very well. Everyone will know who sold them.",
+        "pay": 18000,
+        "rating": -3,
+        "reply": {
+          "from": "Lowtide",
+          "subject": "Sold",
+          "body": "Your lot closed at more than its estimate. The buyer did not give a name and we did not ask.\n\nFourteen small firms are about to have a bad month. The board has noticed who made that possible."
+        }
+      }
+    ]
+  },
+  {
+    "id": "go-freehold",
+    "title": "The freehold",
+    "client": "Silas Marr",
+    "targetId": "marisol-grand",
+    "pay": 8000,
+    "rating": 1,
+    "minRating": 85,
+    "summary": "Copy the draft sale of the freehold from the Marisol Grand.",
+    "brief": "I act for creditors. When a business is about to fail, I am paid to find out what it is worth before the people who own it can hide the answer.\n\nThe Marisol Grand in Porto is about to fail. Its owners are selling the building out from under it and have not told the staff or the bank. The draft is on the front office system: sale_of_freehold_draft.dat.\n\nThey have had trouble there before and the locks are new. Copy it.",
+    "objective": {
+      "kind": "steal",
+      "file": "sale_of_freehold_draft.dat"
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "password",
+        "by": 2
+      },
+      {
+        "kind": "raise",
+        "layer": "firewall",
+        "by": 2
+      },
+      {
+        "kind": "raise",
+        "layer": "monitor",
+        "by": 2
+      },
+      {
+        "kind": "drop",
+        "file": "sale_of_freehold_draft.dat",
+        "sizeGq": 2
+      }
+    ]
+  },
+  {
+    "id": "go-ownership",
+    "title": "Change of ownership",
+    "client": "Silas Marr",
+    "targetId": "corran-analytical",
+    "pay": 8500,
+    "rating": 1,
+    "minRating": 88,
+    "summary": "Read the change of ownership memo at Corran Analytical.",
+    "brief": "Good. The buyer of the hotel is a holding company called Kessel Brandt. The name will mean nothing to you. It is beginning to mean something to me.\n\nA laboratory in Leuven changed hands last month, very quietly. Read change_of_ownership_memo.txt on their system and tell me whose it is now.",
+    "objective": {
+      "kind": "read",
+      "file": "change_of_ownership_memo.txt"
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "password",
+        "by": 1
+      },
+      {
+        "kind": "raise",
+        "layer": "firewall",
+        "by": 1
+      },
+      {
+        "kind": "raise",
+        "layer": "monitor",
+        "by": 2
+      },
+      {
+        "kind": "drop",
+        "file": "change_of_ownership_memo.txt",
+        "sizeGq": 1,
+        "text": "TO ALL STAFF, CORRAN ANALYTICAL.\n\nThe company has been acquired by Kessel Brandt Holdings. There will be no changes to your work.\n\nThe building at Leuven will be sold in the autumn and the laboratory will move to rented premises. Staff numbers will be reviewed at that time. The pension scheme is closed to new contributions from today.\n\nPlease do not discuss this with clients.",
+        "folder": "quality"
+      }
+    ]
+  },
+  {
+    "id": "go-permit",
+    "title": "Approved",
+    "client": "Silas Marr",
+    "targetId": "wensum-council",
+    "pay": 9000,
+    "rating": 1,
+    "minRating": 91,
+    "summary": "Change application 24/0152 at Wensum Borough Council to \"approved\".",
+    "brief": "The same buyer. The same plan: keep the land, close the rest.\n\nKessel Brandt has an application in at Wensum Borough Council to clear a site in Norwich. It is down as \"approved with conditions\", and the conditions protect forty jobs. For my purposes I need the record to show plain \"approved\".\n\nApplication 24/0152. Do not ask me why a creditor's man needs that. Just change it.",
+    "objective": {
+      "kind": "record",
+      "key": "24/0152",
+      "column": "Decision",
+      "value": "approved"
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "password",
+        "by": 1
+      },
+      {
+        "kind": "raise",
+        "layer": "proxy",
+        "by": 1
+      },
+      {
+        "kind": "raise",
+        "layer": "monitor",
+        "by": 1
+      }
+    ]
+  },
+  {
+    "id": "go-consignments",
+    "title": "Everything must go",
+    "client": "Silas Marr",
+    "targetId": "varrick-lowe",
+    "pay": 12000,
+    "rating": 2,
+    "minRating": 94,
+    "summary": "Copy the Kessel Brandt consignments from Varrick & Lowe.",
+    "brief": "You have been wondering, so I will tell you. I do not act for the creditors of Kessel Brandt. I act for Kessel Brandt. Everything you have fetched me is a thing I needed to know nobody else had.\n\nOne more. The pictures from the hotel, the instruments from the laboratory and a good deal else are going through Varrick & Lowe in Geneva under other names. The list is kessel_consignments.dat. Bring it to me and we are finished, and you are well paid.\n\nOr do something else with it. You would not be the first.",
+    "objective": {
+      "kind": "steal",
+      "file": "kessel_consignments.dat"
+    },
+    "twists": [
+      {
+        "kind": "raise",
+        "layer": "password",
+        "by": 1
+      },
+      {
+        "kind": "raise",
+        "layer": "firewall",
+        "by": 2
+      },
+      {
+        "kind": "raise",
+        "layer": "monitor",
+        "by": 2
+      },
+      {
+        "kind": "drop",
+        "file": "kessel_consignments.dat",
+        "sizeGq": 3
+      }
+    ],
+    "decide": {
+      "question": "Who gets the Kessel Brandt list?",
+      "way": {
+        "label": "Give it to Silas Marr",
+        "note": "He pays in full. Kessel Brandt sells everything before anyone can object."
+      }
+    },
+    "choices": [
+      {
+        "id": "creditors",
+        "label": "Send it to the people being sold off",
+        "note": "The hotel staff, the laboratory and the council each get the list. It pays a third as much, and it is the better story.",
+        "pay": 4000,
+        "rating": 3,
+        "reply": {
+          "from": "Inês Carvalho",
+          "subject": "You do not know what you have done",
+          "body": "A list came to the hotel this morning with no name on it. The bank has frozen the sale. A laboratory in Belgium rang us to ask whether we had received the same thing.\n\nI think I know who sent it. I think it was the same person who read a night audit for me once.\n\nThe staff had a collection. It is not much. Thank you.\n\nInês"
+        }
+      }
+    ]
   }
 ]

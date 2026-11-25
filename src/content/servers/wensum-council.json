@@ -1,0 +1,138 @@
+{
+  "id": "wensum-council",
+  "name": "Wensum Borough Council",
+  "kind": "company",
+  "owner": "Wensum Borough Council",
+  "hostname": "WBC-PLAN-1",
+  "address": "82.19.203.88",
+  "city": "Norwich",
+  "country": "United Kingdom",
+  "lat": 52.63,
+  "lon": 1.3,
+  "blurb": "Planning and procurement for a borough of ninety thousand people and one very long-serving committee chair.",
+  "listed": false,
+  "security": {
+    "password": 3,
+    "proxy": 2,
+    "firewall": 3,
+    "monitor": 3
+  },
+  "traceSecondsPerHop": 12,
+  "relayDelay": 1.0,
+  "banner": [
+    "WENSUM BOROUGH COUNCIL",
+    "Planning and Procurement · WBC-PLAN-1",
+    "Authorised officers only. Members of the public should use the counter at Bethel Street."
+  ],
+  "accounts": [
+    {
+      "user": "guest",
+      "role": "guest",
+      "name": "Public notices"
+    },
+    {
+      "user": "planning",
+      "role": "admin",
+      "name": "Head of Planning"
+    }
+  ],
+  "files": [
+    {
+      "name": "opening_hours.txt",
+      "sizeGq": 1,
+      "access": "guest",
+      "content": {
+        "kind": "text",
+        "text": "The planning counter is open Tuesday and Thursday, 10:00 to 12:30. Bring two copies of everything."
+      }
+    },
+    {
+      "name": "planning_applications_2034.dat",
+      "sizeGq": 4,
+      "access": "admin"
+    },
+    {
+      "name": "parking_fines_ledger.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    },
+    {
+      "name": "committee_calendar.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "committee",
+      "content": {
+        "kind": "text",
+        "text": "Planning Committee meets on the last Thursday of the month. Chair: Cllr D. Halloran (since 2019). Items are taken in the order the Chair decides on the night."
+      }
+    },
+    {
+      "name": "declarations_of_interest.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "committee",
+      "content": {
+        "kind": "text",
+        "text": "REGISTER OF INTERESTS, extract. Cllr D. Halloran: none declared. Cllr P. Osei: allotment society. Cllr M. Fenn: spouse employed by the Council."
+      }
+    },
+    {
+      "name": "tender_note_0214.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "committee",
+      "content": {
+        "kind": "text",
+        "text": "NOTE FOR FILE, 14 February. Leisure centre roof, tender ref. WBC/24/07.\n\nThe Chair of Planning asked to see the bids received so far, 'to get a feel for the market'. Procurement said the bids are sealed until the 28th. The Chair said he quite understood, and asked again on the 15th, and on the 16th the Head of Planning opened them for him.\n\nHalloran Bros Roofing submitted its bid on the 27th. It was the lowest by four hundred pounds."
+      }
+    },
+    {
+      "name": "tender_bids_q1.dat",
+      "sizeGq": 3,
+      "access": "admin"
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 5200,
+      "text": "login planning from 82.19.203.4"
+    },
+    {
+      "minutesAgo": 5180,
+      "text": "file opened: planning_applications_2034.dat"
+    },
+    {
+      "minutesAgo": 5170,
+      "text": "logout planning"
+    }
+  ],
+  "records": {
+    "title": "Permits",
+    "columns": [
+      "Application",
+      "Decision"
+    ],
+    "rows": [
+      [
+        "24/0117",
+        "approved"
+      ],
+      [
+        "24/0131",
+        "refused"
+      ],
+      [
+        "24/0140",
+        "pending"
+      ],
+      [
+        "24/0152",
+        "approved with conditions"
+      ],
+      [
+        "24/0166",
+        "withdrawn"
+      ]
+    ]
+  }
+}
