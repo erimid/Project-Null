@@ -16,5 +16,7 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
     environment: 'node',
+    // Whole careers are played in some tests: seconds each, more on a slow runner.
+    testTimeout: 30_000,
   },
 });
