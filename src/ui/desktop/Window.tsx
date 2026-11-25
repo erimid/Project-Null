@@ -143,6 +143,7 @@ export function Window({ id, title, note, actions, tabs, children }: Props) {
                   key={other}
                   type="button"
                   class={`panetab${other === id ? ' is-front' : ''}`}
+                  data-window={other}
                   aria-pressed={other === id}
                   data-sfx="tab"
                   onClick={() => windows.focus(other)}

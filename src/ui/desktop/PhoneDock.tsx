@@ -4,7 +4,7 @@ import { formatTime, ratingStep } from '../format';
 import { useGame, useWorld } from '../hooks';
 import { content, session } from '../session';
 import { TraceAlarm } from './BottomBar';
-import { activeConnection, useDesk } from './deskStore';
+import { activeConnection, deskStore, useDesk } from './deskStore';
 import { GameMenu } from './GameMenu';
 import { lit, useGuide } from './guide';
 import { WINDOW_HELP } from './help';
@@ -65,8 +65,10 @@ export function PhoneDock() {
     return () => window.removeEventListener('keydown', onKey);
   }, [sheet]);
 
+  // Picking a window puts the contract away, or it would stay over the window just picked.
   const open = (id: WindowId) => {
     windows.focus(id);
+    deskStore.showContract(false);
     setSheet(false);
   };
 
@@ -84,6 +86,7 @@ export function PhoneDock() {
                   <button
                     key={id}
                     type="button"
+                    data-window={id}
                     class={`pdock__item${onShow(id) ? ' is-front' : ''}${layouts[id].open ? ' is-open' : ''}`}
                     onClick={() => open(id)}
                   >
@@ -143,6 +146,7 @@ export function PhoneDock() {
             <button
               key={id}
               type="button"
+              data-window={id}
               class={`pdock__tab${onShow(id) ? ' is-front' : ''}`}
               aria-pressed={onShow(id)}
               disabled={id === 'server' && !connected}

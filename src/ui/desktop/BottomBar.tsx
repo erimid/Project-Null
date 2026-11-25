@@ -258,6 +258,7 @@ export function BottomBar({ docked = false, top = false, middle }: BarProps = {}
           <button
             key={id}
             type="button"
+            data-window={id}
             class={`dock__tab${layouts[id].open ? ' is-open' : ''}${layouts[id].minimized ? ' is-minimized' : ''}`}
             data-tip={`${WINDOW_HELP[id].summary}${layouts[id].minimized ? ' (Minimized)' : ''}`}
             aria-pressed={layouts[id].open}
