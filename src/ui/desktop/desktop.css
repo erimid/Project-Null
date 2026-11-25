@@ -20,7 +20,7 @@
   padding: 0 16px;
   background: var(--bar);
   border-bottom: 1px solid var(--line);
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   font-weight: 600;
 }
 
@@ -37,7 +37,7 @@
   align-items: center;
   padding: 0 14px;
   color: var(--text-dim);
-  font-size: 20px;
+  font-size: calc(20px * var(--text-scale, 1));
 }
 
 .tabbar__add:not(:disabled):hover {
@@ -124,7 +124,7 @@
   user-select: none;
   touch-action: none;
   border-bottom: 1px solid var(--line-soft);
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--text-bright);
 }
@@ -147,7 +147,7 @@
   height: 28px;
   border-radius: 8px;
   color: var(--text-dim);
-  font-size: 20px;
+  font-size: calc(20px * var(--text-scale, 1));
   line-height: 1;
 }
 
@@ -225,12 +225,12 @@
   grid-template-columns: 104px minmax(0, 1fr);
   gap: 7px 16px;
   margin: 0;
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
 }
 
 .readout dt {
   align-self: center;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -247,7 +247,7 @@
   margin: 14px 0 0;
   padding-top: 10px;
   border-top: 1px solid var(--line-soft);
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -284,7 +284,7 @@
   padding: 0 16px 0 0;
   background: var(--bar);
   border-top: 1px solid var(--line);
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   font-weight: 600;
 }
 
@@ -345,7 +345,7 @@
 }
 
 .dock__label {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -356,7 +356,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 17px;
+  font-size: calc(17px * var(--text-scale, 1));
   line-height: 1.1;
   color: var(--text-bright);
 }
@@ -417,7 +417,7 @@
   padding: 0 6px;
   border-radius: var(--radius-pill);
   background: rgb(var(--cyan-rgb) / 0.2);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   line-height: 18px;
   text-align: center;
   color: var(--text-bright);
@@ -484,7 +484,7 @@
   background: none;
   color: var(--red-text);
   font: inherit;
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   font-weight: 600;
   cursor: pointer;
 }
@@ -506,7 +506,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -525,7 +525,7 @@
   grid-row: span 2;
   grid-column: 2;
   justify-self: end;
-  font-size: 44px;
+  font-size: calc(44px * var(--text-scale, 1));
   line-height: 1;
   color: #fff;
   text-shadow: 0 0 18px rgb(var(--red-rgb) / 0.9);
@@ -533,12 +533,12 @@
 }
 
 .alarm__time--unknown {
-  font-size: 20px;
+  font-size: calc(20px * var(--text-scale, 1));
   font-weight: 700;
 }
 
 .alarm__server {
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--text-bright);
 }
@@ -600,7 +600,7 @@
   padding: 0 14px 0 16px;
   border-right: 1px solid var(--line-soft);
   color: var(--cyan);
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
   font-weight: 700;
   transition: background 0.15s;
 }
@@ -647,7 +647,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   text-align: left;
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--text-bright);
 }
@@ -657,7 +657,7 @@
 }
 
 .menu__item-note {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 500;
   color: var(--text-dim);
 }
@@ -666,7 +666,7 @@
   margin: 10px 12px 6px;
   padding-top: 10px;
   border-top: 1px solid var(--line-soft);
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -678,13 +678,13 @@
   grid-template-columns: auto 1fr;
   gap: 6px 14px;
   margin: 0 12px;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   font-weight: 500;
 }
 
 .menu__keys dt {
   color: var(--cyan);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
 }
 
 .menu__keys dd {
@@ -694,7 +694,7 @@
 
 .menu__build {
   margin: 12px 12px 6px;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -738,12 +738,12 @@
   border-radius: 50%;
   background: var(--red);
   color: #fff;
-  font-size: 22px;
+  font-size: calc(22px * var(--text-scale, 1));
   font-weight: 700;
 }
 
 .alert__title {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -751,7 +751,7 @@
 }
 
 .alert__text {
-  font-size: 17px;
+  font-size: calc(17px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--text-bright);
 }
@@ -766,14 +766,14 @@
 }
 
 .alert--severe .alert__title {
-  font-size: 22px;
+  font-size: calc(22px * var(--text-scale, 1));
   color: #fff;
 }
 
 .alert--severe .alert__mark {
   width: 46px;
   height: 46px;
-  font-size: 30px;
+  font-size: calc(30px * var(--text-scale, 1));
 }
 
 @keyframes alert-drop {
@@ -798,16 +798,16 @@
   width: 24px;
   height: 24px;
   background: var(--cyan-low);
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
 }
 
 .alert--calm .alert__title {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   color: var(--cyan);
 }
 
 .alert--calm .alert__text {
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   font-weight: 500;
 }
 
@@ -866,7 +866,7 @@
   padding: 3px 12px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-pill);
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
@@ -921,7 +921,7 @@
 }
 
 .slot__tag {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 500;
   color: var(--mint);
 }
@@ -930,7 +930,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   white-space: nowrap;
 }
 
@@ -986,7 +986,7 @@
 .tabbtn {
   padding: 4px 12px;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   color: var(--text-muted);
 }
 
@@ -1046,7 +1046,7 @@
 .globe-zoom button {
   width: 28px;
   height: 26px;
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
   line-height: 1;
   color: var(--text-muted);
 }
@@ -1101,7 +1101,7 @@
 .map__heading,
 .login__heading {
   margin: 0 0 6px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1163,7 +1163,7 @@
 }
 
 .map__detail-name {
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--text-bright);
 }
@@ -1174,7 +1174,7 @@
 
 .map__detail-address {
   margin-top: 4px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
 }
 
 .map__detail-blurb {
@@ -1209,7 +1209,7 @@
 }
 
 .route__label {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1253,7 +1253,7 @@
   border: 1px solid var(--line-soft);
   border-radius: 8px;
   background: rgb(var(--bg-rgb) / 0.6);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   line-height: 1.6;
   color: var(--text);
   white-space: pre-wrap;
@@ -1269,11 +1269,11 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
 }
 
 .rows:not(.data) {
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
 }
 
 .rows--scroll {
@@ -1325,7 +1325,7 @@
 
 .row__done {
   color: var(--mint);
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   text-align: right;
 }
 
@@ -1336,14 +1336,14 @@
 .records {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   text-align: left;
 }
 
 .records caption {
   margin-bottom: 6px;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1407,7 +1407,7 @@
 .program__blurb {
   display: block;
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   font-weight: 500;
   color: var(--text-dim);
 }
@@ -1450,7 +1450,7 @@
   align-items: center;
   gap: 6px;
   margin: 8px 0 0;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   color: var(--text-muted);
 }
 
@@ -1476,7 +1476,7 @@
   border-radius: 8px;
   background: rgb(var(--bg-rgb) / 0.7);
   font-family: var(--font-data);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   line-height: 1.55;
   color: var(--text);
   white-space: pre-wrap;
@@ -1533,7 +1533,7 @@
 }
 
 .player__time {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-muted);
 }
 
@@ -1565,7 +1565,7 @@
 }
 
 .player__at {
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   line-height: 22px;
   color: var(--text-dim);
 }
@@ -1640,7 +1640,7 @@
   padding: 3px 6px 3px 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   font-weight: 600;
 }
 
@@ -1656,7 +1656,7 @@
   padding: 0 6px;
   border-radius: 6px;
   background: rgb(var(--cyan-rgb) / 0.14);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--cyan);
 }
 
@@ -1683,7 +1683,7 @@
   border-radius: var(--radius-pill);
   overflow: hidden;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 600;
 }
 
@@ -1712,7 +1712,7 @@
   align-items: center;
   gap: 10px;
   justify-self: end;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
 }
 
 .cracking__code {
@@ -1757,7 +1757,7 @@
 }
 
 .message__time {
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 400;
   color: var(--text-dim);
 }
@@ -1771,14 +1771,14 @@
 
 .message-body__subject {
   margin: 0;
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
   font-weight: 700;
   color: var(--text-bright);
 }
 
 .message-body__meta {
   margin: 2px 0 10px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -1800,7 +1800,7 @@ button.tabbar__contract--live:hover {
 }
 
 .tabbar__contract-label {
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--mint);
@@ -1822,7 +1822,7 @@ button.tabbar__contract--live:hover {
 }
 
 .row--contract .row__main strong {
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
 }
 
 .contract__summary {
@@ -1831,7 +1831,7 @@ button.tabbar__contract--live:hover {
 }
 
 .row--contract .row__dim {
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
 }
 
 .contract__pay {
@@ -1860,7 +1860,7 @@ button.tabbar__contract--live:hover {
 
 .contract__title {
   margin: 0 0 12px;
-  font-size: 20px;
+  font-size: calc(20px * var(--text-scale, 1));
   font-weight: 700;
   color: var(--text-bright);
 }
@@ -1987,7 +1987,7 @@ button.tabbar__contract--live:hover {
 }
 
 .lineup__status {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--mint);
 }
 
@@ -2054,7 +2054,7 @@ button.tabbar__contract--live:hover {
   padding: 8px 10px;
   border: 1px solid rgb(var(--red-rgb) / 0.4);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   line-height: 1.35;
   color: var(--red-text);
 }
@@ -2107,7 +2107,7 @@ button.tabbar__contract--live:hover {
   height: 26px;
   border: 1px solid var(--line-strong);
   border-radius: 8px;
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
   line-height: 1;
   color: var(--text);
 }
@@ -2332,7 +2332,7 @@ button.tabbar__contract--live:hover {
   height: 30px;
   border: 1px solid var(--line-strong);
   border-radius: 8px;
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
   line-height: 1;
   color: var(--text);
   transition:
@@ -2357,7 +2357,7 @@ button.tabbar__contract--live:hover {
   border: 1px solid var(--line-soft);
   border-radius: 8px;
   background: rgb(var(--bg-rgb) / 0.7);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-bright);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2389,7 +2389,7 @@ button.tabbar__contract--live:hover {
 
 .page__heading {
   margin: 0 0 12px;
-  font-size: 26px;
+  font-size: calc(26px * var(--text-scale, 1));
   font-weight: 700;
   line-height: 1.15;
   color: var(--text-bright);
@@ -2397,14 +2397,14 @@ button.tabbar__contract--live:hover {
 
 .page__text {
   margin: 0 0 12px;
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   line-height: 1.45;
 }
 
 .page__list {
   margin: 0 0 12px;
   padding-left: 20px;
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   line-height: 1.5;
 }
 
@@ -2412,13 +2412,13 @@ button.tabbar__contract--live:hover {
   margin: 0 0 12px;
   padding: 8px 14px;
   border-left: 2px solid var(--line-strong);
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   line-height: 1.45;
 }
 
 .page__by {
   display: block;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--cyan);
 }
@@ -2434,7 +2434,7 @@ button.tabbar__contract--live:hover {
 }
 
 .page__link {
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--cyan);
   text-align: left;
@@ -2456,7 +2456,7 @@ button.tabbar__contract--live:hover {
 }
 
 .browser--dark .page__heading {
-  font-size: 22px;
+  font-size: calc(22px * var(--text-scale, 1));
   letter-spacing: 0.04em;
   color: var(--mint);
 }
@@ -2629,7 +2629,7 @@ button.tabbar__contract--live:hover {
   border: 1px solid var(--line);
   border-radius: 10px;
   text-align: left;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   color: var(--text);
   transition:
     border-color 0.15s,
@@ -2637,7 +2637,7 @@ button.tabbar__contract--live:hover {
 }
 
 .chip strong {
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   color: var(--text-bright);
 }
 
@@ -2705,7 +2705,7 @@ button.lead:hover {
 }
 
 .lead__want {
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--text-bright);
 }
@@ -2765,7 +2765,7 @@ button.lead:hover {
   margin-right: 6px;
   border: 1px solid var(--line-strong);
   border-radius: 50%;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   color: var(--cyan);
 }
 
@@ -2775,7 +2775,7 @@ button.lead:hover {
 
 .pick-group__label {
   margin: 0 0 4px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -2857,7 +2857,7 @@ button.lead:hover {
   margin-top: 1px;
   border: 1px solid var(--line-strong);
   border-radius: 5px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--mint);
 }
 
@@ -2976,7 +2976,7 @@ button.lead:hover {
 
 .part__slot {
   display: block;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -2985,7 +2985,7 @@ button.lead:hover {
 
 .part__now {
   display: block;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   color: var(--text-muted);
 }
 
@@ -3154,7 +3154,7 @@ button.lead:hover {
   padding: 10px 12px;
   border: 1px dashed rgb(var(--cyan-rgb) / 0.18);
   border-radius: 8px;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -3203,7 +3203,7 @@ button.lead:hover {
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-pill);
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -3227,7 +3227,7 @@ button.lead:hover {
 
 .contract__rating {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--mint);
@@ -3254,7 +3254,7 @@ button.lead:hover {
 }
 
 .tile dt {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3263,7 +3263,7 @@ button.lead:hover {
 
 .tile dd {
   margin: 0;
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
   font-weight: 600;
   line-height: 1.2;
   color: var(--text-bright);
@@ -3271,7 +3271,7 @@ button.lead:hover {
 
 .tile__sub {
   display: block;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 500;
   color: var(--text-muted);
 }
@@ -3330,7 +3330,7 @@ button.lead:hover {
 }
 
 .parts__slot {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -3338,7 +3338,7 @@ button.lead:hover {
 }
 
 .parts__name {
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--text-bright);
 }
@@ -3353,7 +3353,7 @@ button.lead:hover {
 .dock__title {
   margin-left: 8px;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -3369,7 +3369,7 @@ button.lead:hover {
 .alert--good .alert__mark {
   background: var(--mint);
   color: var(--on-mint);
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
 }
 
 .alert--good .alert__title {
@@ -3402,7 +3402,7 @@ button.lead:hover {
 }
 
 .tile dd {
-  font-size: 17px;
+  font-size: calc(17px * var(--text-scale, 1));
 }
 
 .parts {
@@ -3424,7 +3424,7 @@ button.lead:hover {
 
 .skills__free {
   color: var(--mint-text);
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
 }
 
 .skills {
@@ -3476,7 +3476,7 @@ button.lead:hover {
 
 .skill__name {
   color: var(--text-bright);
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
 }
 
 .skill.is-learned .skill__name {
@@ -3503,7 +3503,7 @@ button.lead:hover {
 .skill__blurb {
   margin: 4px 0 8px;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   line-height: 1.3;
 }
 
@@ -3516,7 +3516,7 @@ button.lead:hover {
 
 .skill__cost {
   color: var(--text-dim);
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
 }
 
 .skills__unlearn {
@@ -3530,7 +3530,7 @@ button.lead:hover {
 .bench__step {
   margin: 10px 0 6px;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
 }
 
 .bench__chips {
@@ -3570,7 +3570,7 @@ button.lead:hover {
 .bench__preview .data {
   grid-column: 1;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
 }
 
 .bench__preview .btn {
@@ -3633,7 +3633,7 @@ button.lead:hover {
   right: 1px;
   min-width: 17px;
   padding: 0 4px;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   line-height: 16px;
   box-shadow: 0 0 0 2px var(--panel);
   pointer-events: none;
@@ -3766,7 +3766,7 @@ button.lead:hover {
   display: inline-block;
   min-width: 22px;
   color: var(--text-dim);
-  font-size: 30px;
+  font-size: calc(30px * var(--text-scale, 1));
   line-height: 1;
   text-align: center;
   animation: count-pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.5);
@@ -3811,7 +3811,7 @@ button.lead:hover {
 
 .skills__none {
   color: var(--text-dim);
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
 }
 
 .skills__next {
@@ -3819,7 +3819,7 @@ button.lead:hover {
   justify-items: end;
   gap: 5px;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
 }
 
 .skills__meter {
@@ -3883,7 +3883,7 @@ button.lead:hover {
 
 .skills__name {
   color: rgb(var(--hue));
-  font-size: 17px;
+  font-size: calc(17px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.14em;
   line-height: 1.1;
@@ -3893,7 +3893,7 @@ button.lead:hover {
 .skills__motto {
   grid-column: 2;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   line-height: 1.1;
 }
 
@@ -3905,7 +3905,7 @@ button.lead:hover {
   border-radius: var(--radius-pill);
   background: rgba(var(--hue), 0.14);
   color: rgb(var(--hue));
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   text-align: center;
 }
 
@@ -4108,7 +4108,7 @@ button.lead:hover {
 
 .skill__done {
   color: rgb(var(--hue));
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -4171,7 +4171,7 @@ button.lead:hover {
 
 .plate__name {
   color: rgb(var(--mod));
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -4196,7 +4196,7 @@ button.lead:hover {
 
 .plate__count {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
 }
 
 .bench {
@@ -4256,12 +4256,12 @@ button.lead:hover {
 
 .bench__slot strong {
   color: var(--text-bright);
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
 }
 
 .bench__tag {
   color: var(--text-dim);
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -4274,7 +4274,7 @@ button.lead:hover {
 .bench__plus {
   align-self: center;
   color: var(--text-dim);
-  font-size: 20px;
+  font-size: calc(20px * var(--text-scale, 1));
 }
 
 .bench.is-building .bench__slot.is-filled {
@@ -4332,7 +4332,7 @@ button.lead:hover {
 
 .bench__name {
   color: var(--mint-text);
-  font-size: 17px;
+  font-size: calc(17px * var(--text-scale, 1));
 }
 
 .bench__go {
@@ -4340,7 +4340,7 @@ button.lead:hover {
   grid-row: 1 / span 4;
   align-self: center;
   padding: 10px 18px;
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
 }
 
 .bench__prompt {
@@ -4354,7 +4354,7 @@ button.lead:hover {
   grid-template-columns: 76px minmax(60px, 1fr) auto;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
 }
 
 .gauge__label {
@@ -4392,7 +4392,7 @@ button.lead:hover {
 .gauge__figures {
   min-width: 118px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   text-align: right;
 }
 
@@ -4415,7 +4415,7 @@ button.lead:hover {
 
 .bench__trait {
   color: var(--text);
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
 }
 
 .bench__trait b {
@@ -4424,7 +4424,7 @@ button.lead:hover {
   border-radius: 4px;
   background: rgba(185, 162, 255, 0.18);
   color: #cdbcff;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -4436,7 +4436,7 @@ button.lead:hover {
 
 .bench__step {
   margin: 14px 0 6px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -4485,7 +4485,7 @@ button.lead:hover {
 
 .part__blurb {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   line-height: 1.25;
 }
 
@@ -4672,13 +4672,13 @@ button.lead:hover {
   padding: 0 max(4px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
   cursor: default;
   touch-action: auto;
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
 }
 
 .window--phone .window__close {
   width: 44px;
   height: 44px;
-  font-size: 24px;
+  font-size: calc(24px * var(--text-scale, 1));
 }
 
 .window--phone .window__tabs {
@@ -4698,7 +4698,7 @@ button.lead:hover {
   place-items: center;
   margin: 0;
   color: var(--text-dim);
-  font-size: 17px;
+  font-size: calc(17px * var(--text-scale, 1));
 }
 
 .desktop--phone .alerts {
@@ -4720,7 +4720,7 @@ button.lead:hover {
   padding: 0 max(0px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(0px, env(safe-area-inset-left));
   background: var(--bar);
   border-top: 1px solid var(--line);
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   font-weight: 600;
 }
 
@@ -4750,7 +4750,7 @@ button.lead:hover {
 .pdock__stat {
   padding: 0 8px;
   color: var(--text-bright);
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   white-space: nowrap;
 }
 
@@ -4782,7 +4782,7 @@ button.lead:hover {
   min-height: 52px;
   padding: 0 4px;
   color: var(--text-muted);
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   white-space: nowrap;
   border-top: 2px solid transparent;
 }
@@ -4804,7 +4804,7 @@ button.lead:hover {
   right: 6px;
   min-width: 17px;
   padding: 0 4px;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   line-height: 16px;
 }
 
@@ -4857,7 +4857,7 @@ button.lead:hover {
   border-radius: 10px;
   background: rgb(var(--cyan-rgb) / 0.04);
   color: var(--text);
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
 }
 
 .pdock__item.is-open {
@@ -4877,7 +4877,7 @@ button.lead:hover {
   gap: 12px;
   margin-top: 12px;
   color: var(--text-muted);
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
 }
 
 /* The trace alarm drops from the top on a phone, over whatever is open. */
@@ -4974,7 +4974,7 @@ body {
   background: rgb(var(--panel-rgb) / 0.97);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
   color: var(--text-bright);
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   line-height: 1.35;
   transform: translateY(-100%);
   pointer-events: none;
@@ -5005,7 +5005,7 @@ body {
 .is-phone .btn {
   min-height: 44px;
   padding: 8px 16px;
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
 }
 
 /* ---- phone: the route map, gateway and server read top to bottom ---- */
@@ -5187,7 +5187,7 @@ body {
   background: none;
   color: var(--text-dim);
   font: inherit;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -5312,11 +5312,11 @@ body {
 /* File viewer: a hex dump is small enough to show a whole row. */
 .is-phone .doc {
   padding: 10px;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
 }
 
 .is-phone .doc--raw {
-  font-size: 10px;
+  font-size: calc(10px * var(--text-scale, 1));
 }
 
 /* The two browsers: links are easier to hit with some air around them. */
@@ -5406,7 +5406,7 @@ body {
 .desktop--tablet .window--pane .window__title {
   height: 44px;
   padding-left: 14px;
-  font-size: 17px;
+  font-size: calc(17px * var(--text-scale, 1));
 }
 
 .desktop--tablet .window--pane .window__body {
@@ -5431,7 +5431,7 @@ body {
 
 /* A tablet held wide has the room for a roomier dock, not a taller one. */
 .desktop--tablet .pdock__tab {
-  font-size: 17px;
+  font-size: calc(17px * var(--text-scale, 1));
 }
 
 /* ---- the desk on a small laptop or a tablet held wide ---- */
@@ -5493,7 +5493,7 @@ body {
 .is-phone .globe-zoom button {
   width: 44px;
   height: 40px;
-  font-size: 22px;
+  font-size: calc(22px * var(--text-scale, 1));
 }
 
 .is-phone .address {
@@ -5503,7 +5503,7 @@ body {
 .is-phone .address__relay {
   width: 44px;
   height: 36px;
-  font-size: 20px;
+  font-size: calc(20px * var(--text-scale, 1));
 }
 
 .is-phone .browser__nav {
@@ -5663,7 +5663,7 @@ body {
 @media (max-width: 1200px) {
   .dock__tab {
     padding: 0 4px;
-    font-size: 14px;
+    font-size: calc(14px * var(--text-scale, 1));
   }
 
   .dock__tab:has(.count) {
@@ -5713,7 +5713,7 @@ body {
   }
 
   .pdock .alarm__time {
-    font-size: 36px;
+    font-size: calc(36px * var(--text-scale, 1));
   }
 }
 
@@ -5736,7 +5736,7 @@ body {
   }
 
   .pdock .alarm__time {
-    font-size: 30px;
+    font-size: calc(30px * var(--text-scale, 1));
   }
 
   .pdock .alarm__bar {
@@ -5793,7 +5793,7 @@ body {
 }
 
 .route__time {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -5812,7 +5812,7 @@ body {
   margin-left: 6px;
   padding: 0 5px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   animation: route-change 1.6s ease-out;
 }
 
@@ -5902,7 +5902,7 @@ body {
   padding: 0 10px;
   border: 1px solid var(--line);
   border-radius: 13px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--text-dim);
   white-space: nowrap;
@@ -5927,7 +5927,7 @@ body {
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   line-height: 1;
   color: var(--text-muted);
   transition:
@@ -5957,7 +5957,7 @@ body {
 
 .addresses__group {
   padding: 6px 8px 2px;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -5973,7 +5973,7 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 9px;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   line-height: 1;
   color: var(--text-dim);
   vertical-align: 1px;
@@ -5987,14 +5987,14 @@ body {
 .is-phone .address__star {
   width: 40px;
   height: 40px;
-  font-size: 20px;
+  font-size: calc(20px * var(--text-scale, 1));
 }
 
 .is-phone .route__drop {
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
 }
 
 .is-phone .map__starred {
@@ -6013,7 +6013,7 @@ body {
 
 .map__sort-label {
   margin-right: 4px;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -6024,7 +6024,7 @@ body {
   padding: 0 10px;
   border: 1px solid var(--line-soft);
   border-radius: 12px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -6041,7 +6041,7 @@ body {
 
 .map__sort-count {
   margin-left: auto;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -6083,7 +6083,7 @@ body {
   padding: 0 6px;
   border: 1px solid var(--line-soft);
   border-radius: 8px;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   line-height: 16px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -6114,14 +6114,14 @@ body {
 
 .map__relay-note {
   margin: 0 0 10px;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   line-height: 1.4;
   color: var(--text-dim);
 }
 
 .route__fade {
   margin-left: 5px;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   color: var(--amber);
 }
 
@@ -6137,7 +6137,7 @@ body {
   padding: 0 7px;
   border: 1px dashed var(--line-strong);
   border-radius: 8px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -6218,7 +6218,7 @@ body {
   flex-wrap: wrap;
   gap: 2px;
   margin: 0 0 8px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 .files__crumb {
@@ -6290,12 +6290,12 @@ body {
   flex: 1;
 }
 .files__folder-count {
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 .files__folder-go {
   width: 14px;
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
   line-height: 1;
   text-align: center;
   color: var(--cyan);
@@ -6362,7 +6362,7 @@ body {
   border: 2px solid var(--line-strong);
   border-radius: 50%;
   font-family: var(--font-data);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   line-height: 1;
   background: var(--panel);
 }
@@ -6373,7 +6373,7 @@ body {
   padding-top: 1px;
 }
 .contract__step-label {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -6450,7 +6450,7 @@ body {
   gap: 10px;
 }
 .shopsign__place {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -6460,7 +6460,7 @@ body {
   padding: 0 9px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-pill);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -6497,7 +6497,7 @@ body {
   line-height: 1.25;
 }
 .price__list {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -6553,7 +6553,7 @@ body {
   border: 1px solid var(--red);
   border-radius: 50%;
   font-weight: 700;
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
   color: var(--red-text);
   box-shadow: 0 0 14px rgb(var(--red-rgb) / 0.55);
   animation: raid-badge 0.85s ease-in-out infinite;
@@ -6568,7 +6568,7 @@ body {
 
 .raid__name {
   margin: 0 0 2px;
-  font-size: 18px;
+  font-size: calc(18px * var(--text-scale, 1));
 }
 
 .raid__name strong {
@@ -6603,7 +6603,7 @@ body {
 }
 
 .raid__label {
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -6611,7 +6611,7 @@ body {
 }
 
 .raid__count {
-  font-size: 20px;
+  font-size: calc(20px * var(--text-scale, 1));
   line-height: 1;
 }
 
@@ -6630,12 +6630,12 @@ body {
 }
 
 .raid__gauge--trace .raid__count {
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
 .raid__gauge--trace.is-on .raid__count {
-  font-size: 20px;
+  font-size: calc(20px * var(--text-scale, 1));
   color: var(--mint);
 }
 
@@ -6681,7 +6681,7 @@ body {
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -6768,7 +6768,7 @@ body {
   border: 2px solid var(--line-strong);
   border-radius: 50%;
   background: var(--bg);
-  font-size: 10px;
+  font-size: calc(10px * var(--text-scale, 1));
   line-height: 1;
   color: var(--on-cyan);
 }
@@ -6799,7 +6799,7 @@ body {
 }
 
 .raid__hop-note {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   color: var(--mint);
 }
 
@@ -6841,7 +6841,7 @@ body {
 
 .map__heading {
   margin: 0 0 4px;
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
 }
 
 .raid__locks {
@@ -6875,7 +6875,7 @@ body {
 }
 
 .raid__lock-done {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -6883,7 +6883,7 @@ body {
 }
 
 .raid__lock-name {
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -6903,7 +6903,7 @@ body {
 
 .btn--small {
   padding: 3px 10px;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
 }
 
 /* ---- step 4: new gear & shops ---- */
@@ -6945,7 +6945,7 @@ body {
 .map__scan-head {
   display: block;
   margin-bottom: 4px;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -6955,7 +6955,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2px 14px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
 }
 
 .map__scan-wait {
@@ -7006,7 +7006,7 @@ body {
   border-left: 3px solid #b9a2ff;
   border-radius: 0 10px 10px 0;
   background: linear-gradient(100deg, rgba(185, 162, 255, 0.08), transparent 70%);
-  font-size: 16px;
+  font-size: calc(16px * var(--text-scale, 1));
   line-height: 1.6;
 }
 .message-body.is-voice .message-body__meta {
@@ -7080,7 +7080,7 @@ body {
   width: 100%;
   min-height: 56px;
   margin: 10px 0 8px;
-  font-size: 22px;
+  font-size: calc(22px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -7091,7 +7091,7 @@ body {
 }
 
 .map__connect-sub {
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: none;
@@ -7162,7 +7162,7 @@ body {
   padding: 0 7px;
   border: 1px solid rgba(var(--hue), 0.55);
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;

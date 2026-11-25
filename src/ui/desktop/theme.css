@@ -87,7 +87,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;

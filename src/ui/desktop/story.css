@@ -376,7 +376,7 @@
 
 .asking__head {
   margin: 0;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -415,20 +415,20 @@
 }
 
 .asking__name {
-  font-size: 17px;
+  font-size: calc(17px * var(--text-scale, 1));
   font-weight: 700;
   color: var(--text-bright);
 }
 
 .asking__pay {
   grid-row: span 2;
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   color: var(--mint);
   text-align: right;
 }
 
 .asking__note {
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   line-height: 1.35;
   color: var(--text-muted);
 }
@@ -436,7 +436,7 @@
 .asking__confirm {
   grid-column: 1 / -1;
   margin-top: 4px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -465,7 +465,7 @@
   padding: 0;
   display: grid;
   gap: 2px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -481,7 +481,7 @@
 
 .asking__closed {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-muted);
 }
 

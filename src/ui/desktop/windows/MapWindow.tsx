@@ -1132,6 +1132,7 @@ export function MapWindow() {
                     type="button"
                     class={`route__slot is-kept${same ? ' is-on' : ''}`}
                     data-tip={`Load saved route ${slot + 1}: ${saved.map((id) => byId(id)?.name ?? id).join(', ')}`}
+                    aria-label={`Load saved route ${slot + 1}`}
                     onClick={() => run({ type: 'loadRoute', slot })}
                   >
                     {slot + 1}
@@ -1143,6 +1144,7 @@ export function MapWindow() {
                     class={`route__slot${saving ? ' is-saving' : ''}`}
                     disabled={game.route.length === 0}
                     data-tip={saved.length > 0 ? `Replace saved route ${slot + 1} with this one` : `Keep this route in slot ${slot + 1}`}
+                    aria-label={saved.length > 0 ? `Replace saved route ${slot + 1}` : `Keep this route in slot ${slot + 1}`}
                     onClick={() => {
                       run({ type: 'saveRoute', slot });
                       setSaving(false);

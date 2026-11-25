@@ -16,6 +16,7 @@ import { content, session } from '../session';
 import { caughtFall, caughtHit } from '../sfx';
 import { windows } from './windowStore';
 import './caught.css';
+import { reducedMotion } from './calm';
 
 /** How long the route takes to collapse, the words stay up, and the screen takes to clear. */
 const COLLAPSE_MS = 1800;
@@ -28,7 +29,6 @@ interface Scene {
   readonly points: readonly (LatLon & { name: string })[];
 }
 
-const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** A view of the globe facing a place, without tipping over the pole. */
 const facing = (place: LatLon): View => ({ lat: Math.max(-35, Math.min(35, place.lat)), lon: place.lon });

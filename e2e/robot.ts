@@ -54,7 +54,7 @@ export async function openGame(page: Page, save?: string): Promise<void> {
 }
 
 export interface Problem {
-  readonly kind: 'off-desk' | 'overlap';
+  readonly kind: 'off-desk' | 'overlap' | 'unnamed';
   readonly where: string;
   readonly detail: string;
 }
@@ -66,7 +66,7 @@ export interface Problem {
  */
 export async function lookOver(page: Page): Promise<Problem[]> {
   return page.evaluate(() => {
-    const problems: { kind: 'off-desk' | 'overlap'; where: string; detail: string }[] = [];
+    const problems: { kind: 'off-desk' | 'overlap' | 'unnamed'; where: string; detail: string }[] = [];
     const width = document.documentElement.clientWidth;
     const height = document.documentElement.clientHeight;
     const shown = (element: Element): boolean => {
@@ -85,6 +85,21 @@ export async function lookOver(page: Page): Promise<Problem[]> {
       if (box.width === 0 || box.height === 0) continue;
       if (box.left < -1 || box.top < -1 || box.right > width + 1 || box.bottom > height + 1) {
         problems.push({ kind: 'off-desk', where: nameOf(win), detail: `at ${Math.round(box.left)},${Math.round(box.top)} to ${Math.round(box.right)},${Math.round(box.bottom)} on a ${width}x${height} screen` });
+      }
+    }
+
+    // Every control a screen reader can reach has a name: words in it, an aria-label, or a label it points to. A lone symbol (×, +, ›) is not a name.
+    for (const control of document.querySelectorAll('button, [role="button"], a[href], input, select, textarea')) {
+      if (!shown(control) || control.closest('[aria-hidden="true"]')) continue;
+      const box = control.getBoundingClientRect();
+      if (box.width === 0 || box.height === 0) continue;
+      if (control instanceof HTMLInputElement && control.type === 'hidden') continue;
+      const labelled = control.getAttribute('aria-labelledby')?.split(/\s+/).some((id) => document.getElementById(id)?.textContent?.trim());
+      const labels = 'labels' in control ? [...((control as HTMLInputElement).labels ?? [])].some((label) => label.textContent?.trim()) : false;
+      const named = !!(control.getAttribute('aria-label')?.trim() || labelled || labels || control.getAttribute('title')?.trim() || /[\p{L}\p{N}]/u.test(control.textContent ?? ''));
+      if (!named) {
+        const group = control.closest('section.window, .tabbar, .dock, .pdock, .rail, .sidebar, .topbar, .bar, .lookbar');
+        problems.push({ kind: 'unnamed', where: group ? nameOf(group) : 'desk', detail: `<${control.tagName.toLowerCase()} class="${control.className.toString().slice(0, 60)}">${(control.textContent ?? '').trim().slice(0, 10)}` });
       }
     }
 
