@@ -73,6 +73,18 @@ export interface Rules {
   readonly ringToleranceDegrees: number;
   /** Seconds a missed lock adds to the task. */
   readonly ringMissSeconds: number;
+  /** The fixer's loan to a player who is broke and stuck (see loan.ts). Left out, nobody lends. */
+  readonly loan?: {
+    /** Offered only with fewer credits than this. */
+    readonly below: number;
+    /** The sum lent: base, plus this much for each point of rating. */
+    readonly base: number;
+    readonly perRating: number;
+    /** Share of each payment taken until it is repaid. */
+    readonly repayShare: number;
+    /** The rating each career title starts at: one loan per title. */
+    readonly titles: readonly number[];
+  };
   /** Seconds a flashing letter of a password stays lit for the catch. */
   readonly catchLitSeconds: number;
   /** Seconds a press on the wrong letter adds. */
@@ -282,6 +294,9 @@ export function noteProgress(state: GameState, content: Content): void {
   // The broker writes once the first property is within reach, and the board once legend contracts start.
   const firstAsset = Math.min(...(content.assets ?? []).map((asset) => asset.minRating));
   if (state.player.rating >= firstAsset) once(state, 'property', () => sendMail(state, content, 'property'));
+  // And again when the late ones come within reach.
+  const late = (content.assets ?? []).find((asset) => asset.effect === 'spareHands');
+  if (late && state.player.rating >= late.minRating) once(state, 'propertyMore', () => sendMail(state, content, 'propertyMore'));
   if (content.rules.legendRating !== undefined && state.player.rating >= content.rules.legendRating) {
     once(state, 'legend', () => queueLesson(state, content, 'legend'));
   }

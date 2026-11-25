@@ -173,5 +173,25 @@
     "from": "Wren",
     "subject": "What is left",
     "body": "{handle}, there is no title above the one you have. I checked.\n\nWhat there is now is a different kind of offer. Once a day the board will carry one marked Legend: two steps, against the hardest places there are, at three times the money. Each comes with a condition, and the condition changes with the week. A short fuse. Every lock a level up. No room to carry much. No reading on the trace. It holds only while that job is open, and the board says which before you take it.\n\nNobody needs you to do them. That is rather the point.\n\nWren"
+  },
+  "loan": {
+    "from": "Wren",
+    "subject": "A float",
+    "body": "{handle}, I have watched your account go the wrong way for a while, so I have put {amount} credits in it.\n\nIt is a loan, not a gift. I take {share}% of each payment until we are square. No interest, and no hurry beyond that.\n\n{quiet}\n\nThe fines come from short routes and from logs left behind. Fill the route before you connect, and scrub before you leave. That is most of it.\n\nWren"
+  },
+  "loanSquare": {
+    "from": "Wren",
+    "subject": "Square",
+    "body": "{handle}, that last payment covered what was left. We are square.\n\nI will not do it twice at the same level, so do not plan on it. Keep the routes long.\n\nWren"
+  },
+  "propertyMore": {
+    "from": "Ilse Maran",
+    "subject": "Three more, for the money you are not spending",
+    "body": "{handle}, your account is larger than your needs, which is my favourite kind of client.\n\nThree more on my books. A loft of spare cores in Krakow that plays the fiddly parts of a break-in for you: the lit letters, the proxy's real address, the decrypter's key. A night desk in Manila, three people who scrub what you leave behind when you walk out of a server, so no review finds a line. And a cut-out in Valparaiso: a paid name that a trace finds in place of yours, once a day.\n\nThey cost what they cost, and the last two wait for a bigger name. Same shelf as before, under Property.\n\nI. Maran"
+  },
+  "cutOut": {
+    "from": "Ilse Maran",
+    "subject": "Your cut-out took one",
+    "body": "{handle}, the trace from {target} got home. Not to your home: to the name in Valparaiso.\n\nNo fine, nothing on your record, and nobody is looking for you. They did change the locks at {target}, so any password you had there is gone.\n\nThe name is burned until tomorrow. A second trace today finds you.\n\nI. Maran"
   }
 }

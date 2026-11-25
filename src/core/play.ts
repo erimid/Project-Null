@@ -302,3 +302,36 @@ export function turnKey(state: GameState, content: Content, taskId: string): str
   task.durationMs = task.progressMs + Math.max(0, task.durationMs - task.progressMs) * (1 - content.rules.keyCutFactor);
   return null;
 }
+
+/** A core loft starts on a pick or a key once the program is this far through. */
+const LOFT_AFTER = 0.3;
+
+/**
+ * Plays a task's hands-on moment for a player who owns a core loft: a lit
+ * letter is caught half-way through its flash, and the proxy's address is
+ * named or the key turned once the program is a little way in. A quick
+ * hand still beats it.
+ */
+export function autoPlay(state: GameState, content: Content, task: Task): void {
+  const play = task.play;
+  if (!play) return;
+  if (play.kind === 'catch') {
+    const lit = catchFlash(task);
+    if (lit === null) return;
+    const cycle = Math.floor(task.progressMs / play.cycleMs);
+    const litFor = task.progressMs - cycle * play.cycleMs - play.cycleMs * 0.5;
+    if (litFor >= play.litMs * 0.5) catchLetter(state, content, task.id, lit);
+    return;
+  }
+  if (play.result !== 'open' || task.progressMs < task.durationMs * LOFT_AFTER) return;
+  if (play.kind === 'pick') {
+    pickAddress(state, content, task.id, play.real);
+    return;
+  }
+  for (let pos = 0; pos <= play.strip.length - play.lock.length; pos++) {
+    if (!keyFits(play, pos)) continue;
+    play.pos = pos;
+    turnKey(state, content, task.id);
+    return;
+  }
+}

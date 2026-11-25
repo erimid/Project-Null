@@ -263,7 +263,7 @@ export const LESSONS_NOW: readonly MailKey[] = ['welcome', 'firstAccept', 'stage
 export const RECEIPTS: readonly MailKey[] = ['paid', 'stageNote'];
 
 /** Letters about the work: what went wrong on a job, attacks, rentals. */
-const WORK: readonly MailKey[] = ['contractFailed', 'contractLate', 'caught', 'review', 'phishRefused', 'phishReported', 'modelExpired', 'hardwareLost', 'raid', 'raidWon', 'raidLost', 'raidFled'];
+const WORK: readonly MailKey[] = ['contractFailed', 'contractLate', 'caught', 'review', 'phishRefused', 'phishReported', 'modelExpired', 'hardwareLost', 'raid', 'raidWon', 'raidLost', 'raidFled', 'loan', 'loanSquare', 'cutOut'];
 
 /** Which inbox tab a written letter belongs to. */
 export function mailKind(key: MailKey): MessageKind {

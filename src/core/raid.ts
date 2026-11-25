@@ -10,6 +10,7 @@
  * cool-down and never comes in the first ratings. A story beat (step 5)
  * can send one straight away, even mid-connection.
  */
+import { modeOf } from './difficulty';
 import type { RivalDef } from '../content/rivals';
 import { CHORUS_ID } from '../content/chorus';
 import type { StoryMail } from '../content/story';
@@ -103,7 +104,7 @@ export function beginRaid(state: GameState, content: Content, attackerId: string
     startedAtMs: state.clock.gameTimeMs,
     breachMs: 0,
     // A player who was warned (a patron's favour) is ready for a random attack: it takes longer to break in.
-    breachTotalMs: (content.rules.raidBreachSeconds[level - 1] ?? 50) * 1000 * (!story && (hasFavour(state, content, 'raidWarning') || state.events.warned) ? WARNED_BREACH : 1),
+    breachTotalMs: (content.rules.raidBreachSeconds[level - 1] ?? 50) * 1000 * modeOf(state).raidTime * (!story && (hasFavour(state, content, 'raidWarning') || state.events.warned) ? WARNED_BREACH : 1),
     barriers: content.rules.raidBarriers[level - 1] ?? 3,
     port: null,
     traceBack: null,

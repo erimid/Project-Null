@@ -1,6 +1,6 @@
 /**
  * Property: what a long career buys once the gateway is built. Three
- * things, sold by the broker on a board's Hardware shelf, each bought
+ * things to begin with, sold by the broker on a board's Hardware shelf, each bought
  * once and kept for good:
  *
  * - a private relay: a relay of the player's own, which never warms up;
@@ -8,6 +8,14 @@
  *   twice as fast, and no part burned out of the gateway by a trace;
  * - a second gateway: one more connection, two more programs at once and
  *   16 GB more memory.
+ *
+ * And three for the money a finished career piles up, each of which changes
+ * what the player can do:
+ *
+ * - a core loft: the hands-on shortcuts play themselves (see play.ts);
+ * - a night desk: the player's lines are scrubbed when they leave a server;
+ * - a cut-out: once a game day, a trace that gets home costs nothing but
+ *   the connection.
  *
  * This file reads no other rules, so any of them can ask it what the
  * player owns.

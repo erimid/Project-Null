@@ -15,7 +15,8 @@ import { SURGE_SPEED } from './moves';
 import { fileDef, findAccount, securityOf, findConnection, findProgram, findServer, ownedProgram, once, type Content } from './world';
 import { noteStolen, teachNow } from './record';
 import { rewriteOnCopy } from './stages';
-import { newPlay } from './play';
+import { autoPlay, newPlay } from './play';
+import { hasAsset } from './assets';
 
 /** A program this many levels below a layer can't touch it at all. */
 export const MAX_LEVEL_GAP = 2;
@@ -547,8 +548,10 @@ export function advanceTasks(state: GameState, content: Content, simMs: number):
     surge.set(connection.id, Math.min(simMs, left) * (SURGE_SPEED - 1));
     connection.surgeMs = Math.max(0, left - simMs);
   }
+  const loft = hasAsset(state, content, 'spareHands');
   for (const task of [...state.tasks]) {
     task.progressMs += simMs + (task.connectionId === null ? 0 : (surge.get(task.connectionId) ?? 0));
+    if (loft && task.play) autoPlay(state, content, task);
     // A port line-up ends when its last ring locks, which is also when its time runs out.
     if (task.puzzle ? !advancePuzzle(task) : task.progressMs < task.durationMs) continue;
     state.tasks = state.tasks.filter((other) => other !== task);

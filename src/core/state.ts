@@ -3,12 +3,14 @@
  * functions, no class instances), so it can be saved as JSON as it is.
  */
 import type { Play } from './play';
+import type { Difficulty } from './difficulty';
+import { newLoan, type LoanState } from './loan';
 import type { ContractDef, Role } from '../content/schema';
 import type { EventKind } from '../content/events';
 import { newRecord, type RecordState } from './record';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 35;
+export const STATE_VERSION = 36;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -40,6 +42,8 @@ export interface PlayerState {
   rating: number;
   /** The highest rating the player has ever had. Skill points come from it, so losing rating doesn't take skills away. */
   bestRating: number;
+  /** The game day a cut-out last took a trace for the player (see assets.ts). Missing = never. */
+  cutOutDay?: number;
   /** Rank learned in each skill, by skill id (see content/skills.json). Missing = not learned. */
   skills: Record<string, number>;
   /** Times the player has paid to unlearn every skill. Each time costs more. */
@@ -213,6 +217,8 @@ export interface Job extends ContractDef {
   readonly dark?: boolean;
   /** Id of the regular client who posted it (see regulars.ts). */
   readonly regular?: string;
+  /** True for the fixer's quiet job (see loan.ts): its server does not trace while it is in hand. */
+  readonly quiet?: boolean;
 }
 
 export interface StoredFile {
@@ -687,6 +693,10 @@ export interface GameState {
   relayHeat: Record<string, RelayHeat>;
   connections: Connection[];
   /** Programs that are running right now. */
+  /** The mode the game is played in (see difficulty.ts). Can be changed at any time. */
+  difficulty: Difficulty;
+  /** What is owed to the fixer, and what the next offer is judged on (see loan.ts). */
+  loan: LoanState;
   tasks: Task[];
   /** The player's inbox, oldest first. */
   messages: Message[];
@@ -766,6 +776,8 @@ export interface NewGameOptions {
   handle: string;
   startDate: string;
   startingBalance: number;
+  /** Standard if left out. */
+  difficulty?: Difficulty;
 }
 
 /**
@@ -777,6 +789,8 @@ export function createGame(options: NewGameOptions): GameState {
   if (Number.isNaN(gameTimeMs)) throw new RangeError(`createGame: bad start date "${options.startDate}"`);
   return {
     version: STATE_VERSION,
+    difficulty: options.difficulty ?? 'standard',
+    loan: newLoan(),
     seed: options.seed >>> 0,
     rngStreams: {},
     nextId: 1,

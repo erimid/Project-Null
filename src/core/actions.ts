@@ -3,6 +3,8 @@
  * "action": a small plain object. The UI never changes GameState itself.
  * That keeps the rules in one place and makes them testable.
  */
+import { hasAsset } from './assets';
+import { closeCase, isEvidence } from './forensics';
 import { ROUTE_SLOTS, SPEEDS, isConnected, type Connection, type Fitted, type GameState, type LadderOutcome, type MoveId, type PatchLayer, type Speed, type TaskTarget } from './state';
 import {
   abandonContract,
@@ -34,6 +36,8 @@ import { TRACED_HEAT, raiseHeat } from './wanted';
 import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
 import { catchLetter, pickAddress, slideKey, turnKey } from './play';
+import { isDifficulty, type Difficulty } from './difficulty';
+import { maybeLend } from './loan';
 import { bestRoute, coolRelays, hopUnderTrace, intruding, jamTrace, maxHops, newTrace, noteIntrusion, reroute, warmRelay } from './trace';
 import { bidAtAuction, buyAtAuction, reportOffer, springSting } from './events';
 import { lockRaidFile, lockRaidRing, openRaidPort, pullPlug, startRaidTrace } from './raid';
@@ -42,6 +46,8 @@ import { noteCaught, noteClosed, teachNow } from './record';
 
 export type Action =
   | { readonly type: 'setSpeed'; readonly speed: Speed }
+  /** Change the mode the game is played in (see difficulty.ts). */
+  | { readonly type: 'setDifficulty'; readonly difficulty: Difficulty }
   /** Add a relay to the end of the planned route. */
   | { readonly type: 'addHop'; readonly serverId: string }
   | { readonly type: 'removeHop'; readonly serverId: string }
@@ -188,7 +194,11 @@ function closeConnection(state: GameState, content: Content, connection: Connect
   if (connection.user !== null) writeLog(state, connection.serverId, `logout ${connection.user}`);
   logConnection(state, content, connection, false);
   // If the monitor noticed anything, someone will read the log later.
-  if (connection.trace.status !== 'none') scheduleReview(state, content, connection.serverId);
+  if (hasAsset(state, content, 'nightDesk')) {
+    // The night desk scrubs what would give the player away, so there is nothing for a review to find.
+    const server = state.servers[connection.serverId];
+    if (server) server.logs = server.logs.filter((entry) => !isEvidence(entry));
+  } else if (connection.trace.status !== 'none') scheduleReview(state, content, connection.serverId);
   noteClosed(state, connection);
   state.connections = state.connections.filter((other) => other !== connection);
   // Programs stop when the connection they were working on goes away.
@@ -204,6 +214,15 @@ export function pullOut(state: GameState, content: Content, connection: Connecti
 export function caught(state: GameState, content: Content, connection: Connection): void {
   const server = findServer(content, connection.serverId);
   closeConnection(state, content, connection);
+  // A cut-out takes the first trace of the day: the server changes its locks, and that is all.
+  const day = Math.floor(state.clock.gameTimeMs / 86_400_000);
+  if (hasAsset(state, content, 'cutOut') && (state.player.cutOutDay ?? -1) < day) {
+    state.player.cutOutDay = day;
+    delete state.player.passwords[connection.serverId];
+    closeCase(state, connection.serverId);
+    sendMail(state, content, 'cutOut', { target: server?.name ?? 'the target' });
+    return;
+  }
   noteCaught(state);
   const { fine, hours } = punish(state, content, connection.serverId);
   reportCaught(state, content, connection.serverId);
@@ -212,6 +231,7 @@ export function caught(state: GameState, content: Content, connection: Connectio
   // Every trace that lands makes the next one cost more. The letter says what the word on the player is now.
   raiseHeat(state, content, TRACED_HEAT);
   loseHardware(state, content, connection.serverId);
+  maybeLend(state, content);
 }
 
 export function applyAction(state: GameState, action: Action, content: Content): ActionResult {
@@ -228,6 +248,12 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
       if (!SPEEDS.includes(action.speed)) return refuse('Unknown speed.');
       if (isConnected(state)) return refuse('Time is locked while a connection is open.');
       state.clock.speed = action.speed;
+      return OK;
+    }
+
+    case 'setDifficulty': {
+      if (!isDifficulty(action.difficulty)) return refuse('No such mode.');
+      state.difficulty = action.difficulty;
       return OK;
     }
 

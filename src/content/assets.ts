@@ -6,11 +6,14 @@
  */
 import { ContentError } from './schema';
 
-export const ASSET_EFFECTS = ['relay', 'safeHouse', 'secondGateway'] as const;
+export const ASSET_EFFECTS = ['relay', 'safeHouse', 'secondGateway', 'spareHands', 'nightDesk', 'cutOut'] as const;
 /**
  * - relay: a relay server of the player's own (`serverId`), which never warms up.
  * - safeHouse: half the time lying low, heat fades twice as fast, a trace burns no hardware.
  * - secondGateway: one more connection, two more programs at once, 16 GB more memory.
+ * - spareHands: the hands-on shortcuts of a password, a proxy and a decrypter play themselves.
+ * - nightDesk: the player's lines are scrubbed when they leave a server, so no review finds them.
+ * - cutOut: once a game day, a trace that gets home costs nothing but the connection.
  */
 export type AssetEffect = (typeof ASSET_EFFECTS)[number];
 

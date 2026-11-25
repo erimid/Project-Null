@@ -96,3 +96,8 @@ html.alerts-corner .desktop--phone .alerts .alert {
 .slot__saved.is-warn {
   color: var(--amber);
 }
+
+/* A note that sits under its row of choices instead of beside it. */
+.menu__item-note--below {
+  margin: 6px 12px 0;
+}

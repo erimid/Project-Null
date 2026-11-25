@@ -3,6 +3,8 @@
  * time, does what it asks on the target, and delivers it for pay and
  * rating. Also the market, where programs are bought.
  */
+import { modeOf } from './difficulty';
+import { repayLoan } from './loan';
 import { burnHeist, conditionMet, heistRefusal, postHeist } from './heists';
 import type { ContractDef } from '../content/schema';
 import { baseFine, closeCase } from './forensics';
@@ -242,11 +244,13 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   state.player.balance += pay;
   state.player.rating = Math.max(0, state.player.rating + (choice?.rating ?? contract.rating));
   noteRating(state);
+  const repaid = repayLoan(state, content, pay);
   state.contracts.completed.push(contract.id);
   state.contracts.activeId = null;
   // What the client adds to the payment note: who the leak was, the bonus for the terms.
   const notes: string[] = [];
   if (leak) notes.push(wrong ? `It was not ${named}. It was ${leak.culprit}, which I found out the expensive way. Half, as agreed.` : `${named} it was. Paid in full.`);
+  if (repaid > 0) notes.push(state.loan.owed > 0 ? `Wren took ${repaid} credits of it against the loan. ${state.loan.owed} still owed.` : `Wren took ${repaid} credits of it, and the loan is square.`);
   if (contract.terms) notes.push(bonus > 0 ? `That includes the bonus of ${bonus} credits, as agreed.` : 'No bonus this time: the terms were not kept.');
   // The job report, written before the job's own state is cleared. The heist's crew is still on record here.
   const watch = state.record.watch;
@@ -397,7 +401,7 @@ export function punish(state: GameState, content: Content, serverId: string): { 
   // Patrons in the inner circle soften the blow: one pays half the fine, one shortens the time out of sight.
   // Someone already wanted pays more and stays out of sight longer (see wanted.ts).
   const heat = wanted(state);
-  const fine = Math.min(state.player.balance, Math.round(baseFine(content, serverId) * heat.fines * (hasFavour(state, content, 'fineCut') ? FAVOUR_CUT : 1)));
+  const fine = Math.min(state.player.balance, Math.round(baseFine(content, serverId) * heat.fines * modeOf(state).fines * (hasFavour(state, content, 'fineCut') ? FAVOUR_CUT : 1)));
   const hours = content.rules.lieLowHours * heat.lieLow * (hasFavour(state, content, 'lieLowCut') ? FAVOUR_CUT : 1) * (hasAsset(state, content, 'safeHouse') ? SAFE_HOUSE.lieLow : 1);
   state.player.balance -= fine;
   state.player.rating = Math.max(0, state.player.rating - content.rules.caughtRatingLoss);

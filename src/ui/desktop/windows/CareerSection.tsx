@@ -3,6 +3,8 @@
  * feat, earned in this career, in an earlier one, or still to do.
  */
 import { feats } from '../../../content';
+import { MODES } from '../../../core';
+import { content } from '../../session';
 import { formatMoney } from '../../format';
 import { useWorld } from '../../hooks';
 import { closeness, formatGameSpan, kindName } from '../JobReport';
@@ -31,6 +33,8 @@ export function CareerSection() {
     ['Relays burned', String(stats.relaysBurned), 'Relays a trace got past on its way to you'],
     ['Days played', String(days), 'Game days since your first letter'],
     ['Credits', formatMoney(Math.floor(game.player.balance)), 'What you hold now'],
+    ['Difficulty', MODES[game.difficulty].name, `${MODES[game.difficulty].blurb} Change it in the game menu.`],
+    ...(game.loan.owed > 0 ? ([['Owed to Wren', formatMoney(game.loan.owed), `Wren takes ${Math.round((content.rules.loan?.repayShare ?? 0) * 100)}% of each payment until the loan is square. No interest.`]] as const) : []),
   ];
 
   return (

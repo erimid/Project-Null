@@ -11,6 +11,8 @@ import { regionOf } from './generate';
 import { findConnection, findServer, gatewayOf, ownedProgram, securityOf, type Content } from './world';
 import { privateRelay } from './ladder';
 import { SHORT_FUSE, twistOn } from './legend';
+import { modeOf } from './difficulty';
+import { quietTarget } from './loan';
 
 /** What a leg of the route crosses: nothing much, a border, or a stretch of the world. */
 export type LegKind = 'country' | 'border' | 'overseas';
@@ -31,7 +33,7 @@ export function legFactor(content: Content, kind: LegKind): number {
 export function relayHeat(state: GameState, content: Content, serverId: string): number {
   const mark = state.relayHeat[serverId];
   if (!mark) return 0;
-  const cooled = (state.clock.gameTimeMs - mark.atMs) / (content.rules.relayCoolHours * 3_600_000);
+  const cooled = (state.clock.gameTimeMs - mark.atMs) / (content.rules.relayCoolHours * modeOf(state).relayHot * 3_600_000);
   return Math.max(0, mark.heat - Math.max(0, cooled));
 }
 
@@ -174,7 +176,8 @@ export const canReadTrace = (state: GameState, content: Content): boolean =>
   !twistOn(state, 'blindRun') && (traceSense(state, content) > 0 || ownedProgram(state, content, 'traceTracker') !== undefined);
 
 /** How much longer each step of a trace takes, from the Long way round skill. */
-export const traceSlow = (state: GameState, content: Content): number => (1 + effect(state, content, 'traceSlow')) * (state.contracts.heist?.slow ?? 1);
+export const traceSlow = (state: GameState, content: Content): number =>
+  (1 + effect(state, content, 'traceSlow')) * (state.contracts.heist?.slow ?? 1) * modeOf(state).traceTime;
 
 /** Most relays one route may pass through, with the player's skills. */
 export const maxHops = (state: GameState, content: Content): number => MAX_HOPS + effect(state, content, 'ninthRelay');
@@ -198,7 +201,7 @@ export function newTrace(state: GameState, content: Content, target: ServerDef, 
   const fuse = twistOn(state, 'shortFuse', target.id) ? SHORT_FUSE : 1;
   const hopMs = traceHopMs(content, target, route, traceSlow(state, content) * fuse, undefined, state);
   const trace: TraceState = { status: 'none', graceMs: 0, elapsedMs: 0, hopMs };
-  if (target.untraced || guarding(state, content, target.id)) return trace;
+  if (target.untraced || guarding(state, content, target.id) || quietTarget(state, target.id)) return trace;
   // The strongest monitors start tracing the moment a connection opens.
   if (securityOf(state, target).monitor >= content.rules.monitorGraceSeconds.length) trace.status = 'active';
   return trace;
@@ -213,7 +216,7 @@ export function noteIntrusion(state: GameState, content: Content, connection: Co
   if (connection.trace.status !== 'none' || connection.monitor.blindMs > 0) return;
   if (findServer(content, connection.serverId)?.untraced) return;
   // A client who has asked the player in to guard their server does not trace their own guard.
-  if (guarding(state, content, connection.serverId)) return;
+  if (guarding(state, content, connection.serverId) || quietTarget(state, connection.serverId)) return;
   // A monitor whose alerts wait on a console the player is sitting at notices nothing.
   if (monitorHeld(state, content, connection)) return;
   const at = findServer(content, connection.serverId);

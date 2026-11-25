@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { sound, useSound } from '../audio';
+import { DIFFICULTIES, MODES } from '../../core';
 import { useGame } from '../hooks';
+import { session } from '../session';
 import { deskLayout, useDeskLayout } from './deskLayout';
 import { hintStore, useHints } from './hintStore';
 import { useLayout } from './layout';
@@ -21,6 +23,7 @@ const SHORTCUTS: readonly (readonly [string, string])[] = [
 /** The game menu: opens from the player's handle at the left of the bottom bar. */
 export function GameMenu() {
   const handle = useGame((game) => game.player.handle);
+  const difficulty = useGame((game) => game.difficulty);
   const [open, setOpen] = useState(false);
   const soundSettings = useSound();
   const hints = useHints();
@@ -104,6 +107,24 @@ export function GameMenu() {
             Tour of the desk
             <span class="menu__item-note">What everything on screen is for</span>
           </button>
+          <h3 class="menu__heading">Difficulty</h3>
+          <div class="menu__sound">
+            <span class="menu__choices" role="group" aria-label="Difficulty">
+              {DIFFICULTIES.map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  class={`btn${difficulty === id ? ' btn--go' : ''}`}
+                  aria-pressed={difficulty === id}
+                  data-difficulty={id}
+                  onClick={() => session.dispatch({ type: 'setDifficulty', difficulty: id })}
+                >
+                  {MODES[id].name}
+                </button>
+              ))}
+            </span>
+          </div>
+          <p class="menu__item-note menu__item-note--below">{MODES[difficulty].blurb} Change it whenever you like: nothing is lost.</p>
           <h3 class="menu__heading">Look</h3>
           <div class="menu__sound">
             <button type="button" class={`btn${lookNow.bar ? ' btn--go' : ''}`} aria-pressed={lookNow.bar} onClick={() => look.setBar(!lookNow.bar)}>
