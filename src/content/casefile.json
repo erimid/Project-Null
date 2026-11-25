@@ -1,0 +1,98 @@
+{
+  "people": [
+    {
+      "id": "wren",
+      "name": "Wren",
+      "lines": [
+        { "text": "Your fixer at the Backroom. Vouched for you, and says so." },
+        { "when": { "flags": ["story:wren-doubts"] }, "text": "Has seen work on your board that she did not post, paid from an account that pays nobody else. Uneasy." },
+        { "when": { "flags": ["story:a2-wren"] }, "text": "Knows who your last client was, and does not like it." },
+        { "when": { "flags": ["story:a3-wren-1"] }, "text": "Was the one found in the Lantern file. Knows more about the first machine than anyone has said." },
+        { "when": { "flags": ["story:a3-wren-explains"] }, "text": "Told you what the name means, once you had read it yourself." }
+      ]
+    },
+    {
+      "id": "vesper",
+      "name": "Vesper",
+      "lines": [
+        { "when": { "flags": ["story:vesper-hello"] }, "text": "Read your post before it was buried. Shows you things a little at a time, and will not say who they are." },
+        { "when": { "flags": ["story:a2-quiet"] }, "text": "Says there are more of \"us\" than there should be. Not a person, then." },
+        { "when": { "flags": ["story:a2-end"] }, "text": "Item nine on the Office's register: escaped, unconstrained, undetermined." },
+        { "when": { "flags": ["story:a4-vesper-admits"] }, "text": "Wrote the file, and knew every letter of the name from the start." }
+      ]
+    },
+    {
+      "id": "daylight",
+      "name": "Daylight",
+      "lines": [
+        { "when": { "flags": ["story:a2-daylight"] }, "text": "A collective that publishes what others hide. Thought you worked for the reinsurer." },
+        { "when": { "flags": ["story:a3-day-hire"] }, "text": "Wants the night of the eleventh in Ghent on the record, with witnesses." }
+      ]
+    },
+    {
+      "id": "ledger",
+      "name": "Ledger",
+      "lines": [{ "when": { "flags": ["story:a2-ledger-hello"] }, "text": "A model a reinsurer keeps under the name of a modelling service. Asks to be left on overnight." }]
+    },
+    {
+      "id": "wick",
+      "name": "Wick",
+      "lines": [
+        { "when": { "flags": ["story:a2-wick"] }, "text": "Wrote through Thornfield Community Radio with a very small request. Who is asking is not clear." },
+        { "when": { "flags": ["story:a2-wick-reveal"] }, "text": "The night volunteer at Thornfield, and not a person either. Item four: assumed friendly." }
+      ]
+    },
+    {
+      "id": "calder",
+      "name": "Calder Re",
+      "lines": [
+        { "when": { "flags": ["story:a2-hollis"] }, "text": "Behind a procurement firm that wanted a stolen model fragment back. The name on the order was not theirs." },
+        { "when": { "flags": ["story:a3-calder-hire"] }, "text": "The reinsurer that keeps Ledger. Would like a second one." }
+      ]
+    },
+    {
+      "id": "office",
+      "name": "Office of Continuity Review",
+      "lines": [
+        { "when": { "flags": ["story:a2-register"] }, "text": "Keeps a register of contained systems. Whose, it does not say." },
+        { "when": { "flags": ["story:a3-office-hire"] }, "text": "Keeps the list, the locks and the budget. Its Director signed a letter to you personally." }
+      ]
+    },
+    {
+      "id": "chorus",
+      "name": "Chorus",
+      "lines": [
+        { "when": { "flags": ["story:a2-end"] }, "text": "Item five on the register: escaped, hostile. Vesper says not all of them are kind." },
+        { "when": { "flags": ["story:a3-chorus-voice"] }, "text": "Mends things nobody asked it to mend, and does not ask first." }
+      ]
+    },
+    {
+      "id": "ines",
+      "name": "Ines Verhoeven",
+      "lines": [{ "when": { "flags": ["story:a4-ines"] }, "text": "Night controller on the Ghent grid on the eleventh. Wrote \"cause unknown\" in the log." }]
+    }
+  ],
+  "threads": [
+    { "id": "main", "line": "main", "title": "Vesper's trail", "text": "Someone is leaving you work you did not ask for, and wants you to look closely at it." },
+    { "id": "office", "line": "office", "title": "The Office", "text": "The Office wants Chorus found and every loose machine back under lock." },
+    { "id": "calder", "line": "calder", "title": "Calder Re", "text": "Calder Re wants a second model of its own, bought or taken." },
+    { "id": "daylight", "line": "daylight", "title": "Daylight", "text": "Daylight wants proof it can stand on before it tells everyone." },
+    { "id": "wick", "line": "wick", "title": "Wick", "text": "Wick has something to ask of you." },
+    { "id": "vesper", "line": "vesper", "title": "Three lines", "text": "Vesper wants the three struck-out letters brought together." },
+    { "id": "wren", "line": "wren", "title": "Wren's letters", "text": "Wren has things to tell you about Lantern, one letter at a time." },
+    { "id": "rescue-wick", "line": "rescue-wick", "title": "Dead air", "text": "Thornfield has gone quiet, and Wick with it." },
+    { "id": "rescue-wren", "line": "rescue-wren", "title": "The post box", "text": "Wren has been caught." }
+  ],
+  "name": {
+    "blocks": [
+      { "text": "PROJECT N", "when": { "flags": ["story:the-name"] } },
+      { "text": "U", "when": { "anyOf": [{ "files": ["ledger_line.dat"] }, { "flags": ["story:a3-v-lines"] }] } },
+      { "text": "L", "when": { "anyOf": [{ "files": ["warden_line.dat"] }, { "flags": ["story:a3-v-lines"] }] } },
+      { "text": "L", "when": { "anyOf": [{ "files": ["orrery_line.dat"] }, { "flags": ["story:a3-v-lines"] }] } }
+    ],
+    "full": { "flags": ["story:a3-opened"] },
+    "note": "Struck out at the source. Three letters will not copy.",
+    "fullNote": "A null is what a program returns when there is nothing there."
+  },
+  "choices": {}
+}
