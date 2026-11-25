@@ -43,10 +43,10 @@ export const ACTIVE_EFFECTS: readonly SkillEffect[] = ['surge', 'falseTrail', 'h
 /**
  * What a skill does. `amount` is per rank, and ranks add up.
  * - crackSpeed: password, proxy and firewall programs run 1 + amount times as fast.
- * - steadyHand: port line-up rings turn (1 - amount) as fast, and lock from 1 + amount times as far.
+ * - steadyHand: port line-up rings turn (1 - amount) as fast, and lock from 1 + amount times as far. A password's flashing letter stays lit 1 + amount times as long.
  * - extraPrograms: this many more programs run at once.
  * - overreach: each level a layer is ahead of a program costs 2 - amount times the time, not 2.
- * - autoAlign: this many rings of each port line-up start locked.
+ * - autoAlign: this many rings of each port line-up start locked. Any amount also eases the other hands-on moments (see core/play.ts).
  * - traceSlow: each step of a trace takes 1 + amount times as long.
  * - monitorGrace: monitors wait 1 + amount times as long before tracing.
  * - logSpeed: the Log Deleter runs 1 + amount times as fast.

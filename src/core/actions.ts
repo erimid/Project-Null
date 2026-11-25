@@ -33,6 +33,7 @@ import { MOVES, useMove } from './moves';
 import { TRACED_HEAT, raiseHeat } from './wanted';
 import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
+import { catchLetter, pickAddress, slideKey, turnKey } from './play';
 import { bestRoute, coolRelays, hopUnderTrace, intruding, jamTrace, maxHops, newTrace, noteIntrusion, reroute, warmRelay } from './trace';
 import { bidAtAuction, buyAtAuction, reportOffer, springSting } from './events';
 import { lockRaidFile, lockRaidRing, openRaidPort, pullPlug, startRaidTrace } from './raid';
@@ -66,6 +67,13 @@ export type Action =
   | { readonly type: 'cancelProgram'; readonly taskId: string }
   /** Try to lock one ring of a running program's port line-up. */
   | { readonly type: 'lockRing'; readonly taskId: string; readonly ring: number }
+  /** Press one letter of the code a Password Breaker is working out. */
+  | { readonly type: 'catchLetter'; readonly taskId: string; readonly cell: number }
+  /** Name one of a proxy's addresses as the real one. */
+  | { readonly type: 'pickAddress'; readonly taskId: string; readonly option: number }
+  /** Slide a Decrypter's key strip, and turn it where it sits. */
+  | { readonly type: 'slideKey'; readonly taskId: string; readonly pos: number }
+  | { readonly type: 'turnKey'; readonly taskId: string }
   /** Swap the relay a trace is working on for another server. */
   | { readonly type: 'reroute'; readonly connectionId: string; readonly serverId: string }
   /** Freeze a running trace with a Trace Jammer. Once per connection. */
@@ -395,6 +403,14 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
 
     case 'lockRing':
       return answer(lockRing(state, content, action.taskId, action.ring));
+    case 'catchLetter':
+      return answer(catchLetter(state, content, action.taskId, action.cell));
+    case 'pickAddress':
+      return answer(pickAddress(state, content, action.taskId, action.option));
+    case 'slideKey':
+      return answer(slideKey(state, action.taskId, action.pos));
+    case 'turnKey':
+      return answer(turnKey(state, content, action.taskId));
     case 'jamTrace':
       return answer(jamTrace(state, content, action.connectionId));
     case 'scanServer':

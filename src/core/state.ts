@@ -2,6 +2,7 @@
  * The whole game in one plain object. It contains only data (no
  * functions, no class instances), so it can be saved as JSON as it is.
  */
+import type { Play } from './play';
 import type { ContractDef, Role } from '../content/schema';
 import type { EventKind } from '../content/events';
 import { newRecord, type RecordState } from './record';
@@ -418,6 +419,8 @@ export interface Task {
   durationMs: number;
   /** The hands-on shortcut for this task, if it has one. */
   puzzle?: RingPuzzle;
+  /** The optional hands-on moment of a password, proxy or decrypt run (see core/play.ts). */
+  play?: Play;
 }
 
 /**

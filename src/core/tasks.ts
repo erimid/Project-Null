@@ -15,6 +15,7 @@ import { SURGE_SPEED } from './moves';
 import { fileDef, findAccount, securityOf, findConnection, findProgram, findServer, ownedProgram, once, type Content } from './world';
 import { noteStolen, teachNow } from './record';
 import { rewriteOnCopy } from './stages';
+import { newPlay } from './play';
 
 /** A program this many levels below a layer can't touch it at all. */
 export const MAX_LEVEL_GAP = 2;
@@ -524,6 +525,8 @@ export function startTask(state: GameState, content: Content, connectionId: stri
     durationMs: check.seconds * 1000 * open,
     ...(puzzle ? { puzzle } : {}),
   };
+  const play = newPlay(state, content, target.kind, task.durationMs, check.level);
+  if (play) task.play = play;
   schedulePuzzle(task);
   state.tasks.push(task);
   if (target.kind === 'build') takeModules(state, target.modules);

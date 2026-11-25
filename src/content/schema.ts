@@ -612,6 +612,12 @@ export interface Tuning {
   readonly ringToleranceDegrees: number;
   /** Port line-up: seconds a missed lock adds to the bypass. */
   readonly ringMissSeconds: number;
+  readonly catchLitSeconds: number;
+  readonly catchMissSeconds: number;
+  readonly pickCutFactor: number;
+  readonly pickMissSeconds: number;
+  readonly keyCutFactor: number;
+  readonly keyMissSeconds: number;
   /** Seconds a Monitor Bypass as strong as the monitor keeps it blind. Each level of difference doubles or halves it. */
   readonly monitorBlindSeconds: number;
   /** Seconds a version 1 Trace Jammer freezes a trace. A stronger jammer freezes for longer. */
@@ -1501,6 +1507,12 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     reviewFineFactor: num(file, 'tuning', data, 'reviewFineFactor', 0, 10),
     ringToleranceDegrees: num(file, 'tuning', data, 'ringToleranceDegrees', 1, 90),
     ringMissSeconds: num(file, 'tuning', data, 'ringMissSeconds', 0, 60),
+    catchLitSeconds: num(file, 'tuning', data, 'catchLitSeconds', 0.1, 10),
+    catchMissSeconds: num(file, 'tuning', data, 'catchMissSeconds', 0, 60),
+    pickCutFactor: num(file, 'tuning', data, 'pickCutFactor', 0, 0.9),
+    pickMissSeconds: num(file, 'tuning', data, 'pickMissSeconds', 0, 60),
+    keyCutFactor: num(file, 'tuning', data, 'keyCutFactor', 0, 0.9),
+    keyMissSeconds: num(file, 'tuning', data, 'keyMissSeconds', 0, 60),
     monitorBlindSeconds: num(file, 'tuning', data, 'monitorBlindSeconds', 1, 3600),
     traceJamSeconds: num(file, 'tuning', data, 'traceJamSeconds', 1, 600),
     echoBonusFactor: num(file, 'tuning', data, 'echoBonusFactor', 1, 10),

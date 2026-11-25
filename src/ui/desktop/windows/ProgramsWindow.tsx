@@ -34,6 +34,7 @@ import { FileName } from '../FileName';
 import { IconTile, ModulePlate, Pips } from '../Gear';
 import { Icon, PROGRAM_GROUPS, fileIcon, kindLabel, programIcon } from '../Icon';
 import { TaskProgress, describeTarget, findTask } from '../TaskProgress';
+import { Stage } from './Stage';
 import { viewer } from '../viewerStore';
 import { Window } from '../Window';
 import { deskStore, useDesk } from '../deskStore';
@@ -293,6 +294,8 @@ function ProgramsSection() {
       )}
 
       <MemoryPanel game={game} />
+
+      <Stage connectionId={null} />
 
       <h3 class="map__heading section-gap">
         Running{' '}

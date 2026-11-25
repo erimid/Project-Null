@@ -19,7 +19,7 @@
     "cost": 1,
     "effect": "steadyHand",
     "amount": 0.35,
-    "blurb": "The rings of a port line-up turn about a third slower, and a ring can sit a little off the marker and still lock."
+    "blurb": "The rings of a port line-up turn about a third slower, and a ring can sit a little off the marker and still lock. A flashing letter of a password stays lit a third longer."
   },
   {
     "id": "extra-thread",
@@ -54,7 +54,7 @@
     "needs": "steady-hand",
     "effect": "autoAlign",
     "amount": 1,
-    "blurb": "Every port line-up starts with one ring already locked, and the bypass is shorter for it."
+    "blurb": "Every port line-up starts with one ring already locked, and the bypass is shorter for it. The other shortcuts ease too: two of a proxy's mirrors are ruled out, any press catches a password's lit letter, and a decrypter's key has no near miss."
   },
   {
     "id": "long-way-round",
