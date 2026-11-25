@@ -22,6 +22,7 @@ import { settleRival } from './ladder';
 import { sellData } from './data';
 import { followTrail, lockGuardRing, noteConnect, openGuardPort } from './kinds';
 import { advanceContract } from './stages';
+import { GUIDED_JOB } from './guide';
 import { buyAsset, buyHardware, loseHardware, maxConnections } from './hardware';
 import { modelRead, rentModel } from './model';
 import { readFile, sendPhish } from './phish';
@@ -307,6 +308,10 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
     case 'disconnect': {
       const connection = findConnection(state, action.connectionId);
       if (!connection) return refuse('That connection is already closed.');
+      // The guided first job: hanging up mid-scrub would stop it and leave the lines behind.
+      if (state.contracts.activeId === GUIDED_JOB && state.contracts.completed.length === 0 && state.tasks.some((task) => task.connectionId === connection.id && task.target.kind === 'deleteLog')) {
+        return refuse('The scrub is still running. Give it a moment.');
+      }
       closeConnection(state, content, connection);
       return OK;
     }
