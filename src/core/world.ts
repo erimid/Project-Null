@@ -29,7 +29,7 @@ import { backfillChoices, backfillTrust } from './patrons';
 import { backfillStoryFlags } from './story';
 import { builtProgram } from './builds';
 import { autoPack, dropFromMemory, loadedOfKind, memoryGb, needsMemory, trimLoadout } from './loadout';
-import type { Connection, GameState, ServerState } from './state';
+import type { Connection, GameState, MessageKind, ServerState } from './state';
 
 /** Numbers that tune the rules. The real ones come from content/tuning.json. */
 export interface Rules {
@@ -227,7 +227,7 @@ export function sendMail(state: GameState, content: Content, key: MailKey, fill:
 }
 
 /** Sends a letter written into the content itself (a twist's, a story beat's). {handle} and anything in `fill` are filled in. */
-export function sendLetter(state: GameState, letter: { readonly from: string; readonly subject: string; readonly body: string }, fill: Readonly<Record<string, string>> = {}): void {
+export function sendLetter(state: GameState, letter: { readonly from: string; readonly subject: string; readonly body: string }, fill: Readonly<Record<string, string>> = {}, kind: MessageKind = 'story'): void {
   const values: Record<string, string> = { handle: state.player.handle, ...fill };
   const write = (text: string) => text.replace(/\{(\w+)\}/g, (whole, name: string) => values[name] ?? whole);
   state.messages.push({
@@ -237,7 +237,7 @@ export function sendLetter(state: GameState, letter: { readonly from: string; re
     body: write(letter.body),
     timeMs: state.clock.gameTimeMs,
     read: false,
-    kind: 'story',
+    kind,
   });
 }
 

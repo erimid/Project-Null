@@ -75,6 +75,7 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
     points: [
       'Wren writes whenever something new opens up. The first message says where to start.',
       'A number on the Messages tab means mail you have not read yet.',
+      'Some clients come back. A side story is several jobs for one person, one after another: they write when the next part is on the board. A regular client pays a little more each time you work for them.',
       'Write to someone lets you send a letter that talks a person into giving up a password. You put it together from what you have found, nothing to type.',
     ],
   },
@@ -95,6 +96,7 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
       'Follow links to move around. Back, Forward and Home are at the top. Nothing to type.',
       'Company pages and the news are full of names, addresses and leads. The Open Relay Foundation lists servers you can use as relays.',
       'Things for sale on Undertow are not sold anywhere else.',
+      'Now and then something happens on Undertow: an auction, an open bounty, leaked logins, a raid on a shop. A letter tells you, and its page is linked under "now" on the site it came from. None of it lasts long.',
     ],
   },
   viewer: {
