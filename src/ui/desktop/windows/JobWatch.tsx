@@ -1,4 +1,4 @@
-import { activeContract, guardRingAngle, guardSetbackMs, holdNeedMs, stageView } from '../../../core';
+import { activeContract, guardRingAngle, guardSetbackMs, holdNeedMs, readFlag, stageView } from '../../../core';
 import { findServer } from '../../../core/content';
 import { content, session } from '../../session';
 import { PortDial } from './DefenceWindow';
@@ -85,6 +85,36 @@ export function JobWatch({ game, connection }: View) {
         )}
         {goal.kind === 'hold' && !done && <p class="watch__hint">The trace runs while you sit here. Leaving starts the count again.</p>}
       </div>
+    );
+  }
+
+  if (goal.kind === 'leak') {
+    const left = goal.files.filter((name) => !game.flags.includes(readFlag(connection.serverId, name)));
+    return (
+      <p class="watch watch__hint">
+        <span>
+          {left.length === 0 ? (
+            'You have read every note. Name the leak on the contract.'
+          ) : (
+            <>
+              Still to read here: <span class="data">{left.join(', ')}</span>. Open each one from Files.
+            </>
+          )}
+        </span>
+      </p>
+    );
+  }
+
+  if (goal.kind === 'wipe') {
+    const left = game.servers[connection.serverId]?.logs.filter((entry) => entry.left === goal.who).length ?? 0;
+    return (
+      <p class="watch watch__hint">
+        <span>
+          {left === 0
+            ? `Nothing of ${goal.who}'s is left in this log.`
+            : `${left} ${left === 1 ? 'line' : 'lines'} in the log ${left === 1 ? 'names' : 'name'} ${goal.who}. Open Logs, pick ${left === 1 ? 'it' : 'them'} and delete ${left === 1 ? 'it' : 'them'}.`}
+        </span>
+      </p>
     );
   }
 

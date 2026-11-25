@@ -177,5 +177,7 @@ export { LEGEND_TWISTS, TRAVEL_LIGHT_GB, TWISTS, activeLegend, legendWeek, twist
 export type { LegendTwist } from './legend';
 export { LEGEND_HOURS, LEGEND_PAY, LEGEND_RATING, postLegend } from './jobs';
 export { LOADOUT_SLOTS } from './state';
+export { LEAK_WRONG_PAY, TERMS_NAMES, jobServers, leakOf, nameChoice, peopleOf, roundTotal, termsKept, termsLine, termsMinutesLeft, windowMinutesLeft } from './side';
+export { SIDE_RULES, isSideJob, openSideKinds } from './sideJobs';
 export type { MoveId, PatchLayer, WantedState } from './state';
 export { happenings, troubleAt, troubleKind, troubleMap, type Happening, type Trouble, type TroubleKind } from './exposure';

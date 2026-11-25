@@ -11,6 +11,7 @@ import { evidenceCount } from './forensics';
 import { CLIENT_FILE, type GameState } from './state';
 import { fileDef, findServer, securityOf, sendLetter, sendMail, type Content } from './world';
 import { beginKind, beginRace, checkRace, kindMet, kindPossible } from './kinds';
+import { beginSide, endSide, payRoundStop, windowPassed } from './side';
 
 /** True if this goal is the step of the active contract being worked on now. */
 function isLiveGoal(state: GameState, content: Content, targetId: string, goal: ObjectiveDef): boolean {
@@ -92,6 +93,8 @@ export function goalMet(state: GameState, content: Content, targetId: string, go
     }
     case 'read':
       return state.flags.includes(readFlag(targetId, goal.file));
+    case 'leak':
+      return goal.files.every((file) => state.flags.includes(readFlag(targetId, file)));
     case 'plant':
       return target?.files.some((file) => file.name === goal.file) ?? false;
     case 'frame':
@@ -106,6 +109,8 @@ export function goalMet(state: GameState, content: Content, targetId: string, go
 export function goalPossible(state: GameState, content: Content, targetId: string, goal: ObjectiveDef): boolean {
   if (goalMet(state, content, targetId, goal)) return true;
   if (goal.kind === 'steal' || goal.kind === 'read') return state.servers[targetId]?.files.some((file) => file.name === goal.file) ?? false;
+  // Every note not yet read must still be there to read.
+  if (goal.kind === 'leak') return goal.files.every((name) => state.flags.includes(readFlag(targetId, name)) || (state.servers[targetId]?.files.some((file) => file.name === name) ?? false));
   // The file to plant must still be on the gateway.
   if (goal.kind === 'plant') return state.player.files.some((file) => file.name === goal.file && file.from === CLIENT_FILE);
   return kindPossible(state, targetId, goal, isLiveGoal(state, content, targetId, goal)) ?? true;
@@ -144,7 +149,7 @@ function applyTwist(state: GameState, content: Content, targetId: string, twist:
       server.files.push({
         name: twist.file,
         sizeGq: twist.sizeGq,
-        access: 'admin',
+        access: twist.access ?? 'admin',
         ...(twist.folder ? { folder: twist.folder } : {}),
         ...(twist.text ? { text: twist.text } : {}),
       });
@@ -214,6 +219,7 @@ function beginStage(state: GameState, content: Content, contract: ContractDef, i
 /** Starts the first step of a contract the player has just taken. */
 export function startContract(state: GameState, content: Content, contract: ContractDef): void {
   beginRace(state, contract);
+  beginSide(state, contract);
   beginHeist(state, content, contract);
   beginStage(state, content, contract, 0);
 }
@@ -248,6 +254,16 @@ export function advanceContract(state: GameState, content: Content, contract: Co
   // Another hacker on the same job may have got there first.
   if (checkRace(state, content, contract)) return true;
   const steps = stagesOf(contract);
+  // A job with one clock for all its steps is lost when it runs out, unless the last step is already done.
+  const last = steps[steps.length - 1]!;
+  if (windowPassed(state, contract) && !(stageIndex(state, contract) === steps.length - 1 && goalMet(state, content, last.targetId, last.objective))) {
+    state.contracts.activeId = null;
+    state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
+    clearClientFiles(state);
+    endSide(state);
+    sendMail(state, content, 'contractLate', { client: contract.client, title: contract.title });
+    return true;
+  }
   for (let guard = 0; guard < steps.length; guard++) {
     const index = stageIndex(state, contract);
     const stage = steps[index]!;
@@ -257,6 +273,7 @@ export function advanceContract(state: GameState, content: Content, contract: Co
         state.contracts.activeId = null;
         state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
         clearClientFiles(state);
+        endSide(state);
         sendMail(state, content, 'contractLate', { client: contract.client, title: contract.title });
         return true;
       }
@@ -264,6 +281,7 @@ export function advanceContract(state: GameState, content: Content, contract: Co
     }
     finishStage(state, content, stage);
     if (index >= steps.length - 1) return false;
+    payRoundStop(state, contract);
     beginStage(state, content, contract, index + 1);
   }
   return false;

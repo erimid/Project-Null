@@ -1,4 +1,4 @@
-import { TWISTS, activeContract, conditionMet, findEnding, offeredChoices, activeLegend, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
+import { TERMS_NAMES, TWISTS, leakOf, nameChoice, roundTotal, termsKept, termsLine, termsMinutesLeft, windowMinutesLeft, activeContract, conditionMet, findEnding, offeredChoices, activeLegend, contractRisk, findModule, objectiveMet, objectivePossible, raceProgress, stageDeadline, stageIndex, stagesOf, stageView } from '../../core';
 import { findServer, type ContractDef } from '../../core/content';
 import { formatMoney } from '../format';
 import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
@@ -45,6 +45,10 @@ function objectiveText(contract: ContractDef): string {
       return `Follow the hacker's trail from ${target}'s access log, server by server, and connect to their machine.`;
     case 'swap':
       return `On ${target}, delete ${goal.file} and upload the doctored copy in its place.`;
+    case 'leak':
+      return `Read the ${goal.files.length} notes on ${target}, then name the leak.`;
+    case 'wipe':
+      return `On ${target}, remove every line ${goal.who} left in the access log.`;
   }
 }
 
@@ -165,15 +169,22 @@ export function ContractPanel() {
   // The job that ends the story asks its question in full, not as a row of buttons.
   const ways = contract.choices ?? [];
   // So does any job whose delivery is a decision (decide): every way named, two presses to answer.
-  const asking = contract.ending !== undefined || ways.some((choice) => choice.ending !== undefined) || contract.decide !== undefined;
+  // And a leak job: it is handed in by naming one of the suspects, with nothing to say which name pays.
+  const leak = leakOf(contract);
+  const asking = contract.ending !== undefined || ways.some((choice) => choice.ending !== undefined) || contract.decide !== undefined || leak !== undefined;
   const usual = contract.decide?.way ?? findEnding(content, contract.ending)?.way;
   const open_ = offeredChoices(game, contract);
   const pledgesOf = (choice: (typeof ways)[number]) =>
     choice.pledges?.lines.map((pledge) => ({ line: pledge.line, met: conditionMet(game, pledge.when), required: !!pledge.required }));
-  const answers = [
-    { id: '', label: usual?.label ?? 'Deliver', note: usual?.note ?? 'Hand the job in the usual way.', pay: contract.pay, pledges: undefined },
-    ...open_.map((choice) => ({ id: choice.id, label: choice.label, note: choice.note, pay: choice.pay, pledges: pledgesOf(choice) })),
-  ];
+  const answers: { id: string; label: string; note: string; pay: number | undefined; pledges: ReturnType<typeof pledgesOf> }[] = leak
+    ? leak.suspects.map((name, index) => ({ id: nameChoice(index), label: name, note: 'Name them as the leak.', pay: undefined, pledges: undefined }))
+    : [
+        { id: '', label: usual?.label ?? 'Deliver', note: usual?.note ?? 'Hand the job in the usual way.', pay: contract.pay, pledges: undefined },
+        ...open_.map((choice) => ({ id: choice.id, label: choice.label, note: choice.note, pay: choice.pay, pledges: pledgesOf(choice) })),
+      ];
+  const windowLeft = windowMinutesLeft(game, contract);
+  const kept = termsKept(game, contract);
+  const termsLeft = termsMinutesLeft(game, contract);
   // A closed way that rests on commitments is shown with them, so the player can see what it would take.
   const shut = ways.filter((choice) => !open_.includes(choice) && choice.pledges);
   const closed = ways.length - open_.length - shut.length;
@@ -224,7 +235,7 @@ export function ContractPanel() {
             </span>
           </div>
           <div class="jobhead__reward">
-            <span class="data jobhead__pay">{formatMoney(contract.pay)}</span>
+            <span class="data jobhead__pay">{formatMoney(roundTotal(contract))}</span>
             {contract.rating > 0 && (
               <span class="contract__rating">
                 +<span class="data">{contract.rating}</span> rating
@@ -257,6 +268,15 @@ export function ContractPanel() {
           <Icon name="sparkle" size={16} />
           <span>
             <strong>{TWISTS[twist].name}.</strong> {TWISTS[twist].line}
+          </span>
+        </p>
+      )}
+      {contract.terms && (
+        <p class={`contract__twist${kept === false ? ' is-broken' : ''}`}>
+          <Icon name="sparkle" size={16} />
+          <span>
+            <strong>{TERMS_NAMES[contract.terms.kind]}.</strong> {termsLine(content, contract.terms)}{' '}
+            {kept === false ? 'Not kept: the job pays as usual.' : termsLeft !== undefined ? `${termsLeft} game minutes left.` : 'Kept so far.'}
           </span>
         </p>
       )}
@@ -299,9 +319,12 @@ export function ContractPanel() {
       {minutesLeft !== undefined && !done && (
         <p class="board__warning">This step must be finished within <span class="data">{minutesLeft}</span> game {minutesLeft === 1 ? 'minute' : 'minutes'}.</p>
       )}
+      {windowLeft !== undefined && !done && (
+        <p class="board__warning">The whole job must be finished within <span class="data">{windowLeft}</span> game {windowLeft === 1 ? 'minute' : 'minutes'}.</p>
+      )}
       {asking && done && (
         <div class="asking" ref={askingRef} role="group" aria-label="What should happen">
-          <p class="asking__head">{contract.decide?.question ?? 'You have the core. What should happen?'}</p>
+          <p class="asking__head">{leak ? 'Who is the leak? The right name pays in full, a wrong one half.' : (contract.decide?.question ?? 'You have the core. What should happen?')}</p>
           {answers.map((answer) => (
             <button
               key={answer.id}
@@ -311,7 +334,7 @@ export function ContractPanel() {
               onClick={() => (armed === answer.id ? finish(answer.id ? { type: 'deliverContract', choiceId: answer.id } : { type: 'deliverContract' }) : setArmed(answer.id))}
             >
               <span class="asking__name">{answer.label}</span>
-              <span class="asking__pay data">{formatMoney(answer.pay)}</span>
+              {answer.pay !== undefined && <span class="asking__pay data">{formatMoney(answer.pay)}</span>}
               <span class="asking__note">{answer.note}</span>
               {pledgeList(answer.pledges)}
               {armed === answer.id && <span class="asking__confirm">Press again to answer. It cannot be taken back.</span>}

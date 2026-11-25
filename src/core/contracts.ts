@@ -24,6 +24,7 @@ import { advanceLadder } from './ladder';
 import { FAVOUR_CUT, hasFavour, noteDelivery, noteFailure } from './patrons';
 import { sellsOnly, sellsProgram, shopFor, shopPrice } from './market';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
+import { LEAK_WRONG_PAY, endSide, leakOf, namedSuspect, termsKept, tidyNotes } from './side';
 import { findConnection, findProgram, findServer, noteProgress, once, securityOf, sendMail, type Content } from './world';
 
 /** A hand-written contract, or a job on this game's board. */
@@ -73,6 +74,8 @@ export function objectivePossible(state: GameState, content: Content, contract: 
   // So is a file the job itself puts on the server as it is taken.
   const goal = stage.objective;
   if ((goal.kind === 'read' || goal.kind === 'steal') && state.contracts.activeId !== contract.id && (stage.twists ?? []).some((twist) => twist.kind === 'drop' && twist.file === goal.file)) return true;
+  // So are the notes a leak job leaves to be read.
+  if (goal.kind === 'leak' && state.contracts.activeId !== contract.id) return true;
   return goalPossible(state, content, stage.targetId, stage.objective);
 }
 
@@ -184,6 +187,7 @@ function resetKinds(state: GameState): void {
   state.contracts.guard = null;
   state.contracts.raceUntilMs = 0;
   state.contracts.heist = null;
+  endSide(state);
 }
 
 /**
@@ -195,8 +199,16 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   if (!contract) return 'You have no contract.';
   if (!objectiveMet(state, content, contract)) return 'The job is not done yet.';
   const choice = choiceId === undefined ? undefined : contract.choices?.find((item) => item.id === choiceId);
-  if (choiceId !== undefined && !choice) return 'That is not one of the ways to finish this job.';
+  if (choiceId !== undefined && !choice && !leakOf(contract)) return 'That is not one of the ways to finish this job.';
   if (choice && !conditionMet(state, choice.when)) return 'You have not earned that way to finish this job.';
+  // A leak job is handed in with a name. The right one pays in full.
+  const leak = leakOf(contract);
+  const named = leak && namedSuspect(leak, choiceId);
+  if (leak && !named) return 'Name one of the three first.';
+  const wrong = leak !== undefined && named !== leak.culprit;
+  // Optional terms kept bring their bonus (see side.ts).
+  const bonus = contract.terms && termsKept(state, contract) ? contract.terms.bonus : 0;
+  tidyNotes(state, contract);
   // Every stolen file goes to whoever is paid for it, unless the player keeps them.
   if (!choice?.keep) {
     const handed = stagesOf(contract).flatMap((stage) => (stage.objective.kind === 'steal' ? [{ name: stage.objective.file, from: stage.targetId }] : []));
@@ -204,7 +216,7 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   }
   clearClientFiles(state);
   const lowPay = isLyingLow(state) && isJob(contract) ? content.rules.lieLowPayFactor : 1;
-  const pay = Math.round((choice?.pay ?? contract.pay) * lowPay);
+  const pay = Math.round((choice?.pay ?? contract.pay) * lowPay * (wrong ? LEAK_WRONG_PAY : 1)) + bonus;
   state.player.balance += pay;
   state.player.rating = Math.max(0, state.player.rating + (choice?.rating ?? contract.rating));
   noteRating(state);
@@ -228,6 +240,9 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
     state.messages.push({ id: `m${state.nextId++}`, from: choice.reply.from, subject: choice.reply.subject, body: choice.reply.body, timeMs: state.clock.gameTimeMs, read: false });
   } else {
     sendMail(state, content, 'paid', { client: contract.client, title: contract.title, pay: String(pay) });
+    const paid = state.messages[state.messages.length - 1]!;
+    if (leak) paid.body += wrong ? `\n\nIt was not ${named}. It was ${leak.culprit}, which I found out the expensive way. Half, as agreed.` : `\n\n${named} it was. Paid in full.`;
+    if (contract.terms) paid.body += bonus > 0 ? `\n\nThat includes the bonus of ${bonus} credits, as agreed.` : '\n\nNo bonus this time: the terms were not kept.';
   }
   const part = payPart(state, content, contract.part);
   if (part) {
@@ -368,6 +383,7 @@ export function punish(state: GameState, content: Content, serverId: string): { 
   if (active && contract?.targetId === serverId && !objectiveMet(state, content, active)) {
     noteFailure(state, content, active, true);
     clearClientFiles(state);
+    endSide(state);
     state.contracts.activeId = null;
     state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== active.id);
     sendMail(state, content, 'contractFailed', {

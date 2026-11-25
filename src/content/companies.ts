@@ -98,6 +98,45 @@ export interface StagedWording {
   readonly rivals: readonly string[];
 }
 
+/** A note a job leaves on a server. `name` may use {n}, a number that keeps it apart from other jobs' notes. */
+export interface NoteTemplate {
+  readonly name: string;
+  readonly text: string;
+}
+
+/** The kinds of job in core/sideJobs.ts, in the order they open up. */
+export const SIDE_KINDS = ['deliver', 'leak', 'wipe', 'round', 'borrow'] as const;
+export type SideKind = (typeof SIDE_KINDS)[number];
+
+/**
+ * Wording for the side kinds of board job (see core/sideJobs.ts). All text
+ * may use {company} {city} {tier}; each kind adds its own:
+ * - deliver: {file}. `files` are names for what the client sends.
+ * - leak: {a} {b} {c}, the three suspects. A `lead` says what leaked and
+ *   who could have. Each of `clears` rules out {staff}; a job uses two.
+ * - wipe: {who} {company2} {hours}. `lines` are what the runner left in the
+ *   log, with {who} and {ip}. `next` is what the client says between servers.
+ * - round: {company2} {company3} {each} {bonus} {hours}; `next` as above.
+ * - borrow: {goal} for the job itself in a few words, {mark} {boss} {other}
+ *   for the three people on the `lists` note. Each of `notes` holds one
+ *   detail (`fact`, and how a letter would `mention` it); a job uses two.
+ *   `asks` is what the letter asks for and what comes back.
+ * - terms: the line a job with optional terms carries, with {bonus} and
+ *   {minutes} (fast) or {relays} (light).
+ */
+export interface SideWording {
+  readonly deliver: JobWording & { readonly files: readonly string[] };
+  readonly leak: JobWording & { readonly leads: readonly NoteTemplate[]; readonly clears: readonly NoteTemplate[] };
+  readonly wipe: JobWording & { readonly lines: readonly string[]; readonly next: readonly string[] };
+  readonly round: JobWording & { readonly next: readonly string[] };
+  readonly borrow: JobWording & {
+    readonly lists: readonly NoteTemplate[];
+    readonly notes: readonly (NoteTemplate & { readonly fact: string; readonly mention: string })[];
+    readonly asks: readonly { readonly label: string; readonly text: string; readonly reply: string }[];
+  };
+  readonly terms: Readonly<Record<'quiet' | 'fast' | 'light', readonly string[]>>;
+}
+
 export interface JobPools {
   readonly clients: readonly string[];
   readonly steal: JobWording;
@@ -113,6 +152,8 @@ export interface JobPools {
   readonly kinds?: Readonly<Partial<Record<NewKind, JobWording>>>;
   /** Handles of hackers who race the player for a job, or attack a server they guard. */
   readonly racers?: readonly string[];
+  /** Missing = the board posts none of the side kinds, and no job carries terms. */
+  readonly side?: SideWording;
   /**
    * Wording for board heists (see core/heists.ts). Missing = the board posts
    * none. Text may use {company} {city} {file} and {holds}, a list of the
@@ -281,6 +322,49 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
             ),
           }),
       ...(jobs.racers === undefined ? {} : { racers: texts(jobs.racers, 'jobs racers') }),
+      ...(jobs.side === undefined
+        ? {}
+        : (() => {
+            const side = obj(jobs.side, 'jobs side');
+            const part = (key: string) => obj(side[key], `jobs side ${key}`);
+            const words = (key: string): JobWording => {
+              const w = part(key);
+              return { titles: texts(w.titles, `jobs side ${key} titles`), summaries: texts(w.summaries, `jobs side ${key} summaries`), briefs: texts(w.briefs, `jobs side ${key} briefs`) };
+            };
+            const notes = (value: unknown, where: string, min: number): NoteTemplate[] => {
+              const items = list(value, where).map((item, i): NoteTemplate => {
+                const n = obj(item, `${where} ${i}`);
+                return { name: text(n.name, `${where} ${i} name`), text: text(n.text, `${where} ${i} text`) };
+              });
+              if (items.length < min) fail(`${where} needs at least ${min}`);
+              if (new Set(items.map((item) => item.name)).size !== items.length) fail(`${where}: two notes share a name`);
+              return items;
+            };
+            const borrow = part('borrow');
+            const terms = part('terms');
+            const wording: SideWording = {
+              deliver: { ...words('deliver'), files: texts(part('deliver').files, 'jobs side deliver files') },
+              leak: { ...words('leak'), leads: notes(part('leak').leads, 'jobs side leak leads', 1), clears: notes(part('leak').clears, 'jobs side leak clears', 2) },
+              wipe: { ...words('wipe'), lines: texts(part('wipe').lines, 'jobs side wipe lines', 2), next: texts(part('wipe').next, 'jobs side wipe next') },
+              round: { ...words('round'), next: texts(part('round').next, 'jobs side round next') },
+              borrow: {
+                ...words('borrow'),
+                lists: notes(borrow.lists, 'jobs side borrow lists', 1),
+                notes: list(borrow.notes, 'jobs side borrow notes').map((item, i) => {
+                  const n = obj(item, `jobs side borrow note ${i}`);
+                  return { name: text(n.name, `jobs side borrow note ${i} name`), text: text(n.text, `jobs side borrow note ${i} text`), fact: text(n.fact, `jobs side borrow note ${i} fact`), mention: text(n.mention, `jobs side borrow note ${i} mention`) };
+                }),
+                asks: list(borrow.asks, 'jobs side borrow asks').map((item, i) => {
+                  const a = obj(item, `jobs side borrow ask ${i}`);
+                  return { label: text(a.label, `jobs side borrow ask ${i} label`), text: text(a.text, `jobs side borrow ask ${i} text`), reply: text(a.reply, `jobs side borrow ask ${i} reply`) };
+                }),
+              },
+              terms: { quiet: texts(terms.quiet, 'jobs side terms quiet'), fast: texts(terms.fast, 'jobs side terms fast'), light: texts(terms.light, 'jobs side terms light') },
+            };
+            if (wording.borrow.notes.length < 2) fail('jobs side borrow needs at least 2 notes');
+            if (new Set(wording.borrow.notes.map((note) => note.name)).size !== wording.borrow.notes.length) fail('jobs side borrow: two notes share a name');
+            return { side: wording };
+          })()),
       ...(jobs.heist === undefined
         ? {}
         : (() => {

@@ -221,6 +221,11 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   29: (old) => old,
   // 30 -> 31: a heist ally may hold a door for a while only (allyMs). A heist under way in an old save has none.
   30: (old) => old,
+  // 31 -> 32: jobs with one clock for all their steps, and optional terms. A job under way in an old save has neither.
+  31: (old) => {
+    const contracts = old.contracts as Record<string, unknown>;
+    return { ...old, contracts: { ...contracts, takenMs: 0, windowUntilMs: 0, termsBroken: false } };
+  },
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -467,6 +472,9 @@ function checkState(raw: Obj): GameState {
     !isNum(contracts.raceUntilMs) ||
     !isNum(contracts.heistDay) ||
     !isNum(contracts.legendDay) ||
+    !isNum(contracts.takenMs) ||
+    !isNum(contracts.windowUntilMs) ||
+    typeof contracts.termsBroken !== 'boolean' ||
     !isList(contracts.burned, isText) ||
     !(
       contracts.heist === null ||

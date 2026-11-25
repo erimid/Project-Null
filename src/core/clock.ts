@@ -17,6 +17,7 @@ import { advanceRaid, beginPendingRaid } from './raid';
 import { isConnected, type GameState, type Speed } from './state';
 import { advanceTasks } from './tasks';
 import { advanceKinds } from './kinds';
+import { watchTerms } from './side';
 import { hasTrait } from './crafting';
 import { advanceMonitor, advanceTrace, intruding, noteIntrusion } from './trace';
 import type { Content } from './world';
@@ -60,6 +61,8 @@ export function tick(state: GameState, realMs: number, content: Content): number
   }
   // A guard or stay-in job counts the time held; a guarded server's intruder presses on.
   if (state.contracts.activeId !== null) advanceKinds(state, content, simMs);
+  // A job with optional terms: a trace under way or a long route may have broken them.
+  if (state.contracts.activeId !== null) watchTerms(state, content);
   // Programs that finished this tick may have done a step of the contract; a step past its time is lost.
   const contract = state.contracts.activeId === null ? undefined : activeContract(state, content);
   if (contract) advanceContract(state, content, contract);

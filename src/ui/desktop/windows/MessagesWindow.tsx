@@ -23,7 +23,7 @@ export function MessagesWindow() {
   const [composing, setComposing] = useState(false);
   const [sentNotice, setSentNotice] = useState('');
   const waiting = game.phish.sent
-    .map((attempt) => findPerson(content, findAsk(content, attempt.askId)?.markId ?? '')?.name)
+    .map((attempt) => findPerson(content, findAsk(content, attempt.askId, game)?.markId ?? '', game)?.name)
     .filter((name): name is string => name !== undefined);
   const [openId, setOpenId] = useState<string | null>(null);
 

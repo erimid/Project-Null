@@ -5,6 +5,7 @@
  * run when the game starts and in the unit tests, so a typo in a data
  * file fails loudly instead of causing a strange bug in play.
  */
+import type { PeopleDef } from './people';
 
 export const SERVER_KINDS = ['gateway', 'directory', 'board', 'relay', 'company'] as const;
 export type ServerKind = (typeof SERVER_KINDS)[number];
@@ -191,9 +192,17 @@ export type ObjectiveDef =
    */
   | { readonly kind: 'hunt'; readonly trail: readonly string[] }
   /** Swap a file: delete `file` on the target and put the doctored copy the client sends, same name and size, in its place. */
-  | { readonly kind: 'swap'; readonly file: string };
+  | { readonly kind: 'swap'; readonly file: string }
+  /**
+   * Find the leak: read every one of `files` on the target, then name one
+   * of the `suspects` when handing the job in. Naming anyone but `culprit`
+   * pays half. The files say who it cannot have been.
+   */
+  | { readonly kind: 'leak'; readonly files: readonly string[]; readonly suspects: readonly string[]; readonly culprit: string }
+  /** Wipe a trail: remove every line another runner, `who`, left in the target's access log. */
+  | { readonly kind: 'wipe'; readonly who: string };
 
-export const OBJECTIVE_KINDS = ['steal', 'destroy', 'record', 'read', 'plant', 'frame', 'guard', 'hold', 'hunt', 'swap'] as const;
+export const OBJECTIVE_KINDS = ['steal', 'destroy', 'record', 'read', 'plant', 'frame', 'guard', 'hold', 'hunt', 'swap', 'leak', 'wipe'] as const;
 
 /** A security layer by name. */
 export type LayerName = keyof SecurityDef;
@@ -208,7 +217,7 @@ export type TwistDef =
   /** For a while, one of the stage target's layers is run from another server (see ServerLinkDef). */
   | { readonly kind: 'link'; readonly layer: LinkLayer; readonly fromId: string }
   /** A new file appears on the stage's target (a note left for the player, a backup copy). */
-  | { readonly kind: 'drop'; readonly file: string; readonly sizeGq: number; readonly text?: string; readonly folder?: string }
+  | { readonly kind: 'drop'; readonly file: string; readonly sizeGq: number; readonly text?: string; readonly folder?: string; readonly access?: Role }
   /**
    * The file changes while it is copied: the copy that reaches the gateway
    * says `text`, whatever the server's own file says. Sets the flag
@@ -347,7 +356,29 @@ export interface ContractDef {
   readonly decide?: { readonly question: string; readonly way: { readonly label: string; readonly note: string } };
   /** The ending of the story that finishing it the usual way brings (see endings.json). */
   readonly ending?: string;
+  /**
+   * One clock for the whole job: every step must be done within `minutes`
+   * of game time from the moment it is taken, or the job is lost. Board
+   * jobs only, for now (see core/side.ts).
+   */
+  readonly window?: { readonly minutes: number };
+  /** A round: each step but the last pays `each` as it is finished. `pay` is what the last one brings, bonus included. */
+  readonly round?: { readonly each: number };
+  /** An optional condition the client pays a bonus for (see core/side.ts). The job pays as usual without it. */
+  readonly terms?: TermsDef;
+  /**
+   * People, details and something to ask for that exist only while this job
+   * is being worked on: a login to borrow by letter (see core/phish.ts).
+   */
+  readonly phish?: PeopleDef;
 }
+
+/** quiet = no trace gets under way on the job's servers; fast = handed in within `minutes` of taking it; light = never more than `relays` relays on the way to its servers. */
+export type TermsDef =
+  | { readonly kind: 'quiet'; readonly bonus: number }
+  | { readonly kind: 'fast'; readonly bonus: number; readonly minutes: number }
+  | { readonly kind: 'light'; readonly bonus: number; readonly relays: number };
+export const TERMS_KINDS = ['quiet', 'fast', 'light'] as const;
 
 /**
  * Something about the game so far, for content that should only appear,
@@ -829,6 +860,19 @@ export function parseObjective(file: string, where: string, value: unknown): Obj
     }
     case 'swap':
       return { kind, file: text(file, at, goal, 'file') };
+    case 'leak': {
+      const names = (key: string): string[] => {
+        const items = list(file, at, goal, key);
+        if (items.length === 0 || items.some((item) => typeof item !== 'string' || item.trim() === '')) throw new ContentError(file, `${at}: ${key} must be a list of texts`);
+        return items as string[];
+      };
+      const suspects = names('suspects');
+      const culprit = text(file, at, goal, 'culprit');
+      if (suspects.length < 2 || !suspects.includes(culprit)) throw new ContentError(file, `${at}: culprit must be one of at least two suspects`);
+      return { kind, files: names('files'), suspects, culprit };
+    }
+    case 'wipe':
+      return { kind, who: text(file, at, goal, 'who') };
   }
   throw new ContentError(file, `${where}: objective kind "${kind}" is not one of ${OBJECTIVE_KINDS.join(', ')}`);
 }
@@ -856,6 +900,7 @@ function parseTwist(file: string, where: string, value: unknown): TwistDef {
       sizeGq: num(file, `${where} twist`, raw, 'sizeGq', 1, 1000),
       ...(body === undefined ? {} : { text: body as string }),
       ...(raw['folder'] === undefined ? {} : { folder: parseFolder(file, `${where} twist`, raw['folder']) }),
+      ...(raw['access'] === undefined ? {} : { access: role(file, `${where} twist`, raw, 'access') }),
     };
   }
   if (kind === 'rewrite') return { kind, file: text(file, `${where} twist`, raw, 'file'), text: text(file, `${where} twist`, raw, 'text') };
@@ -1326,6 +1371,8 @@ function checkStage(servers: readonly ServerDef[], where: string, stage: StageDe
       const other = servers.find((server) => server.id === goal.reveals!.serverId);
       if (!other?.accounts.some((account) => account.user === goal.reveals!.user)) fail(`reveals "${goal.reveals.user}" on "${goal.reveals.serverId}", which has no such account`);
     }
+  } else if (goal.kind === 'leak') {
+    for (const name of goal.files) if (!target!.files.some((item) => item.name === name) && !arrives(name)) fail(`${target!.id} has no file "${name}"`);
   } else if (goal.kind === 'hunt') {
     for (const id of goal.trail) if (!servers.some((server) => server.id === id)) fail(`trail names "${id}", which is not a server`);
   } else if (goal.kind === 'guard' || goal.kind === 'hold') {

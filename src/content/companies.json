@@ -1178,6 +1178,177 @@
       "Cormorant",
       "Drover",
       "Hush"
-    ]
+    ],
+    "side": {
+      "deliver": {
+        "titles": [
+          "Special delivery",
+          "Something for their files",
+          "Filed after the fact",
+          "A late addition"
+        ],
+        "summaries": [
+          "Put {file} onto {company}'s server."
+        ],
+        "briefs": [
+          "{company} in {city} is missing a file. I am sending it to your gateway now: {file}. Put it on their server, where their own people will find it and think it was always there.\n\nIt is a big file and it takes a while to send. Plan your route for that.",
+          "There is going to be an inspection at {company}, and when it comes I want {file} sitting on their system. It will be on your gateway when you take the job.\n\nGet in, upload it, get out. Their security is {tier}."
+        ],
+        "files": [
+          "tender_revised_{n}.dat",
+          "inspection_pack_{n}.dat",
+          "board_minutes_{n}.dat",
+          "supplier_terms_{n}.dat",
+          "survey_results_{n}.dat",
+          "site_plans_{n}.dat"
+        ]
+      },
+      "leak": {
+        "titles": [
+          "Find the leak",
+          "Somebody talked",
+          "One of three",
+          "Who told them"
+        ],
+        "summaries": [
+          "Read three notes at {company} and name the leak."
+        ],
+        "briefs": [
+          "Something left {company} that should not have, and only three people could have sent it: {a}, {b} and {c}.\n\nI cannot ask them. You can read what their own system says about that week. There are three notes on the {city} server that matter. Read them all, then tell me the name.\n\nGet it right and you are paid in full. Name the wrong one and I pay half, because I will have sacked the wrong person.",
+          "{company} has a leak. Three names had access: {a}, {b}, {c}. Two of them can be ruled out by what is on the company's own server, if you read it carefully.\n\nRead the notes, then name the one who is left. Half pay for a wrong name. Their security is {tier}."
+        ],
+        "leads": [
+          {
+            "name": "access_review_{n}.txt",
+            "text": "ACCESS REVIEW · CONFIDENTIAL\n\nThe pricing file that reached a competitor last week was opened by three accounts in the days before:\n\n  {a}\n  {b}\n  {c}\n\nNobody else had it. One of the three sent it on. We do not yet know which."
+          },
+          {
+            "name": "incident_note_{n}.txt",
+            "text": "INCIDENT NOTE\n\nThe document was sent from inside the building on Thursday evening, from a logged-in desk.\n\nThree people held a copy: {a}, {b} and {c}. Legal have asked that none of them is told until we are sure."
+          }
+        ],
+        "clears": [
+          {
+            "name": "leave_calendar_{n}.txt",
+            "text": "LEAVE CALENDAR\n\n{staff}: annual leave, the whole week. Out of the country. Laptop left in the office safe, signed in by reception on the Friday before."
+          },
+          {
+            "name": "it_ticket_{n}.txt",
+            "text": "IT TICKET · CLOSED\n\nUser: {staff}\nProblem: account locked after password expiry.\nLocked: Monday morning. Unlocked: the following Monday.\n\nNote: user did not call back all week. Could not have logged in to anything."
+          },
+          {
+            "name": "badge_log_{n}.txt",
+            "text": "DOOR BADGE LOG · EXTRACT\n\n{staff}: badge reported lost on Tuesday. No replacement issued until the following week. No entries for this badge from Tuesday onward.\n\nReception confirm they did not sign this person in by hand."
+          },
+          {
+            "name": "site_rota_{n}.txt",
+            "text": "SITE ROTA\n\n{staff}: seconded to the depot Monday to Friday. The depot has no line to head office systems. Travel and hotel claimed for all five nights."
+          }
+        ]
+      },
+      "wipe": {
+        "titles": [
+          "Wipe a trail",
+          "Clean up after a friend",
+          "Sloppy work",
+          "Before the audit"
+        ],
+        "summaries": [
+          "Remove {who}'s lines from the logs at {company} and {company2}."
+        ],
+        "briefs": [
+          "{who} did a job for me this week and left a mess: their sessions are still sitting in the access logs at {company} and {company2}.\n\nBoth companies check their logs in the morning. Get into each one, find the lines with {who} in them and delete them. Every one. You have {hours} hours for the pair.\n\nYour own lines are your own business, but I would not leave those either.",
+          "A runner called {who} went through {company} and then {company2} without cleaning up. If those logs are read, it comes back to me.\n\nRemove every line that names {who} on both servers. {company} first. The whole job has to be done inside {hours} hours."
+        ],
+        "lines": [
+          "session opened {who} from {ip}",
+          "file listing by {who} from {ip}",
+          "login admin from {ip} (client tag: {who})",
+          "session closed {who}, 14 files read"
+        ],
+        "next": [
+          "That is {company} clean. Now the same at {company2}: every line with {who} in it.",
+          "One down. {company2} next, and the clock has not stopped."
+        ]
+      },
+      "round": {
+        "titles": [
+          "The round",
+          "Three stops",
+          "A morning's work",
+          "Collection day"
+        ],
+        "summaries": [
+          "Three small jobs in a row: {company}, {company2}, {company3}."
+        ],
+        "briefs": [
+          "Three small firms, one list, one clock. First {company}, then {company2}, then {company3}. None of them is well defended.\n\nI pay {each} credits as each one is done, and {bonus} more on top when all three are finished. You have {hours} hours from the moment you take it. Whatever is not done by then is not paid for.",
+          "I have a round for you: {company}, {company2} and {company3}, in that order. Small places, light security.\n\n{each} credits lands as you finish each stop. Do all three inside {hours} hours and there is a bonus of {bonus}. Run out of time and you keep what you earned, nothing more."
+        ],
+        "next": [
+          "Paid for that one. Next stop: {company}.",
+          "Good. That is in your account. On to {company}."
+        ]
+      },
+      "borrow": {
+        "titles": [
+          "Borrowed login",
+          "Ask nicely",
+          "A letter first",
+          "Someone else's key"
+        ],
+        "summaries": [
+          "Get a login at {company} by letter, then {goal}."
+        ],
+        "briefs": [
+          "{company} in {city} changed every password this week, and the new ones are long. Breaking the admin password would take most people far too long.\n\nSo do not break it. Their public notices are open to anyone who logs in as a guest. Read them. Work out who resets passwords there and who they would do it for, then write to them from the Phishing window as that person. When the reply comes you will have the admin login.\n\nThen do the job: {goal}",
+          "The job at {company} is simple: {goal}\n\nThe hard part is the admin password, which they have just made much stronger. A letter is quicker than a cracker. Log in as a guest, read the staff notices, and write to their IT person as the one colleague they would not refuse. Mention what that colleague would know.\n\nIf you would rather break the password the long way, that is up to you."
+        ],
+        "lists": [
+          {
+            "name": "staff_contacts_{n}.txt",
+            "text": "STAFF CONTACTS · {company}\n\nIT support: {mark}\nOffice manager: {boss}\nFront desk: {other}\n\nPassword resets are done by {mark}, and only on {boss}'s say-so. Please do not ask the front desk."
+          }
+        ],
+        "notes": [
+          {
+            "name": "notice_away_{n}.txt",
+            "text": "NOTICE\n\n{boss} is at the trade fair until Friday and can only be reached by email. Anything urgent goes to {boss} in writing.",
+            "fact": "{boss} is away at a trade fair until Friday.",
+            "mention": "I am stuck at the fair until Friday and cannot get to my desk."
+          },
+          {
+            "name": "notice_doors_{n}.txt",
+            "text": "NOTICE\n\nNew door codes go out on Monday. Old fobs stop working at noon that day. See {mark} if yours has not arrived.",
+            "fact": "New door codes go out at {company} on Monday.",
+            "mention": "I need this sorted before the new door codes go out on Monday."
+          },
+          {
+            "name": "notice_backup_{n}.txt",
+            "text": "NOTICE\n\nThe quarterly backup runs tonight from 22:00. The system will be slow until morning. Please save your work before you leave.",
+            "fact": "The quarterly backup at {company} runs tonight from 22:00.",
+            "mention": "The quarterly backup starts at 22:00 tonight, so it has to be before then."
+          }
+        ],
+        "asks": [
+          {
+            "label": "Admin password at {company}",
+            "text": "I cannot get into the admin account from here. Could you reset it and send me the new one?",
+            "reply": "{boss},\n\nDone. I have set it to a temporary one. Please change it when you are back at your desk.\n\n{mark}\n\n(The admin account at {company} will now let you in without breaking the password.)"
+          }
+        ]
+      },
+      "terms": {
+        "quiet": [
+          "Bonus of {bonus} credits if no trace gets under way on this job."
+        ],
+        "fast": [
+          "Bonus of {bonus} credits if it is handed in within {minutes} game minutes of taking it."
+        ],
+        "light": [
+          "Bonus of {bonus} credits if you never use more than {relays} relays on the way in."
+        ]
+      }
+    }
   }
 }

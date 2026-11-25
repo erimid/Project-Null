@@ -29,6 +29,8 @@ export const OBJECTIVE_WORDS: Record<string, string> = {
   hold: 'Stay in',
   hunt: 'Find the hacker',
   swap: 'Swap a file',
+  leak: 'Find the leak',
+  wipe: 'Wipe a trail',
 };
 
 /** How dangerous a job looks, for each risk level 0 to 5. */

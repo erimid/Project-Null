@@ -64,7 +64,7 @@ function LeadList({ game, onPick }: { game: GameState; onPick: (askId: string) =
           </h3>
           <ul class="leads">
             {open.map((ask) => {
-              const mark = findPerson(content, ask.markId)!;
+              const mark = findPerson(content, ask.markId, game)!;
               const state = standing(game, content, mark.id);
               return (
                 <li key={ask.id}>
@@ -96,7 +96,7 @@ function LeadList({ game, onPick }: { game: GameState; onPick: (askId: string) =
                   <span class="lead__check" aria-hidden="true">
                     ✓
                   </span>{' '}
-                  {ask.label} <span class="chip__note">· {findPerson(content, ask.markId)?.name}</span>
+                  {ask.label} <span class="chip__note">· {findPerson(content, ask.markId, game)?.name}</span>
                 </li>
               ))}
             </ul>
@@ -117,7 +117,7 @@ function Letter({ game, ask, onBack, onSent }: { game: GameState; ask: AskDef; o
   const model = modelWith(game, content, 'review');
   const canReview = hasSkill(game, content, 'review');
 
-  const mark = findPerson(content, ask.markId)!;
+  const mark = findPerson(content, ask.markId, game)!;
   const senderGroups = sendersFor(game, content, mark.id);
   const sender = senderGroups.flatMap((group) => group.items).find((person) => person.id === senderId);
   const fileGroups = factsByFile(game, content);
@@ -139,7 +139,7 @@ function Letter({ game, ask, onBack, onSent }: { game: GameState; ask: AskDef; o
 
   const draftKey = `${senderId}/${[...factIds].sort().join()}`;
   const readOver = () => {
-    if (sender) setReview({ of: draftKey, verdict: judge(content, { askId: ask.id, senderId: sender.id, factIds }) });
+    if (sender) setReview({ of: draftKey, verdict: judge(content, { askId: ask.id, senderId: sender.id, factIds }, game) });
   };
   const said = review?.of === draftKey ? review.verdict : null;
 
