@@ -12,6 +12,7 @@ import { look, useLook } from './lookStore';
 import { recordStore, useRecordStore } from './recordStore';
 import { comfort, TEXT_SIZES, useComfort } from './comfortStore';
 import { install, useInstall } from '../installStore';
+import { front } from '../title/front';
 
 const SHORTCUTS: readonly (readonly [string, string])[] = [
   ['Space', 'Pause or resume'],
@@ -106,6 +107,19 @@ export function GameMenu() {
           >
             Tour of the desk
             <span class="menu__item-note">What everything on screen is for</span>
+          </button>
+          <button
+            type="button"
+            class="menu__item"
+            role="menuitem"
+            data-menu="title"
+            onClick={() => {
+              setOpen(false);
+              front.toTitle();
+            }}
+          >
+            Title screen
+            <span class="menu__item-note">Saves the game and leaves the desk</span>
           </button>
           <h3 class="menu__heading">Difficulty</h3>
           <div class="menu__sound">

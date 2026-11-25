@@ -50,6 +50,19 @@ export async function openGame(page: Page, save?: string): Promise<void> {
     }, text);
   }
   await page.goto('./');
+  await enterGame(page, save !== undefined);
+}
+
+/** From the title screen to the desk: Continue with a saved career, or a new game with whatever it offers. */
+export async function enterGame(page: Page, saved: boolean): Promise<void> {
+  await expect(page.locator('.title')).toBeVisible();
+  if (saved) {
+    await page.locator('[data-title="continue"]').click();
+  } else {
+    await page.locator('[data-title="new"]').click();
+    await page.locator('[data-title="begin"]').click();
+    await page.locator('[data-title="skip"]').click();
+  }
   await expect(page.locator('.desktop')).toBeVisible();
 }
 
