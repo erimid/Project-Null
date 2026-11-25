@@ -7,6 +7,7 @@
  */
 import { beginHeist } from './heists';
 import type { ContractDef, ObjectiveDef, StageDef, TwistDef } from '../content/schema';
+import { beginWatch } from './record';
 import { evidenceCount } from './forensics';
 import { CLIENT_FILE, type GameState } from './state';
 import { fileDef, findServer, securityOf, sendLetter, sendMail, type Content } from './world';
@@ -220,6 +221,7 @@ function beginStage(state: GameState, content: Content, contract: ContractDef, i
 export function startContract(state: GameState, content: Content, contract: ContractDef): void {
   beginRace(state, content, contract);
   beginSide(state, contract);
+  beginWatch(state, contract);
   beginHeist(state, content, contract);
   beginStage(state, content, contract, 0);
 }

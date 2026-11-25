@@ -18,6 +18,8 @@ import { isConnected, type GameState, type Speed } from './state';
 import { advanceTasks } from './tasks';
 import { advanceKinds } from './kinds';
 import { watchTerms } from './side';
+import { checkFeats } from './feats';
+import { watchJob } from './record';
 import { hasTrait } from './crafting';
 import { advanceMonitor, advanceTrace, intruding, noteIntrusion } from './trace';
 import type { Content } from './world';
@@ -65,7 +67,10 @@ export function tick(state: GameState, realMs: number, content: Content): number
   if (state.contracts.activeId !== null) watchTerms(state, content);
   // Programs that finished this tick may have done a step of the contract; a step past its time is lost.
   const contract = state.contracts.activeId === null ? undefined : activeContract(state, content);
-  if (contract) advanceContract(state, content, contract);
+  if (contract) {
+    watchJob(state, contract, simMs);
+    advanceContract(state, content, contract);
+  }
   if (state.reviews.length > 0) runReviews(state, content);
   if (state.phish.sent.length > 0) runPhish(state, content);
   if (state.player.model) endRental(state, content);
@@ -73,7 +78,11 @@ export function tick(state: GameState, realMs: number, content: Content): number
   if (state.raidPending) beginPendingRaid(state, content);
   if (state.raid) advanceRaid(state, content, simMs);
   // The board looks at its repeatable jobs once a game minute.
-  if (Math.floor(state.clock.gameTimeMs / 60_000) !== minuteBefore) postJobs(state, content);
+  if (Math.floor(state.clock.gameTimeMs / 60_000) !== minuteBefore) {
+    postJobs(state, content);
+    // Feats that are not about a delivery (money held, an attacker traced back) are looked at once a minute too.
+    checkFeats(state);
+  }
   return simMs;
 }
 

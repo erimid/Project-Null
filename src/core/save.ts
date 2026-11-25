@@ -7,6 +7,7 @@
  */
 import { OBJECTIVE_KINDS, ROLES } from '../content/schema';
 import { SPEEDS, STATE_VERSION, type GameState } from './state';
+import { newRecord } from './record';
 
 export const SAVE_FORMAT = 'project-null-save';
 
@@ -228,6 +229,18 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   },
   // 32 -> 33: darknet events. None is under way in an old save; the first is decided on the next clock check.
   32: (old) => ({ ...old, events: { current: null, nextMs: 0, last: null, recent: [], owed: [], warned: false } }),
+  // 33 -> 34: the career record. Jobs already done count as "earlier", lessons wait for the next delivery, and the
+  // career began when its first letter arrived.
+  33: (old) => {
+    // Read with care: a damaged save is turned away by the check after the migrations, not here.
+    const done = Array.isArray((old.contracts as { completed?: unknown } | undefined)?.completed) ? (old.contracts as { completed: unknown[] }).completed.length : 0;
+    const first = Array.isArray(old.messages) ? (old.messages[0] as { timeMs?: unknown } | undefined)?.timeMs : undefined;
+    const now = (old.clock as { gameTimeMs?: unknown } | undefined)?.gameTimeMs;
+    const record = newRecord(typeof first === 'number' ? first : typeof now === 'number' ? now : 0);
+    if (done > 0) record.stats.jobs.earlier = done;
+    record.lessons.lastJob = done;
+    return { ...old, record };
+  },
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -406,7 +419,26 @@ const isMessage = (m: unknown): m is Obj =>
   isText(m.subject) &&
   isText(m.body) &&
   isNum(m.timeMs) &&
-  typeof m.read === 'boolean';
+  typeof m.read === 'boolean' &&
+  (m.kind === undefined || ['story', 'work', 'lesson', 'receipt'].includes(m.kind as string));
+
+const isNumOrNull = (n: unknown) => n === null || isNum(n);
+const isRecord = (r: unknown): boolean => {
+  if (!isObj(r) || !isObj(r.stats) || !isObj(r.lessons) || !isList(r.feats, isText)) return false;
+  const { stats, lessons, watch, last } = r;
+  return (
+    isObj(stats.jobs) &&
+    Object.values(stats.jobs).every(isNum) &&
+    isNumOrNull(stats.closestMs) &&
+    isNumOrNull(stats.fastestMs) &&
+    [stats.stolenGq, stats.raidsBeaten, stats.relaysBurned, stats.caught, stats.cleanRun, stats.bestCleanRun, stats.startMs].every(isNum) &&
+    typeof stats.caughtSinceJob === 'boolean' &&
+    isList(lessons.due, isText) &&
+    isNum(lessons.lastJob) &&
+    (watch === null || (isObj(watch) && isText(watch.contractId) && isNum(watch.insideMs) && isNumOrNull(watch.closestMs) && isObj(watch.standingBefore))) &&
+    (last === null || (isObj(last) && isText(last.contractId) && isText(last.title) && isNum(last.pay) && isList(last.notes, isText)))
+  );
+};
 
 const isNewsItem = (n: unknown): n is Obj =>
   isObj(n) && isText(n.id) && ['you', 'world', 'story'].includes(n.kind as string) && isText(n.headline) && isText(n.body);
@@ -538,6 +570,7 @@ function checkState(raw: Obj): GameState {
     throw damaged;
   }
   if (!isObj(raw.data) || !isList(raw.data.sold, isText)) throw damaged;
+  if (!isRecord(raw.record)) throw damaged;
   const events = raw.events;
   const current = isObj(events) ? events.current : undefined;
   if (

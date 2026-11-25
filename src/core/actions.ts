@@ -37,6 +37,7 @@ import { bestRoute, coolRelays, hopUnderTrace, intruding, jamTrace, maxHops, new
 import { bidAtAuction, buyAtAuction, reportOffer, springSting } from './events';
 import { lockRaidFile, lockRaidRing, openRaidPort, pullPlug, startRaidTrace } from './raid';
 import { findAccount, findConnection, findServer, gatewayOf, once, ownedProgram, sendMail, sourceAddress, type Content } from './world';
+import { noteCaught, noteClosed, teachNow } from './record';
 
 export type Action =
   | { readonly type: 'setSpeed'; readonly speed: Speed }
@@ -180,6 +181,7 @@ function closeConnection(state: GameState, content: Content, connection: Connect
   logConnection(state, content, connection, false);
   // If the monitor noticed anything, someone will read the log later.
   if (connection.trace.status !== 'none') scheduleReview(state, content, connection.serverId);
+  noteClosed(state, connection);
   state.connections = state.connections.filter((other) => other !== connection);
   // Programs stop when the connection they were working on goes away.
   state.tasks = state.tasks.filter((task) => task.connectionId !== connection.id);
@@ -194,6 +196,7 @@ export function pullOut(state: GameState, content: Content, connection: Connecti
 export function caught(state: GameState, content: Content, connection: Connection): void {
   const server = findServer(content, connection.serverId);
   closeConnection(state, content, connection);
+  noteCaught(state);
   const { fine, hours } = punish(state, content, connection.serverId);
   reportCaught(state, content, connection.serverId);
   const target = server?.name ?? 'the target';
@@ -304,7 +307,7 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
       coolRelays(state, content);
       for (const id of connection.route) warmRelay(state, content, id);
       // The first proper route brings Wren's note on what relays are worth.
-      if (connection.route.length >= 2) once(state, 'routes', () => sendMail(state, content, 'routes'));
+      if (connection.route.length >= 2) once(state, 'routes', () => teachNow(state, content, 'routes'));
       state.connections.push(connection);
       logConnection(state, content, connection, true);
       noteConnect(state, content, server.id);

@@ -1,0 +1,244 @@
+/* ---- the job report card, the career page and its feats ---- */
+
+.jobreport {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 3500;
+  width: min(400px, calc(100% - 32px));
+  max-height: calc(100% - 40px);
+  overflow-y: auto;
+  padding: 16px 18px 14px;
+  border: 1px solid rgb(var(--mint-rgb) / 0.55);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: 0 0 40px rgb(var(--mint-rgb) / 0.18), 0 18px 40px rgb(0 0 0 / 0.45);
+  animation: report-rise 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+@keyframes report-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+.desktop--phone .jobreport {
+  right: 12px;
+  left: 12px;
+  bottom: 12px;
+  width: auto;
+}
+
+.jobreport__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: end;
+}
+
+.jobreport__kind {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mint);
+}
+
+.jobreport__title {
+  margin: 2px 0 0;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-bright);
+}
+
+.jobreport__pay {
+  font-size: 20px;
+  color: var(--mint-text);
+}
+
+.jobreport__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0 12px;
+}
+
+.jobreport__facts > div {
+  padding: 8px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: rgb(var(--cyan-rgb) / 0.04);
+}
+
+.jobreport__facts dt {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.jobreport__facts dd {
+  margin: 2px 0 0;
+  font-size: 15px;
+  color: var(--text-bright);
+}
+
+.jobreport .is-good {
+  color: var(--mint);
+}
+
+.jobreport .is-warn {
+  color: var(--amber);
+}
+
+.jobreport .is-bad {
+  color: var(--red-soft);
+}
+
+.jobreport__ladder {
+  display: grid;
+  grid-template-columns: auto minmax(40px, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.jobreport__step {
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.jobreport__bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(var(--cyan-rgb) / 0.14);
+  overflow: hidden;
+}
+
+.jobreport__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--mint);
+}
+
+.jobreport__standing,
+.jobreport__feats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.jobreport__note {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.jobreport__feat {
+  margin-right: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgb(var(--amber-rgb) / 0.16);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--amber);
+}
+
+.jobreport__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.jobreport__off {
+  font-size: 13px;
+  color: var(--text-dim);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.jobreport__off:hover {
+  color: var(--text);
+}
+
+/* The career page. */
+
+.career__kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 4px 18px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.career__kinds li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.career__count {
+  margin-left: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.career__hint {
+  margin: -4px 0 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.career__feats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feat {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px dashed var(--line-soft);
+  border-radius: 8px;
+  color: var(--text-dim);
+}
+
+.feat__name {
+  font-weight: 700;
+}
+
+.feat__text {
+  font-size: 13px;
+}
+
+.feat.is-earned {
+  border: 1px solid rgb(var(--amber-rgb) / 0.55);
+  background: rgb(var(--amber-rgb) / 0.08);
+  color: var(--text);
+}
+
+.feat.is-earned .feat__name {
+  color: var(--amber);
+}
+
+.feat.is-before {
+  border-style: solid;
+  color: var(--text-muted);
+}

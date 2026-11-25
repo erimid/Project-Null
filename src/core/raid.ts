@@ -26,6 +26,7 @@ import { dropFromMemory } from './loadout';
 import { wanted } from './wanted';
 import { totalTraceMs, traceReport } from './trace';
 import type { GameState, RaidPort, RaidState, TraceState } from './state';
+import { noteRaidBeaten } from './record';
 
 /** The rival hacker behind an attack, by id. Chorus (CHORUS_ID) stands in as a rival with no home and no route. */
 export function findRival(content: Content, id: string): RivalDef | undefined {
@@ -50,7 +51,7 @@ export function holdOffMs(state: GameState, content: Content): number | undefine
 
 function chorusLetter(state: GameState, mail: StoryMail, values: Record<string, string> = {}): void {
   const all: Record<string, string> = { handle: state.player.handle, ...values };
-  state.messages.push({ id: `m${state.nextId++}`, from: fill(mail.from, all), subject: fill(mail.subject, all), body: fill(mail.body, all), timeMs: state.clock.gameTimeMs, read: false });
+  state.messages.push({ id: `m${state.nextId++}`, from: fill(mail.from, all), subject: fill(mail.subject, all), body: fill(mail.body, all), timeMs: state.clock.gameTimeMs, read: false, kind: 'story' });
 }
 
 /** The rival behind the attack under way, if any. */
@@ -310,6 +311,7 @@ function winRaid(state: GameState, content: Content): void {
   if (!state.flags.includes(`beat:${rival.id}`)) state.flags.push(`beat:${rival.id}`);
   const home = findServer(content, rival.homeId);
   state.raid = null;
+  noteRaidBeaten(state);
   sendMail(state, content, 'raidWon', { who: rival.handle, home: home?.name ?? 'their server', address: home?.address ?? '' });
   if (content.ladder?.rivals.some((entry) => entry.id === rival.id) && !state.ladder.outcomes[rival.id]) {
     noteBeaten(state, content, rival.id);

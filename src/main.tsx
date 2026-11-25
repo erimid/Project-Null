@@ -9,6 +9,7 @@ import '@fontsource/share-tech-mono/latin-400.css';
 import './ui/desktop/theme.css';
 import { Desktop } from './ui/desktop/Desktop';
 import { look } from './ui/desktop/lookStore';
+import { recordStore } from './ui/desktop/recordStore';
 import { session } from './ui/session';
 import { startMusic } from './ui/music';
 import { startSfx } from './ui/sfx';
@@ -21,6 +22,7 @@ look.start();
 
 // Load the last game (or start a new one) before drawing anything.
 void session.start().then(() => {
+  recordStore.start();
   startSfx();
   startMusic();
   render(<Desktop />, document.getElementById('app')!);

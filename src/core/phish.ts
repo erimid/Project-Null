@@ -185,6 +185,7 @@ function deliver(state: GameState, ask: AskDef, mark: PersonDef): void {
     body: ask.reply,
     timeMs: state.clock.gameTimeMs,
     read: false,
+    kind: 'work',
   });
 }
 

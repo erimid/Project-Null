@@ -102,6 +102,7 @@ function letter(state: GameState, patron: PatronDef, key: LetterKey, values: Rec
     body: fill(written.body, all),
     timeMs: state.clock.gameTimeMs,
     read: false,
+    kind: 'story',
   });
 }
 

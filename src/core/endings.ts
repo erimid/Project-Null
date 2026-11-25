@@ -28,7 +28,7 @@ export function endingOf(state: GameState, content: Content): EndingDef | undefi
 /** A letter written in the content, with {handle} filled in. */
 export function sendLetter(state: GameState, mail: StoryMail): void {
   const values = { handle: state.player.handle };
-  state.messages.push({ id: `m${state.nextId++}`, from: fill(mail.from, values), subject: fill(mail.subject, values), body: fill(mail.body, values), timeMs: state.clock.gameTimeMs, read: false });
+  state.messages.push({ id: `m${state.nextId++}`, from: fill(mail.from, values), subject: fill(mail.subject, values), body: fill(mail.body, values), timeMs: state.clock.gameTimeMs, read: false, kind: 'story' });
 }
 
 /** True if a patron has left the world with the ending. */

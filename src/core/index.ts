@@ -184,3 +184,6 @@ export { LEAK_WRONG_PAY, TERMS_NAMES, jobServers, leakOf, nameChoice, peopleOf, 
 export { SIDE_RULES, isSideJob, openSideKinds } from './sideJobs';
 export type { DarkEvent, EventsState, MoveId, PatchLayer, WantedState } from './state';
 export { happenings, troubleAt, troubleKind, troubleMap, type Happening, type Trouble, type TroubleKind } from './exposure';
+export { LESSONS, countsUnread, jobKind, kindOf, type CareerStats, type JobReport, type RecordState } from './record';
+export { FEAT_IDS, checkFeats, type FeatId } from './feats';
+export type { MessageKind } from './state';

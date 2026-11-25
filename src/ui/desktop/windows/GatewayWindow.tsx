@@ -23,6 +23,7 @@ import { GatewayBoard, SLOT_BLURBS, partStats, slotLabel } from '../GatewayBoard
 import { IconTile } from '../Gear';
 import { slotIcon } from '../Icon';
 import { Window } from '../Window';
+import { CareerSection } from './CareerSection';
 import { ContactsSection } from './ContactsSection';
 
 /** Status of the player's own machine. The build line shows which version of the game is running. */
@@ -71,17 +72,26 @@ export function GatewayWindow() {
     return `${Math.round(share * 100)}\t${next ? `${next.title} at ${next.min}` : 'top of the ladder'}`;
   });
   const [stepShare, stepNext] = step.split('\t');
-  const [section, setSection] = useState<'machine' | 'contacts'>('machine');
+  const [section, setSection] = useState<'machine' | 'contacts' | 'career'>('machine');
   const tabs = (
     [
       ['machine', 'Machine', 'Your gateway: money, rating, storage and hardware'],
       ['contacts', 'Contacts', 'The people who post work under their own names, and what they think of you'],
+      ['career', 'Career', 'Your record: jobs done, closest escapes, and feats to chase'],
     ] as const
   ).map(([id, label, tip]) => (
     <button key={id} type="button" class={`tabbtn${id === section ? ' is-current' : ''}`} aria-pressed={id === section} data-tip={tip} onClick={() => setSection(id)}>
       {label}
     </button>
   ));
+
+  if (section === 'career') {
+    return (
+      <Window id="gateway" note={gateway.address} tabs={tabs}>
+        <CareerSection />
+      </Window>
+    );
+  }
 
   if (section === 'contacts') {
     return (

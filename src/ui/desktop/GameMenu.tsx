@@ -7,6 +7,7 @@ import { useLayout } from './layout';
 import { snapping, useSnapping } from './snapStore';
 import { windows } from './windowStore';
 import { look, useLook } from './lookStore';
+import { recordStore, useRecordStore } from './recordStore';
 
 const SHORTCUTS: readonly (readonly [string, string])[] = [
   ['Space', 'Pause or resume'],
@@ -25,6 +26,7 @@ export function GameMenu() {
   const layout = useDeskLayout();
   const desk = useLayout() === 'desk';
   const lookNow = useLook();
+  const kept = useRecordStore();
   const root = useRef<HTMLDivElement>(null);
 
   // Clicking anywhere else, or Esc, closes it.
@@ -102,6 +104,13 @@ export function GameMenu() {
               {hints.on ? 'On' : 'Off'}
             </button>
             <span class="menu__item-note">Labels on hover, and a help card the first time each window opens</span>
+          </div>
+          <h3 class="menu__heading">Job reports</h3>
+          <div class="menu__sound">
+            <button type="button" class={`btn${kept.reports ? ' btn--go' : ''}`} aria-pressed={kept.reports} onClick={() => recordStore.showReports(!kept.reports)}>
+              {kept.reports ? 'On' : 'Off'}
+            </button>
+            <span class="menu__item-note">A card after each job: pay, time inside, the closest trace, what was left in the logs</span>
           </div>
           {desk && (
             <>

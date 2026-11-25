@@ -4,9 +4,10 @@
  */
 import type { ContractDef, Role } from '../content/schema';
 import type { EventKind } from '../content/events';
+import { newRecord, type RecordState } from './record';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 33;
+export const STATE_VERSION = 34;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -449,7 +450,12 @@ export interface Message {
   /** Game time it arrived. */
   timeMs: number;
   read: boolean;
+  /** Which inbox tab it is filed under. Missing in older saves: worked out from the subject (see record.kindOf). */
+  kind?: MessageKind;
 }
+
+/** Story: letters from people. Work: what happened on a job. Lesson: Wren teaching. Receipt: payment and step notes, filed as read under Work. */
+export type MessageKind = 'story' | 'work' | 'lesson' | 'receipt';
 
 export interface FileState {
   name: string;
@@ -705,6 +711,8 @@ export interface GameState {
   chorus: ChorusState;
   /** The ending the story reached, or null. */
   ending: EndingState | null;
+  /** Job reports, the career's numbers, feats and the pacing of lessons (see core/record.ts). */
+  record: RecordState;
 }
 
 export interface ChorusState {
@@ -812,6 +820,7 @@ export function createGame(options: NewGameOptions): GameState {
     wanted: { heat: 0, level: 0, day: 0 },
     chorus: { taken: [], nextMs: 0, takes: 0, ignoredMs: 0, checkedMs: 0, warned: 0 },
     ending: null,
+    record: newRecord(gameTimeMs),
   };
 }
 

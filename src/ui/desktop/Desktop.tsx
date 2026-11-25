@@ -17,6 +17,7 @@ import { SnapPreview } from './snapStore';
 import { TouchTips } from './TouchTips';
 import { HoverTips } from './HoverTips';
 import { GuideCard } from './GuideCard';
+import { JobReport } from './JobReport';
 import { Tour } from './Tour';
 import { windows } from './windowStore';
 import { BrowserWindow } from './windows/BrowserWindow';
@@ -38,6 +39,7 @@ import './wide.css';
 import './globe.css';
 import './story.css';
 import './feedback.css';
+import './record.css';
 import './designs.css';
 import { DockFrame, DockNav } from './DockFrame';
 import { useDockDesign } from './dockStore';
@@ -170,6 +172,7 @@ export function Desktop() {
         <DockFrame />
         {layoutKind === 'desk' && <SnapPreview />}
         <Alerts />
+        <JobReport />
         <TouchTips />
         <HoverTips />
       </main>

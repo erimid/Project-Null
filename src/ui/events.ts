@@ -4,7 +4,7 @@
  * so the simulation itself never needs to know about either.
  */
 import { activeContract, allyHolding, findEnding, findRival, readFlag, findServer, pointsAt, pointsSpent, raidReport, stageIndex, stagesOf, type Content, type GameState } from '../core';
-import { gameInfo, linesOf } from '../content';
+import { feats as featList, gameInfo, linesOf } from '../content';
 
 const titleOf = (rating: number) => gameInfo.ratings.findLast((level) => rating >= level.min)?.title;
 
@@ -50,7 +50,9 @@ export type GameEvent =
   /** The story reached one of its endings. */
   | { readonly type: 'ended'; readonly id: string; readonly name: string }
   /** An ally who was holding a heist's door for a while let go of it. */
-  | { readonly type: 'allyLetGo'; readonly who: string; readonly server: string };
+  | { readonly type: 'allyLetGo'; readonly who: string; readonly server: string }
+  /** A feat was earned (see core/feats.ts). */
+  | { readonly type: 'feat'; readonly name: string; readonly text: string };
 
 /** The parts of the game that events are worked out from. */
 export interface Snapshot {
@@ -87,6 +89,8 @@ export interface Snapshot {
   /** The heist under way (its vault), and the doors allies are holding in it, as "ally@server". */
   readonly heist: string;
   readonly allies: readonly string[];
+  /** Feats earned in this career. */
+  readonly feats: readonly string[];
 }
 
 /** The flags that say the name has been read: the last thing read in each job whose story beat is a reveal. */
@@ -136,6 +140,7 @@ export function snapshot(state: GameState, content?: Content): Snapshot {
     builds: new Set(state.player.builds.map((build) => build.id)),
     building: state.tasks.some((task) => task.target.kind === 'build'),
     parts: { ...state.player.parts },
+    feats: [...state.record.feats],
   };
 }
 
@@ -243,6 +248,11 @@ export function diff(before: Snapshot, after: Snapshot, content: Content, byCloc
   if (after.rating > before.rating) {
     const title = titleOf(after.rating);
     if (title && title !== titleOf(before.rating)) events.push({ type: 'promoted', title });
+  }
+  for (const id of after.feats) {
+    if (before.feats.includes(id)) continue;
+    const feat = featList.find((item) => item.id === id);
+    if (feat) events.push({ type: 'feat', name: feat.name, text: feat.text });
   }
   return events;
 }

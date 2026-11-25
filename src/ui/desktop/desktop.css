@@ -1751,6 +1751,11 @@
   color: var(--text-bright);
 }
 
+/* A payment or step note: kept for the record, quieter than a letter. */
+.message.is-receipt:not(.is-selected) {
+  color: var(--text-dim);
+}
+
 .message__time {
   font-size: 12px;
   font-weight: 400;
