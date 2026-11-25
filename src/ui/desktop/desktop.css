@@ -161,12 +161,17 @@
 }
 
 .window__title-text {
+  /* A window's name is never cut short; the dim note beside it gives way first. */
+  flex: none;
+  max-width: 70%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .window__title-note {
+  flex: 0 10000 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -778,6 +783,34 @@
   }
 }
 
+/* Hanging up is not danger: a small cool notice that never catches a click. */
+.alert--calm {
+  min-width: 0;
+  padding: 6px 16px 6px 10px;
+  border-color: var(--line);
+  border-radius: 10px;
+  background: rgb(var(--panel-rgb) / 0.94);
+  box-shadow: 0 2px 14px rgb(0 0 0 / 0.35);
+  pointer-events: none;
+}
+
+.alert--calm .alert__mark {
+  width: 24px;
+  height: 24px;
+  background: var(--cyan-low);
+  font-size: 15px;
+}
+
+.alert--calm .alert__title {
+  font-size: 11px;
+  color: var(--cyan);
+}
+
+.alert--calm .alert__text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .alarm,
   .alarm.is-critical .alarm__time,
@@ -1090,12 +1123,13 @@
 
 .address {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
+  gap: 0 12px;
   width: 100%;
-  height: 32px;
+  min-height: 32px;
   align-items: center;
-  padding: 0 8px;
+  padding: 3px 8px;
   border-radius: 8px;
   text-align: left;
 }
@@ -1110,6 +1144,11 @@
 }
 
 .address__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 600;
 }
 

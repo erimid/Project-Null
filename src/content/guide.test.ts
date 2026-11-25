@@ -64,6 +64,34 @@ describe('the guided first job', () => {
     expect(guideStep(state, content)).toBeNull();
   });
 
+  it('does not let the player hang up while the scrub is still running', () => {
+    const state = newGame();
+    act(state, { type: 'connect', serverId: 'backroom' });
+    act(state, { type: 'login', connectionId: state.connections[0]!.id, user: 'member' });
+    act(state, { type: 'acceptContract', connectionId: state.connections[0]!.id, contractId: 'tallis-cards' });
+    act(state, { type: 'disconnect', connectionId: state.connections[0]!.id });
+    act(state, { type: 'connect', serverId: 'tallis-library' });
+    act(state, { type: 'runProgram', connectionId: state.connections[0]!.id, target: { kind: 'password', user: 'sysop' } });
+    wait(state, 120);
+    act(state, { type: 'login', connectionId: state.connections[0]!.id, user: 'sysop' });
+    act(state, { type: 'runProgram', connectionId: state.connections[0]!.id, target: { kind: 'copyFile', file: 'member_cards.dat' } });
+    wait(state, 120);
+    const logIds = state.servers['tallis-library']!.logs.filter((entry) => entry.byPlayer).map((entry) => entry.id);
+    expect(logIds.length).toBeGreaterThan(0);
+    act(state, { type: 'runProgram', connectionId: state.connections[0]!.id, target: { kind: 'deleteLog', logIds } });
+    expect(stepId(state)).toBe('wait');
+    const refused = applyAction(state, { type: 'disconnect', connectionId: state.connections[0]!.id }, content);
+    expect(refused.ok).toBe(false);
+    expect(state.connections).toHaveLength(1);
+    wait(state, 120);
+    expect(stepId(state)).toBe('leave-target');
+    act(state, { type: 'disconnect', connectionId: state.connections[0]!.id });
+  });
+
+  it('says the board never traces: nothing there watches the player', () => {
+    expect(servers.find((server) => server.id === 'backroom')?.untraced).toBe(true);
+  });
+
   it('stays out of the way when the player takes a different job first', () => {
     const state = newGame();
     state.contracts.activeId = 'kestrel-ledger';

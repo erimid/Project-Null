@@ -19,7 +19,13 @@ interface Alert {
 }
 
 const SHOW_MS = 4000;
+const SHOW_CALM_MS = 2800;
 const SHOW_SEVERE_MS = 9000;
+
+/** Plain news that is neither danger nor good: you hung up, or a model pulled you out. Quiet, small, and never in the way of a click. */
+function isCalm(alert: Alert): boolean {
+  return !alert.severe && !alert.good && !alert.chorus;
+}
 
 /** Notices that drop in at the top of the desktop when a connection ends or the player earns a new title. Click one to dismiss it. */
 export function Alerts() {
@@ -76,7 +82,7 @@ export function Alerts() {
           timers.delete(timer);
           setAlerts((list) => list.filter((item) => item.id !== alert.id));
         },
-        alert.severe ? SHOW_SEVERE_MS : SHOW_MS,
+        alert.severe ? SHOW_SEVERE_MS : isCalm(alert) ? SHOW_CALM_MS : SHOW_MS,
       );
       timers.add(timer);
     });
@@ -92,7 +98,7 @@ export function Alerts() {
         <button
           key={alert.id}
           type="button"
-          class={`alert${alert.severe ? ' alert--severe' : ''}${alert.good ? ' alert--good' : ''}${alert.chorus ? ' alert--chorus' : ''}`}
+          class={`alert${alert.severe ? ' alert--severe' : ''}${alert.good ? ' alert--good' : ''}${alert.chorus ? ' alert--chorus' : ''}${isCalm(alert) ? ' alert--calm' : ''}`}
           title={alert.opens ? 'Open it' : 'Dismiss'}
           onClick={() => {
             if (alert.opens === 'contract') deskStore.showContract(true);

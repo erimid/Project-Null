@@ -99,6 +99,8 @@ describe('desk layouts', () => {
     expect(open.get('map')).toEqual(new Map(deskRects('plan', area)).get('map'));
     // A long brief leaves no room: the messages stay where they were, behind it.
     expect(new Map(deskRects('plan', area, 700)).get('messages')).toEqual(new Map(deskRects('plan', area)).get('messages'));
+    // A strip too short to read is worse than none: under 260px of room they stay full height behind it.
+    expect(new Map(deskRects('plan', area, 520)).get('messages')).toEqual(new Map(deskRects('plan', area)).get('messages'));
     // The other layouts take no notice.
     expect(deskRects('run', area, 400)).toEqual(deskRects('run', area));
   });
