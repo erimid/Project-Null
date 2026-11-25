@@ -20,7 +20,7 @@
 import type { ContractDef, HoldLayer } from '../content/schema';
 import { MAX_LAYER_LEVEL } from '../content/schema';
 import { fill } from './generate';
-import { touchedServers, tierForRating } from './jobs';
+import { claimedFiles, touchedServers, tierForRating } from './jobs';
 import { editionDay } from './news';
 import { conditionMet } from './conditions';
 import { noteFailure } from './patrons';
@@ -167,9 +167,11 @@ export function postHeist(state: GameState, content: Content): Job | undefined {
   if (!rng.chance(HEIST_CHANCE)) return undefined;
   const busy = touchedServers(state);
   for (const connection of state.connections) busy.add(connection.serverId);
+  // Two companies in one trade keep files of the same name: never one a job on the board already asks for.
+  const claimed = claimedFiles(state);
   const files = (serverId: string) =>
     (state.servers[serverId]?.files ?? []).filter((file) => {
-      if (file.access !== 'admin' || state.player.files.some((own) => own.name === file.name)) return false;
+      if (file.access !== 'admin' || claimed.has(file.name) || state.player.files.some((own) => own.name === file.name)) return false;
       const written = content.servers.find((server) => server.id === serverId)?.files.find((item) => item.name === file.name);
       return !written?.part && !written?.program;
     });

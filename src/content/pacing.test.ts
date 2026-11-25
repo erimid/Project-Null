@@ -92,7 +92,7 @@ describe('the first hour', () => {
   it('gives an older save a career record that starts from where it is', () => {
     const { final } = lessonsByJob(4);
     const { record: _record, ...rest } = final;
-    const text = JSON.stringify({ format: 'project-null-save', version: 33, summary: { handle: 'T', balance: 0, gameTimeMs: 0, savedAt: '' }, state: { ...rest, version: 33 } });
+    const text = JSON.stringify({ format: 'project-null-save', version: 34, summary: { handle: 'T', balance: 0, gameTimeMs: 0, savedAt: '' }, state: { ...rest, version: 34 } });
     const loaded = deserializeGame(text).state;
     expect(loaded.record.stats.jobs).toEqual({ earlier: 4 });
     expect(loaded.record.lessons).toEqual({ due: [], lastJob: 4 });

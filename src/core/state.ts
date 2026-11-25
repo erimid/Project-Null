@@ -7,7 +7,7 @@ import type { EventKind } from '../content/events';
 import { newRecord, type RecordState } from './record';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 34;
+export const STATE_VERSION = 35;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -147,6 +147,10 @@ export interface ContractsState {
   windowUntilMs: number;
   /** True once the active job's optional terms have been broken (see side.ts). */
   termsBroken: boolean;
+  /** Jobs delivered for each regular client, by id (see regulars.ts). */
+  regulars: Record<string, number>;
+  /** How far each side story has got, by id: parts delivered, and the game time of the last (see series.ts). */
+  series: Record<string, { done: number; atMs: number }>;
 }
 
 /** A heist being worked on: the vault and who holds which of its layers. */
@@ -206,6 +210,8 @@ export interface Job extends ContractDef {
   readonly legend?: { readonly twist: 'shortFuse' | 'onGuard' | 'travelLight' | 'blindRun'; readonly week: number };
   /** True for a job a darknet event brought (see events.ts). It also carries `news`, the line it came with. */
   readonly dark?: boolean;
+  /** Id of the regular client who posted it (see regulars.ts). */
+  readonly regular?: string;
 }
 
 export interface StoredFile {
@@ -803,7 +809,7 @@ export function createGame(options: NewGameOptions): GameState {
     connections: [],
     tasks: [],
     messages: [],
-    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0, heldMs: 0, guard: null, raceUntilMs: 0, heist: null, burned: [], heistDay: -1, legendDay: -1, takenMs: 0, windowUntilMs: 0, termsBroken: false },
+    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0, heldMs: 0, guard: null, raceUntilMs: 0, heist: null, burned: [], heistDay: -1, legendDay: -1, takenMs: 0, windowUntilMs: 0, termsBroken: false, regulars: {}, series: {} },
     story: { lines: {}, offered: [] },
     phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
     reviews: [],

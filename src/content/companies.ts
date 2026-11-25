@@ -80,6 +80,36 @@ export interface JobWording {
   readonly briefs: readonly string[];
 }
 
+/** The three kinds of one-step job the board makes. */
+export const PLAIN_KINDS = ['steal', 'destroy', 'record'] as const;
+export type PlainKind = (typeof PLAIN_KINDS)[number];
+
+/** More wording for jobs against one trade: added to the general lists when the company is in that trade. Any part may be missing. */
+export type TradeWording = Readonly<Partial<Record<PlainKind, Partial<JobWording>>>>;
+
+/**
+ * A regular: a small client with a name, who posts ordinary board jobs in
+ * their own voice and remembers the work done for them (see
+ * core/regulars.ts). Lines may use {company} {city} and {times} ("second",
+ * "third"...: how many times they have come to the player, this one
+ * included).
+ */
+export interface RegularDef {
+  readonly id: string;
+  readonly name: string;
+  /** Who they are, in a few words. */
+  readonly blurb: string;
+  /** The rating from which they post work. */
+  readonly minRating: number;
+  /** The trades they post work against. Missing = any. */
+  readonly sectors?: readonly string[];
+  /** What they open a brief with the first time. */
+  readonly intros: readonly string[];
+  /** What they open with once the player has worked for them. */
+  readonly again: readonly string[];
+  readonly signoff: string;
+}
+
 /**
  * Wording for board jobs of several steps. Placeholders as for one-step
  * jobs, plus {company2} {city2} {address2} {user} {steps}, and {goal}
@@ -162,6 +192,10 @@ export interface JobPools {
   readonly heist?: JobWording & { readonly notes: Readonly<Record<'firewall' | 'monitor' | 'proxy', readonly string[]>> };
   /** Words for how strong a company's security is, by tier (1 first). */
   readonly tiers: readonly string[];
+  /** More wording by trade, by sector id. */
+  readonly trades?: Readonly<Record<string, TradeWording>>;
+  /** The regular clients. */
+  readonly regulars?: readonly RegularDef[];
 }
 
 export interface CompanyPools {
@@ -173,8 +207,26 @@ export interface CompanyPools {
   readonly stems: readonly string[];
   readonly logs: readonly string[];
   readonly sectors: readonly SectorDef[];
+  /**
+   * A second batch of companies, made after the first and apart from it
+   * (see core/generate.ts), so that adding to it never changes a company
+   * of the first batch in a game already under way.
+   */
+  readonly more?: MorePools;
   readonly jobs: JobPools;
 }
+
+export interface MorePools {
+  readonly count: number;
+  readonly stems: readonly string[];
+  /** Cities the second batch can be in, besides the first batch's. */
+  readonly cities: readonly CityDef[];
+  /** The trades of the second batch. */
+  readonly sectors: readonly SectorDef[];
+}
+
+/** Every line of business a generated company can be in. */
+export const sectorsOf = (pools: CompanyPools): readonly SectorDef[] => (pools.more ? [...pools.sectors, ...pools.more.sectors] : pools.sectors);
 
 /** Pools that make nothing: for worlds without generated companies. */
 export const NO_COMPANIES: CompanyPools = {
@@ -207,7 +259,7 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
   const list = (value: unknown, where: string): unknown[] => (Array.isArray(value) && value.length > 0 ? value : fail(`${where} must be a non-empty list`));
 
   const raw = obj(data, 'the file');
-  const cities = list(raw.cities, 'cities').map((value, i): CityDef => {
+  const toCity = (value: unknown, i: number): CityDef => {
     const city = obj(value, `city ${i}`);
     const net = text(city.net, `city ${i} net`);
     if (!/^\d{1,3}\.\d{1,3}$/.test(net) || net.split('.').some((part) => Number(part) > 255)) fail(`city ${i}: net "${net}" must look like "77.161"`);
@@ -218,8 +270,9 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
       lon: number(city.lon, `city ${i} lon`, -180, 180),
       net,
     };
-  });
-  const sectors = list(raw.sectors, 'sectors').map((value, i): SectorDef => {
+  };
+  const cities = list(raw.cities, 'cities').map(toCity);
+  const toSector = (value: unknown, i: number): SectorDef => {
     const sector = obj(value, `sector ${i}`);
     const id = text(sector.id, `sector ${i} id`);
     const where = `sector "${id}"`;
@@ -276,7 +329,24 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
       ...(installers.length > 0 ? { installers } : {}),
       ...(records ? { records } : {}),
     };
-  });
+  };
+  const sectors = list(raw.sectors, 'sectors').map(toSector);
+  // The second batch of companies: its own stems and trades, and more cities and names to draw on.
+  let more: MorePools | undefined;
+  if (raw.more !== undefined) {
+    const m = obj(raw.more, 'more');
+    more = {
+      count: number(m.count, 'more count', 0, 200),
+      stems: texts(m.stems, 'more stems'),
+      cities: m.cities === undefined ? [] : list(m.cities, 'more cities').map((value, i) => toCity(value, cities.length + i)),
+      sectors: list(m.sectors, 'more sectors').map((value, i) => toSector(value, sectors.length + i)),
+    };
+    if (more.count > more.stems.length) fail(`more count is ${more.count} but there are only ${more.stems.length} more stems`);
+    const stems = [...texts(raw.stems, 'stems'), ...more.stems];
+    if (new Set(stems).size !== stems.length) fail('a stem is used twice');
+    const ids = [...sectors, ...more.sectors].map((sector) => sector.id);
+    if (new Set(ids).size !== ids.length) fail('a sector id is used twice');
+  }
   const jobs = obj(raw.jobs, 'jobs');
   const wording = (key: string): JobWording => {
     const w = obj(jobs[key], `jobs ${key}`);
@@ -290,6 +360,7 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
     stems: texts(raw.stems, 'stems'),
     logs: texts(raw.logs, 'logs'),
     sectors,
+    ...(more ? { more } : {}),
     jobs: {
       clients: texts(jobs.clients, 'jobs clients'),
       steal: wording('steal'),
@@ -322,6 +393,49 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
             ),
           }),
       ...(jobs.racers === undefined ? {} : { racers: texts(jobs.racers, 'jobs racers') }),
+      ...(jobs.trades === undefined
+        ? {}
+        : {
+            trades: Object.fromEntries(
+              Object.entries(obj(jobs.trades, 'jobs trades')).map(([sector, value]) => {
+                if (![...sectors, ...(more?.sectors ?? [])].some((item) => item.id === sector)) fail(`jobs trades: there is no trade "${sector}"`);
+                const kinds = obj(value, `jobs trades ${sector}`);
+                const wording: Partial<Record<PlainKind, Partial<JobWording>>> = {};
+                for (const [kind, lines] of Object.entries(kinds)) {
+                  if (!(PLAIN_KINDS as readonly string[]).includes(kind)) fail(`jobs trades ${sector}: "${kind}" is not one of ${PLAIN_KINDS.join(', ')}`);
+                  const w = obj(lines, `jobs trades ${sector} ${kind}`);
+                  const where = `jobs trades ${sector} ${kind}`;
+                  wording[kind as PlainKind] = {
+                    ...(w.titles === undefined ? {} : { titles: texts(w.titles, `${where} titles`) }),
+                    ...(w.summaries === undefined ? {} : { summaries: texts(w.summaries, `${where} summaries`) }),
+                    ...(w.briefs === undefined ? {} : { briefs: texts(w.briefs, `${where} briefs`) }),
+                  };
+                }
+                return [sector, wording];
+              }),
+            ),
+          }),
+      ...(jobs.regulars === undefined
+        ? {}
+        : {
+            regulars: list(jobs.regulars, 'jobs regulars').map((value, i): RegularDef => {
+              const r = obj(value, `regular ${i}`);
+              const id = text(r.id, `regular ${i} id`);
+              const where = `regular "${id}"`;
+              const own = r.sectors === undefined ? undefined : texts(r.sectors, `${where} sectors`);
+              for (const sector of own ?? []) if (![...sectors, ...(more?.sectors ?? [])].some((item) => item.id === sector)) fail(`${where}: there is no trade "${sector}"`);
+              return {
+                id,
+                name: text(r.name, `${where} name`),
+                blurb: text(r.blurb, `${where} blurb`),
+                minRating: number(r.minRating, `${where} minRating`, 0, 1000),
+                ...(own ? { sectors: own } : {}),
+                intros: texts(r.intros, `${where} intros`),
+                again: texts(r.again, `${where} again`),
+                signoff: text(r.signoff, `${where} signoff`),
+              };
+            }),
+          }),
       ...(jobs.side === undefined
         ? {}
         : (() => {
@@ -381,6 +495,8 @@ export function parseCompanies(data: unknown, file = 'companies.json'): CompanyP
           })()),
     },
   };
+  const regularIds = (pools.jobs.regulars ?? []).map((regular) => regular.id);
+  if (new Set(regularIds).size !== regularIds.length) fail('two regulars share an id');
   if (pools.count > pools.stems.length) fail(`count is ${pools.count} but there are only ${pools.stems.length} stems; each company needs its own`);
   return pools;
 }

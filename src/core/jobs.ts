@@ -5,9 +5,10 @@
  * A job stays up for a while, then is taken down and replaced.
  */
 import type { ContractDef, ServerDef } from '../content/schema';
-import { NEW_KINDS, type NewKind } from '../content/companies';
+import { NEW_KINDS, sectorsOf, type NewKind } from '../content/companies';
 import { fill } from './generate';
 import { assignPatron } from './patrons';
+import { assignRegular } from './regulars';
 import type { GameState, Job } from './state';
 import type { Rng } from './rng';
 import { stream } from './streams';
@@ -84,6 +85,9 @@ function possibleObjectives(state: GameState, server: ServerDef): Objective[] {
   return goals;
 }
 
+/** Share of ordinary jobs worded for the company's trade, where the trade has wording of its own. */
+export const TRADE_SHARE = 0.6;
+
 /**
  * An ordinary one-step job against a company, with the values its wording
  * was filled from: what every board job starts as. `only` keeps it to some
@@ -98,11 +102,16 @@ export function plainJob(state: GameState, content: Content, server: ServerDef, 
   if (objective.kind === 'record') {
     const key = objective.key;
     const current = state.servers[server.id]!.records.find((row) => row[0] === key)?.[1];
-    const choices = content.companies.sectors.find((sector) => sector.id === server.generated!.sector)?.records?.values.filter((value) => value !== current) ?? [];
+    const choices = sectorsOf(content.companies).find((sector) => sector.id === server.generated!.sector)?.records?.values.filter((value) => value !== current) ?? [];
     if (choices.length === 0) return undefined;
     objective = { ...objective, value: rng.pick(choices) };
   }
-  const wording = pools[objective.kind];
+  const general = pools[objective.kind];
+  // A company's trade may have wording of its own for this kind of job: used some of the time.
+  // Decided on a fork, and each line still takes one draw, so the board's draws stay as they were.
+  const trade = pools.trades?.[server.generated.sector]?.[objective.kind];
+  const own = trade !== undefined && rng.fork(`trade:${server.id}:${rng.getState().state}`).chance(TRADE_SHARE);
+  const lines = (name: 'titles' | 'summaries' | 'briefs'): readonly string[] => (own && trade[name] && trade[name].length > 0 ? trade[name] : general[name]);
   const values: Record<string, string> = {
     company: server.name,
     city: server.city,
@@ -114,14 +123,14 @@ export function plainJob(state: GameState, content: Content, server: ServerDef, 
   const serverTier = server.generated!.tier;
   const job: Job = {
     id: `job-${state.nextId++}`,
-    title: rng.pick(wording.titles),
+    title: rng.pick(lines('titles')),
     client: rng.pick(pools.clients),
     targetId: server.id,
     pay: (content.rules.jobPay[serverTier - 1] ?? 0) + rng.int(0, 4) * 50,
     rating: content.rules.jobRatings[serverTier - 1] ?? 0,
     minRating: 0,
-    summary: fill(rng.pick(wording.summaries), values),
-    brief: fill(rng.pick(wording.briefs), values),
+    summary: fill(rng.pick(lines('summaries')), values),
+    brief: fill(rng.pick(lines('briefs')), values),
     objective,
     expiresMs: state.clock.gameTimeMs + content.rules.jobHours * 3_600_000,
   };
@@ -155,14 +164,20 @@ function makeJob(state: GameState, content: Content, at?: { server: ServerDef; r
   // Some become one of the newer kinds of job, and some become a race (see kinds.ts). Forked the same way.
   // Some become one of the side kinds (see sideJobs.ts). Forked the same way, and asked first.
   const side = at ? undefined : sideJob(state, content, job, server, values, rng.fork(`side:${server.id}:${rng.getState().state}`));
-  if (side) return assignPatron(state, content, side, content.servers.find((item) => item.id === side.targetId) ?? server, rng.fork(`patron:${server.id}:${rng.getState().state}`));
+  // A job no patron takes may be a regular client's (see regulars.ts). Forked the same way.
+  const regular = (job: Job, at: ServerDef): Job => (job.patron ? job : assignRegular(state, content, job, at, rng.fork(`regular:${server.id}:${rng.getState().state}`)));
+  if (side) {
+    const where = content.servers.find((item) => item.id === side.targetId) ?? server;
+    return regular(assignPatron(state, content, side, where, rng.fork(`patron:${server.id}:${rng.getState().state}`)), where);
+  }
   const other = at ? undefined : newKind(state, content, job, server, values, rng.fork(`kind:${server.id}:${rng.getState().state}`));
   const made = other ?? (pools.staged && (at ? at.staged === true : serverTier >= 5 && own.chance(0.5)) ? addFirstStep(state, content, job, server, values, own) : job);
   const racing = at ? made : maybeRace(content, made, serverTier, rng.fork(`race:${server.id}:${rng.getState().state}`));
   // Some ordinary jobs carry optional terms: a bonus for doing it a particular way.
   const raced = at ? racing : maybeTerms(state, content, racing, server, rng.fork(`terms:${server.id}:${rng.getState().state}`));
   // Some jobs are a patron's, under their own name (see patrons.ts). Forked the same way, so the board's draws stay as they were.
-  return assignPatron(state, content, raced, server, rng.fork(`patron:${server.id}:${rng.getState().state}`));
+  const patron = assignPatron(state, content, raced, server, rng.fork(`patron:${server.id}:${rng.getState().state}`));
+  return at ? patron : regular(patron, server);
 }
 
 /** Share of board jobs that are one of the newer kinds, once the tier allows any. */
@@ -321,9 +336,35 @@ export function refreshJobs(state: GameState, content: Content, stillPossible: (
   state.contracts.jobs = state.contracts.jobs.filter(keep);
   // A few tries per missing job, in case a pick has nothing left to ask for.
   for (let tries = 0; usual() < content.rules.boardJobs && tries < content.rules.boardJobs * 3; tries++) {
-    const job = makeJob(state, content);
+    const job = mixedJob(state, content);
     if (job) state.contracts.jobs.push(job);
   }
+}
+
+/** From this rating the board keeps its jobs unlike one another. Before it there are too few kinds to choose from. */
+export const MIX_RATING = 10;
+/** How many times the board draws again for a job unlike the ones it has, before it settles for what it drew. */
+export const MIX_TRIES = 6;
+
+/** What sort of work a job is, as the player would see it on the board: two jobs of one sort look alike. */
+export function jobSort(job: Job): string {
+  if (job.heist) return 'heist';
+  if (job.stages && job.stages.length > 0) return 'two-step';
+  return job.objective.kind;
+}
+
+/** True if a job would sit among the board's usual jobs beside one of its own sort, or under the same title. What the news, a heist or a legend brought is marked as such and does not count. */
+export function alikeOnBoard(state: GameState, job: Job): boolean {
+  const plain = (title: string) => title.replace(/^(Race|Legend): /, '');
+  return state.contracts.jobs.some((other) => other.id !== job.id && !other.legend && !other.heist && !other.news && (jobSort(other) === jobSort(job) || plain(other.title) === plain(job.title)));
+}
+
+/** A new job for the board, drawn again a few times if it is like one already there. */
+function mixedJob(state: GameState, content: Content): Job | undefined {
+  let job = makeJob(state, content);
+  if (state.player.rating < MIX_RATING) return job;
+  for (let tries = 0; job && alikeOnBoard(state, job) && tries < MIX_TRIES; tries++) job = makeJob(state, content) ?? job;
+  return job;
 }
 
 /** A legend contract pays this many times a job of its kind, and is worth this much rating. */

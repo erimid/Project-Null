@@ -69,11 +69,11 @@ function makeFiles(rng: Rng, sector: SectorDef, values: Record<string, string>, 
   return files;
 }
 
-function makeCompany(rng: Rng, pools: CompanyPools, index: number, stem: string, taken: Set<string>): ServerDef {
-  const sector = rng.pick(pools.sectors);
+function makeCompany(rng: Rng, pools: CompanyPools, index: number, stem: string, taken: Set<string>, fixed?: { sector: SectorDef; tier: number }): ServerDef {
+  const sector = fixed?.sector ?? rng.pick(pools.sectors);
   const city = rng.pick(pools.cities);
   // Weaker companies are more common: tiers 1 and 2 make up about half.
-  const tier = Math.min(5, 1 + Math.floor(rng.next() * rng.next() * 5 + rng.next() * 1.5));
+  const tier = fixed?.tier ?? Math.min(5, 1 + Math.floor(rng.next() * rng.next() * 5 + rng.next() * 1.5));
   const name = `${stem} ${rng.pick(sector.suffixes)}`;
   const person = () => `${rng.pick(pools.first)} ${rng.pick(pools.last)}`;
   const staff = person();
@@ -144,7 +144,32 @@ export function generateCompanies(pools: CompanyPools, seed: number, taken: Iter
   const rng = createRng(seed).fork('companies');
   const used = new Set(taken);
   const stems = rng.shuffle([...pools.stems]).slice(0, pools.count);
-  return stems.map((stem, index) => makeCompany(rng, pools, index, stem, used));
+  const first = stems.map((stem, index) => makeCompany(rng, pools, index, stem, used));
+  return [...first, ...moreCompanies(pools, seed, first.length, used)];
+}
+
+/** Share of the second batch that is well defended, and of those, the share at the very top. */
+export const MORE_TOP_SHARE = 0.65;
+export const MORE_TIER5_SHARE = 0.35;
+
+/**
+ * The second batch (see CompanyPools.more): the newer trades, and mostly
+ * the better-defended companies the first batch is short of. Made on a
+ * stream of its own, after the first batch and without touching it, so a
+ * game already under way keeps every company it knows and gains these.
+ */
+function moreCompanies(pools: CompanyPools, seed: number, from: number, used: Set<string>): ServerDef[] {
+  const more = pools.more;
+  if (!more || more.count === 0 || more.sectors.length === 0) return [];
+  const rng = createRng(seed).fork('companies:more');
+  const all: CompanyPools = { ...pools, cities: [...pools.cities, ...more.cities] };
+  const stems = rng.shuffle([...more.stems]).slice(0, more.count);
+  // Every trade gets its share: they go round in a shuffled order.
+  const trades = rng.shuffle([...more.sectors]);
+  return stems.map((stem, index) => {
+    const tier = rng.chance(MORE_TOP_SHARE) ? (rng.chance(MORE_TIER5_SHARE) ? 5 : 4) : rng.int(2, 3);
+    return makeCompany(rng, all, from + index, stem, used, { sector: trades[index % trades.length]!, tier });
+  });
 }
 
 const worlds = new WeakMap<Content, Map<number, Content>>();

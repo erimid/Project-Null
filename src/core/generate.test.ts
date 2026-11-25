@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { companies } from '../content';
+import { companies, sectorsOf, servers } from '../content';
+import { hashSeed } from './rng';
 import {
   applyAction,
   availableContracts,
@@ -44,7 +45,7 @@ function game(seed = 11, from = base) {
 describe('generated companies', () => {
   it('makes the configured number, each with its own name, id and address', () => {
     const made = generateCompanies(companies, 1);
-    expect(made).toHaveLength(companies.count);
+    expect(made).toHaveLength(companies.count + companies.more!.count);
     for (const key of ['id', 'name', 'address'] as const) expect(new Set(made.map((server) => server[key])).size).toBe(made.length);
   });
 
@@ -83,7 +84,7 @@ describe('generated companies', () => {
   it('are part of the game world, listed, with text files that open', () => {
     const h = game();
     const made = h.world.servers.filter((server) => server.generated);
-    expect(made).toHaveLength(companies.count);
+    expect(made).toHaveLength(companies.count + companies.more!.count);
     expect(made.every((server) => server.listed && h.state.servers[server.id])).toBe(true);
     const withText = made.find((server) => server.files.some((file) => file.content));
     const file = withText!.files.find((item) => item.content)!;
@@ -104,7 +105,7 @@ describe('generated companies', () => {
             expect(part.grade).toBeLessThanOrEqual(3);
           }
           if (file.part && server.generated!.tier >= 4) {
-            const written = companies.sectors.find((sector) => sector.id === server.generated!.sector)!.installers!.find((item) => item.name === file.name)!;
+            const written = sectorsOf(companies).find((sector) => sector.id === server.generated!.sector)!.installers!.find((item) => item.name === file.name)!;
             expect(file.part.grade).toBe(Math.min(3, written.part!.grade + 1));
           }
         }
@@ -297,5 +298,36 @@ describe('the rating ladder', () => {
     noteProgress(h.state, world);
     flushLessons(h.state, world);
     expect(h.state.messages.filter((m) => m.subject === 'links')).toHaveLength(1);
+  });
+});
+
+describe('the second batch of companies', () => {
+  // Fingerprints of the first batch as it was before there was a second: seed -> hash of its companies.
+  const BEFORE: Readonly<Record<number, number>> = { 1: 4143131091, 7: 2936388556, 31: 4186344447, 2034: 2673276489 };
+  const taken = servers.map((server) => server.address);
+
+  it.each(Object.keys(BEFORE).map(Number))('leaves every company of the first batch exactly as it was (seed %i)', (seed) => {
+    const made = generateCompanies(companies, seed, taken);
+    expect(hashSeed(JSON.stringify(made.slice(0, companies.count)))).toBe(BEFORE[seed]);
+  });
+
+  it('adds twelve companies in the six newer trades, two of each, mostly well defended', () => {
+    const more = companies.more!;
+    let top = 0;
+    for (const seed of [1, 7, 31, 2034, 5, 99]) {
+      const made = generateCompanies(companies, seed, taken);
+      expect(made).toHaveLength(companies.count + more.count);
+      const extra = made.slice(companies.count);
+      for (const sector of more.sectors) expect(extra.filter((company) => company.generated!.sector === sector.id), `${sector.id}, seed ${seed}`).toHaveLength(2);
+      expect(new Set(made.map((company) => company.id)).size).toBe(made.length);
+      expect(new Set(made.map((company) => company.address)).size).toBe(made.length);
+      expect(new Set(made.map((company) => company.name)).size).toBe(made.length);
+      top += extra.filter((company) => company.generated!.tier >= 4).length;
+      // The top two tiers were about six companies. Now there are enough to go round.
+      expect(made.filter((company) => company.generated!.tier >= 4).length).toBeGreaterThanOrEqual(10);
+      for (const company of extra) expect(JSON.stringify(company)).not.toMatch(/\{\w+\}/);
+    }
+    expect(top / 6).toBeGreaterThan(6);
+    expect(top / 6).toBeLessThan(10);
   });
 });

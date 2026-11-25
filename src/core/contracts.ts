@@ -22,6 +22,8 @@ import { reachEnding } from './endings';
 import { printEditions, reportContract } from './news';
 import { advanceLadder } from './ladder';
 import { advanceEvents } from './events';
+import { advanceSeries, noteSeries, seriesOf, seriesDone, seriesOpen } from './series';
+import { noteRegular } from './regulars';
 import { FAVOUR_CUT, hasFavour, noteDelivery, noteFailure } from './patrons';
 import { sellsOnly, sellsProgram, shopFor, shopPrice } from './market';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
@@ -52,6 +54,7 @@ export function postJobs(state: GameState, content: Content): void {
   advanceChorus(state, content);
   advanceLadder(state, content);
   advanceEvents(state, content);
+  advanceSeries(state, content);
   printEditions(state, content);
   postHeist(state, content);
   postLegend(state, content);
@@ -91,10 +94,16 @@ export function objectivePossible(state: GameState, content: Content, contract: 
 export function nextContractRating(state: GameState, content: Content): number | undefined {
   // Story missions appear on the story's own clock, not the board's rating gate, so they are left out here.
   const left = content.contracts.filter(
-    (contract) => !contract.story && !state.contracts.completed.includes(contract.id) && objectivePossible(state, content, contract),
+    (contract) => !contract.story && !state.contracts.completed.includes(contract.id) && objectivePossible(state, content, contract) && !laterPart(state, content, contract),
   );
   if (left.length === 0 || left.some((contract) => gateRating(state, contract) <= state.player.rating)) return undefined;
   return Math.min(...left.map((contract) => gateRating(state, contract)));
+}
+
+/** True for a part of a side story that waits on a part before it. */
+function laterPart(state: GameState, content: Content, contract: ContractDef): boolean {
+  const found = seriesOf(content, contract.id);
+  return found !== undefined && found.index > seriesDone(state, found.series.id);
 }
 
 export function isLyingLow(state: GameState): boolean {
@@ -114,6 +123,7 @@ export function availableContracts(state: GameState, content: Content): Contract
     state.contracts.completed.includes(contract.id) ||
     state.contracts.burned.includes(contract.id) ||
     !conditionMet(state, contract.when) ||
+    !seriesOpen(state, content, contract) ||
     !objectivePossible(state, content, contract);
   // Ordinary written contracts, gated by rating. Story missions are left out: the director offers them on its own clock.
   const open = content.contracts.filter((contract) => !contract.story && !taken(contract));
@@ -249,6 +259,8 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   reportContract(state, content, contract);
   // Whoever paid remembers, and so does anyone whose companies were hurt.
   noteDelivery(state, content, contract, choice);
+  noteRegular(state, contract);
+  noteSeries(state, content, contract);
   // The final job ends the story the way it was finished.
   const ending = choice ? choice.ending : contract.ending;
   if (ending) reachEnding(state, content, ending);

@@ -20,6 +20,7 @@ import type { ChorusDef } from '../content/chorus';
 import type { EndingDef } from '../content/endings';
 import type { LadderDef } from '../content/ladder';
 import type { EventsDef } from '../content/events';
+import type { SeriesDef } from '../content/series';
 import type { DataMarketDef } from '../content/data';
 import type { AssetDef } from '../content/assets';
 import { twistOn } from './legend';
@@ -195,6 +196,8 @@ export interface Content {
   readonly ladder?: LadderDef;
   /** Wording for the darknet's events (see core/events.ts). Missing = nothing happens there. */
   readonly events?: EventsDef;
+  /** Side stories: written contracts offered one after another (see core/series.ts). Missing = none. */
+  readonly series?: readonly SeriesDef[];
   /** What the data market at Lowtide buys (see core/data.ts). Missing = it buys nothing. */
   readonly data?: DataMarketDef;
   /** Property for sale late in a career (see core/assets.ts). Missing = none. */

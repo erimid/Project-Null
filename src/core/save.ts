@@ -229,9 +229,11 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   },
   // 32 -> 33: darknet events. None is under way in an old save; the first is decided on the next clock check.
   32: (old) => ({ ...old, events: { current: null, nextMs: 0, last: null, recent: [], owed: [], warned: false } }),
-  // 33 -> 34: the career record. Jobs already done count as "earlier", lessons wait for the next delivery, and the
+  // 33 -> 34: regular clients and side stories. Nobody has worked for either yet.
+  33: (old) => ({ ...old, contracts: { ...(old.contracts as Record<string, unknown>), regulars: {}, series: {} } }),
+  // 34 -> 35: the career record. Jobs already done count as "earlier", lessons wait for the next delivery, and the
   // career began when its first letter arrived.
-  33: (old) => {
+  34: (old) => {
     // Read with care: a damaged save is turned away by the check after the migrations, not here.
     const done = Array.isArray((old.contracts as { completed?: unknown } | undefined)?.completed) ? (old.contracts as { completed: unknown[] }).completed.length : 0;
     const first = Array.isArray(old.messages) ? (old.messages[0] as { timeMs?: unknown } | undefined)?.timeMs : undefined;
@@ -509,6 +511,10 @@ function checkState(raw: Obj): GameState {
     !isNum(contracts.takenMs) ||
     !isNum(contracts.windowUntilMs) ||
     typeof contracts.termsBroken !== 'boolean' ||
+    !isObj(contracts.regulars) ||
+    !Object.values(contracts.regulars).every(isNum) ||
+    !isObj(contracts.series) ||
+    !Object.values(contracts.series).every((item) => isObj(item) && isNum(item.done) && isNum(item.atMs)) ||
     !isList(contracts.burned, isText) ||
     !(
       contracts.heist === null ||

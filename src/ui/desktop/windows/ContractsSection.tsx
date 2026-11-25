@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { GUIDED_JOB, TERMS_NAMES, TWISTS, roundTotal, termsLine, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, openPatron, storyWaits, standingName, standingWith, stagesOf } from '../../../core';
+import { GUIDED_JOB, jobsFor, regularOf, seriesLine, TERMS_NAMES, TWISTS, roundTotal, termsLine, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, openPatron, storyWaits, standingName, standingWith, stagesOf } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatGameTime, formatMoney, formatRating } from '../../format';
 import { useGame } from '../../hooks';
@@ -43,6 +43,8 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
   const part = contract.part && findModule(content, contract.part.id);
   const minutes = contract.withinMinutes;
   const legend = job ? contract.legend : undefined;
+  const regular = regularOf(content, contract);
+  const done = useGame((game) => (regular ? jobsFor(game, regular.id) : 0));
   return (
     <li data-job={contract.id} class={`card jobcard${contract.story ? ' is-story' : ''}${job ? ' is-standing' : ''}${contract.heist ? ' is-heist' : ''}${legend ? ' is-legend' : ''}`}>
       <div class="card__head">
@@ -75,6 +77,18 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
         <p class="jobcard__twist" data-tip="This week's condition. It holds from the moment you accept until the job is delivered or given up.">
           <strong>{TWISTS[legend.twist].name}</strong>
           {TWISTS[legend.twist].line}
+        </p>
+      )}
+      {seriesLine(content, contract) && (
+        <p class="jobcard__twist" data-tip="A side story: a run of jobs for one client. The next part comes onto the board some hours after this one is delivered.">
+          <strong>Side story</strong>
+          {seriesLine(content, contract)}
+        </p>
+      )}
+      {regular && (
+        <p class="jobcard__twist" data-tip="A regular client. They remember the work you do for them, and from the second job on they pay a little more each time.">
+          <strong>Regular client</strong>
+          {regular.blurb} {done === 0 ? 'You have not worked for them yet.' : done === 1 ? 'One job done for them.' : `${done} jobs done for them.`}
         </p>
       )}
       {contract.terms && (
