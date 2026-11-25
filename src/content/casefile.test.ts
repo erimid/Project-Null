@@ -60,6 +60,14 @@ describe('the case file', () => {
     expect(choice!.text.length).toBeGreaterThan(0);
   });
 
+  it('has a written sentence for every choice at the end of a job', () => {
+    for (const contract of contracts.filter((item) => item.choices && item.choices.length > 0)) {
+      const written = casefile.choices[contract.id] ?? {};
+      for (const choice of contract.choices!) expect(written[choice.id], `${contract.id}/${choice.id}`).toBeTruthy();
+      if (contract.decide) expect(written.default, `${contract.id}/default`).toBeTruthy();
+    }
+  });
+
   it('follows story lines that exist', () => {
     const ids = linesOf(story).map((line) => line.id);
     for (const thread of casefile.threads) expect(ids).toContain(thread.line);

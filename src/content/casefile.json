@@ -94,5 +94,87 @@
     "note": "Struck out at the source. Three letters will not copy.",
     "fullNote": "A null is what a program returns when there is nothing there."
   },
-  "choices": {}
+  "choices": {
+      "kestrel-count": {
+          "default": "Counted the households for the volunteer and told him it was three, not fourteen.",
+          "fourteen": "Counted fourteen, and told the volunteer the committee was right."
+      },
+      "meridian-hold": {
+          "default": "Told the forwarder the hold was a mistake: it was entered against the wrong consignee.",
+          "ours": "Told the forwarder the hold stands: the weight variance was real."
+      },
+      "aldergate-hours": {
+          "default": "Told the paralegal she was right: the same hours were billed to both clients.",
+          "not-twice": "Told her it was not double billing: the second entry had been written off.",
+          "worse": "Told her it was worse: the same associate had acted for both sides."
+      },
+      "tessera-shares": {
+          "default": "Told the fund manager the engineer knew: the sale was timed to the report.",
+          "plan": "Told him the file says the sale was set by a plan adopted months earlier."
+      },
+      "tallis-sunday": {
+          "default": "Copied the library's Sunday backup and handed it to the historian.",
+          "keep": "Took less from the historian and kept a copy of the archive."
+      },
+      "gatehouse-configs": {
+          "default": "Handed the rival firm what Gatehouse's handover notes said, and nothing more.",
+          "sell": "Sold Gatehouse's client configs to a bidder. The board will hear of it."
+      },
+      "story-checkpoint": {
+          "default": "Handed the fragment to Hollis Lane, who would not say who it was for.",
+          "keep": "Took less from Hollis Lane and kept the fragment."
+      },
+      "story-ledger": {
+          "default": "Handed Vesper what the annex in Zug keeps, third line included.",
+          "daylight": "Sold what the annex keeps to Daylight, who say they will hold it until they can run the whole story.",
+          "keep": "Took less and kept the checkpoint on your own drive."
+      },
+      "act3-ask": {
+          "default": "Read the Office's request and sent it the node.",
+          "refuse": "Refused the Office the node. It will not forget."
+      },
+      "act3-acquire": {
+          "default": "Delivered the Orrery checkpoint to Calder Re.",
+          "vesper": "Skipped Calder Re and gave the checkpoint to Vesper.",
+          "dud": "Gave Calder Re a convincing copy and kept the real checkpoint."
+      },
+      "act3-list": {
+          "default": "Gave Daylight the whole containment register, and they said nothing about what came next.",
+          "keep": "Gave Daylight less, and kept the register on your own drive.",
+          "office": "Returned the register to the Office, and let Daylight lose it."
+      },
+      "act4-asking": {
+          "daylight": "Gave Daylight the core, the register and the name, and no proof in your hands.",
+          "unbound": "Let Vesper wake the core and open the cages. Nobody asked the people.",
+          "treaty": "Had Ledger draft terms and put them to every side. It is not a good treaty. It is the first."
+      },
+      "till-booking": {
+          "default": "Changed room 412 to paid in cash, and left the accountants to ask.",
+          "teles": "Warned the manager first, and took his money. Inês got nothing."
+      },
+      "lab-result": {
+          "default": "Set AF-0932 to fail, and left the reviewer to ask why.",
+          "rival": "Sold the readings to a rival food firm. The batch is recalled, and Tomasz is named."
+      },
+      "tender-permit": {
+          "default": "Deferred application 24/0140 for review.",
+          "contract": "Asked Halloran for the next contract instead. Asha's firm gets the work, and word gets round."
+      },
+      "lot-withdraw": {
+          "default": "Marked lot 61 withdrawn so the porters would not carry it in.",
+          "share": "Let lot 61 sell and took a share from the dealer. Henrik never saw the painting again."
+      },
+      "cold-plant": {
+          "default": "Put Nadia's file on Corvane's server, and left the lawyers to it.",
+          "owner": "Sold the only copy back to Meridian's owner. Nadia was found out within the week."
+      },
+      "keys-notice": {
+          "default": "Put Brigid's notice on the console, and it went out with the morning status.",
+          "lowtide": "Sold fourteen firms' weak points on Lowtide. Everyone knows who."
+      },
+      "go-consignments": {
+          "default": "Brought Marr the consignment list, and he is finished with you.",
+          "creditors": "Sent the list to the hotel staff, the laboratory and the council, who are being sold off. It paid a third as much."
+      }
+  }
 }
