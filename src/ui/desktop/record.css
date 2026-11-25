@@ -242,3 +242,102 @@
   border-style: solid;
   color: var(--text-muted);
 }
+
+/* The Case file tab of Messages. */
+.casefile {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 2px 8px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.casefile__head {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.casefile__cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.casefile__card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--cyan);
+  border-radius: 4px;
+  background: var(--panel-hi);
+}
+.casefile__card.is-closed {
+  border-left-color: var(--line);
+  opacity: 0.75;
+}
+.casefile__who {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-weight: 600;
+}
+.casefile__state {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.casefile__state.is-open {
+  color: var(--cyan);
+}
+.casefile__text {
+  color: var(--text);
+  line-height: 1.35;
+}
+.casefile__job {
+  font-size: 0.85rem;
+  color: var(--cyan);
+}
+.casefile__needs {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.casefile__needs .is-met {
+  color: var(--text);
+}
+.casefile__blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 6px;
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+}
+.casefile__block {
+  padding: 2px 6px;
+  border: 1px solid var(--cyan);
+  border-radius: 3px;
+}
+.casefile__block.is-missing {
+  border-style: dashed;
+  border-color: var(--line);
+  color: var(--text-dim);
+}
+.casefile__loose,
+.casefile__note {
+  margin: 0 0 4px;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+.casefile__part,
+.casefile__card {
+  flex: none;
+}

@@ -23,6 +23,7 @@ import type { EventsDef } from '../content/events';
 import type { SeriesDef } from '../content/series';
 import type { DataMarketDef } from '../content/data';
 import type { AssetDef } from '../content/assets';
+import type { CaseFileDef } from '../content/casefile';
 import { twistOn } from './legend';
 import { mailKind, queueLesson, releaseLesson } from './record';
 import { backfillChoices, backfillTrust } from './patrons';
@@ -202,6 +203,8 @@ export interface Content {
   readonly data?: DataMarketDef;
   /** Property for sale late in a career (see core/assets.ts). Missing = none. */
   readonly assets?: readonly AssetDef[];
+  /** What the case file in Messages can tell (see core/casefile.ts). Missing = an empty case file. */
+  readonly casefile?: CaseFileDef;
   readonly rules: Rules;
 }
 

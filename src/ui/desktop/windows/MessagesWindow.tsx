@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { formatGameTime } from '../../format';
 import { useWorld } from '../../hooks';
-import { activeContract, countsUnread, findAsk, findEnding, findPerson, kindOf, objectiveMet, type Message, type MessageKind } from '../../../core';
+import { activeContract, caseFile, countsUnread, findAsk, findEnding, findPerson, kindOf, objectiveMet, type Message, type MessageKind } from '../../../core';
 import { content, session } from '../../session';
 import { story } from '../../../content';
+import { CaseFile } from '../CaseFile';
 import { Compose } from '../Compose';
 import { Icon } from '../Icon';
 import { useLayout } from '../layout';
@@ -16,16 +17,17 @@ const VOICES = new Set(story.beats.map((beat) => beat.mail?.from).filter((from):
 /** How a message is dressed: a gateway alarm, a personal letter, or ordinary mail. */
 const toneOf = (from: string): string => (from === 'Gateway' ? ' is-alert' : VOICES.has(from) ? ' is-voice' : '');
 
-type Tab = 'story' | 'work' | 'lesson';
+type Tab = 'story' | 'work' | 'lesson' | 'case';
 
 const TABS: readonly (readonly [Tab, string, string])[] = [
   ['story', 'Story', 'Letters from people: the story, your contacts, anyone who writes to you'],
   ['work', 'Work', 'What happened on your jobs: payments, steps, trouble, attacks on your gateway'],
   ['lesson', 'Lessons', "Wren's lessons. They come one a job, and wait here to be read again"],
+  ['case', 'Case file', 'Who you have met in the story, what each side is waiting on, and the choices you made'],
 ];
 
 /** The tab a message is filed under. Receipts go under Work. */
-const tabOf = (kind: MessageKind): Tab => (kind === 'receipt' ? 'work' : kind);
+const tabOf = (kind: MessageKind): Exclude<Tab, 'case'> => (kind === 'receipt' ? 'work' : kind);
 
 /** The player's inbox. A new message brings the window to the front, unless the gateway is under attack or a job is ready to deliver. */
 export function MessagesWindow() {
@@ -149,7 +151,9 @@ export function MessagesWindow() {
       {!composing && waiting.length > 0 && !sentNotice && (
         <p class="compose__sent">Waiting for an answer from {waiting.join(', ')}.</p>
       )}
-      {composing ? null : shelf.length === 0 ? (
+      {composing ? null : tab === 'case' ? (
+        <CaseFile file={caseFile(game, content)} />
+      ) : shelf.length === 0 ? (
         <p class="empty">{tab === 'lesson' ? 'No lessons yet.' : tab === 'work' ? 'Nothing about your jobs yet.' : 'No letters yet.'}</p>
       ) : desk ? (
         <div class="mail">

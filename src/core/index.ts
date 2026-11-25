@@ -188,4 +188,5 @@ export type { DarkEvent, EventsState, MoveId, PatchLayer, WantedState } from './
 export { happenings, troubleAt, troubleKind, troubleMap, type Happening, type Trouble, type TroubleKind } from './exposure';
 export { LESSONS, countsUnread, jobKind, kindOf, type CareerStats, type JobReport, type RecordState } from './record';
 export { FEAT_IDS, checkFeats, type FeatId } from './feats';
+export { caseFile, type CaseFileView } from './casefile';
 export type { MessageKind } from './state';
