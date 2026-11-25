@@ -1,17 +1,15 @@
-import { useRef } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
+import { backUp } from '../../backup';
+import { backups, useBackups } from '../../storage/backupStore';
 import { formatGameTime, formatMoney, formatSavedAt } from '../../format';
 import { useSaveStatus } from '../../hooks';
 import { SLOT_COUNT, session } from '../../session';
 import { ConfirmButton } from '../ConfirmButton';
 import { Window } from '../Window';
 
-function download(filename: string, text: string): void {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+/** "never", or when the slot was last downloaded, if it still holds the same career. */
+function lastBackup(at: number | undefined): string {
+  return at === undefined ? 'never backed up' : `backed up ${formatSavedAt(new Date(at).toISOString())}`;
 }
 
 /** Three save slots: save, load, start over, and move saves in and out as files. */
@@ -20,10 +18,11 @@ export function SavesWindow() {
   const filePicker = useRef<HTMLInputElement>(null);
   const importTarget = useRef(1);
 
-  const exportSlot = async (slot: number, handle: string) => {
-    const text = await session.exportSlot(slot);
-    if (text !== null) download(`project-null-${handle.toLowerCase()}-slot${slot}.json`, text);
-  };
+  const safety = useBackups();
+  // Opening the saves is a fair moment to ask the browser to keep them.
+  useEffect(() => {
+    if (status.persistent && safety.kept === null) void backups.askToKeep();
+  }, []);
 
   const pickFile = (slot: number) => {
     importTarget.current = slot;
@@ -57,6 +56,9 @@ export function SavesWindow() {
                   </span>
                   <span>{formatGameTime(save.gameTimeMs)}</span>
                   <span class="slot__saved">saved {formatSavedAt(save.savedAt)}</span>
+                  <span class={`slot__saved${safety.slots[slot]?.handle === save.handle ? '' : ' is-warn'}`}>
+                    {lastBackup(safety.slots[slot]?.handle === save.handle ? safety.slots[slot]!.at : undefined)}
+                  </span>
                 </div>
               ) : (
                 <div class="slot__info slot__info--empty data">empty</div>
@@ -78,7 +80,7 @@ export function SavesWindow() {
                         </button>
                       </>
                     )}
-                    <button type="button" class="btn" onClick={() => void exportSlot(slot, save.handle)}>
+                    <button type="button" class="btn" data-tip="Download this career as a file, to keep it safe or move it to another browser" onClick={() => void backUp(slot, save.handle)}>
                       Export
                     </button>
                     {active ? (
@@ -131,6 +133,10 @@ export function SavesWindow() {
       <p class={`saves__notice${status.noticeIsError ? ' is-error' : ''}`} role="status">
         {status.notice || 'The game saves itself every minute and when you leave the page.'}
       </p>
+      {status.persistent && safety.kept === false && (
+        <p class="saves__notice">The browser may clear its storage when space runs low. Export a slot now and then to keep a copy.</p>
+      )}
+      {status.persistent && safety.kept === true && <p class="saves__notice">The browser has promised to keep these saves.</p>}
       {!status.persistent && (
         <p class="saves__notice is-error">
           This browser is blocking storage, so saves will be lost when the tab closes. Export a save to keep it.

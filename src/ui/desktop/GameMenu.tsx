@@ -8,6 +8,8 @@ import { snapping, useSnapping } from './snapStore';
 import { windows } from './windowStore';
 import { look, useLook } from './lookStore';
 import { recordStore, useRecordStore } from './recordStore';
+import { comfort, TEXT_SIZES, useComfort } from './comfortStore';
+import { install, useInstall } from '../installStore';
 
 const SHORTCUTS: readonly (readonly [string, string])[] = [
   ['Space', 'Pause or resume'],
@@ -27,6 +29,8 @@ export function GameMenu() {
   const desk = useLayout() === 'desk';
   const lookNow = useLook();
   const kept = useRecordStore();
+  const ease = useComfort();
+  const app = useInstall();
   const root = useRef<HTMLDivElement>(null);
 
   // Clicking anywhere else, or Esc, closes it.
@@ -74,6 +78,20 @@ export function GameMenu() {
             Saved games
             <span class="menu__item-note">Save, load, new game</span>
           </button>
+          {app.offered && (
+            <button
+              type="button"
+              class="menu__item"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                void install.ask();
+              }}
+            >
+              Install the game
+              <span class="menu__item-note">Its own window and icon, and it plays with no connection</span>
+            </button>
+          )}
           <button
             type="button"
             class="menu__item"
@@ -92,6 +110,30 @@ export function GameMenu() {
               {lookNow.bar ? 'On' : 'Off'}
             </button>
             <span class="menu__item-note">The test bar at the top of the screen: swap desk designs and colour themes with one press</span>
+          </div>
+          <h3 class="menu__heading">Text size</h3>
+          <div class="menu__sound">
+            <span class="menu__choices" role="group" aria-label="Text size">
+              {TEXT_SIZES.map(([id, label]) => (
+                <button key={id} type="button" class={`btn${ease.text === id ? ' btn--go' : ''}`} aria-pressed={ease.text === id} onClick={() => comfort.setText(id)}>
+                  {label}
+                </button>
+              ))}
+            </span>
+          </div>
+          <h3 class="menu__heading">Less flashing</h3>
+          <div class="menu__sound">
+            <button type="button" class={`btn${ease.calm ? ' btn--go' : ''}`} aria-pressed={ease.calm} onClick={() => comfort.setCalm(!ease.calm)}>
+              {ease.calm ? 'On' : 'Off'}
+            </button>
+            <span class="menu__item-note">No pulsing warnings, blinking lights or shaking desk. Warnings stay lit instead.</span>
+          </div>
+          <h3 class="menu__heading">Alerts in a corner</h3>
+          <div class="menu__sound">
+            <button type="button" class={`btn${ease.corner ? ' btn--go' : ''}`} aria-pressed={ease.corner} onClick={() => comfort.setCorner(!ease.corner)}>
+              {ease.corner ? 'On' : 'Off'}
+            </button>
+            <span class="menu__item-note">Alerts drop into the top right corner instead of the middle of the screen</span>
           </div>
           <h3 class="menu__heading">Hints</h3>
           <div class="menu__sound">
@@ -193,6 +235,7 @@ export function GameMenu() {
           </dl>
           <p class="menu__build data">
             build {__APP_VERSION__} · {__APP_COMMIT__}
+            {app.offline && ' · plays offline'}
           </p>
         </div>
       )}

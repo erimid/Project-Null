@@ -25,7 +25,7 @@ html.has-lookbar #app {
   padding: 0 10px;
   background: var(--panel-hi);
   border-bottom: 1px solid var(--line-strong);
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
@@ -36,7 +36,7 @@ html.has-lookbar #app {
   border-radius: 4px;
   background: var(--amber);
   color: var(--amber-deep);
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   line-height: 18px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -51,7 +51,7 @@ html.has-lookbar #app {
 
 .lookbar__label {
   margin-right: 4px;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -101,7 +101,7 @@ html.has-lookbar #app {
 
 .lookbar__count {
   margin-left: auto;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   opacity: 0.7;
 }
 
@@ -153,13 +153,13 @@ html.has-lookbar #app {
 }
 
 .lookpanel__name {
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   font-weight: 700;
 }
 
 .lookpanel__note {
   grid-column: 1 / -1;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 500;
   opacity: 0.85;
 }
@@ -292,7 +292,7 @@ html.has-lookbar #app {
 }
 
 .rail__name {
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   font-weight: 600;
   letter-spacing: 0.04em;
 }
@@ -309,7 +309,7 @@ html.has-lookbar #app {
   right: 7px;
   min-width: 18px;
   padding: 0 4px;
-  font-size: 11px;
+  font-size: calc(11px * var(--text-scale, 1));
   line-height: 16px;
 }
 
@@ -351,7 +351,7 @@ html.has-lookbar #app {
 
 .sidebar__nav .rail__name {
   flex: 1;
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   letter-spacing: 0;
   text-align: left;
 }
@@ -674,7 +674,7 @@ html.has-lookbar #app {
 }
 
 .desktop[data-design='deck'] .panetab {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }

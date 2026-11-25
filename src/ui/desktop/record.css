@@ -39,7 +39,7 @@
 
 .jobreport__kind {
   grid-column: 1 / -1;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -48,14 +48,14 @@
 
 .jobreport__title {
   margin: 2px 0 0;
-  font-size: 19px;
+  font-size: calc(19px * var(--text-scale, 1));
   font-weight: 700;
   line-height: 1.2;
   color: var(--text-bright);
 }
 
 .jobreport__pay {
-  font-size: 20px;
+  font-size: calc(20px * var(--text-scale, 1));
   color: var(--mint-text);
 }
 
@@ -74,13 +74,13 @@
 }
 
 .jobreport__facts dt {
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
 .jobreport__facts dd {
   margin: 2px 0 0;
-  font-size: 15px;
+  font-size: calc(15px * var(--text-scale, 1));
   color: var(--text-bright);
 }
 
@@ -101,7 +101,7 @@
   grid-template-columns: auto minmax(40px, 1fr) auto;
   gap: 10px;
   align-items: center;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-muted);
 }
 
@@ -132,12 +132,12 @@
   margin: 10px 0 0;
   padding: 0;
   list-style: none;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
 }
 
 .jobreport__note {
   margin: 10px 0 0;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
   color: var(--text);
 }
 
@@ -146,7 +146,7 @@
   padding: 1px 6px;
   border-radius: 4px;
   background: rgb(var(--amber-rgb) / 0.16);
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   font-weight: 700;
   color: var(--amber);
 }
@@ -160,7 +160,7 @@
 }
 
 .jobreport__off {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-dim);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -179,7 +179,7 @@
   margin: 0 0 16px;
   padding: 0;
   list-style: none;
-  font-size: 14px;
+  font-size: calc(14px * var(--text-scale, 1));
 }
 
 .career__kinds li {
@@ -192,13 +192,13 @@
 
 .career__count {
   margin-left: 8px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
 .career__hint {
   margin: -4px 0 10px;
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
   color: var(--text-dim);
 }
 
@@ -225,7 +225,7 @@
 }
 
 .feat__text {
-  font-size: 13px;
+  font-size: calc(13px * var(--text-scale, 1));
 }
 
 .feat.is-earned {

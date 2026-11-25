@@ -17,6 +17,7 @@ import { SnapPreview } from './snapStore';
 import { TouchTips } from './TouchTips';
 import { HoverTips } from './HoverTips';
 import { GuideCard } from './GuideCard';
+import { BackupPrompt } from './BackupPrompt';
 import { JobReport } from './JobReport';
 import { Tour } from './Tour';
 import { windows } from './windowStore';
@@ -40,11 +41,13 @@ import './globe.css';
 import './story.css';
 import './feedback.css';
 import './record.css';
+import './comfort.css';
 import './designs.css';
 import { DockFrame, DockNav } from './DockFrame';
 import { useDockDesign } from './dockStore';
 import { look, useLook } from './lookStore';
 import { LookSwitch } from './LookSwitch';
+import { reducedMotion } from './calm';
 
 const SPEED_KEYS: Readonly<Record<string, Speed>> = { '1': 1, '2': 2, '3': 4 };
 
@@ -142,7 +145,7 @@ export function Desktop() {
     () =>
       session.subscribeEvents((event) => {
         if (event.type !== 'disconnected' || !event.traced) return;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (reducedMotion()) return;
         const shake = ['-7px, 3px', '6px, -4px', '-4px, 2px', '3px, -1px', '0, 0'];
         desk.current?.animate(
           shake.map((offset) => ({ transform: `translate(${offset})` })),
@@ -173,6 +176,7 @@ export function Desktop() {
         {layoutKind === 'desk' && <SnapPreview />}
         <Alerts />
         <JobReport />
+        <BackupPrompt />
         <TouchTips />
         <HoverTips />
       </main>

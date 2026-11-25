@@ -18,6 +18,7 @@ import { hushMusic } from '../music';
 import { content, session } from '../session';
 import { endingChord, nameLetter, nameWhole } from '../sfx';
 import { windows } from './windowStore';
+import { reducedMotion } from './calm';
 
 /** The part of the name that was never struck out, and the letters that were, with the machine that kept each. */
 const KNOWN = 'PROJECT N';
@@ -35,7 +36,6 @@ const FADE_MS = 600;
 
 type Scene = { readonly kind: 'name' } | { readonly kind: 'ending'; readonly id: string; readonly name: string; readonly line: string };
 
-const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function StoryMoment() {
   const [scene, setScene] = useState<Scene | null>(null);

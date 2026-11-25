@@ -8,9 +8,12 @@ import '@fontsource/share-tech-mono/latin-400.css';
 
 import './ui/desktop/theme.css';
 import { Desktop } from './ui/desktop/Desktop';
+import { comfort } from './ui/desktop/comfortStore';
 import { look } from './ui/desktop/lookStore';
 import { recordStore } from './ui/desktop/recordStore';
 import { session } from './ui/session';
+import { backups } from './ui/storage/backupStore';
+import { install } from './ui/installStore';
 import { startMusic } from './ui/music';
 import { startSfx } from './ui/sfx';
 
@@ -19,10 +22,14 @@ if (import.meta.env.DEV) Object.assign(window, { __session: session, __look: loo
 
 // The chosen colour theme goes on before anything is drawn.
 look.start();
+comfort.start();
+// Offline play and the install offer (the worker is registered in the built game only).
+install.start();
 
 // Load the last game (or start a new one) before drawing anything.
 void session.start().then(() => {
   recordStore.start();
+  void backups.check();
   startSfx();
   startMusic();
   render(<Desktop />, document.getElementById('app')!);
