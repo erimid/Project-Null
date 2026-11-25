@@ -233,9 +233,41 @@ describe('side stories', () => {
     expect(deliverContract(state, world)).toBeNull();
   };
 
-  it('the written game has its side stories in order', () => {
-    expect(Array.isArray(series)).toBe(true);
+  it('the written game has eight, about thirty jobs in all, for the middle and the top of a career', () => {
     expect(files.length).toBeGreaterThanOrEqual(3);
+    expect(series.length).toBe(8);
+    const parts = series.flatMap((story) => story.parts.map((part) => contracts.find((contract) => contract.id === part.contract)!));
+    expect(parts.length).toBeGreaterThanOrEqual(28);
+    for (const contract of parts) {
+      expect(contract.minRating, contract.id).toBeGreaterThanOrEqual(25);
+      expect(contract.minRating, contract.id).toBeLessThanOrEqual(95);
+      expect(contract.rating, contract.id).toBeGreaterThanOrEqual(1);
+      // What a client writes back is sent as written: nothing in it is filled in.
+      for (const choice of contract.choices ?? []) expect(choice.reply?.body ?? '', contract.id).not.toMatch(/\{\w+\}/);
+    }
+    for (const story of series) {
+      // One named client all the way through, who writes as each part opens.
+      for (const part of story.parts) {
+        expect(contracts.find((contract) => contract.id === part.contract)!.client, part.contract).toBe(story.client);
+        expect(part.invite, part.contract).toBeDefined();
+      }
+      expect(story.client.split(' ').length).toBeGreaterThanOrEqual(2);
+    }
+    // Some end in a choice.
+    const last = series.map((story) => contracts.find((contract) => contract.id === story.parts[story.parts.length - 1]!.contract)!);
+    expect(last.filter((contract) => (contract.choices?.length ?? 0) > 0).length).toBeGreaterThanOrEqual(4);
+    // They are spread over the career, not bunched.
+    const starts = series.map((story) => contracts.find((contract) => contract.id === story.parts[0]!.contract)!.minRating).sort((x, y) => x - y);
+    for (let i = 1; i < starts.length; i++) expect(starts[i]! - starts[i - 1]!).toBeGreaterThanOrEqual(5);
+  });
+
+  it('five written companies were added for them, one in each of five new trades', () => {
+    for (const id of ['marisol-grand', 'northlight', 'corran-analytical', 'wensum-council', 'varrick-lowe']) {
+      const server = servers.find((item) => item.id === id)!;
+      expect(server.kind).toBe('company');
+      expect(server.records).toBeDefined();
+      expect(series.some((story) => story.parts.some((part) => contracts.find((contract) => contract.id === part.contract)!.targetId === id)), id).toBe(true);
+    }
   });
 
   it('the first part waits for its rating, then comes with a letter from the client', () => {

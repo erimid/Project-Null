@@ -2935,11 +2935,10 @@
         "note": "The hotel staff, the laboratory and the council each get the list. It pays a third as much, and it is the better story.",
         "pay": 4000,
         "rating": 3,
-        "keep": true,
         "reply": {
           "from": "Inês Carvalho",
           "subject": "You do not know what you have done",
-          "body": "{handle}, a list came to the hotel this morning with no name on it. The bank has frozen the sale. A laboratory in Belgium rang us to ask whether we had received the same thing.\n\nI think I know who sent it. I think it was the same person who read a night audit for me once.\n\nThe staff had a collection. It is not much. Thank you.\n\nInês"
+          "body": "A list came to the hotel this morning with no name on it. The bank has frozen the sale. A laboratory in Belgium rang us to ask whether we had received the same thing.\n\nI think I know who sent it. I think it was the same person who read a night audit for me once.\n\nThe staff had a collection. It is not much. Thank you.\n\nInês"
         }
       }
     ]
