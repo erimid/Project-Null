@@ -125,6 +125,19 @@ describe('generated companies', () => {
     }
   });
 
+  it('never ask for the same file twice on one board', () => {
+    const h = game();
+    h.state.player.rating = 60;
+    for (let day = 0; day < 40; day++) {
+      h.state.clock.gameTimeMs += 3 * 86_400_000;
+      postJobs(h.state, h.world);
+      const names = h.state.contracts.jobs.flatMap((job) =>
+        [job.objective, ...(job.stages ?? []).map((stage) => stage.objective)].flatMap((objective) => (objective.kind === 'steal' ? [objective.file] : [])),
+      );
+      expect(new Set(names).size).toBe(names.length);
+    }
+  });
+
   it('are placed in a region of the world', () => {
     expect(regionOf({ lat: 40, lon: -74 })).toBe('Americas');
     expect(regionOf({ lat: 52, lon: 4 })).toBe('Europe');

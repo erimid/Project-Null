@@ -59,6 +59,9 @@ export function guideStep(state: GameState, content: Content): GuideStep | null 
   const done = objectiveMet(state, content, job);
   const there = at(target.id);
   if (done) {
+    if (there && state.tasks.some((task) => task.connectionId === there.id && task.target.kind === 'deleteLog')) {
+      return { id: 'wait', text: 'Scrubbing. Give it a moment before you disconnect, or the lines stay.' };
+    }
     if (there && there.user !== null && state.servers[target.id]?.logs.some((entry) => entry.byPlayer)) {
       return { id: 'scrub', text: 'Open Logs, press Select all, then Scrub. Every line there is yours or harmless, and a clean log is worth the few seconds.' };
     }

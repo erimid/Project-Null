@@ -34,6 +34,21 @@ export function touchedServers(state: GameState): Set<string> {
   return ids;
 }
 
+/**
+ * Names of the files a copy job on the board already asks for, over all of its steps.
+ * The gateway holds one file of a name, so a second job for the same name at another
+ * company in the trade would be done by the first.
+ */
+export function claimedFiles(state: GameState): Set<string> {
+  const names = new Set<string>();
+  for (const job of state.contracts.jobs) {
+    for (const objective of [job.objective, ...(job.stages ?? []).map((stage) => stage.objective)]) {
+      if (objective.kind === 'steal') names.add(objective.file);
+    }
+  }
+  return names;
+}
+
 /** True for a job from the board's pool, as opposed to a hand-written contract. */
 export const isJob = (contract: ContractDef): contract is Job => 'expiresMs' in contract;
 
@@ -45,13 +60,14 @@ function possibleObjectives(state: GameState, server: ServerDef): Objective[] {
   const live = state.servers[server.id];
   if (!live) return [];
   const goals: Objective[] = [];
+  const claimed = claimedFiles(state);
   for (const file of live.files) {
     if (file.access !== 'admin') continue;
     // A module installer or program file is loot, not what a client asks for.
     const written = server.files.find((item) => item.name === file.name);
     if (written?.part || written?.program) continue;
     // Only files whose copy the player would not already have.
-    if (!state.player.files.some((own) => own.name === file.name)) goals.push({ kind: 'steal', file: file.name });
+    if (!state.player.files.some((own) => own.name === file.name) && !claimed.has(file.name)) goals.push({ kind: 'steal', file: file.name });
     goals.push({ kind: 'destroy', file: file.name });
   }
   const records = server.records;
@@ -227,6 +243,7 @@ function addFirstStep(state: GameState, content: Content, job: Job, target: Serv
   );
   if (options.length === 0) return job;
   const first = rng.pick(options);
+  const claimed = claimedFiles(state);
   const files = (state.servers[first.id]?.files ?? []).filter((file) => {
     if (file.access !== 'admin') return false;
     const written = first.files.find((item) => item.name === file.name);
@@ -234,7 +251,7 @@ function addFirstStep(state: GameState, content: Content, job: Job, target: Serv
     if (written?.part || written?.program) return false;
     // Two companies in one trade keep files of the same name, and the gateway holds one file of a name:
     // never one the player already has, or the one the second step is going to ask for.
-    if (state.player.files.some((own) => own.name === file.name)) return false;
+    if (state.player.files.some((own) => own.name === file.name) || claimed.has(file.name)) return false;
     return !('file' in job.objective && job.objective.file === file.name);
   });
   if (files.length === 0) return job;

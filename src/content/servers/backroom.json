@@ -11,6 +11,7 @@
   "lon": 24.75,
   "blurb": "Invite-only board where contracts are posted and paid.",
   "listed": false,
+  "untraced": true,
   "security": {
     "password": 0,
     "proxy": 0,

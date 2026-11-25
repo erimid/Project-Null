@@ -123,7 +123,9 @@ function RelayNote({
   const isTarget = target?.id === server.id;
   return (
     <p class="map__relay-note">
-      {isTarget ? (
+      {isTarget && server.untraced ? (
+        <>Nobody traces anyone here. No monitor, nothing to cover, and no need for relays.</>
+      ) : isTarget ? (
         <>
           As your target: its monitor is level <span class="data">{server.security.monitor}</span>. Relays with less cover than that hold its trace up
           for less time.
@@ -331,13 +333,20 @@ const clock = (ms: number) => {
  * tracing at all, and if so how long is left. Without a Trace Tracker the
  * numbers are hidden, but which way they moved is not.
  */
-function RouteTime({ connectionId, total, tracker, change }: { connectionId?: string; total: number; tracker: boolean; change: number | null }) {
+function RouteTime({ connectionId, total, tracker, change, untraced }: { connectionId?: string; total: number; tracker: boolean; change: number | null; untraced?: boolean }) {
   const status = useGame((game) => game.connections.find((connection) => connection.id === connectionId)?.trace.status ?? null);
   const left = useGame((game) => {
     const connection = game.connections.find((item) => item.id === connectionId);
     return connection ? Math.ceil(traceReport(connection.trace).remainingMs / 1000) : 0;
   });
   const grace = useGame((game) => Math.ceil((game.connections.find((item) => item.id === connectionId)?.trace.graceMs ?? 0) / 1000));
+  if (!connectionId && untraced) {
+    return (
+      <span class="route__time is-safe" data-tip="Nobody traces anyone on this machine.">
+        No trace
+      </span>
+    );
+  }
   if (!connectionId) {
     const moved = change === null || Math.abs(change) < 500 ? null : change;
     return (
@@ -695,7 +704,7 @@ export function MapWindow() {
     ? `${traced ? 'being traced' : live.trace.status === 'pending' ? 'noticed' : 'connected'} · ${live.route.length === 0 ? 'direct' : relays(live.route.length)}`
     : game.route.length === 0
       ? 'no relays planned'
-      : target && tracker
+      : target && tracker && !target.untraced
         ? `${relays(game.route.length)} · trace ${clock(traceTotal)}`
         : `${relays(game.route.length)} planned`;
 
@@ -990,7 +999,7 @@ export function MapWindow() {
                       {(() => {
                         const hops = routeIds.filter((id) => id !== selected.id).length;
                         const base = hops === 0 ? 'direct' : `${hops} ${hops === 1 ? 'hop' : 'hops'}`;
-                        return tracker && traceTotal > 0 && !live ? `${base} · trace ${seconds(traceTotal)}` : base;
+                        return tracker && traceTotal > 0 && !live && !selected.untraced ? `${base} · trace ${seconds(traceTotal)}` : base;
                       })()}
                     </span>
                   </button>
@@ -1111,7 +1120,7 @@ export function MapWindow() {
             ))}
             {!targetId && <li class="route__hop route__hop--empty">pick a target</li>}
           </ol>
-          {target && <RouteTime connectionId={live?.id} total={traceTotal} tracker={tracker} change={change} />}
+          {target && <RouteTime connectionId={live?.id} total={traceTotal} tracker={tracker} change={change} untraced={target.untraced} />}
           {!live && (
             <span class="route__slots" role="group" aria-label="Saved routes">
               {Array.from({ length: ROUTE_SLOTS }, (_, slot) => {

@@ -36,7 +36,7 @@ export const DESK_GAP = 12;
 export const GATEWAY_HEIGHT = 420;
 
 /** The least height worth giving the messages under a dropped-down contract. Shorter than this, they stay full height behind it. */
-export const MIN_UNDER_CONTRACT = 150;
+export const MIN_UNDER_CONTRACT = 260;
 
 const clamp = (value: number, low: number, high: number) => Math.round(Math.min(Math.max(value, low), Math.max(low, high)));
 
