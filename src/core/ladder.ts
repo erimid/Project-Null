@@ -78,7 +78,7 @@ function note(state: GameState, text: string): void {
 }
 
 function write(state: GameState, from: string, subject: string, body: string): void {
-  state.messages.push({ id: `m${state.nextId++}`, from, subject, body, timeMs: state.clock.gameTimeMs, read: false });
+  state.messages.push({ id: `m${state.nextId++}`, from, subject, body, timeMs: state.clock.gameTimeMs, read: false, kind: 'story' });
 }
 
 /** Ids of the rivals above the player right now. */

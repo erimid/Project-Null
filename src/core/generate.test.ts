@@ -22,6 +22,7 @@ import {
 } from './index';
 import { postJobs } from './contracts';
 import { noteProgress } from './world';
+import { flushLessons } from './record';
 import { content as testContent } from './testWorld';
 
 /** The test world, with the real company pools. */
@@ -289,11 +290,13 @@ describe('the rating ladder', () => {
     h.state.contracts.completed = ['a'];
     noteProgress(h.state, world);
     noteProgress(h.state, world);
+    flushLessons(h.state, world);
     expect(h.state.messages.filter((m) => m.subject === 'jobs')).toHaveLength(1);
     expect(h.state.messages.some((m) => m.subject === 'links')).toBe(false);
     h.state.player.rating = base.rules.linksAfterRating;
     noteProgress(h.state, world);
     noteProgress(h.state, world);
+    flushLessons(h.state, world);
     expect(h.state.messages.filter((m) => m.subject === 'links')).toHaveLength(1);
   });
 });

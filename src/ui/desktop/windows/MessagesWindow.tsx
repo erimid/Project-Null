@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { formatGameTime } from '../../format';
 import { useWorld } from '../../hooks';
-import { activeContract, findAsk, findEnding, findPerson, objectiveMet } from '../../../core';
+import { activeContract, countsUnread, findAsk, findEnding, findPerson, kindOf, objectiveMet, type Message, type MessageKind } from '../../../core';
 import { content, session } from '../../session';
 import { story } from '../../../content';
 import { Compose } from '../Compose';
@@ -16,6 +16,17 @@ const VOICES = new Set(story.beats.map((beat) => beat.mail?.from).filter((from):
 /** How a message is dressed: a gateway alarm, a personal letter, or ordinary mail. */
 const toneOf = (from: string): string => (from === 'Gateway' ? ' is-alert' : VOICES.has(from) ? ' is-voice' : '');
 
+type Tab = 'story' | 'work' | 'lesson';
+
+const TABS: readonly (readonly [Tab, string, string])[] = [
+  ['story', 'Story', 'Letters from people: the story, your contacts, anyone who writes to you'],
+  ['work', 'Work', 'What happened on your jobs: payments, steps, trouble, attacks on your gateway'],
+  ['lesson', 'Lessons', "Wren's lessons. They come one a job, and wait here to be read again"],
+];
+
+/** The tab a message is filed under. Receipts go under Work. */
+const tabOf = (kind: MessageKind): Tab => (kind === 'receipt' ? 'work' : kind);
+
 /** The player's inbox. A new message brings the window to the front, unless the gateway is under attack or a job is ready to deliver. */
 export function MessagesWindow() {
   const game = useWorld((state) => state);
@@ -26,6 +37,9 @@ export function MessagesWindow() {
     .map((attempt) => findPerson(content, findAsk(content, attempt.askId, game)?.markId ?? '', game)?.name)
     .filter((name): name is string => name !== undefined);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>('story');
+  const kinds = new Map<string, MessageKind>(messages.map((message) => [message.id, kindOf(message, content)]));
+  const tabFor = (message: Message): Tab => tabOf(kinds.get(message.id) ?? 'story');
 
   // A message that has just arrived, or is waiting unread when the game opens, brings the window up.
   const newest = messages.at(-1);
@@ -41,25 +55,39 @@ export function MessagesWindow() {
       const last = findEnding(content, game.ending?.id)?.mail.subject;
       const letter = (last && messages.slice(-3).find((message) => message.subject === last && !message.read)) || newest;
       setOpenId(letter.id);
+      setTab(tabFor(letter));
       session.dispatch({ type: 'readMessage', messageId: letter.id });
     }
     seen.current = newest?.id ?? null;
   }, [newest?.id]);
 
-  const unread = messages.filter((message) => !message.read).length;
+  const unread = messages.filter((message) => countsUnread(message, content)).length;
+  const unreadIn = (which: Tab) => messages.filter((message) => !message.read && tabFor(message) === which).length;
+  const shelf = messages.filter((message) => tabFor(message) === tab);
   // On the desk the window is a reader: the list on one side, the letter on the other. So there is always
-  // a letter open there: the one picked, or else the newest one already read (opening it changes nothing).
+  // a letter open there: the one picked, or else the newest one already read in this tab (opening it changes nothing).
   const desk = useLayout() === 'desk';
-  const open = messages.find((message) => message.id === openId) ?? (desk ? [...messages].reverse().find((message) => message.read) : undefined);
+  const picked = shelf.find((message) => message.id === openId);
+  const open = picked ?? (desk ? [...shelf].reverse().find((message) => message.read) : undefined);
   const shownId = open?.id ?? null;
+
+  const tabs = TABS.map(([id, label, tip]) => {
+    const count = unreadIn(id);
+    return (
+      <button key={id} type="button" class={`tabbtn${id === tab ? ' is-current' : ''}`} aria-pressed={id === tab} data-tip={tip} onClick={() => setTab(id)}>
+        {label}
+        {count > 0 && <span class={`count${id === 'lesson' ? ' count--mint' : ' count--alert'} data`} aria-label={`${count} unread`}>{count}</span>}
+      </button>
+    );
+  });
 
   const list = (
     <ul class="rows rows--scroll mail__list">
-      {[...messages].reverse().map((message) => (
+      {[...shelf].reverse().map((message) => (
         <li key={message.id}>
           <button
             type="button"
-            class={`message${toneOf(message.from)}${message.id === shownId ? ' is-selected' : ''}${message.read ? '' : ' is-unread'}`}
+            class={`message${toneOf(message.from)}${message.id === shownId ? ' is-selected' : ''}${message.read ? '' : ' is-unread'}${kinds.get(message.id) === 'receipt' ? ' is-receipt' : ''}`}
             aria-pressed={message.id === shownId}
             onClick={() => {
               setOpenId(message.id);
@@ -92,6 +120,7 @@ export function MessagesWindow() {
     <Window
       id="messages"
       note={unread > 0 ? `${unread} unread` : `${messages.length} total`}
+      tabs={composing ? undefined : tabs}
       actions={
         <button
           type="button"
@@ -120,8 +149,8 @@ export function MessagesWindow() {
       {!composing && waiting.length > 0 && !sentNotice && (
         <p class="compose__sent">Waiting for an answer from {waiting.join(', ')}.</p>
       )}
-      {composing ? null : messages.length === 0 ? (
-        <p class="empty">No messages.</p>
+      {composing ? null : shelf.length === 0 ? (
+        <p class="empty">{tab === 'lesson' ? 'No lessons yet.' : tab === 'work' ? 'Nothing about your jobs yet.' : 'No letters yet.'}</p>
       ) : desk ? (
         <div class="mail">
           {list}

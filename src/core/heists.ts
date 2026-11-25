@@ -131,6 +131,7 @@ export function burnHeist(state: GameState, content: Content, contract: Contract
       body: `That went wrong, and it cost${fine > 0 ? ` ${fine} credits to cover our tracks` : ' us all a night'}. The job is still on your board. When you are ready, we go again.`,
       timeMs: state.clock.gameTimeMs,
       read: false,
+      kind: 'work',
     });
     return true;
   }
@@ -143,6 +144,7 @@ export function burnHeist(state: GameState, content: Content, contract: Contract
     body: 'The plan is burned. Everyone involved is walking away, and so should you.\n\nDo not contact us about this again.',
     timeMs: state.clock.gameTimeMs,
     read: false,
+    kind: 'work',
   });
   return true;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { WANTED_LEVELS, gameDate, isConnected, mostUrgentTrace, pointsFree, wantedLevel } from '../../core';
+import { WANTED_LEVELS, countsUnread, gameDate, isConnected, mostUrgentTrace, pointsFree, wantedLevel } from '../../core';
 import { formatTime, ratingStep } from '../format';
 import { useGame, useWorld } from '../hooks';
 import { content, session } from '../session';
@@ -19,7 +19,7 @@ const MAIN: readonly WindowId[] = ['server', 'map', 'gateway', 'messages'];
 /** Little numbers on a tab: programs running, unread mail, skill points to spend. */
 export function useCounts(): Partial<Record<WindowId, { n: number; tone: string; label: string }>> {
   const running = useGame((game) => game.tasks.length);
-  const unread = useGame((game) => game.messages.filter((message) => !message.read).length);
+  const unread = useGame((game) => game.messages.filter((message) => countsUnread(message, content)).length);
   const points = useGame((game) => pointsFree(game, content));
   return {
     ...(running > 0 && { programs: { n: running, tone: '', label: `${running} running` } }),

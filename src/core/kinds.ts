@@ -276,6 +276,7 @@ export function checkRace(state: GameState, _content: Content, contract: Contrac
     body: `${contract.race.rival} got there first. The job is closed.\n\nBetter luck next time.`,
     timeMs: state.clock.gameTimeMs,
     read: false,
+    kind: 'work',
   });
   return true;
 }

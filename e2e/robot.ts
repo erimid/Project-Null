@@ -111,7 +111,7 @@ export async function lookOver(page: Page): Promise<Problem[]> {
       const owner = node.parentElement;
       if (!text || !owner || owner.closest('svg, [aria-hidden="true"], .hover-tip, .touch-tip, .lookbar, [role="dialog"], [role="tooltip"]')) continue;
       if (!shown(owner)) continue;
-      const group = owner.closest('section.window, .tabbar, .dock, .pdock, .guide, .rail, .sidebar, .alerts, .contract');
+      const group = owner.closest('section.window, .tabbar, .dock, .pdock, .guide, .rail, .sidebar, .alerts, .contract, .jobreport');
       if (!group) continue;
       const range = document.createRange();
       range.selectNodeContents(node);

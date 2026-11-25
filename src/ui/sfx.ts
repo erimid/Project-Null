@@ -238,6 +238,13 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
       { freq: 660, seconds: 0.14, wave: 'triangle', to: 440 },
       { freq: 330, at: 0.16, seconds: 0.3, wave: 'square', level: 0.06 },
     ]),
+  // Three bright bells climbing, the last one held: a feat.
+  feat: () =>
+    play([
+      { freq: 1047, at: 0.3, seconds: 0.18, wave: 'triangle', level: 0.05 },
+      { freq: 1319, at: 0.42, seconds: 0.18, wave: 'triangle', level: 0.05 },
+      { freq: 1568, at: 0.54, seconds: 0.6, wave: 'triangle', level: 0.05 },
+    ]),
 };
 
 /** Many quiet voices settling on the same note, a little out of tune with each other: Chorus. */

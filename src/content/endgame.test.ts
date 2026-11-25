@@ -36,6 +36,7 @@ import { coolHeat } from '../core/wanted';
 import { noteProgress } from '../core/world';
 import { STATE_VERSION } from '../core/state';
 import { assets, companies, contracts, data, gameInfo, hardware, ladder, mail, models, modules, news, patrons, people, programs, rivals, servers, skills, story, tuning } from './index';
+import { flushLessons } from '../core/record';
 
 const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, data, assets, rules: tuning };
 const SEED = 31;
@@ -260,6 +261,7 @@ describe('legend contracts', () => {
     state.player.rating = 111;
     noteProgress(state, content);
     noteProgress(state, content);
+    flushLessons(state, content);
     expect(letters()).toBe(1);
   });
 
