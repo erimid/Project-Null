@@ -134,6 +134,7 @@ describe('regular clients', () => {
       expect(job.client).toBe(regular.name);
       expect(job.patron).toBeUndefined();
       expect(job.race).toBeUndefined();
+      expect(['guard', 'hunt']).not.toContain(job.objective.kind);
       expect(job.brief.endsWith(regular.signoff)).toBe(true);
       filled(job.brief);
     }

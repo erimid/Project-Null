@@ -38,6 +38,8 @@ export function regularOf(content: Content, contract: ContractDef): RegularDef |
 export function assignRegular(state: GameState, content: Content, job: Job, server: ServerDef, rng: Rng): Job {
   const sector = server.generated?.sector;
   if (job.patron || job.race || job.heist || job.news || job.legend) return job;
+  // They want something from the company: never a job that looks after it.
+  if (job.objective.kind === 'guard' || job.objective.kind === 'hunt') return job;
   // One job from each regular on the board at a time.
   const posting = new Set(state.contracts.jobs.map((item) => item.regular));
   const able = regularsOf(content).filter((regular) => state.player.rating >= regular.minRating && !posting.has(regular.id) && (!regular.sectors || (sector !== undefined && regular.sectors.includes(sector))));

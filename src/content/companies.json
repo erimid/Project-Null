@@ -2692,8 +2692,8 @@
         "signoff": "Chidi"
       },
       {
-        "id": "quist",
-        "name": "Leonie Quist",
+        "id": "quill",
+        "name": "Leonie Quill",
         "blurb": "Buys and sells things at auction, mostly for other people.",
         "minRating": 22,
         "sectors": [
@@ -2704,12 +2704,12 @@
           "retail"
         ],
         "intros": [
-          "Leonie Quist. I buy for clients who prefer not to be seen bidding. To do that well I need to know things {company} would rather keep to itself.",
-          "I am Leonie Quist. You were recommended by somebody who did not want to be named, which is the best sort of recommendation. I have a use for {company} in {city}."
+          "Leonie Quill. I buy for clients who prefer not to be seen bidding. To do that well I need to know things {company} would rather keep to itself.",
+          "I am Leonie Quill. You were recommended by somebody who did not want to be named, which is the best sort of recommendation. I have a use for {company} in {city}."
         ],
         "again": [
           "Leonie again. My client was delighted, and has no idea you exist. This is the {times} thing I have asked of you: {company}.",
-          "Quist. There is another sale coming and another firm with something I need: {company} in {city}. Same arrangement, and a little more for your trouble."
+          "Quill. There is another sale coming and another firm with something I need: {company} in {city}. Same arrangement, and a little more for your trouble."
         ],
         "signoff": "L.Q."
       },
