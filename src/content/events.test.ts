@@ -69,7 +69,7 @@ describe('darknet events: when they come', () => {
     expect(boards[0]).toEqual(boards[1]);
   });
 
-  it('one at a time, two or three game days apart, never the same kind twice running, and every kind turns up', () => {
+  it('one at a time, a game day or two apart, never the same kind twice running, and every kind turns up', () => {
     const state = newGame(40);
     const starts: { kind: EventKind; atMs: number }[] = [];
     let before: string | undefined;
@@ -80,8 +80,8 @@ describe('darknet events: when they come', () => {
       if (now && now.id !== before) starts.push({ kind: now.kind, atMs: now.startMs });
       before = now?.id ?? before;
     }
-    expect(starts.length).toBeGreaterThanOrEqual(18);
-    expect(starts.length).toBeLessThanOrEqual(30);
+    expect(starts.length).toBeGreaterThanOrEqual(28);
+    expect(starts.length).toBeLessThanOrEqual(46);
     for (let i = 1; i < starts.length; i++) {
       expect(starts[i]!.kind, `event ${i}`).not.toBe(starts[i - 1]!.kind);
       expect((starts[i]!.atMs - starts[i - 1]!.atMs) / HOUR).toBeGreaterThanOrEqual(EVENT_GAP_HOURS[0]);

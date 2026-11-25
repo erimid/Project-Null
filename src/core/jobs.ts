@@ -344,7 +344,7 @@ export function refreshJobs(state: GameState, content: Content, stillPossible: (
 /** From this rating the board keeps its jobs unlike one another. Before it there are too few kinds to choose from. */
 export const MIX_RATING = 10;
 /** How many times the board draws again for a job unlike the ones it has, before it settles for what it drew. */
-export const MIX_TRIES = 6;
+export const MIX_TRIES = 12;
 
 /** What sort of work a job is, as the player would see it on the board: two jobs of one sort look alike. */
 export function jobSort(job: Job): string {

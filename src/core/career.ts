@@ -27,7 +27,8 @@ import { createGame, isConnected, MAX_HOPS, type Connection, type Fitted, type G
 import { checkTask, freeStorageGb, layerSeconds, MAX_LEVEL_GAP, ringAngle, ringTolerance } from './tasks';
 import { intruding, relayHeat, relayWorth, totalTraceMs } from './trace';
 import { raidPortAngle } from './raid';
-import { beatsSeen, gateRating, storyComplete } from './story';
+import { beatsSeen, gateRating, storyComplete, storyWaits } from './story';
+import { linesOf } from '../content/story';
 import { goalMet, readFlag, stagesOf, stageView } from './stages';
 import { heistLines, heistStatus } from './heists';
 import { guardRingAngle } from './kinds';
@@ -1123,6 +1124,16 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
         if (size > 0 && size > freeStorageGb(state, content) - haul()) continue;
         if (state.player.balance >= price(id) + profile.reserve && buy(id)) again = true;
         break;
+      }
+    }
+    // A story job held back for want of lines: the letter says what is missing, and it buys the ports.
+    for (const wait of storyWaits(state, content)) {
+      const beat = linesOf(content.story).flatMap((line) => line.beats).find((item) => item.id === wait.beatId);
+      for (const need of beat?.needs ?? []) {
+        const job = need.linesFor === undefined ? undefined : content.contracts.find((item) => item.id === need.linesFor);
+        if (!job || maxConnections(state, content) >= heistLines(state, job)) continue;
+        const ports = content.hardware.find((part) => part.slot === 'ports' && (part.connections ?? 1) >= heistLines(state, job));
+        if (ports && offer(ports.id) && state.player.balance >= price(ports.id)) buy(ports.id);
       }
     }
     if (kitCompleteMinutes === null && wishes.every(owns)) kitCompleteMinutes = minutes();

@@ -260,7 +260,9 @@ describe('The five endings, each reached by playing', () => {
     expect(state.flags).toContain('station-taken');
     // Wick is not there to keep a line quiet, so it is one more for the player to hold.
     expect(finale!.allies).not.toContain('Wick');
-    expect(finale!.lines).toBe(3);
+    // Three if someone else still holds a door for them, four if they have fallen out with everybody: more ports, bought when Vesper's letter says so.
+    expect(finale!.lines).toBeGreaterThanOrEqual(3);
+    expect(finale!.lines).toBeLessThanOrEqual(4);
   });
 
   it('Chorus comes for someone who never answers, after a long time and three warnings', () => {

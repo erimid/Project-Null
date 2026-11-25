@@ -44,7 +44,7 @@ import { findServer, sendLetter, type Content } from './world';
 /** The rating from which things start to happen. */
 export const EVENTS_RATING = 20;
 /** Game hours from one event starting to the next, least and most. */
-export const EVENT_GAP_HOURS = [48, 72] as const;
+export const EVENT_GAP_HOURS = [30, 48] as const;
 /** Game hours each kind lasts. A bounty lasts until the first runner finishes. */
 export const EVENT_HOURS: Readonly<Record<EventKind, number>> = { auction: 24, bounty: 20, dump: 12, crackdown: 48, runner: 24, offer: 18 };
 /** What an event's job pays, as a share of an ordinary job against the same company. */
