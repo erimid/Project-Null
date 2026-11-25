@@ -324,7 +324,7 @@ export function ContractPanel() {
       )}
       {asking && done && (
         <div class="asking" ref={askingRef} role="group" aria-label="What should happen">
-          <p class="asking__head">{leak ? 'Who is the leak? The right name pays in full, a wrong one half.' : (contract.decide?.question ?? 'You have the core. What should happen?')}</p>
+          <p class="asking__head">{leak ? 'Who is the leak?' : (contract.decide?.question ?? 'You have the core. What should happen?')}</p>
           {answers.map((answer) => (
             <button
               key={answer.id}

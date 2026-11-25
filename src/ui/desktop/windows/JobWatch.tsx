@@ -112,7 +112,7 @@ export function JobWatch({ game, connection }: View) {
         <span>
           {left === 0
             ? `Nothing of ${goal.who}'s is left in this log.`
-            : `${left} ${left === 1 ? 'line' : 'lines'} in the log ${left === 1 ? 'names' : 'name'} ${goal.who}. Open Logs, pick ${left === 1 ? 'it' : 'them'} and delete ${left === 1 ? 'it' : 'them'}.`}
+            : `${left} ${left === 1 ? 'line' : 'lines'} in the log ${left === 1 ? 'names' : 'name'} ${goal.who}. In Logs, pick ${left === 1 ? "it" : "them"} and press Scrub.`}
         </span>
       </p>
     );

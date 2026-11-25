@@ -1298,7 +1298,7 @@
           "Someone else's key"
         ],
         "summaries": [
-          "Get a login at {company} by letter, then {goal}."
+          "Get a login at {company} by letter. Then: {goal}"
         ],
         "briefs": [
           "{company} in {city} changed every password this week, and the new ones are long. Breaking the admin password would take most people far too long.\n\nSo do not break it. Their public notices are open to anyone who logs in as a guest. Read them. Work out who resets passwords there and who they would do it for, then write to them from the Phishing window as that person. When the reply comes you will have the admin login.\n\nThen do the job: {goal}",
