@@ -227,7 +227,7 @@
       "body": "{handle}, I was given your name.\n\nI need something done at {company}, {trade} in {city}. I will pay {pay} credits, which I know is over the usual. I would like it done soon and I would like it done by someone who does not ask why.\n\nThe job is on the board, and my posting is on Lowtide if you want to look me over first."
     },
     "lines": [
-      "Posted by {client}. {account}.",
+      "Posted by: {client}. {account}.",
       "The job: {goal} The target is {company}, {trade} in {city}. Pays {pay} credits.",
       "Halyard asks runners to say so when a posting smells wrong. If it is a trap, the warning is paid for. If it is not, the client will take the work elsewhere."
     ],

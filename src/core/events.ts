@@ -41,6 +41,9 @@ import type { Connection, DarkEvent, EventLot, GameState, Job } from './state';
 import { stream } from './streams';
 import { findServer, sendLetter, type Content } from './world';
 
+/** What the darknet sends is about work: it is filed there, not with the story. */
+const letter = (state: GameState, words: { readonly from: string; readonly subject: string; readonly body: string }, fill: Readonly<Record<string, string>> = {}): void => sendLetter(state, words, fill, 'work');
+
 /** The rating from which things start to happen. */
 export const EVENTS_RATING = 20;
 /** Game hours from one event starting to the next, least and most. */
@@ -159,7 +162,7 @@ const bounty: Make = (state, content, words, rng, base) => {
   if (owing) {
     runners = runners.filter((runner) => runner !== owing);
     state.events.owed = state.events.owed.filter((id) => handleOf(content, id) !== owing.who);
-    sendLetter(state, words.letters['stoodDown']!, { who: owing.who });
+    letter(state, words.letters['stoodDown']!, { who: owing.who });
   }
   const first = [...runners].sort((a, b) => a.doneMs - b.doneMs)[0]!;
   const pay = fifty(plain.job.pay * EVENT_PAY.bounty);
@@ -274,7 +277,7 @@ function rivalBids(state: GameState, words: Words, event: DarkEvent, who: string
   if (event.top === who || bid > cap) return;
   if (event.top === YOU) {
     state.player.balance += event.price ?? 0;
-    sendLetter(state, words.letters['outbid']!, { who, price: String(bid), lot: event.lot!.name });
+    letter(state, words.letters['outbid']!, { who, price: String(bid), lot: event.lot!.name });
   }
   event.top = who;
   event.price = bid;
@@ -305,9 +308,9 @@ function run(state: GameState, content: Content, def: EventsDef, event: DarkEven
       const lot = event.lot!;
       if (event.top === YOU) {
         give(state, content, lot);
-        sendLetter(state, words.letters['won']!, { lot: lot.name, price: String(event.price) });
+        letter(state, words.letters['won']!, { lot: lot.name, price: String(event.price) });
       } else if (event.mine && event.top) {
-        sendLetter(state, words.letters['lost']!, { lot: lot.name, who: event.top, price: String(event.price) });
+        letter(state, words.letters['lost']!, { lot: lot.name, who: event.top, price: String(event.price) });
       }
       return true;
     }
@@ -320,16 +323,16 @@ function run(state: GameState, content: Content, def: EventsDef, event: DarkEven
         if (kept.length > 0) state.player.passwords[event.serverId!] = kept;
         else delete state.player.passwords[event.serverId!];
       }
-      sendLetter(state, words.letters['over']!, { company: server?.name ?? 'The company' });
+      letter(state, words.letters['over']!, { company: server?.name ?? 'The company' });
       return true;
     }
     case 'crackdown':
-      if (over) sendLetter(state, words.letters['over']!, { shop: findServer(content, event.serverId ?? '')?.name ?? 'The market' });
+      if (over) letter(state, words.letters['over']!, { shop: findServer(content, event.serverId ?? '')?.name ?? 'The market' });
       return over;
     case 'runner': {
       if (event.jobId && state.contracts.completed.includes(event.jobId)) {
         state.events.owed.push(event.rivalId!);
-        sendLetter(state, words.letters['owed']!, { who: handleOf(content, event.rivalId!), company: findServer(content, event.serverId ?? '')?.name ?? 'the company' });
+        letter(state, words.letters['owed']!, { who: handleOf(content, event.rivalId!), company: findServer(content, event.serverId ?? '')?.name ?? 'the company' });
         return true;
       }
       break;
@@ -388,7 +391,7 @@ export function startEvent(state: GameState, content: Content, kind: EventKind):
   state.events.last = kind;
   if (!state.events.recent.includes(kind)) state.events.recent.push(kind);
   state.events.nextMs = now + rng.range(EVENT_GAP_HOURS[0], EVENT_GAP_HOURS[1]) * HOUR;
-  sendLetter(state, def[kind].letter, made.values);
+  letter(state, def[kind].letter, made.values);
   return true;
 }
 
@@ -426,7 +429,7 @@ export function buyAtAuction(state: GameState, content: Content): string | null 
   if (state.player.balance + held < price) return 'You cannot afford that.';
   state.player.balance += held - price;
   give(state, content, lot);
-  sendLetter(state, content.events.auction.letters['bought']!, { lot: lot.name, price: String(price) });
+  letter(state, content.events.auction.letters['bought']!, { lot: lot.name, price: String(price) });
   close(state);
   return null;
 }
@@ -447,9 +450,9 @@ export function reportOffer(state: GameState, content: Content): string | null {
     const pay = fifty((server ? usualPay(content, server) : job.pay) * WARNING_PAY);
     state.player.balance += pay;
     shiftStanding(state, content, 'halyard', 1);
-    sendLetter(state, words.letters['rightCall']!, { pay: String(pay) });
+    letter(state, words.letters['rightCall']!, { pay: String(pay) });
   } else {
-    sendLetter(state, words.letters['wrongCall']!);
+    letter(state, words.letters['wrongCall']!);
   }
   close(state);
   return null;
@@ -473,7 +476,7 @@ export function springSting(state: GameState, content: Content, connection: Conn
   connection.trace.graceMs = 0;
   connection.trace.hopMs = connection.trace.hopMs.map((ms) => ms * STING_TRACE);
   withdraw();
-  sendLetter(state, content.events.offer.letters['sting']!, { fine: String(fine) });
+  letter(state, content.events.offer.letters['sting']!, { fine: String(fine) });
   close(state);
   return true;
 }
@@ -486,7 +489,7 @@ export function standsDown(state: GameState, content: Content, rival: string): b
   const id = state.events?.owed.find((item) => handleOf(content, item) === rival);
   if (id === undefined || !content.events) return false;
   state.events.owed = state.events.owed.filter((item) => item !== id);
-  sendLetter(state, content.events.runner.letters['stoodDown']!, { who: rival });
+  letter(state, content.events.runner.letters['stoodDown']!, { who: rival });
   return true;
 }
 
@@ -496,7 +499,7 @@ export function runnerWarns(state: GameState, content: Content, raider: string):
   if (id === undefined || !content.events) return false;
   state.events.owed = state.events.owed.slice(1);
   state.events.warned = true;
-  sendLetter(state, content.events.runner.letters['warning']!, { who: handleOf(content, id), raider });
+  letter(state, content.events.runner.letters['warning']!, { who: handleOf(content, id), raider });
   return true;
 }
 
