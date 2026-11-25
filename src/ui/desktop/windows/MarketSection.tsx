@@ -4,6 +4,7 @@ import {
   freeStorageGb,
   marketGrade,
   programPace,
+  isShut,
   rareToday,
   rentedModel,
   sellsModule,
@@ -321,6 +322,14 @@ export function Market(view: View) {
   const nothing = groups.length === 0 && shownModules.length === 0 && shownModels.length === 0 && category !== 'rare' && !(category === 'all' && rareCount > 0);
   const hoursLeft = hoursLeftToday(game);
 
+  // Shut by a crackdown: the sign says so, and there is no shelf.
+  if (isShut(game, server.id)) {
+    return (
+      <div class="shopfloor">
+        <ShopSign game={game} server={server} rare={false} />
+      </div>
+    );
+  }
   return (
     <div class="shopfloor">
       <ShopSign game={game} server={server} rare={false} />

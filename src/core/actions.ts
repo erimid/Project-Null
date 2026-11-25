@@ -15,6 +15,7 @@ import {
   frameLog,
   punish,
   uninstallProgram,
+  withdrawActive,
 } from './contracts';
 import { scheduleReview } from './forensics';
 import { reportCaught } from './news';
@@ -32,6 +33,7 @@ import { TRACED_HEAT, raiseHeat } from './wanted';
 import { learnSkill, unlearnSkills } from './skills';
 import { canLogIn, echoCell, lockRing, startTask, usedStorageGq } from './tasks';
 import { bestRoute, coolRelays, hopUnderTrace, intruding, jamTrace, maxHops, newTrace, noteIntrusion, reroute, warmRelay } from './trace';
+import { bidAtAuction, buyAtAuction, reportOffer, springSting } from './events';
 import { lockRaidFile, lockRaidRing, openRaidPort, pullPlug, startRaidTrace } from './raid';
 import { findAccount, findConnection, findServer, gatewayOf, once, ownedProgram, sendMail, sourceAddress, type Content } from './world';
 
@@ -132,6 +134,10 @@ export type Action =
   | { readonly type: 'defendRing'; readonly ring: number }
   /** Start the counter-trace back along an intruder's route. */
   | { readonly type: 'traceBack' }
+  /** Darknet events (see events.ts): bid at the auction, buy its lot outright, or report the private offer as a trap. */
+  | { readonly type: 'eventBid' }
+  | { readonly type: 'eventBuy' }
+  | { readonly type: 'eventReport' }
   /** Lock a file or program on the gateway so a lost attack cannot take it. */
   | { readonly type: 'lockFile'; readonly name: string }
   /** Pull the plug: break off an attack, dropping every connection. */
@@ -301,6 +307,8 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
       state.connections.push(connection);
       logConnection(state, content, connection, true);
       noteConnect(state, content, server.id);
+      // A private offer that was a trap closes as the player walks in (see events.ts).
+      springSting(state, content, connection, () => withdrawActive(state));
       return OK;
     }
 
@@ -462,6 +470,12 @@ function act(state: GameState, action: Action, content: Content): ActionResult {
       return answer(lockRaidRing(state, content, action.ring));
     case 'traceBack':
       return answer(startRaidTrace(state, content));
+    case 'eventBid':
+      return answer(bidAtAuction(state, content));
+    case 'eventBuy':
+      return answer(buyAtAuction(state, content));
+    case 'eventReport':
+      return answer(reportOffer(state, content));
     case 'lockFile':
       return answer(lockRaidFile(state, content, action.name));
     case 'pullPlug':

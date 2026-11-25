@@ -328,7 +328,8 @@ export interface ContractDef {
    * Another hacker has the same job. `rival` is their handle; if they get
    * there `minutes` of game time after the job is taken, the job is lost.
    */
-  readonly race?: { readonly rival: string; readonly minutes: number };
+  /** `byMs`: the rival finishes at this game time whenever the job is taken (an open bounty, see core/events.ts). */
+  readonly race?: { readonly rival: string; readonly minutes: number; readonly byMs?: number };
   /**
    * Id of the patron behind it (see patrons.json). Delivering it raises
    * standing with them. When `client` is not the patron's own name the
