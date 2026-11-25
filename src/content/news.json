@@ -63,6 +63,48 @@
           "freight"
         ],
         "body": "{CITY}. A list of customers of {company} is being offered for sale, according to a post that vanished within the hour. The firm said it had no comment 'at this time', which analysts took to mean 'later'."
+      },
+      {
+        "headline": "Guests' details 'may have been seen' at {company}",
+        "body": "{CITY}. {company} has written to recent guests to say that details of their stays may have been read by somebody outside the company. It would not say how many guests, or which nights.\n\nOne regular visitor said he had 'never stayed there, and would like that made clear'.",
+        "sectors": [
+          "hotel"
+        ]
+      },
+      {
+        "headline": "{company} newsroom files opened from outside",
+        "body": "{CITY}. {company} confirmed on {weekday} that material it had not yet broadcast was copied from its newsroom system. The editor said the station would 'not be put off a story'.\n\nStaff have been told to keep their notes on paper for now.",
+        "sectors": [
+          "broadcast"
+        ]
+      },
+      {
+        "headline": "Test results copied from {company}",
+        "body": "{CITY}. {company} says results it held for several clients were copied by an outside party this week. The laboratory stressed that nothing had been changed.\n\nTwo clients said they first heard of it from this newspaper.",
+        "sectors": [
+          "lab"
+        ]
+      },
+      {
+        "headline": "{company} admits papers were read before meeting",
+        "body": "{CITY}. Papers prepared for a closed session at {company} were opened from outside the building, officials said on {weekday}. An opposition member called it 'the most anyone has read them in years'.\n\nThe council has asked its supplier to look at the locks.",
+        "sectors": [
+          "council"
+        ]
+      },
+      {
+        "headline": "{company} 'reviewing' client confidentiality",
+        "body": "{CITY}. {company}, which rarely says anything, said on {weekday} that it was reviewing how client papers are kept after a file was opened without leave.\n\nSeveral clients are understood to be moving their affairs. None would be named.",
+        "sectors": [
+          "bank"
+        ]
+      },
+      {
+        "headline": "Saleroom secrets out at {company}",
+        "body": "{CITY}. Private papers about a coming sale at {company} have been copied, the house said. Dealers were divided on whether it would help or hurt the bidding.\n\n'Everybody wants to know what everybody else will pay,' said one. 'Now somebody does.'",
+        "sectors": [
+          "auction"
+        ]
       }
     ],
     "destroy": [
@@ -110,6 +152,30 @@
           "clinic"
         ],
         "body": "{CITY}. {company} has gone back to pen and paper after its appointment records were wiped. Patients are being phoned one by one. Urgent cases are being seen first."
+      },
+      {
+        "headline": "{company} cannot find its own paperwork",
+        "body": "{CITY}. {company} said on {weekday} that records it expected to rely on are no longer on its system. A manager blamed 'a filing error of an unusual kind'.\n\nCustomers with questions have been asked to bring their own copies.",
+        "sectors": [
+          "hotel",
+          "auction"
+        ]
+      },
+      {
+        "headline": "Story 'lost' days before broadcast at {company}",
+        "body": "{CITY}. An item due to go out on {company} this week has been dropped after the only copy of its material vanished from the station's system.\n\nThe reporter said she would start again. 'Somebody thinks that is the end of it,' she said. 'It is not.'",
+        "sectors": [
+          "broadcast"
+        ]
+      },
+      {
+        "headline": "Records gone at {company}, and no backup",
+        "body": "{CITY}. {company} is trying to rebuild a set of records that disappeared from its server overnight. A spokesperson said the copies kept for safety were 'not as recent as one would hope'.\n\nIt is not yet clear who gains from the gap.",
+        "sectors": [
+          "lab",
+          "council",
+          "bank"
+        ]
       }
     ],
     "record": [
@@ -128,6 +194,18 @@
       {
         "headline": "Who changed the figures at {company}?",
         "body": "{CITY}. An account at {company} edited a record at three in the morning, then logged out. The account belongs to someone who was on holiday. 'Someone borrowed them,' a colleague said."
+      },
+      {
+        "headline": "One line changed at {company}, and nobody can say when",
+        "body": "{CITY}. A routine check of the {records} at {company} has found an entry that does not match the paper copy. The firm said the change was 'small, precise, and not ours'.\n\nIt has put the entry back and declined to say what it had been changed to.",
+        "sectors": [
+          "hotel",
+          "auction",
+          "council",
+          "bank",
+          "lab",
+          "broadcast"
+        ]
       }
     ],
     "read": [

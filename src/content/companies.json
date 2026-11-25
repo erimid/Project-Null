@@ -1726,14 +1726,22 @@
         "A copy for a friend",
         "Quiet acquisition",
         "Borrowed paperwork",
-        "Second opinion"
+        "Second opinion",
+        "Reading matter",
+        "A look at the original",
+        "Off the shelf",
+        "For my own records"
       ],
       "summaries": [
         "Copy {file} from {company}."
       ],
       "briefs": [
         "I need a copy of {file} from {company} in {city}. Nobody there needs to know it has gone.\n\nBring it back readable. That is all.",
-        "{company} has a file called {file}. I want it. Their security is {tier}, so plan for that."
+        "{company} has a file called {file}. I want it. Their security is {tier}, so plan for that.",
+        "I used to work at {company}. I know exactly what is in {file}, and I know they would never hand it over.\n\nCopy it for me. I would like to be able to prove what I already know.",
+        "{company} in {city} is about to be asked some hard questions, and I am the one asking. It would help to have read {file} before I walk into the room.\n\nA copy is all I need. Leave theirs where it is.",
+        "Somebody is paying me to find out what {company} is up to, and paying you is cheaper than doing it properly. The file is called {file}.\n\nTheir security is {tier}. Take your time over the route.",
+        "A simple one. {file}, from the {company} server in {city}. Copy it, hand it in, and forget the name of the file.\n\nIf they notice you, I would rather they did not learn what you came for."
       ]
     },
     "destroy": {
@@ -1741,28 +1749,45 @@
         "Clean slate",
         "Lost in the post",
         "Accidental deletion",
-        "Housekeeping"
+        "Housekeeping",
+        "Spring cleaning",
+        "Nothing to see",
+        "A gap in the files",
+        "One less thing"
       ],
       "summaries": [
         "Delete {file} at {company}."
       ],
       "briefs": [
         "There is a file at {company} in {city} called {file}. It should not exist. Please see to it.\n\nDo not copy it. Just make it gone.",
-        "{file} on the {company} server is going to cost me a lot of money if anyone reads it. Delete it. Their security is {tier}."
+        "{file} on the {company} server is going to cost me a lot of money if anyone reads it. Delete it. Their security is {tier}.",
+        "I signed something at {company} that I should not have signed. The only copy that matters is {file}, on their server in {city}.\n\nDelete it. If it turns up again, I will know you kept it.",
+        "{company} is being looked at next week, and {file} is the one thing in the building I cannot explain.\n\nMake it gone before anyone thinks to open it. Their security is {tier}.",
+        "There is a file on the {company} server called {file}. Somebody there means to use it against a friend of mine.\n\nThey cannot use what they do not have. Delete it and leave the rest alone.",
+        "Not everything has to be clever. {company}, {city}, {file}. Get in, delete it, get out.\n\nDo not open it and do not keep it. I am paying for it not to exist."
       ]
     },
     "record": {
       "titles": [
         "A small correction",
         "Clerical error",
-        "Change of status"
+        "Change of status",
+        "Updated details",
+        "A slip of the pen",
+        "Set the record straight",
+        "Minor amendment",
+        "Change of circumstances"
       ],
       "summaries": [
         "Change {key} to \"{value}\" at {company}."
       ],
       "briefs": [
         "{company} in {city} keeps the {records} table. Row {key} says the wrong thing. Make its {column} say \"{value}\".\n\nYou will need to get past the proxy to change it.",
-        "One line in {company}'s records: {key}. I need {column} to read \"{value}\" by the end of the week. Their security is {tier}."
+        "One line in {company}'s records: {key}. I need {column} to read \"{value}\" by the end of the week. Their security is {tier}.",
+        "Somebody at {company} typed the wrong thing against {key}, and it has followed a friend of mine around ever since.\n\nThe {records} table is on their server in {city}. Make the {column} read \"{value}\". It should have said that all along.",
+        "I have asked {company} twice to correct entry {key} and been told twice that the system will not allow it. The system will allow you.\n\nSet its {column} to \"{value}\". Their security is {tier}.",
+        "One row, one word. In {company}'s {records}, find {key} and change the {column} to \"{value}\".\n\nYou will need to be past their proxy before the table lets you write to it. Change nothing else: one altered row is a mistake, two is a break-in.",
+        "{company} in {city} is about to make a decision based on what its {records} say about {key}. I would like them to make a different one.\n\nThe {column} should read \"{value}\" by the time they look."
       ]
     },
     "tiers": [
@@ -1777,7 +1802,10 @@
         "Two stops",
         "The long way in",
         "A door and a key",
-        "Groundwork first"
+        "Groundwork first",
+        "First things first",
+        "One thing leads to another",
+        "Two doors"
       ],
       "summaries": [
         "Lift a document from {company2}, then {file} from {company}.",
@@ -1785,11 +1813,18 @@
       ],
       "briefs": [
         "This one has two parts, so read it through before you start.\n\nFirst, {company2} in {city2} holds a document I need as leverage. Copy it and bring it back. Once I have it, I will point you at the real target: {company}.\n\nDo them in order. Do not go near {company} until the first is done.",
-        "I need something from {company}, but you will not get in cold. {company2} in {city2} has a file that opens the way. Take that first, then I will send you on."
+        "I need something from {company}, but you will not get in cold. {company2} in {city2} has a file that opens the way. Take that first, then I will send you on.",
+        "Two servers, in order.\n\n{company2} in {city2} has a document that the people at {company} would rather I did not have. Copy it first. When that is in my hands I will tell you what I want done at {company}.\n\nDo not skip ahead. The second part is no use to me without the first.",
+        "The real job is at {company}, and I will get to it. Before that I need a file from {company2} in {city2}, because without it the rest proves nothing.\n\nBring me that, then wait for word.",
+        "I have a use for {company}, but only once I am holding something from {company2}. So: {company2} in {city2} first. Copy what I ask for and hand it over.\n\nThe second half comes when the first is done.",
+        "This is a job in two halves and I am paying for both. First half: a document out of {company2}, {city2}. Second half: {company}, and I will explain when you get there."
       ],
       "next": [
         "Good, that is the first part done. Now for {company}: the job I actually hired you for. You have what you need.",
-        "That will do nicely. On to {company} now. Same deal as before, just finish it."
+        "That will do nicely. On to {company} now. Same deal as before, just finish it.",
+        "Half done, and done well. {company} is next. You know what I want from it.",
+        "Good. I have what I needed from the first place. Now go and finish it at {company}.",
+        "That was the easy half. {company} is waiting, and so am I."
       ],
       "keyNotes": [
         "Access note: the {company} box takes the shared admin login. Password is on the sticky by the rack. Nobody has changed it in a year.",
@@ -1806,14 +1841,21 @@
           "Wrong address",
           "Somebody else's fault",
           "A name in the log",
-          "Put it on someone else"
+          "Put it on someone else",
+          "The usual suspect",
+          "Fingers pointed",
+          "A false trail"
         ],
         "summaries": [
           "Make {company}'s log point at {who}."
         ],
         "briefs": [
           "{company} in {city} is going to find out it was broken into. When it does, I want its log to name {who}, at {address}, and nobody else.\n\nWrite the line in, take yours out. Their security is {tier}.",
-          "There is a person called {who} who deserves the attention of {company}'s lawyers more than I do. Make their access log say so: a login from {address}, slipped in before you arrived.\n\nLeave nothing of your own behind."
+          "There is a person called {who} who deserves the attention of {company}'s lawyers more than I do. Make their access log say so: a login from {address}, slipped in before you arrived.\n\nLeave nothing of your own behind.",
+          "{company} in {city} is going to call the police whatever happens. I would like the police to call on {who}.\n\nPut a login from {address} into their access log, then take your own lines out. One name in the log, and not yours.",
+          "{who} cost me a great deal last year and has never had to answer for it. {company}'s log is going to put that right.\n\nWrite in a session from {address}. Make it look like the only one there was. Their security is {tier}.",
+          "This is not about what is on the {company} server. It is about who they think was on it.\n\nAdd a line for {who} at {address} to the access log in {city}, and remove every line of your own before you leave.",
+          "When {company} reads its log tomorrow, it should find one visitor it does not know: {who}, from {address}.\n\nThat is the whole job. If your own lines are still there beside it, the story falls apart, so clean up."
         ]
       },
       "guard": {
@@ -1821,7 +1863,10 @@
           "Night watch",
           "Hold the door",
           "Minding the shop",
-          "Hold the line"
+          "Hold the line",
+          "Keep them out",
+          "On the door tonight",
+          "A quiet shift"
         ],
         "summaries": [
           "Guard {company} for {seconds} seconds against {rival}."
@@ -1829,7 +1874,10 @@
         "briefs": [
           "{rival} is about to go through {company}'s network and I cannot stop them from here. I can give you the administrator's login. Sit on the server and shut every port they try for {seconds} seconds.\n\nThat is all. You are the lock tonight.",
           "My people at {company} in {city} have had a tip that {rival} is coming for them. Log in with the details I am sending and keep them out for {seconds} seconds. If they get in, do not bother sending a bill.",
-          "A friend of mine runs {company}'s network, and tonight someone will come for it. Be there before they arrive and stand in the doorway. Keep them out for {seconds} seconds and I will call it even."
+          "A friend of mine runs {company}'s network, and tonight someone will come for it. Be there before they arrive and stand in the doorway. Keep them out for {seconds} seconds and I will call it even.",
+          "{company} in {city} cannot afford to be broken into this week, and {rival} has been paid to do exactly that.\n\nI am sending you the administrator's login. Be on the server when they come and shut each port they open. {seconds} seconds and they will give up.",
+          "Word is that {rival} has {company} next on the list. The people who run it are clients of mine and they do not know how to stop it.\n\nYou do. Log in as the administrator and hold the ports shut for {seconds} seconds.",
+          "I do not usually pay hackers to keep other hackers out, but {rival} left me no choice. {company}, tonight.\n\nUse the login I send you. Every port they force open, close it again. Last {seconds} seconds and the money is yours."
         ]
       },
       "hold": {
@@ -1837,14 +1885,21 @@
           "Keep it open",
           "A foot in the door",
           "Waiting room",
-          "Keep it open"
+          "Keep it open",
+          "Hold the line open",
+          "Stay a while",
+          "Sitting tenant"
         ],
         "summaries": [
           "Stay logged in on {company} for {seconds} seconds."
         ],
         "briefs": [
           "I need a door held open at {company} while a friend does their part. Get in, log in, and stay there for {seconds} seconds. Their trace will come for you. Be gone before it arrives, not before.",
-          "Get into {company} in {city} and sit there for {seconds} seconds. Do nothing. Touch nothing. Just keep the session alive. Their security is {tier}."
+          "Get into {company} in {city} and sit there for {seconds} seconds. Do nothing. Touch nothing. Just keep the session alive. Their security is {tier}.",
+          "Something of mine is passing through {company}'s network tonight, and it needs somebody inside for as long as it takes. That is {seconds} seconds.\n\nLog in and stay in. Leave early and it was all for nothing.",
+          "I want {company} in {city} to look the wrong way for {seconds} seconds. You are what they will be looking at.\n\nGet in, stay connected, and let their trace run. Disconnect when the time is up and not a second before.",
+          "No copying, no deleting. Log in at {company} and keep the session open for {seconds} seconds while my people do something elsewhere.\n\nTheir security is {tier}, so build a route that buys you the time.",
+          "{company} checks who is logged in every so often. Tonight I need the answer to be you, for {seconds} seconds.\n\nDo not ask why. Stay until the clock runs out, then go."
         ]
       },
       "hunt": {
@@ -1852,14 +1907,21 @@
           "Who did this",
           "Follow the breadcrumbs",
           "Find them",
-          "Back to the source"
+          "Back to the source",
+          "Whose hand was it",
+          "Three hops back",
+          "Return to sender"
         ],
         "summaries": [
           "Follow a hacker's trail from {company} to their machine."
         ],
         "briefs": [
           "Somebody went through {company} last night and I want to know who. Their route is in the access log. Follow it, server by server, until you reach the machine it started from.\n\nConnect to it and I will know where to send the lawyers.",
-          "{company} in {city} was hit. The hacker bounced through several servers, and every one of them wrote a line about it. Read the logs, follow the trail, and find their machine."
+          "{company} in {city} was hit. The hacker bounced through several servers, and every one of them wrote a line about it. Read the logs, follow the trail, and find their machine.",
+          "{company} in {city} had a visitor, and the visitor was careless: every server on their route kept a line about it.\n\nStart at {company}'s access log and follow the route back one server at a time. When you reach the machine it started from, connect to it. That is all I need.",
+          "One of the other runners went through {company} and took something of mine. I want their address.\n\nIt is in the logs, a hop at a time. Read each one, go where it points, and stop when there is nowhere left to go.",
+          "I am told you are good at leaving no trail. Tonight you are following one. It starts at {company} and ends at somebody's gateway.\n\nConnect to that last machine and the job is done.",
+          "Somebody broke into {company}, and the company would rather pay me than tell the police. I would rather pay you.\n\nTheir log names the server the hacker came through. That server's log names the one before. Keep going to the end."
         ]
       },
       "swap": {
@@ -1867,14 +1929,21 @@
           "Second draft",
           "Like for like",
           "Nobody will notice",
-          "Same name, new content"
+          "Same name, new content",
+          "A better version",
+          "Corrected copy",
+          "An exchange"
         ],
         "summaries": [
           "Replace {file} at {company} with a doctored copy."
         ],
         "briefs": [
           "I am sending you a copy of {file}. It is the same size as the one on {company}'s server, and almost the same. Delete theirs and put mine in its place.\n\nIf anyone ever opens it, they will read what I want them to read.",
-          "{company} in {city} keeps {file}. I have improved it. Swap their copy for mine, same name, same size, and leave no sign it was ever different."
+          "{company} in {city} keeps {file}. I have improved it. Swap their copy for mine, same name, same size, and leave no sign it was ever different.",
+          "The {file} on {company}'s server says something I need it not to say. The copy I am sending you says something else.\n\nDelete theirs and upload mine. Same name, same size. Nobody counts the words.",
+          "Somebody at {company} in {city} will open {file} next week and act on what it says. I have written them a new one.\n\nTake the old file off the server and put mine in its place. Their security is {tier}.",
+          "This is a delete and an upload, in that order, and the file is {file}. My copy will be on your gateway when you take the job.\n\n{company} should never know there were two versions.",
+          "I do not want {file} stolen and I do not want it gone. I want it wrong.\n\nSwap the one at {company} for the one I send you. It has to carry the same name, or their own system will notice the gap."
         ]
       }
     },
@@ -1931,14 +2000,21 @@
           "Special delivery",
           "Something for their files",
           "Filed after the fact",
-          "A late addition"
+          "A late addition",
+          "Filed on their behalf",
+          "Planted evidence",
+          "One for the archive"
         ],
         "summaries": [
           "Put {file} onto {company}'s server."
         ],
         "briefs": [
           "{company} in {city} is missing a file. I am sending it to your gateway now: {file}. Put it on their server, where their own people will find it and think it was always there.\n\nIt is a big file and it takes a while to send. Plan your route for that.",
-          "There is going to be an inspection at {company}, and when it comes I want {file} sitting on their system. It will be on your gateway when you take the job.\n\nGet in, upload it, get out. Their security is {tier}."
+          "There is going to be an inspection at {company}, and when it comes I want {file} sitting on their system. It will be on your gateway when you take the job.\n\nGet in, upload it, get out. Their security is {tier}.",
+          "A document is going to be found at {company} in {city}. It is not there yet. That is where you come in.\n\n{file} will be on your gateway when you accept. Upload it to their server and leave it among the others.",
+          "I need {company} to have had {file} all along. When you take this job it lands on your gateway. Put it on their server.\n\nIt is large, so the upload will keep you connected longer than you would like. Their security is {tier}.",
+          "Some jobs take a file out. This one puts a file in. {file}, onto the {company} server, where it will sit until somebody goes looking.\n\nYou will find it on your gateway. Make sure you have the room for it first.",
+          "The people at {company} are about to be surprised by their own filing. Upload {file} to their server in {city} and leave quietly.\n\nDo not rename it. The name is half the point."
         ],
         "files": [
           "tender_revised_{n}.dat",
@@ -1954,14 +2030,21 @@
           "Find the leak",
           "Somebody talked",
           "One of three",
-          "Who told them"
+          "Who told them",
+          "The quiet one",
+          "A process of elimination",
+          "Three names"
         ],
         "summaries": [
           "Read three notes at {company} and name the leak."
         ],
         "briefs": [
           "Something left {company} that should not have, and only three people could have sent it: {a}, {b} and {c}.\n\nI cannot ask them. You can read what their own system says about that week. There are three notes on the {city} server that matter. Read them all, then tell me the name.\n\nGet it right and you are paid in full. Name the wrong one and I pay half, because I will have sacked the wrong person.",
-          "{company} has a leak. Three names had access: {a}, {b}, {c}. Two of them can be ruled out by what is on the company's own server, if you read it carefully.\n\nRead the notes, then name the one who is left. Half pay for a wrong name. Their security is {tier}."
+          "{company} has a leak. Three names had access: {a}, {b}, {c}. Two of them can be ruled out by what is on the company's own server, if you read it carefully.\n\nRead the notes, then name the one who is left. Half pay for a wrong name. Their security is {tier}.",
+          "{company} in {city} has been leaking for a month. It comes down to three people: {a}, {b} or {c}.\n\nThere are three notes on their server from the week it started. Each one puts somebody somewhere. Read all three and tell me who is left without an excuse.\n\nFull pay for the right name. Half for the wrong one.",
+          "Three people at {company} could have done it: {a}, {b}, {c}. I am not going to guess, because guessing is how the wrong person loses a job.\n\nRead the three notes on their server. Two of the three will be accounted for. Give me the other name. If you get it wrong I pay half.",
+          "Somebody inside {company} sold something that was not theirs to sell. The list of who could have is short: {a}, {b} and {c}.\n\nTheir own server will tell you, if you read what is on it. Three notes. Then name one of them. Their security is {tier}.",
+          "I need a name, and I need it to be the right one. {a}, {b} or {c}, all at {company} in {city}.\n\nDo not copy anything. Read the three notes, work out which two could not have done it, and name the third. A wrong name is worth half to me."
         ],
         "leads": [
           {
@@ -1997,14 +2080,21 @@
           "Wipe a trail",
           "Clean up after a friend",
           "Sloppy work",
-          "Before the audit"
+          "Before the audit",
+          "Someone else's footprints",
+          "Two logs before morning",
+          "Tidying up"
         ],
         "summaries": [
           "Remove {who}'s lines from the logs at {company} and {company2}."
         ],
         "briefs": [
           "{who} did a job for me this week and left a mess: their sessions are still sitting in the access logs at {company} and {company2}.\n\nBoth companies check their logs in the morning. Get into each one, find the lines with {who} in them and delete them. Every one. You have {hours} hours for the pair.\n\nYour own lines are your own business, but I would not leave those either.",
-          "A runner called {who} went through {company} and then {company2} without cleaning up. If those logs are read, it comes back to me.\n\nRemove every line that names {who} on both servers. {company} first. The whole job has to be done inside {hours} hours."
+          "A runner called {who} went through {company} and then {company2} without cleaning up. If those logs are read, it comes back to me.\n\nRemove every line that names {who} on both servers. {company} first. The whole job has to be done inside {hours} hours.",
+          "{who} is good at getting in and bad at leaving. There are lines with their name in the access logs at {company} and {company2}, and both will be read tomorrow.\n\nDelete every one of them, on both servers. You have {hours} hours from the moment you take this.",
+          "I hired {who} because they were cheap, and now I am hiring you because they were cheap. Their sessions are still in the logs at {company} and at {company2}.\n\nGo to each, find the lines that name {who}, and remove them. {hours} hours for both.",
+          "Two servers, one name. {who} went through {company} and {company2} and did not clean up after either.\n\nTake their lines out of both access logs within {hours} hours. Take your own out too, unless you would like to be the next favour somebody asks for.",
+          "Before the morning check at {company} and {company2}, the name {who} needs to be gone from both logs.\n\nStart with {company}. The clock is {hours} hours for the whole job, and it does not stop while you plan your second route."
         ],
         "lines": [
           "session opened {who} from {ip}",
@@ -2022,14 +2112,21 @@
           "The round",
           "Three stops",
           "A morning's work",
-          "Collection day"
+          "Collection day",
+          "Three in a row",
+          "The milk run",
+          "Small change"
         ],
         "summaries": [
           "Three small jobs in a row: {company}, {company2}, {company3}."
         ],
         "briefs": [
           "Three small firms, one list, one clock. First {company}, then {company2}, then {company3}. None of them is well defended.\n\nI pay {each} credits as each one is done, and {bonus} more on top when all three are finished. You have {hours} hours from the moment you take it. Whatever is not done by then is not paid for.",
-          "I have a round for you: {company}, {company2} and {company3}, in that order. Small places, light security.\n\n{each} credits lands as you finish each stop. Do all three inside {hours} hours and there is a bonus of {bonus}. Run out of time and you keep what you earned, nothing more."
+          "I have a round for you: {company}, {company2} and {company3}, in that order. Small places, light security.\n\n{each} credits lands as you finish each stop. Do all three inside {hours} hours and there is a bonus of {bonus}. Run out of time and you keep what you earned, nothing more.",
+          "Three little jobs I never get round to: {company}, then {company2}, then {company3}. None of them will trouble you.\n\n{each} credits each, paid as you go. Finish the three inside {hours} hours and I add {bonus}. Anything left when the clock runs out stays undone and unpaid.",
+          "I have saved these up. {company}, {company2} and {company3}, in that order, all light work.\n\nYou are paid {each} for each stop, and {bonus} on top for the full round. {hours} hours, starting when you say yes.",
+          "A round of three: {company} first, {company2} second, {company3} last. Small firms with small locks.\n\n{each} credits a stop. A bonus of {bonus} if you clear all three within {hours} hours. Stop early and you keep what you have earned.",
+          "Quick work for somebody who does not dawdle. Three stops: {company}, {company2}, {company3}.\n\nEach pays {each} as it is done. The whole round inside {hours} hours pays {bonus} more. The clock starts when you accept."
         ],
         "next": [
           "Paid for that one. Next stop: {company}.",
@@ -2041,14 +2138,21 @@
           "Borrowed login",
           "Ask nicely",
           "A letter first",
-          "Someone else's key"
+          "Someone else's key",
+          "By return of post",
+          "The polite way in",
+          "A word with IT"
         ],
         "summaries": [
           "Get a login at {company} by letter. Then: {goal}"
         ],
         "briefs": [
           "{company} in {city} changed every password this week, and the new ones are long. Breaking the admin password would take most people far too long.\n\nSo do not break it. Their public notices are open to anyone who logs in as a guest. Read them. Work out who resets passwords there and who they would do it for, then write to them from the Phishing window as that person. When the reply comes you will have the admin login.\n\nThen do the job: {goal}",
-          "The job at {company} is simple: {goal}\n\nThe hard part is the admin password, which they have just made much stronger. A letter is quicker than a cracker. Log in as a guest, read the staff notices, and write to their IT person as the one colleague they would not refuse. Mention what that colleague would know.\n\nIf you would rather break the password the long way, that is up to you."
+          "The job at {company} is simple: {goal}\n\nThe hard part is the admin password, which they have just made much stronger. A letter is quicker than a cracker. Log in as a guest, read the staff notices, and write to their IT person as the one colleague they would not refuse. Mention what that colleague would know.\n\nIf you would rather break the password the long way, that is up to you.",
+          "{company} in {city} has just been told off by its insurers, and the admin password is now far too long to be worth breaking.\n\nSomebody there can reset it for you. The staff notices, which any guest can read, will tell you who that is and who they answer to. Write to them from the Phishing window as that person, and wait for the reply.\n\nOnce you have the login: {goal}",
+          "Here is the job: {goal}\n\nHere is the catch. {company} put in a new password policy this month and the admin password would take an age to crack. So ask for it. Log in as a guest, read the notices, find out who looks after passwords and who they would never say no to. Then write the letter.",
+          "You could spend the night breaking the admin password at {company}. Or you could have it sent to you.\n\nTheir notices are open to guests. Somewhere in them is the name of the person who resets passwords, and the name of somebody they trust. Be that somebody, in writing, from the Phishing window.\n\nThen: {goal}",
+          "Locks are getting better and people are not. {company} in {city} has a strong admin password and a helpful IT desk.\n\nRead the guest notices. Work out who to write to and who to write as. Mention something only that colleague would know. When the reply comes, use the login and do this: {goal}"
         ],
         "lists": [
           {
@@ -2101,28 +2205,34 @@
         "steal": {
           "titles": [
             "Who stayed where",
-            "The guest book"
+            "The guest book",
+            "Room service"
           ],
           "briefs": [
-            "Somebody stayed at {company} in {city} under a name that was not theirs, and I am paying to find out which one. The answer is in {file}.\n\nCopy it and bring it to me. The front desk does not need to know anyone looked."
+            "Somebody stayed at {company} in {city} under a name that was not theirs, and I am paying to find out which one. The answer is in {file}.\n\nCopy it and bring it to me. The front desk does not need to know anyone looked.",
+            "A man I am divorcing says he was at a conference in {city}. {company} can tell me whether he had company. It is in {file}.\n\nCopy it. My lawyer will do the rest."
           ]
         },
         "destroy": {
           "titles": [
             "Never checked in",
-            "A stay that did not happen"
+            "A stay that did not happen",
+            "Checked out early"
           ],
           "briefs": [
-            "I spent two nights at {company} in {city} that I would like never to have spent. It is all in {file}.\n\nDelete it. Do not read it first. Their security is {tier}."
+            "I spent two nights at {company} in {city} that I would like never to have spent. It is all in {file}.\n\nDelete it. Do not read it first. Their security is {tier}.",
+            "{company} in {city} keeps better records than its guests would like. One of those records is {file}, and one of those guests is paying me.\n\nDelete it. Hotels lose bookings all the time."
           ]
         },
         "record": {
           "titles": [
             "A room after all",
-            "Change of booking"
+            "Change of booking",
+            "An upgrade"
           ],
           "briefs": [
-            "{company} in {city} keeps its {records} on the server. Booking {key} needs to say \"{value}\" before the morning shift looks at it.\n\nChange the {column} and leave the rest alone."
+            "{company} in {city} keeps its {records} on the server. Booking {key} needs to say \"{value}\" before the morning shift looks at it.\n\nChange the {column} and leave the rest alone.",
+            "I have a guest arriving at {company} who must not be turned away at the desk. Booking {key} in their {records} currently says otherwise.\n\nSet the {column} to \"{value}\". Their security is {tier}."
           ]
         }
       },
@@ -2130,28 +2240,34 @@
         "steal": {
           "titles": [
             "Before it airs",
-            "Off the cutting-room floor"
+            "Off the cutting-room floor",
+            "The rushes"
           ],
           "briefs": [
-            "{company} in {city} is sitting on something it has not broadcast. I want to see {file} before the rest of the country does.\n\nCopy it. Their security is {tier}."
+            "{company} in {city} is sitting on something it has not broadcast. I want to see {file} before the rest of the country does.\n\nCopy it. Their security is {tier}.",
+            "A reporter at {company} has been asking about me for weeks. I would like to know how much they have. It will be in {file}.\n\nCopy it out of the {city} newsroom. Leave the original, or they will know to hurry."
           ]
         },
         "destroy": {
           "titles": [
             "Dead air",
-            "Pulled from the schedule"
+            "Pulled from the schedule",
+            "Spiked"
           ],
           "briefs": [
-            "{company} has a file called {file}, and my name is in it. If it goes out, I am finished in {city}.\n\nDelete it before anyone in the newsroom makes another copy."
+            "{company} has a file called {file}, and my name is in it. If it goes out, I am finished in {city}.\n\nDelete it before anyone in the newsroom makes another copy.",
+            "There is an item sitting at {company} that goes out on Friday unless it cannot be found. It is in {file}.\n\nDelete it. Their security is {tier}. Newsrooms are careless about everything but deadlines."
           ]
         },
         "record": {
           "titles": [
             "A change to the schedule",
-            "Running late"
+            "Running late",
+            "Moved to a later slot"
           ],
           "briefs": [
-            "The {records} at {company} in {city} decides what goes out and when. Slot {key} should read \"{value}\".\n\nChange the {column}. By the time anyone asks who moved it, it will have aired."
+            "The {records} at {company} in {city} decides what goes out and when. Slot {key} should read \"{value}\".\n\nChange the {column}. By the time anyone asks who moved it, it will have aired.",
+            "I have bought time on {company} and been given a slot nobody will be awake for. Their {records} has it as {key}.\n\nChange the {column} to \"{value}\". They will air what the table tells them to."
           ]
         }
       },
@@ -2159,28 +2275,34 @@
         "steal": {
           "titles": [
             "The real numbers",
-            "Results, unedited"
+            "Results, unedited",
+            "Before publication"
           ],
           "briefs": [
-            "{company} in {city} tested something for a firm I have money in, and the summary they published is too tidy. The working is in {file}.\n\nCopy it for me. I would like to know what I own."
+            "{company} in {city} tested something for a firm I have money in, and the summary they published is too tidy. The working is in {file}.\n\nCopy it for me. I would like to know what I own.",
+            "{company} in {city} has finished a piece of testing that two firms are waiting on. One of them has paid me to see it first. The file is {file}.\n\nCopy it. An hour's head start is worth a great deal in my trade."
           ]
         },
         "destroy": {
           "titles": [
             "An inconclusive test",
-            "Lost sample"
+            "Lost sample",
+            "Contaminated batch"
           ],
           "briefs": [
-            "{company} ran a test that came back the wrong way for my client. The result is in {file} and it has not been sent out yet.\n\nDelete it. A laboratory loses things now and then. Their security is {tier}."
+            "{company} ran a test that came back the wrong way for my client. The result is in {file} and it has not been sent out yet.\n\nDelete it. A laboratory loses things now and then. Their security is {tier}.",
+            "A sample went through {company} that should never have been sent. The paperwork is in {file}.\n\nDelete it and the sample is just a jar with a number on it. Do not copy it first."
           ]
         },
         "record": {
           "titles": [
             "A second reading",
-            "Retested"
+            "Retested",
+            "Within tolerance"
           ],
           "briefs": [
-            "{company} in {city} keeps a table of {records}. Sample {key} came back with a {column} my client cannot live with.\n\nMake it read \"{value}\". Nothing else in the table needs to change."
+            "{company} in {city} keeps a table of {records}. Sample {key} came back with a {column} my client cannot live with.\n\nMake it read \"{value}\". Nothing else in the table needs to change.",
+            "Somebody is going to lose a contract over sample {key} at {company}. The {column} in their {records} table is the whole of the case against them.\n\nMake it read \"{value}\". Their security is {tier}."
           ]
         }
       },
@@ -2188,28 +2310,34 @@
         "steal": {
           "titles": [
             "Behind closed doors",
-            "What the committee saw"
+            "What the committee saw",
+            "The sealed bids"
           ],
           "briefs": [
-            "{company} in {city} decided something last month in a room with the door shut. What they had in front of them is in {file}.\n\nCopy it. People who live there have a right to read it, and I intend to help them."
+            "{company} in {city} decided something last month in a room with the door shut. What they had in front of them is in {file}.\n\nCopy it. People who live there have a right to read it, and I intend to help them.",
+            "{company} in {city} is choosing a contractor this month. What the others have offered is in {file}, and my own bid is not yet written.\n\nCopy it. I would like to know what I have to beat."
           ]
         },
         "destroy": {
           "titles": [
             "Lost in the filing",
-            "Never received"
+            "Never received",
+            "An objection withdrawn"
           ],
           "briefs": [
-            "There is a file at {company} called {file}. As long as it exists, a building of mine in {city} does not.\n\nDelete it. Councils lose paperwork every day of the week."
+            "There is a file at {company} called {file}. As long as it exists, a building of mine in {city} does not.\n\nDelete it. Councils lose paperwork every day of the week.",
+            "Forty people signed something and sent it to {company}, and it is now a file called {file} that stands between me and a car park.\n\nDelete it. Their security is {tier}."
           ]
         },
         "record": {
           "titles": [
             "Permission granted",
-            "A decision reversed"
+            "A decision reversed",
+            "Approved, apparently"
           ],
           "briefs": [
-            "{company} in {city} keeps its {records} on the server. Application {key} has been given the wrong {column}.\n\nIt should say \"{value}\". Their security is {tier}, which for a council is saying something."
+            "{company} in {city} keeps its {records} on the server. Application {key} has been given the wrong {column}.\n\nIt should say \"{value}\". Their security is {tier}, which for a council is saying something.",
+            "Somebody at {company} has sat on application {key} for a year. I have stopped waiting.\n\nIn their {records}, set its {column} to \"{value}\". Nobody at a council questions a decision that is already in the system."
           ]
         }
       },
@@ -2217,28 +2345,34 @@
         "steal": {
           "titles": [
             "Whose money",
-            "A look at the books"
+            "A look at the books",
+            "A statement of account"
           ],
           "briefs": [
-            "{company} in {city} looks after money for people who would rather not be asked about it. One of them owes me. The proof is in {file}.\n\nCopy it and bring it back. Their security is {tier}, as you would expect."
+            "{company} in {city} looks after money for people who would rather not be asked about it. One of them owes me. The proof is in {file}.\n\nCopy it and bring it back. Their security is {tier}, as you would expect.",
+            "A partner of mine banks at {company} in {city} and has been telling me the money is all still there. {file} will tell me the truth.\n\nCopy it. Go carefully: a private bank does not forgive visitors."
           ]
         },
         "destroy": {
           "titles": [
             "No such account",
-            "Off the books"
+            "Off the books",
+            "A relationship ended"
           ],
           "briefs": [
-            "{company} holds a file called {file} that ties me to money I have told three governments I do not have.\n\nDelete it. Be careful in there: a private bank in {city} watches its own door."
+            "{company} holds a file called {file} that ties me to money I have told three governments I do not have.\n\nDelete it. Be careful in there: a private bank in {city} watches its own door.",
+            "{company} keeps notes on its clients, and what they have written about me is in {file}. It reads like a confession I did not make.\n\nDelete it before their compliance people open it. Their security is {tier}."
           ]
         },
         "record": {
           "titles": [
             "An account in good standing",
-            "Unfrozen"
+            "Unfrozen",
+            "A matter of status"
           ],
           "briefs": [
-            "The {records} table at {company} in {city} has account {key} down wrongly, and while it does, nothing moves.\n\nMake the {column} read \"{value}\". Then leave quietly."
+            "The {records} table at {company} in {city} has account {key} down wrongly, and while it does, nothing moves.\n\nMake the {column} read \"{value}\". Then leave quietly.",
+            "Account {key} at {company} in {city} has been marked in a way that stops it being used. The owner cannot wait for the bank to change its mind.\n\nSet the {column} to \"{value}\". One row. Then go."
           ]
         }
       },
@@ -2246,28 +2380,260 @@
         "steal": {
           "titles": [
             "Who is selling",
-            "The reserve"
+            "The reserve",
+            "The other bidders"
           ],
           "briefs": [
-            "{company} in {city} is putting something under the hammer that I mean to buy. I would bid better if I had read {file} first.\n\nCopy it. Nobody in the saleroom needs to know I have seen it."
+            "{company} in {city} is putting something under the hammer that I mean to buy. I would bid better if I had read {file} first.\n\nCopy it. Nobody in the saleroom needs to know I have seen it.",
+            "There is a sale coming up at {company}, and I am told somebody means to outbid me whatever it costs. Their name will be in {file}.\n\nCopy it from the {city} office. Their security is {tier}."
           ]
         },
         "destroy": {
           "titles": [
             "Doubtful provenance",
-            "A gap in the record"
+            "A gap in the record",
+            "Sold as seen"
           ],
           "briefs": [
-            "{company} has a file called {file} that says where a piece of mine has been. I would rather it had been nowhere.\n\nDelete it before the catalogue goes to print. Their security is {tier}."
+            "{company} has a file called {file} that says where a piece of mine has been. I would rather it had been nowhere.\n\nDelete it before the catalogue goes to print. Their security is {tier}.",
+            "{company} in {city} has written down something about a piece I am selling that would halve what it fetches. The file is {file}.\n\nDelete it. Buyers pay for what they are told."
           ]
         },
         "record": {
           "titles": [
             "Withdrawn from sale",
-            "A lot changes hands"
+            "A lot changes hands",
+            "Passed in"
           ],
           "briefs": [
-            "{company} in {city} lists its {records} on the server. Lot {key} should not go the way it is going.\n\nChange its {column} to \"{value}\" before the sale opens."
+            "{company} in {city} lists its {records} on the server. Lot {key} should not go the way it is going.\n\nChange its {column} to \"{value}\" before the sale opens.",
+            "Lot {key} at {company} must not sell this week. I do not care what their {records} says the owner wants.\n\nChange the {column} to \"{value}\" and let them sort it out after the sale."
+          ]
+        }
+      },
+      "freight": {
+        "steal": {
+          "titles": [
+            "Where the lorries go",
+            "The manifest"
+          ],
+          "briefs": [
+            "{company} moves goods out of {city} for a firm I compete with. What they carry, and for whom, is in {file}.\n\nCopy it. I would like to know whose customers to call.",
+            "Something of mine was loaded onto a {company} lorry and has not been seen since. Their own paperwork will say where it went: {file}.\n\nBring me a copy. Their security is {tier}."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "Fell off a lorry",
+            "No record of dispatch"
+          ],
+          "briefs": [
+            "A load left {company}'s yard in {city} that officially never existed. {file} says otherwise.\n\nDelete it, and the paperwork will agree with the driver.",
+            "{company} has kept a file called {file} that shows exactly who was at the wheel, and when. A friend of mine was at the wheel.\n\nMake it gone. Their security is {tier}."
+          ]
+        },
+        "record": {
+          "titles": [
+            "Delivered, signed for",
+            "Held at the depot"
+          ],
+          "briefs": [
+            "Consignment {key} is sitting in {company}'s {records} with the wrong {column}, and while it is, nothing moves.\n\nChange it to \"{value}\". The depot in {city} does what the table says.",
+            "I need a delivery to go astray, on paper. In {company}'s {records}, find {key} and set the {column} to \"{value}\".\n\nBy the time anyone walks to the loading bay to check, it will not matter."
+          ]
+        }
+      },
+      "clinic": {
+        "steal": {
+          "titles": [
+            "A second opinion, privately",
+            "What the clinic charged"
+          ],
+          "briefs": [
+            "{company} in {city} billed a relative of mine for treatment I do not believe she had. The proof is in {file}.\n\nCopy it. I am taking them to court and I would like to arrive prepared.",
+            "A man who is suing my client says he has been too ill to work. {company} knows how often he has actually been in. It is all in {file}.\n\nBring me a copy. Their security is {tier}."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "A missed appointment",
+            "Not on our books"
+          ],
+          "briefs": [
+            "I was a patient at {company} for a while, under circumstances I do not discuss. {file} discusses them.\n\nDelete it. Do not read it. I will know if you have.",
+            "{company} in {city} is being bought, and the buyers will go through everything. One file must not be there when they do: {file}.\n\nDelete it. Their security is {tier}."
+          ]
+        },
+        "record": {
+          "titles": [
+            "Paid in full",
+            "Account settled"
+          ],
+          "briefs": [
+            "{company} in {city} is chasing a patient for money they do not have. Patient {key}, in the {records} table.\n\nSet the {column} to \"{value}\" and the letters will stop.",
+            "A clerical matter at {company}. In their {records}, entry {key} has an {column} that is costing somebody their credit.\n\nMake it say \"{value}\". Change nothing else in the row."
+          ]
+        }
+      },
+      "law": {
+        "steal": {
+          "titles": [
+            "Privileged",
+            "The other side's papers"
+          ],
+          "briefs": [
+            "{company} in {city} acts for the people I am up against, and what they plan to say in court is in {file}.\n\nCopy it. This is the sort of thing lawyers call unthinkable, which is why it works.",
+            "My own solicitors at {company} will not tell me what is in my own file. So I am going round them. It is called {file}.\n\nCopy it for me. Their security is {tier}."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "Lost in chambers",
+            "Struck from the record"
+          ],
+          "briefs": [
+            "{company} holds a file called {file}. If it reaches a judge, I lose a house.\n\nDelete it from the {city} server. Solicitors mislay things. Let them think they mislaid this.",
+            "There is a note at {company} of a conversation I was assured would never be written down. It was written down. The file is {file}.\n\nRemove it. Their security is {tier}."
+          ]
+        }
+      },
+      "retail": {
+        "steal": {
+          "titles": [
+            "Customer research",
+            "What they pay their suppliers"
+          ],
+          "briefs": [
+            "{company} is opening across the road from me in {city}. Everything I need to know about how they mean to do it is in {file}.\n\nCopy it. I intend to be ready for them.",
+            "I supply {company}, and I am fairly sure I am being paid less than the firm that used to. {file} will settle it.\n\nBring me a copy. Their security is {tier}."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "Stock discrepancy",
+            "Written off"
+          ],
+          "briefs": [
+            "{company} in {city} has noticed that things go missing from its storeroom, and somebody has started writing it down in {file}.\n\nDelete it. A friend of mine works in that storeroom.",
+            "There is a file at {company} called {file} that a certain manager is going to use to sack half a shop. I represent the half.\n\nMake it disappear. Their security is {tier}."
+          ]
+        }
+      },
+      "energy": {
+        "steal": {
+          "titles": [
+            "Reading the meter",
+            "The plans"
+          ],
+          "briefs": [
+            "{company} supplies half of {city} and tells the regulator one set of numbers. I think it keeps another. I think the other is {file}.\n\nCopy it. Somebody ought to compare the two.",
+            "I am bidding for work that {company} currently does, and it would help to know how they do it. {file} would help a great deal.\n\nBring it back. Their security is {tier}."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "A fault on the line",
+            "Unrecorded outage"
+          ],
+          "briefs": [
+            "{company} in {city} wrote up something that went wrong last winter, and my employer's name is all over it. The file is {file}.\n\nDelete it. The lights stayed on. That is all anyone needs to remember.",
+            "{file}, on the {company} server, is the one thing that puts a friend of mine on shift the night it mattered.\n\nRemove it. Their security is {tier}."
+          ]
+        },
+        "record": {
+          "titles": [
+            "Reconnected",
+            "A change of tariff"
+          ],
+          "briefs": [
+            "{company} has cut somebody off who cannot be without power this month. Account {key}, in their {records}.\n\nSet the {column} to \"{value}\". The engineers in {city} follow the table.",
+            "One account at {company}, number {key}. Its {column} is wrong, or at least it is not what I want.\n\nChange it to \"{value}\". Their security is {tier}."
+          ]
+        }
+      },
+      "credit": {
+        "steal": {
+          "titles": [
+            "Who owes what",
+            "The loan book"
+          ],
+          "briefs": [
+            "A man is asking me to lend him money and swears he owes none. {company} in {city} would know. It is in {file}.\n\nCopy it. I like to check a reference.",
+            "{company} is quietly in trouble and I would like to know how much before everybody else does. The answer is in {file}.\n\nBring me a copy. Their security is {tier}."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "Debt forgiven",
+            "A lost ledger"
+          ],
+          "briefs": [
+            "{company} in {city} is getting ready for its auditors, and {file} is the part of the preparation that names me.\n\nDelete it. Let them prepare something else.",
+            "There is a file at {company} called {file} that ties a loan to a signature, and the signature to me.\n\nRemove it. Without it the loan is only a number. Their security is {tier}."
+          ]
+        },
+        "record": {
+          "titles": [
+            "Repaid in full",
+            "In good standing"
+          ],
+          "briefs": [
+            "Loan {key} at {company} is about to be called in, and the person who owes it needs another month.\n\nIn their {records}, set the {column} to \"{value}\". A month is all I am buying.",
+            "{company} in {city} has a loan on its books under {key} that has the wrong {column}. A friend cannot get a mortgage until it changes.\n\nMake it read \"{value}\". Their security is {tier}."
+          ]
+        }
+      },
+      "engineering": {
+        "steal": {
+          "titles": [
+            "The drawings",
+            "Their sums"
+          ],
+          "briefs": [
+            "{company} in {city} has designed something I would have to spend three years designing myself. It is in {file}.\n\nCopy it. I will change enough that nobody can prove where it came from.",
+            "{company} is bidding against my firm, and I would like to see their working. The file is {file}.\n\nBring it back whole. Their security is {tier}."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "A failed test",
+            "Back to the drawing board"
+          ],
+          "briefs": [
+            "Something {company} built did not do what it was meant to, and somebody honest wrote it up in {file}.\n\nDelete it. The client in {city} has already paid and does not need to be worried.",
+            "{company} has kept a file called {file} that shows a rival of mine was right about something. I would rather he had no proof.\n\nRemove it. Their security is {tier}."
+          ]
+        }
+      },
+      "school": {
+        "steal": {
+          "titles": [
+            "Next week's paper",
+            "The fees ledger"
+          ],
+          "briefs": [
+            "My son sits an examination at {company} this term and is not going to pass it honestly. What he needs is in {file}.\n\nCopy it. I am aware of how this sounds.",
+            "{company} in {city} tells parents it has no money, and then builds a boathouse. I would like to read {file} for myself.\n\nBring me a copy. Their security is {tier}."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "A clean report",
+            "Expunged"
+          ],
+          "briefs": [
+            "{company} keeps a file called {file}, and in it is one bad week of a young person's life that will follow them to every interview.\n\nDelete it. Nobody is hurt by its going.",
+            "There is a file at {company} in {city} that was never meant to leave the staff room, and it names a friend of mine unkindly: {file}.\n\nRemove it. Their security is {tier}."
+          ]
+        },
+        "record": {
+          "titles": [
+            "A pass after all",
+            "Top of the class"
+          ],
+          "briefs": [
+            "Student {key} at {company} has a {column} that will cost them a place at university. Their parents can afford me.\n\nIn the {records} table, change it to \"{value}\". One row.",
+            "I failed something at {company} twenty years ago, and it has come up again. Number {key}, in their {records}.\n\nMake the {column} say \"{value}\". Their security is {tier}, which is more than it was in my day."
           ]
         }
       }
@@ -2302,6 +2668,137 @@
           "Tobias Pike again. Same sort of thing as before, different door: {company} in {city}. I have put the rate up a little, since you have not let me down."
         ],
         "signoff": "T. Pike"
+      },
+      {
+        "id": "abara",
+        "name": "Chidi Abara",
+        "blurb": "A reporter who cannot get anyone to go on the record.",
+        "minRating": 14,
+        "sectors": [
+          "council",
+          "broadcast",
+          "energy",
+          "clinic",
+          "school"
+        ],
+        "intros": [
+          "My name is Chidi Abara. I write for a paper you will not have read. {company} in {city} is lying to the people who pay for it, and I cannot prove it by asking politely.",
+          "Chidi Abara, reporter. I have never paid for a story before and I am not proud of it. But {company} has left me no other way in."
+        ],
+        "again": [
+          "Abara again. The last one ran on page four, and nobody has sued. That makes this the {times} time I have come to you. {company} now.",
+          "Chidi here. My editor has stopped asking where I get things, which I take as approval. Next is {company} in {city}."
+        ],
+        "signoff": "Chidi"
+      },
+      {
+        "id": "quill",
+        "name": "Leonie Quill",
+        "blurb": "Buys and sells things at auction, mostly for other people.",
+        "minRating": 22,
+        "sectors": [
+          "auction",
+          "bank",
+          "hotel",
+          "law",
+          "retail"
+        ],
+        "intros": [
+          "Leonie Quill. I buy for clients who prefer not to be seen bidding. To do that well I need to know things {company} would rather keep to itself.",
+          "I am Leonie Quill. You were recommended by somebody who did not want to be named, which is the best sort of recommendation. I have a use for {company} in {city}."
+        ],
+        "again": [
+          "Leonie again. My client was delighted, and has no idea you exist. This is the {times} thing I have asked of you: {company}.",
+          "Quill. There is another sale coming and another firm with something I need: {company} in {city}. Same arrangement, and a little more for your trouble."
+        ],
+        "signoff": "L.Q."
+      },
+      {
+        "id": "stroud",
+        "name": "Wendell Stroud",
+        "blurb": "A union man who has run out of patience.",
+        "minRating": 28,
+        "sectors": [
+          "freight",
+          "retail",
+          "engineering",
+          "energy",
+          "lab"
+        ],
+        "intros": [
+          "Wendell Stroud. I have spent thirty years asking firms like {company} to do the decent thing. Now I am asking you to help me make them.",
+          "Stroud is the name. I speak for people at {company} in {city} who cannot speak for themselves without losing their jobs. I am told you do not ask many questions. Good."
+        ],
+        "again": [
+          "Stroud again. The last lot settled within the week, which they have never done before. {company} is the {times} I have brought you, and it will not be the last.",
+          "Wendell Stroud. You did right by my members last time. There are more of them at {company} in {city}, and the management is no better."
+        ],
+        "signoff": "W. Stroud"
+      },
+      {
+        "id": "vale",
+        "name": "Dr Imani Vale",
+        "blurb": "A researcher whose results keep being buried.",
+        "minRating": 36,
+        "sectors": [
+          "lab",
+          "clinic",
+          "engineering",
+          "school"
+        ],
+        "intros": [
+          "I am Dr Imani Vale. I do not do this sort of thing, and I would be grateful if you remembered that. But {company} is sitting on work that people need to see.",
+          "Dr Vale. I was given your name by a former student. {company} in {city} has something that belongs in the open, and I have tried every proper way of getting it there."
+        ],
+        "again": [
+          "Dr Vale again. I have stopped pretending I do not do this sort of thing. This is the {times} time, and it concerns {company}.",
+          "Imani Vale. What you brought me last time is in print now, with nobody's name on it but mine. There is more of the same at {company} in {city}."
+        ],
+        "signoff": "I. Vale"
+      },
+      {
+        "id": "castellan",
+        "name": "Castellan",
+        "blurb": "Keeps the books for people who do not keep books.",
+        "minRating": 48,
+        "sectors": [
+          "bank",
+          "credit",
+          "law",
+          "auction",
+          "hotel"
+        ],
+        "intros": [
+          "You may call me Castellan. I look after money for people who would rather not be asked where it came from. {company} has become an inconvenience to one of them.",
+          "Castellan. I do not use this board as a rule. But {company} in {city} needs attention, and my usual people are known there."
+        ],
+        "again": [
+          "Castellan. You were discreet, so here I am a {times} time. {company} this time. The arrangement is as before, improved slightly in your favour.",
+          "It is Castellan. A client of mine has a difficulty with {company} in {city}. I told them I knew somebody reliable. Do not make a liar of me."
+        ],
+        "signoff": "C."
+      },
+      {
+        "id": "ferrow",
+        "name": "Mags Ferrow",
+        "blurb": "A landlord with more buildings than permits.",
+        "minRating": 60,
+        "sectors": [
+          "council",
+          "bank",
+          "energy",
+          "engineering",
+          "credit"
+        ],
+        "intros": [
+          "Mags Ferrow. I own a fair bit of {city} and I would own more if {company} would get out of my way. I pay well and I pay on the day.",
+          "Ferrow. Somebody said you were the one to ask when the paperwork will not come right by itself. The paperwork is at {company}."
+        ],
+        "again": [
+          "Mags again. That last business went through without a murmur. This is the {times} time I have needed you, and it is {company}.",
+          "Ferrow here. Another building, another office that thinks it can keep me waiting: {company} in {city}. You know what I am like by now."
+        ],
+        "signoff": "Mags"
       }
     ]
   }
