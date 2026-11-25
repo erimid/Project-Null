@@ -162,5 +162,6 @@ function betray(state: GameState, content: Content): void {
     body: 'We hear our file is for sale at Lowtide, and that you were the one selling it.\n\nThe job is off. We will remember this.',
     timeMs: state.clock.gameTimeMs,
     read: false,
+    kind: 'work',
   });
 }

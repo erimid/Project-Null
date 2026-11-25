@@ -12,7 +12,8 @@ import { stream } from './streams';
 import { noteIntrusion } from './trace';
 import { needsMemory } from './loadout';
 import { SURGE_SPEED } from './moves';
-import { fileDef, findAccount, securityOf, findConnection, findProgram, findServer, ownedProgram, once, sendMail, type Content } from './world';
+import { fileDef, findAccount, securityOf, findConnection, findProgram, findServer, ownedProgram, once, type Content } from './world';
+import { noteStolen, teachNow } from './record';
 import { rewriteOnCopy } from './stages';
 
 /** A program this many levels below a layer can't touch it at all. */
@@ -339,7 +340,7 @@ function finish(state: GameState, content: Content, connection: Connection, task
       }
       // The first compiled program taken home brings Wren's note on decompiling.
       if (fileDef(content, connection.serverId, file.name)?.program && content.programs.some((item) => item.kind === 'decompile')) {
-        once(state, 'decompiling', () => sendMail(state, content, 'decompiling'));
+        once(state, 'decompiling', () => teachNow(state, content, 'decompiling'));
       }
       // A file the job rewrites as it is copied comes home saying something else.
       const rewritten = rewriteOnCopy(state, content, connection.serverId, file.name);
@@ -352,6 +353,7 @@ function finish(state: GameState, content: Content, connection: Connection, task
         ...(file.encrypted ? { encrypted: file.encrypted } : {}),
         ...(said ? { text: said } : {}),
       });
+      noteStolen(state, file.sizeGq);
       if (!tidy) serverState.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs, text: `file copied: ${file.name}`, byPlayer: true });
       return;
     }

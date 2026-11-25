@@ -29,6 +29,8 @@ import { sellsOnly, sellsProgram, shopFor, shopPrice } from './market';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
 import { LEAK_WRONG_PAY, endSide, leakOf, namedSuspect, termsKept, tidyNotes } from './side';
 import { findConnection, findProgram, findServer, noteProgress, once, securityOf, sendMail, type Content } from './world';
+import { queueLesson, reportJob, teachNow } from './record';
+import { checkFeats } from './feats';
 
 /** A hand-written contract, or a job on this game's board. */
 export function findContract(state: GameState, content: Content, id: string | null): ContractDef | undefined {
@@ -169,8 +171,8 @@ export function acceptContract(state: GameState, content: Content, connectionId:
   // A twist that holds memory down takes hold now: whatever no longer fits goes back to the drive.
   if (isJob(contract) && contract.legend) trimLoadout(state, content);
   startContract(state, content, contract);
-  once(state, 'firstAccept', () => sendMail(state, content, 'firstAccept'));
-  if (stagesOf(contract).length > 1) once(state, 'stages', () => sendMail(state, content, 'stages'));
+  once(state, 'firstAccept', () => teachNow(state, content, 'firstAccept'));
+  if (stagesOf(contract).length > 1) once(state, 'stages', () => teachNow(state, content, 'stages'));
   advanceContract(state, content, contract);
   return null;
 }
@@ -242,6 +244,13 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   noteRating(state);
   state.contracts.completed.push(contract.id);
   state.contracts.activeId = null;
+  // What the client adds to the payment note: who the leak was, the bonus for the terms.
+  const notes: string[] = [];
+  if (leak) notes.push(wrong ? `It was not ${named}. It was ${leak.culprit}, which I found out the expensive way. Half, as agreed.` : `${named} it was. Paid in full.`);
+  if (contract.terms) notes.push(bonus > 0 ? `That includes the bonus of ${bonus} credits, as agreed.` : 'No bonus this time: the terms were not kept.');
+  // The job report, written before the job's own state is cleared. The heist's crew is still on record here.
+  const watch = state.record.watch;
+  const report = reportJob(state, contract, pay, notes);
   resetKinds(state);
   // Work that gets done is the best cover: attention fades a little with every delivery.
   coolHeat(state, content, JOB_COOL);
@@ -259,20 +268,23 @@ export function deliverContract(state: GameState, content: Content, choiceId?: s
   state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== contract.id);
   postJobs(state, content);
   if (choice?.reply) {
-    state.messages.push({ id: `m${state.nextId++}`, from: choice.reply.from, subject: choice.reply.subject, body: choice.reply.body, timeMs: state.clock.gameTimeMs, read: false });
+    state.messages.push({ id: `m${state.nextId++}`, from: choice.reply.from, subject: choice.reply.subject, body: choice.reply.body, timeMs: state.clock.gameTimeMs, read: false, kind: 'story' });
   } else {
     sendMail(state, content, 'paid', { client: contract.client, title: contract.title, pay: String(pay) });
     const paid = state.messages[state.messages.length - 1]!;
-    if (leak) paid.body += wrong ? `\n\nIt was not ${named}. It was ${leak.culprit}, which I found out the expensive way. Half, as agreed.` : `\n\n${named} it was. Paid in full.`;
-    if (contract.terms) paid.body += bonus > 0 ? `\n\nThat includes the bonus of ${bonus} credits, as agreed.` : '\n\nNo bonus this time: the terms were not kept.';
+    for (const note of notes) paid.body += `\n\n${note}`;
   }
   const part = payPart(state, content, contract.part);
   if (part) {
     const paid = state.messages[state.messages.length - 1]!;
-    paid.body += `\n\nAlso enclosed, as agreed: one ${part} module. It is on your Workbench.`;
+    const note = `Also enclosed, as agreed: one ${part} module. It is on your Workbench.`;
+    paid.body += `\n\n${note}`;
+    report.notes.push(note);
   }
-  once(state, 'firstDelivery', () => sendMail(state, content, 'firstDelivery'));
+  state.record.watch = null;
+  once(state, 'firstDelivery', () => queueLesson(state, content, 'firstDelivery'));
   noteProgress(state, content);
+  report.feats.push(...checkFeats(state, report, watch ?? undefined));
   // A big, loud job may draw an enemy hacker's eye.
   maybeScheduleRaid(state, content, pay);
   return null;

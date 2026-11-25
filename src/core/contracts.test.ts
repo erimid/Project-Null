@@ -406,3 +406,44 @@ describe('saves', () => {
     expect(() => deserializeGame(serializeGame(state, ''))).toThrow(/damaged/);
   });
 });
+
+describe('the job report and the career record', () => {
+  it('reports a delivered job, files the payment note as a read receipt, and counts it', () => {
+    const { state, ok, here, accept, breakIn, wait } = harness();
+    accept('steal');
+    breakIn();
+    ok({ type: 'runProgram', connectionId: here(), target: { kind: 'copyFile', file: 'secret.dat' } });
+    wait(7);
+    wait(3);
+    ok({ type: 'disconnectAll' });
+    ok({ type: 'deliverContract' });
+    const report = state.record.last!;
+    expect(report).toMatchObject({ contractId: 'steal', title: 'Steal it', kind: 'steal', pay: 300, ratingBefore: 0, ratingAfter: 1, notes: [] });
+    // corp's monitor noticed: a trace was running when the player left.
+    expect(report.closestMs).toBeGreaterThan(0);
+    // Ten seconds inside, give or take the tick the connection opened on.
+    expect(report.insideMs).toBeGreaterThanOrEqual(9_000);
+    // Logged in, copied and left: those lines are still in corp's log.
+    expect(report.linesLeft).toBeGreaterThan(0);
+    expect(state.record.stats).toMatchObject({ jobs: { steal: 1 }, cleanRun: 0 });
+    expect(state.record.stats.stolenGq).toBeGreaterThan(0);
+    const paid = state.messages.find((message) => message.subject === 'Paid: Steal it')!;
+    expect(paid).toMatchObject({ kind: 'receipt', read: true });
+    expect(state.record.watch).toBeNull();
+    expect(state.record.feats).toContain('first-job');
+  });
+
+  it('keeps the closest a trace came, and counts a trace that lands', () => {
+    const { state, here, accept, breakIn } = harness();
+    accept('steal');
+    breakIn();
+    const connection = state.connections[0]!;
+    connection.trace = { status: 'active', graceMs: 0, elapsedMs: 0, hopMs: [5000] };
+    tick(state, 1000, content);
+    expect(state.record.watch!.closestMs).toBeLessThanOrEqual(4000);
+    tick(state, 5000, content);
+    expect(state.connections.some((other) => other.id === here())).toBe(false);
+    expect(state.record.stats.caught).toBe(1);
+    expect(state.record.stats.caughtSinceJob).toBe(true);
+  });
+});

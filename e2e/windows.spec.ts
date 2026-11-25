@@ -8,6 +8,9 @@ import { MAIN_WINDOWS, openWindow, sectionsOf, windowOf } from './ui';
 for (const save of ['mid', 'late']) {
   test(`every window, ${save}-career`, async ({ page }, info) => {
     await openGame(page, save);
+    // The saved career's last job report may be up: put it away first.
+    const report = page.locator('.jobreport button', { hasText: 'Done' });
+    if (await report.isVisible()) await report.click();
     // The saved career is loaded, not a new game: the first job's guide is gone.
     await expect(page.locator('.guide:visible')).toHaveCount(0);
     await checkScreen(page, info, 'loaded');

@@ -70,7 +70,12 @@ test('the guided first job, start to pay', async ({ page }, info) => {
     await page.waitForTimeout(200);
   }
   expect(await guide.isVisible(), 'the first job was finished in time').toBe(false);
+  // The job report comes up on delivery, and goes with one press.
+  const report = page.locator('.jobreport');
+  await expect(report, 'the job report').toBeVisible();
   await checkScreen(page, info, 'delivered');
+  await report.locator('button', { hasText: 'Done' }).click();
+  await expect(report).toHaveCount(0);
   const endBalance = await page.locator('.dock__stat .dock__value.data, .pdock__stat.data').first().textContent();
   expect(endBalance, 'the job paid').not.toBe(startBalance);
 });

@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROFILES, formatCareer, playCareer, type CareerOptions, type CareerReport, type Profile } from '../core/career';
 import type { Content } from '../core';
-import { assets, companies, contracts as allContracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story as fullStory, tuning, news, patrons, ladder, data, linesOf, series, storyOf } from './index';
+import { assets, companies, contracts as allContracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story as fullStory, tuning, news, patrons, ladder, data, events, linesOf, series, storyOf } from './index';
 
 // The scripted player plays Acts 1 and 2. Act 3 onward is checked by its own tests (see story3.test.ts): it
 // needs jobs the player bot does not do (stay in, find the hacker, swap, guard, heists) and the choice of a side.
@@ -293,5 +293,40 @@ describe('a whole career', () => {
     // Careless play never gets to the top: it is stuck in the lower titles while the tidy player is a Legend.
     expect(report.finalRating).toBeLessThan(tidy.finalRating);
     expect(report.titles.length).toBeLessThan(tidy.titles.length);
+  });
+});
+
+
+describe('a career with every side story in it', () => {
+  // Everything on the board: the side stories, each part as its turn comes, and whatever the darknet brings.
+  const full: Content = { ...content, contracts: allContracts.filter((contract) => !LATE.test(contract.id)), series, events };
+  const everything = (seed: number) => {
+    const key = `everything/${seed}`;
+    const done = cache.get(key);
+    if (done) return done;
+    const report = playCareer(full, seed, PROFILES.typical, options);
+    cache.set(key, report);
+    return report;
+  };
+
+  it.each(SEEDS)('is longer, not harder, and does not flood the player with money (seed %i)', (seed) => {
+    const plain = career(PROFILES.typical, seed);
+    const report = everything(seed);
+    expect(report.stuck).toEqual([]);
+    expect(report.titles[report.titles.length - 1]!.title).toBe(top.title);
+    const side = report.jobs.filter((job) => SIDE.has(job.id));
+    expect(side.length).toBe(SIDE.size);
+    // Thirty more written jobs take the place of about half as many standing ones: a fifth more work, for whoever wants it.
+    expect(report.jobs.length).toBeGreaterThanOrEqual(plain.jobs.length + 8);
+    expect(report.jobs.length).toBeLessThanOrEqual(plain.jobs.length + 24);
+    // It pays better than the board, as written work does, and not so well that the shelves empty.
+    expect(report.earned).toBeLessThan(plain.earned * 1.5);
+    expect(report.kitCompleteMinutes).toBeNull();
+    const rate = (jobs: typeof report.jobs) => jobs.reduce((sum, job) => sum + job.pay, 0) / jobs.reduce((sum, job) => sum + job.seconds, 0);
+    const board = report.jobs.filter((job) => job.job && job.ratingAfter >= 25);
+    expect(rate(side)).toBeGreaterThan(0.9 * rate(board));
+    expect(rate(side)).toBeLessThan(1.6 * rate(board));
+    // Nobody is caught doing them.
+    expect(side.reduce((sum, job) => sum + job.caught, 0)).toBe(0);
   });
 });

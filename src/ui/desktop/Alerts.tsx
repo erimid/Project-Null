@@ -36,7 +36,7 @@ export function Alerts() {
     const timers = new Set<ReturnType<typeof setTimeout>>();
     const stop = session.subscribeEvents((event) => {
       if (event.type === 'moduleGained' && event.bought) return;
-      const shown = ['disconnected', 'promoted', 'pointEarned', 'moduleGained', 'raidStarted', 'barrierFell', 'portShut', 'raidEnded', 'stepDone', 'serverTaken', 'allyLetGo'];
+      const shown = ['disconnected', 'promoted', 'pointEarned', 'moduleGained', 'raidStarted', 'barrierFell', 'portShut', 'raidEnded', 'stepDone', 'serverTaken', 'allyLetGo', 'feat'];
       if (!shown.includes(event.type)) return;
       const chorus = content.chorus?.rival.handle;
       const alert: Alert = event.type === 'serverTaken'
@@ -63,6 +63,8 @@ export function Alerts() {
         ? { id: nextId++, severe: true, opens: 'contract' as const, title: `${event.who} let go`, text: `${event.server} is yours to hold now, or be quick.` }
         : event.type === 'stepDone'
         ? { id: nextId++, severe: false, good: true, opens: 'contract' as const, title: `Step ${event.step} of ${event.of} done`, text: 'The client has sent the next step.' }
+        : event.type === 'feat'
+        ? { id: nextId++, severe: false, good: true, opens: 'gateway' as const, title: `Feat: ${event.name}`, text: event.text }
         : event.type === 'promoted'
         ? { id: nextId++, severe: false, good: true, title: 'New standing', text: `The board now knows you as ${event.title}.` }
         : event.type === 'pointEarned'

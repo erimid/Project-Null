@@ -1,4 +1,4 @@
-import { canReadTrace, findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, pointsFree, traceHeld, traceReport, tracesByUrgency, WANTED_LEVELS, wantedEffects, wantedLevel, whyNotMove, type GameState } from '../../core';
+import { canReadTrace, countsUnread, findServer, gameDate, isConnected, mostUrgentTrace, ownedProgram, pointsFree, traceHeld, traceReport, tracesByUrgency, WANTED_LEVELS, wantedEffects, wantedLevel, whyNotMove, type GameState } from '../../core';
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 import { formatDay, formatTime, ratingStep } from '../format';
@@ -237,7 +237,7 @@ export function BottomBar({ docked = false, top = false, middle }: BarProps = {}
   const tracing = useGame((game) => mostUrgentTrace(game, content) !== undefined);
   const noticed = useGame((game) => game.connections.some((connection) => connection.trace.status === 'pending'));
   const running = useGame((game) => game.tasks.length);
-  const unread = useGame((game) => game.messages.filter((message) => !message.read).length);
+  const unread = useGame((game) => game.messages.filter((message) => countsUnread(message, content)).length);
   const points = useGame((game) => pointsFree(game, content));
   const connections = useGame((game) => game.connections.length);
   const layouts = useWindows();

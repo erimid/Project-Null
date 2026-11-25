@@ -24,6 +24,7 @@ import type { SeriesDef } from '../content/series';
 import type { DataMarketDef } from '../content/data';
 import type { AssetDef } from '../content/assets';
 import { twistOn } from './legend';
+import { mailKind, queueLesson, releaseLesson } from './record';
 import { backfillChoices, backfillTrust } from './patrons';
 import { backfillStoryFlags } from './story';
 import { builtProgram } from './builds';
@@ -212,13 +213,16 @@ export function sendMail(state: GameState, content: Content, key: MailKey, fill:
   const values: Record<string, string> = { handle: state.player.handle, ...fill };
   const write = (text: string) => text.replace(/\{(\w+)\}/g, (whole, name: string) => values[name] ?? whole);
   const mail = content.mail[key];
+  const kind = mailKind(key);
   state.messages.push({
     id: `m${state.nextId++}`,
     from: write(mail.from),
     subject: write(mail.subject),
     body: write(mail.body),
     timeMs: state.clock.gameTimeMs,
-    read: false,
+    // A receipt is filed as read: the job report says the same.
+    read: kind === 'receipt',
+    kind,
   });
 }
 
@@ -233,63 +237,67 @@ export function sendLetter(state: GameState, letter: { readonly from: string; re
     body: write(letter.body),
     timeMs: state.clock.gameTimeMs,
     read: false,
+    kind: 'story',
   });
 }
 
 /** Sends the messages that depend on how far the player has got. Safe to call any time. */
 export function noteProgress(state: GameState, content: Content): void {
   if (state.contracts.completed.length >= content.rules.harderSecurityAfter) {
-    once(state, 'harderSecurity', () => sendMail(state, content, 'harderSecurity'));
+    once(state, 'harderSecurity', () => queueLesson(state, content, 'harderSecurity'));
   }
   if (state.contracts.completed.length >= content.rules.phishingAfter && content.people.asks.length > 0) {
-    once(state, 'phishing', () => sendMail(state, content, 'phishing'));
+    once(state, 'phishing', () => queueLesson(state, content, 'phishing'));
   }
   if (state.contracts.completed.length >= content.rules.hardwareAfter && content.hardware.some((part) => part.price > 0)) {
-    once(state, 'hardware', () => sendMail(state, content, 'hardware'));
+    once(state, 'hardware', () => queueLesson(state, content, 'hardware'));
   }
   if (state.contracts.completed.length >= content.rules.jobsAfter) {
-    once(state, 'jobs', () => sendMail(state, content, 'jobs'));
+    once(state, 'jobs', () => queueLesson(state, content, 'jobs'));
   }
   if (state.player.rating >= content.rules.linksAfterRating) {
-    once(state, 'links', () => sendMail(state, content, 'links'));
+    once(state, 'links', () => queueLesson(state, content, 'links'));
   }
   if (state.player.rating >= content.rules.shopsAfterRating && content.servers.some((server) => server.kind === 'board' && server.shop?.contracts === false)) {
-    once(state, 'shops', () => sendMail(state, content, 'shops'));
+    once(state, 'shops', () => queueLesson(state, content, 'shops'));
   }
   if (state.player.rating >= content.rules.gearAfterRating) {
-    once(state, 'gear', () => sendMail(state, content, 'gear'));
+    once(state, 'gear', () => queueLesson(state, content, 'gear'));
   }
   // The broker writes once the first property is within reach, and the board once legend contracts start.
   const firstAsset = Math.min(...(content.assets ?? []).map((asset) => asset.minRating));
   if (state.player.rating >= firstAsset) once(state, 'property', () => sendMail(state, content, 'property'));
   if (content.rules.legendRating !== undefined && state.player.rating >= content.rules.legendRating) {
-    once(state, 'legend', () => sendMail(state, content, 'legend'));
+    once(state, 'legend', () => queueLesson(state, content, 'legend'));
   }
   // At the rating where enemy hackers start to take an interest, the fixer gives warning.
   if (state.player.rating >= content.rules.raidMinRating && content.rivals.length > 0) {
-    once(state, 'defence', () => sendMail(state, content, 'defence'));
+    once(state, 'defence', () => queueLesson(state, content, 'defence'));
   }
   // The best rating is what skill points come from (see skills.ts).
   state.player.bestRating = Math.max(state.player.bestRating, state.player.rating);
   if (state.player.bestRating >= content.rules.skillPointRating && content.skills.length > 0) {
-    once(state, 'skills', () => sendMail(state, content, 'skills'));
+    once(state, 'skills', () => queueLesson(state, content, 'skills'));
   }
   if (state.contracts.completed.length >= content.rules.workbenchAfter && content.modules.length > 0) {
     once(state, 'workbench', () => {
-      // A first pair to try: one that makes a program faster, one that keeps it out of sight.
+      // A first pair to try: one that makes a program faster, one that keeps it out of sight. They are on the bench
+      // from now; the letter about them may wait a job or two (see record.ts).
       for (const id of ['swift', 'quiet']) {
         if (content.modules.some((module) => module.id === id)) state.player.parts[`${id}:1`] = (state.player.parts[`${id}:1`] ?? 0) + 1;
       }
-      sendMail(state, content, 'workbench');
+      queueLesson(state, content, 'workbench');
     });
   }
   // Once there is more to own than memory will hold, Wren explains what to carry.
   if (state.contracts.completed.length > content.rules.hardwareAfter && content.hardware.some((part) => part.slot === 'memory')) {
-    once(state, 'memory', () => sendMail(state, content, 'memory'));
+    once(state, 'memory', () => queueLesson(state, content, 'memory'));
   }
   if (state.contracts.completed.length >= content.rules.modelsAfter && content.models.length > 0) {
-    once(state, 'models', () => sendMail(state, content, 'models'));
+    once(state, 'models', () => queueLesson(state, content, 'models'));
   }
+  // Wren's lessons go out one per delivered job (see record.ts).
+  releaseLesson(state, content);
 }
 
 /** Does `name` the first time it is called for this game, and nothing after that. */

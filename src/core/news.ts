@@ -231,7 +231,10 @@ export function printEditions(state: GameState, content: Content): void {
   const mine = items.find((entry) => entry.kind === 'you' && entry.serverId);
   if (mine) {
     const company = findServer(content, mine.serverId!)?.name ?? 'a company';
-    once(state, 'news', () => sendMail(state, content, 'news', { company }));
+    once(state, 'news', () => {
+      sendMail(state, content, 'news', { company });
+      state.record.lessons.lastJob = state.contracts.completed.length;
+    });
   }
   state.news.editions = state.news.editions.slice(-KEEP_EDITIONS);
 }
