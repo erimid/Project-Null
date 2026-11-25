@@ -1,0 +1,133 @@
+{
+  "id": "corran-analytical",
+  "name": "Corran Analytical",
+  "kind": "company",
+  "owner": "Corran Analytical NV",
+  "hostname": "CA-LIMS-03",
+  "address": "134.58.212.40",
+  "city": "Leuven",
+  "country": "Belgium",
+  "lat": 50.88,
+  "lon": 4.7,
+  "blurb": "A contract laboratory. What its sample table says is what its clients are told.",
+  "listed": false,
+  "security": {
+    "password": 3,
+    "proxy": 2,
+    "firewall": 3,
+    "monitor": 2
+  },
+  "traceSecondsPerHop": 12,
+  "relayDelay": 1.0,
+  "banner": [
+    "CORRAN ANALYTICAL NV",
+    "Laboratory information system CA-LIMS-03",
+    "Results are released to clients at 09:00 on the working day after sign-off."
+  ],
+  "accounts": [
+    {
+      "user": "lims",
+      "role": "admin",
+      "name": "Quality Manager"
+    }
+  ],
+  "files": [
+    {
+      "name": "accreditation.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "content": {
+        "kind": "text",
+        "text": "Corran Analytical is accredited for water, soil and food testing. Accreditation is reviewed each April. The reviewer looks at twenty results chosen at random."
+      }
+    },
+    {
+      "name": "sample_register_2034.dat",
+      "sizeGq": 4,
+      "access": "admin"
+    },
+    {
+      "name": "client_billing.dat",
+      "sizeGq": 2,
+      "access": "admin"
+    },
+    {
+      "name": "lab_meeting_notes.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "quality",
+      "content": {
+        "kind": "text",
+        "text": "Meeting, 6 March. Item 1: the centrifuge. Item 2: who keeps moving the centrifuge. Item 3: Tomasz asked again about the Aldous Foods retests and was told again that it is a commercial matter."
+      }
+    },
+    {
+      "name": "instrument_log.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "quality",
+      "content": {
+        "kind": "text",
+        "text": "Instrument 4, 2 March: run AF-0931, AF-0932, AF-0933. Operator T. Bryl. No faults. Readings saved to the register at 16:12."
+      }
+    },
+    {
+      "name": "retest_request_0932.txt",
+      "sizeGq": 1,
+      "access": "admin",
+      "folder": "quality",
+      "content": {
+        "kind": "text",
+        "text": "RETEST REQUEST. Sample AF-0932, Aldous Foods, infant cereal, batch 7C.\n\nFirst result, 2 March, instrument 4, operator T. Bryl: FAIL. Mould toxin at three times the limit.\n\nClient telephoned 3 March. Retest requested 'on a fresh portion supplied by the client'. Retest, 4 March: pass.\n\nQuality Manager's note: release the retest. The first result is to be treated as an instrument fault. No fault was logged."
+      }
+    },
+    {
+      "name": "instrument_raw_0302.dat",
+      "sizeGq": 4,
+      "access": "admin"
+    }
+  ],
+  "logs": [
+    {
+      "minutesAgo": 4200,
+      "text": "login lims from 134.58.212.9"
+    },
+    {
+      "minutesAgo": 4195,
+      "text": "record changed: AF-0932"
+    },
+    {
+      "minutesAgo": 4190,
+      "text": "logout lims"
+    }
+  ],
+  "records": {
+    "title": "Samples",
+    "columns": [
+      "Sample",
+      "Result"
+    ],
+    "rows": [
+      [
+        "AF-0931",
+        "pass"
+      ],
+      [
+        "AF-0932",
+        "pass"
+      ],
+      [
+        "AF-0933",
+        "pass"
+      ],
+      [
+        "WT-1180",
+        "pass"
+      ],
+      [
+        "SL-2044",
+        "fail"
+      ]
+    ]
+  }
+}

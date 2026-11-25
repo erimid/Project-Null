@@ -1,1 +1,276 @@
-[]
+[
+  {
+    "id": "till",
+    "name": "The short till",
+    "client": "Inês Carvalho",
+    "parts": [
+      {
+        "contract": "till-audit",
+        "invite": {
+          "subject": "They say I took it",
+          "body": "{handle},\n\nYou do not know me. A porter I used to work with says you can look at things other people cannot.\n\nI was sacked last week for money I did not take. I cannot pay much, but I can pay. There is a job on the board with my name on it.\n\nInês Carvalho"
+        }
+      },
+      {
+        "contract": "till-charges",
+        "invite": {
+          "subject": "Room 412",
+          "body": "{handle}, thank you. I read it four times after you did.\n\nI know where the money went. I need one more thing to prove it. It is on the board.\n\nInês"
+        }
+      },
+      {
+        "contract": "till-booking",
+        "gapHours": 8,
+        "invite": {
+          "subject": "The first of the month",
+          "body": "{handle}, the accountants come in a few days. I have thought about what to do with what you found, and it is one small change. On the board.\n\nInês"
+        }
+      }
+    ]
+  },
+  {
+    "id": "air",
+    "name": "Dead air",
+    "client": "Jonas Hale",
+    "parts": [
+      {
+        "contract": "air-memo",
+        "invite": {
+          "subject": "A scheduling matter",
+          "body": "{handle},\n\nI am a producer at a small broadcaster a long way north. A film of mine was pulled three hours before it aired and nobody will tell me why.\n\nI am told you find things out. There is a job on the board.\n\nJonas Hale"
+        }
+      },
+      {
+        "contract": "air-cut",
+        "invite": {
+          "subject": "The only copy",
+          "body": "{handle}, so now I know. Knowing is not enough. I need the film itself, and I can no longer get to it. On the board.\n\nJonas"
+        }
+      },
+      {
+        "contract": "air-hold",
+        "invite": {
+          "subject": "One small file",
+          "body": "{handle}, I have watched it again. It is good. It should be seen. There is one thing in the way. On the board.\n\nJonas"
+        }
+      },
+      {
+        "contract": "air-slot",
+        "gapHours": 6,
+        "invite": {
+          "subject": "Thursday, nine o'clock",
+          "body": "{handle}, this is the one that will get me sacked, so I have made sure it pays you properly. On the board.\n\nJonas"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lab",
+    "name": "Within tolerance",
+    "client": "Tomasz Bryl",
+    "parts": [
+      {
+        "contract": "lab-retest",
+        "invite": {
+          "subject": "A result I did not sign",
+          "body": "{handle},\n\nI am a laboratory technician. I do not know how to write a letter like this, so I will just say it: a result of mine was changed, and what it was a result for matters.\n\nThere is a job on the board. Please look at it.\n\nTomasz Bryl"
+        }
+      },
+      {
+        "contract": "lab-raw",
+        "invite": {
+          "subject": "There is another record",
+          "body": "{handle}, thank you. I have not slept much. There is a second file they have forgotten about. On the board.\n\nTomasz"
+        }
+      },
+      {
+        "contract": "lab-result",
+        "gapHours": 10,
+        "invite": {
+          "subject": "April",
+          "body": "{handle}, I know what to do with it now. One change, and then the right person asks the right question. On the board.\n\nTomasz"
+        }
+      }
+    ]
+  },
+  {
+    "id": "tender",
+    "name": "The Wensum tender",
+    "client": "Asha Rennick",
+    "parts": [
+      {
+        "contract": "tender-note",
+        "invite": {
+          "subject": "Four hundred pounds",
+          "body": "{handle},\n\nI run a small roofing firm. I have just lost a council contract in a way I do not believe, and the council has stopped answering my letters.\n\nA friend said somebody like you might get an answer. There is a job on the board.\n\nAsha Rennick"
+        }
+      },
+      {
+        "contract": "tender-bids",
+        "invite": {
+          "subject": "The bids",
+          "body": "{handle}, I had to read that twice. I want to see the bids with my own eyes. On the board.\n\nAsha"
+        }
+      },
+      {
+        "contract": "tender-interest",
+        "invite": {
+          "subject": "A common name",
+          "body": "{handle}, look at who won. It may be nothing. I do not think it is nothing. On the board.\n\nAsha"
+        }
+      },
+      {
+        "contract": "tender-permit",
+        "gapHours": 8,
+        "invite": {
+          "subject": "Before Thursday",
+          "body": "{handle}, there is a way to stop it without anybody standing up in a meeting. On the board.\n\nAsha"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lot",
+    "name": "Lot 61",
+    "client": "Henrik Aalto",
+    "parts": [
+      {
+        "contract": "lot-provenance",
+        "invite": {
+          "subject": "A painting I know",
+          "body": "{handle},\n\nI teach school in Aarhus and I have never done anything like this. A painting that belonged to my family is about to be sold as something it is not.\n\nI have some savings. There is a job on the board.\n\nHenrik Aalto"
+        }
+      },
+      {
+        "contract": "lot-consignor",
+        "invite": {
+          "subject": "They know",
+          "body": "{handle}, they know and they are selling it anyway. I want a name. On the board.\n\nHenrik"
+        }
+      },
+      {
+        "contract": "lot-pigment",
+        "invite": {
+          "subject": "The paint",
+          "body": "{handle}, a name is not proof. Paint is proof. On the board.\n\nHenrik"
+        }
+      },
+      {
+        "contract": "lot-withdraw",
+        "gapHours": 6,
+        "invite": {
+          "subject": "Saturday",
+          "body": "{handle}, the sale is on Saturday. I need it stopped before then, and I think you can stop it with one word. On the board.\n\nHenrik"
+        }
+      }
+    ]
+  },
+  {
+    "id": "cold",
+    "name": "Cold chain",
+    "client": "Nadia Ferreira",
+    "parts": [
+      {
+        "contract": "cold-log",
+        "invite": {
+          "subject": "There was no power fault",
+          "body": "{handle},\n\nI work nights on a container quay. Something happened on my shift in April and I have been told three different stories about it since.\n\nI was given your name by a forwarder in Antwerp. There is a job on the board.\n\nNadia Ferreira"
+        }
+      },
+      {
+        "contract": "cold-claim",
+        "invite": {
+          "subject": "Somebody was paid",
+          "body": "{handle}, so it was done on purpose. Then somebody gained by it. On the board.\n\nNadia"
+        }
+      },
+      {
+        "contract": "cold-orders",
+        "invite": {
+          "subject": "A second set of orders",
+          "body": "{handle}, I think I know what they did, and I hope I am wrong. On the board.\n\nNadia"
+        }
+      },
+      {
+        "contract": "cold-plant",
+        "gapHours": 8,
+        "invite": {
+          "subject": "The people with lawyers",
+          "body": "{handle}, I was not wrong. I cannot take this to anyone here. But I know who would want it. On the board.\n\nNadia"
+        }
+      }
+    ]
+  },
+  {
+    "id": "keys",
+    "name": "Keys to every door",
+    "client": "Brigid Nolan",
+    "parts": [
+      {
+        "contract": "keys-exports",
+        "invite": {
+          "subject": "From someone who used to keep the door",
+          "body": "{handle},\n\nI ran night shifts at a security firm you will have heard of. I was let go for asking about something I saw on a console.\n\nYou are the sort of person we were paid to keep out, which is why I am writing to you. There is a job on the board.\n\nBrigid Nolan"
+        }
+      },
+      {
+        "contract": "keys-list",
+        "invite": {
+          "subject": "The file itself",
+          "body": "{handle}, a list of dates is a start. I need what was sent. On the board.\n\nBrigid"
+        }
+      },
+      {
+        "contract": "keys-quote",
+        "invite": {
+          "subject": "The client's side",
+          "body": "{handle}, now I want to see what it looks like from where the clients sit. On the board.\n\nBrigid"
+        }
+      },
+      {
+        "contract": "keys-notice",
+        "gapHours": 10,
+        "invite": {
+          "subject": "Tomorrow's status page",
+          "body": "{handle}, I have written something. It needs putting where fourteen people will read it over breakfast. On the board.\n\nBrigid"
+        }
+      }
+    ]
+  },
+  {
+    "id": "go",
+    "name": "Everything must go",
+    "client": "Silas Marr",
+    "parts": [
+      {
+        "contract": "go-freehold",
+        "invite": {
+          "subject": "A matter of valuation",
+          "body": "{handle},\n\nYour name was given to me as someone thorough. I represent parties who are owed money by a number of failing businesses, and I need certain documents before they are lost.\n\nThe work is regular and the pay is prompt. The first is on the board.\n\nSilas Marr"
+        }
+      },
+      {
+        "contract": "go-ownership",
+        "invite": {
+          "subject": "A second address",
+          "body": "{handle}, satisfactory. The same buyer appears elsewhere. On the board.\n\nS. Marr"
+        }
+      },
+      {
+        "contract": "go-permit",
+        "invite": {
+          "subject": "A small correction",
+          "body": "{handle}, this next one is a change, not a copy. I will explain when it is done. Or I will not. On the board.\n\nS. Marr"
+        }
+      },
+      {
+        "contract": "go-consignments",
+        "gapHours": 12,
+        "invite": {
+          "subject": "The last of it",
+          "body": "{handle}, one more, and I owe you some candour with it. On the board.\n\nS. Marr"
+        }
+      }
+    ]
+  }
+]

@@ -18,6 +18,11 @@ import backroom from './servers/backroom.json';
 import tinShed from './servers/tin-shed.json';
 import vargaSurplus from './servers/varga-surplus.json';
 import lowtideExchange from './servers/lowtide-exchange.json';
+import marisolGrand from './servers/marisol-grand.json';
+import northlight from './servers/northlight.json';
+import corranAnalytical from './servers/corran-analytical.json';
+import wensumCouncil from './servers/wensum-council.json';
+import varrickLowe from './servers/varrick-lowe.json';
 import tallisLibrary from './servers/tallis-library.json';
 import kestrelNet from './servers/kestrel-net.json';
 import polarMesh from './servers/polar-mesh.json';
@@ -139,7 +144,7 @@ export const gameInfo = parseGameInfo(gameJson);
 export const sites = parseSites(sitesJson);
 export const tuning = parseTuning(tuningJson);
 export const servers = parseServers(
-  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint, daylightBoard, ostranderAnnex, continuityOffice, officeDirector, takenGrid, takenRelay, orreryMinistry, orreryVault, wrenRelay, wrenDesk, halvorsenCore, wickNode, harbourRelay, tinShed, vargaSurplus, lowtideExchange],
+  [gateway, relayRegistry, backroom, tallisLibrary, kestrelNet, polarMesh, paulistaTeleport, halvorsen, meridianFreight, corvaneMutual, ashgrovePoly, aldergateFinch, sunderbyKraft, tesseraWater, calderFacilities, calderRe, gatehousePerimeter, brennanMarsh, mirrorjackRig, halftoneDen, sableRelay, stillPoint, daylightBoard, ostranderAnnex, continuityOffice, officeDirector, takenGrid, takenRelay, orreryMinistry, orreryVault, wrenRelay, wrenDesk, halvorsenCore, wickNode, harbourRelay, tinShed, vargaSurplus, lowtideExchange, marisolGrand, northlight, corranAnalytical, wensumCouncil, varrickLowe],
   'servers/',
 );
 export const programs = parsePrograms(programsJson);

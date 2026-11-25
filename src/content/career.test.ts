@@ -9,12 +9,14 @@
 import { describe, expect, it } from 'vitest';
 import { PROFILES, formatCareer, playCareer, type CareerOptions, type CareerReport, type Profile } from '../core/career';
 import type { Content } from '../core';
-import { assets, companies, contracts as allContracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story as fullStory, tuning, news, patrons, ladder, data, linesOf, storyOf } from './index';
+import { assets, companies, contracts as allContracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story as fullStory, tuning, news, patrons, ladder, data, linesOf, series, storyOf } from './index';
 
 // The scripted player plays Acts 1 and 2. Act 3 onward is checked by its own tests (see story3.test.ts): it
 // needs jobs the player bot does not do (stay in, find the hacker, swap, guard, heists) and the choice of a side.
 const LATE = /^(act[34]|after)-/;
-const contracts = allContracts.filter((contract) => !LATE.test(contract.id));
+// The side stories are left out too: they are extra work for whoever wants it, played through by their own test (see stories.test.ts).
+const SIDE = new Set(series.flatMap((story) => story.parts.map((part) => part.contract)));
+const contracts = allContracts.filter((contract) => !LATE.test(contract.id) && !SIDE.has(contract.id));
 const act12 = linesOf(fullStory).find((line) => line.id === 'main')!.beats.filter((beat) => !/^(a3|a4|end)-/.test(beat.id));
 const story = storyOf([{ id: 'main', beats: act12 }]);
 
