@@ -59,7 +59,8 @@ export function advanceSeries(state: GameState, content: Content): void {
     if (!contract || state.player.rating < gateRating(state, contract) || !conditionMet(state, contract.when)) continue;
     if (done > 0 && now < (progress?.atMs ?? 0) + (part.gapHours ?? SERIES_GAP_HOURS) * HOUR) continue;
     state.flags.push(openFlag(series.id, done));
-    if (part.invite) sendLetter(state, { from: series.client, ...part.invite });
+    // A client's letter about work: it is filed with the work, not with the story.
+    if (part.invite) sendLetter(state, { from: series.client, ...part.invite }, {}, 'work');
   }
 }
 
