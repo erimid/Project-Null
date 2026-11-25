@@ -964,6 +964,752 @@
       }
     }
   ],
+  "more": {
+    "count": 12,
+    "stems": [
+      "Fennimore",
+      "Gallowgate",
+      "Hartwell",
+      "Inchmere",
+      "Kingsmead",
+      "Lowther",
+      "Marchmont",
+      "Netherby",
+      "Oakhanger",
+      "Penrose",
+      "Ravensworth",
+      "Stanhope",
+      "Tolland",
+      "Wexcombe"
+    ],
+    "cities": [
+      {
+        "city": "Antwerp",
+        "country": "Belgium",
+        "lat": 51.22,
+        "lon": 4.4,
+        "net": "84.199"
+      },
+      {
+        "city": "Bilbao",
+        "country": "Spain",
+        "lat": 43.26,
+        "lon": -2.93,
+        "net": "88.12"
+      },
+      {
+        "city": "Montevideo",
+        "country": "Uruguay",
+        "lat": -34.9,
+        "lon": -56.16,
+        "net": "190.64"
+      },
+      {
+        "city": "Tbilisi",
+        "country": "Georgia",
+        "lat": 41.72,
+        "lon": 44.79,
+        "net": "31.146"
+      },
+      {
+        "city": "Hanoi",
+        "country": "Vietnam",
+        "lat": 21.03,
+        "lon": 105.85,
+        "net": "113.160"
+      },
+      {
+        "city": "Perth",
+        "country": "Australia",
+        "lat": -31.95,
+        "lon": 115.86,
+        "net": "124.150"
+      }
+    ],
+    "sectors": [
+      {
+        "id": "hotel",
+        "suffixes": [
+          "Hotels",
+          "Grand Hotel",
+          "Lodge",
+          "Suites"
+        ],
+        "blurbs": [
+          "Reservations, room keys and the night audit.",
+          "A hotel group's front-of-house system."
+        ],
+        "tag": "HSP",
+        "files": [
+          {
+            "name": "guest_register_{year}.dat",
+            "sizeGb": [
+              4,
+              9
+            ],
+            "folder": "front desk"
+          },
+          {
+            "name": "room_charges_q{q}.dat",
+            "sizeGb": [
+              2,
+              6
+            ],
+            "folder": "accounts"
+          },
+          {
+            "name": "night_audit_{n}.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "accounts",
+            "text": "NIGHT AUDIT · {company}, {city}\nSheet {n}\n\nRooms let: 212. Rooms paid for: 209.\n\nThe three that do not balance are all on the fourth floor and all signed for by {staff}. This is the second month running. I have been told not to chase it.\n\nCash drawer correct. Bar float short by one bottle, as usual.\n\n{staff2}, night manager"
+          },
+          {
+            "name": "vip_handling_notes.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "front desk",
+            "text": "FRONT DESK ONLY · do not print\n\nThe guest in the corner suite is registered under his driver's name. Use it. Do not use the other one, even if he does.\n\nThe two parties arriving Thursday must not be given rooms on the same floor, must not be seated in the same half of the restaurant, and must not learn that the other is in the building. Both have asked. Both tip.\n\nAny journalist who asks is told we do not confirm who stays here. That includes the ones who already know.\n\n{staff}"
+          },
+          {
+            "name": "welcome.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "access": "guest",
+            "folder": "front desk",
+            "text": "Welcome to {company}, {city}.\n\nCheck-in is from three in the afternoon. Reservations can be changed at the desk or by telephone. We do not confirm or discuss the names of our guests."
+          }
+        ],
+        "installers": [
+          {
+            "name": "keycard_pacer.mod",
+            "sizeGb": [
+              1,
+              2
+            ],
+            "chance": 0.35,
+            "part": {
+              "id": "quiet",
+              "grade": 1
+            }
+          },
+          {
+            "name": "booking_engine.bin",
+            "sizeGb": [
+              2,
+              4
+            ],
+            "chance": 0.25,
+            "program": {
+              "modules": [
+                {
+                  "id": "swift",
+                  "grade": 1
+                },
+                {
+                  "id": "tidy",
+                  "grade": 1
+                }
+              ]
+            }
+          }
+        ],
+        "records": {
+          "title": "Reservations",
+          "columns": [
+            "Booking",
+            "Status"
+          ],
+          "key": "RS-{n}",
+          "values": [
+            "confirmed",
+            "checked in",
+            "checked out",
+            "no show",
+            "comped"
+          ]
+        }
+      },
+      {
+        "id": "broadcast",
+        "suffixes": [
+          "Broadcasting",
+          "Media",
+          "Radio",
+          "Television"
+        ],
+        "blurbs": [
+          "Running orders, advertiser accounts and tape that never aired.",
+          "A regional broadcaster's newsroom system."
+        ],
+        "tag": "AIR",
+        "files": [
+          {
+            "name": "advertiser_accounts_{year}.dat",
+            "sizeGb": [
+              2,
+              6
+            ],
+            "folder": "sales"
+          },
+          {
+            "name": "unaired_interview_{n}.dat",
+            "sizeGb": [
+              6,
+              14
+            ],
+            "folder": "newsroom"
+          },
+          {
+            "name": "source_list.dat",
+            "sizeGb": [
+              1,
+              2
+            ],
+            "folder": "newsroom"
+          },
+          {
+            "name": "editorial_memo.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "newsroom",
+            "text": "MEMO\nFrom: {staff}, head of news\nTo: the desk\n\nThe piece on the harbour contract does not run tonight. It does not run tomorrow either. Sales took a call this afternoon from our largest advertiser, and then I took a call from upstairs.\n\nNobody is to say it was spiked. It is \"held for legal\". Keep the tape. Keep your notes somewhere that is not this system.\n\n{staff}"
+          },
+          {
+            "name": "legal_hold_note.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "legal",
+            "text": "TO: {staff}\nFROM: {staff2}, legal\n\nYou asked whether we can be made to hand over the unaired interview. Yes, if anyone thinks to ask for it by name. So far nobody has, because nobody outside the building knows it exists.\n\nI would keep it that way. I would also stop calling it \"the interview\" in the file name."
+          },
+          {
+            "name": "schedule.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "access": "guest",
+            "folder": "public",
+            "text": "{company} · {city}\n\nNews on the hour. Listings change without notice. Complaints in writing to the duty editor."
+          }
+        ],
+        "installers": [
+          {
+            "name": "stream_packer.mod",
+            "sizeGb": [
+              1,
+              2
+            ],
+            "chance": 0.35,
+            "part": {
+              "id": "compact",
+              "grade": 1
+            }
+          },
+          {
+            "name": "playout_agent.bin",
+            "sizeGb": [
+              2,
+              4
+            ],
+            "chance": 0.25,
+            "program": {
+              "modules": [
+                {
+                  "id": "swift",
+                  "grade": 1
+                },
+                {
+                  "id": "quiet",
+                  "grade": 1
+                }
+              ]
+            }
+          }
+        ],
+        "records": {
+          "title": "Running order",
+          "columns": [
+            "Slot",
+            "Item"
+          ],
+          "key": "SL-{n}",
+          "values": [
+            "cleared to air",
+            "held for legal",
+            "pulled",
+            "repeat"
+          ]
+        }
+      },
+      {
+        "id": "lab",
+        "suffixes": [
+          "Laboratories",
+          "Analytics",
+          "Biolabs",
+          "Testing"
+        ],
+        "blurbs": [
+          "Samples in, results out, and a register of both.",
+          "A contract laboratory's results system."
+        ],
+        "tag": "LAB",
+        "files": [
+          {
+            "name": "trial_results_q{q}.dat",
+            "sizeGb": [
+              4,
+              10
+            ],
+            "folder": "results"
+          },
+          {
+            "name": "sample_register_{year}.dat",
+            "sizeGb": [
+              2,
+              5
+            ],
+            "folder": "results"
+          },
+          {
+            "name": "client_billing.dat",
+            "sizeGb": [
+              1,
+              3
+            ],
+            "folder": "accounts"
+          },
+          {
+            "name": "retest_request_{n}.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "mail",
+            "text": "From: {staff}\nTo: {staff2}\nRe: batch {n}\n\nThe client has seen the result for batch {n} and would like it run again. They would like it run again until it passes. They did not put it that way, but they did offer to pay for as many runs as it takes.\n\nI have said we report what we find. Please find something on the next run, or the one after.\n\n{staff}"
+          },
+          {
+            "name": "lab_meeting_notes.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "mail",
+            "text": "LAB MEETING · NOTES\n\nPresent: {staff}, {staff2}.\n\n1. Freezer 3 failed over the weekend. Forty samples lost. The register will say they were \"consumed in testing\".\n2. The accreditation visit is next month. {staff2} to make sure the calibration log has entries for the months it does not have entries for.\n3. Whoever is using the admin login to play music, stop."
+          },
+          {
+            "name": "accreditation.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "access": "guest",
+            "folder": "public",
+            "text": "{company}, {city}.\n\nAccredited for water, soil and materials testing. Results are released to the commissioning client only."
+          }
+        ],
+        "installers": [
+          {
+            "name": "assay_scrubber.mod",
+            "sizeGb": [
+              1,
+              2
+            ],
+            "chance": 0.35,
+            "part": {
+              "id": "tidy",
+              "grade": 1
+            }
+          },
+          {
+            "name": "sequencer_driver.bin",
+            "sizeGb": [
+              2,
+              4
+            ],
+            "chance": 0.25,
+            "program": {
+              "modules": [
+                {
+                  "id": "swift",
+                  "grade": 2
+                }
+              ]
+            }
+          }
+        ],
+        "records": {
+          "title": "Samples",
+          "columns": [
+            "Sample",
+            "Result"
+          ],
+          "key": "S-{n}",
+          "values": [
+            "passed",
+            "failed",
+            "retest ordered",
+            "withdrawn"
+          ]
+        }
+      },
+      {
+        "id": "council",
+        "suffixes": [
+          "Borough Council",
+          "District Council",
+          "Civic Offices",
+          "Town Hall"
+        ],
+        "blurbs": [
+          "Planning, permits and the minutes of every meeting.",
+          "A local council's records system."
+        ],
+        "tag": "GOV",
+        "files": [
+          {
+            "name": "planning_applications_{year}.dat",
+            "sizeGb": [
+              3,
+              8
+            ],
+            "folder": "planning"
+          },
+          {
+            "name": "tender_bids_q{q}.dat",
+            "sizeGb": [
+              2,
+              5
+            ],
+            "folder": "procurement"
+          },
+          {
+            "name": "parking_fines_ledger.dat",
+            "sizeGb": [
+              1,
+              3
+            ],
+            "folder": "finance"
+          },
+          {
+            "name": "closed_session_minutes_{n}.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "committee",
+            "text": "CLOSED SESSION · NOT FOR PUBLICATION\nItem {n}\n\nPresent: Cllr {staff} (chair), Cllr {staff2}, the clerk.\n\nThe chair reminded members that the application for the old depot site was refused twice by officers. Cllr {staff2} said officers do not have to stand for election.\n\nResolved, three votes to two: granted. The two asked for their names to be recorded. The chair asked the clerk whether that was strictly necessary."
+          },
+          {
+            "name": "tender_note.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "procurement",
+            "text": "From: {staff}\nTo: procurement\n\nThe lowest bid for the road contract is not the one we will be recommending. Score \"local knowledge\" at double weight and run the sheet again. If it still comes out wrong, tell me before you tell anyone else.\n\n{staff}"
+          },
+          {
+            "name": "opening_hours.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "access": "guest",
+            "folder": "public",
+            "text": "{company}, {city}.\n\nThe public counter is open on weekday mornings. Planning decisions are published when they are published."
+          }
+        ],
+        "installers": [
+          {
+            "name": "forms_trimmer.mod",
+            "sizeGb": [
+              1,
+              2
+            ],
+            "chance": 0.35,
+            "part": {
+              "id": "compact",
+              "grade": 1
+            }
+          },
+          {
+            "name": "register_sync.bin",
+            "sizeGb": [
+              2,
+              3
+            ],
+            "chance": 0.25,
+            "program": {
+              "modules": [
+                {
+                  "id": "tidy",
+                  "grade": 1
+                },
+                {
+                  "id": "compact",
+                  "grade": 1
+                }
+              ]
+            }
+          }
+        ],
+        "records": {
+          "title": "Permits",
+          "columns": [
+            "Application",
+            "Decision"
+          ],
+          "key": "PA-{n}",
+          "values": [
+            "granted",
+            "refused",
+            "deferred",
+            "under appeal"
+          ]
+        }
+      },
+      {
+        "id": "bank",
+        "suffixes": [
+          "Private Bank",
+          "& Co. Bankers",
+          "Trust",
+          "Wealth"
+        ],
+        "blurbs": [
+          "Holdings, transfers and clients who value discretion.",
+          "A private bank's client system."
+        ],
+        "tag": "PVB",
+        "files": [
+          {
+            "name": "client_holdings_{year}.dat",
+            "sizeGb": [
+              3,
+              8
+            ],
+            "folder": "clients"
+          },
+          {
+            "name": "wire_transfers_q{q}.dat",
+            "sizeGb": [
+              2,
+              6
+            ],
+            "folder": "operations"
+          },
+          {
+            "name": "account_opening_files.dat",
+            "sizeGb": [
+              2,
+              4
+            ],
+            "folder": "clients"
+          },
+          {
+            "name": "relationship_note_{n}.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "clients",
+            "text": "RELATIONSHIP NOTE · client {n}\n\nLunch with the client. He would like the three accounts to become nine, each under a different company, none of them in his name. He asked whether that would be a problem. I said it would be a fee.\n\nHe also asked who can see this note. I said very few people.\n\n{staff}"
+          },
+          {
+            "name": "compliance_memo.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "compliance",
+            "text": "MEMO\nFrom: {staff2}, compliance\nTo: {staff}\n\nI have now flagged the same client four times. Each time the flag has been cleared by someone senior to me, within the hour, with no reason given.\n\nI am not asking you to act on the flags. I am asking you to stop clearing them from my login.\n\n{staff2}"
+          },
+          {
+            "name": "enquiries.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "access": "guest",
+            "folder": "public",
+            "text": "{company}, {city}.\n\nNew clients are seen by introduction only. We do not confirm whether any person holds an account with us."
+          }
+        ],
+        "installers": [
+          {
+            "name": "ledger_ghost.mod",
+            "sizeGb": [
+              1,
+              2
+            ],
+            "chance": 0.3,
+            "part": {
+              "id": "quiet",
+              "grade": 2
+            }
+          },
+          {
+            "name": "settlement_daemon.bin",
+            "sizeGb": [
+              2,
+              4
+            ],
+            "chance": 0.25,
+            "program": {
+              "modules": [
+                {
+                  "id": "tidy",
+                  "grade": 2
+                }
+              ]
+            }
+          }
+        ],
+        "records": {
+          "title": "Accounts",
+          "columns": [
+            "Account",
+            "Status"
+          ],
+          "key": "AC-{n}",
+          "values": [
+            "active",
+            "frozen",
+            "under review",
+            "closed"
+          ]
+        }
+      },
+      {
+        "id": "auction",
+        "suffixes": [
+          "Auctioneers",
+          "Fine Art",
+          "Sale Rooms",
+          "& Sons"
+        ],
+        "blurbs": [
+          "Lots, reserves and who is really selling.",
+          "An auction house's sale-room system."
+        ],
+        "tag": "LOT",
+        "files": [
+          {
+            "name": "consignor_list_{year}.dat",
+            "sizeGb": [
+              1,
+              3
+            ],
+            "folder": "sales"
+          },
+          {
+            "name": "sale_results_q{q}.dat",
+            "sizeGb": [
+              2,
+              5
+            ],
+            "folder": "sales"
+          },
+          {
+            "name": "reserve_prices.dat",
+            "sizeGb": [
+              1,
+              2
+            ],
+            "folder": "sales"
+          },
+          {
+            "name": "provenance_note_{n}.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "specialists",
+            "text": "PROVENANCE · lot {n}\n\nThe catalogue will say \"private collection, by descent\". That is true as far as it goes. It does not go as far as the years 1939 to 1951, for which we have nothing.\n\nThe consignor would prefer that nobody asks. The buyer we have in mind will not.\n\n{staff}"
+          },
+          {
+            "name": "telephone_bids_memo.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "folder": "sales",
+            "text": "From: {staff2}\nTo: sale room staff\n\nOn Thursday there will be two telephone bidders on the evening's main lot. One of them is the consignor's brother-in-law. He is there to keep the price moving and he is not to win.\n\nIf he looks like winning, {staff} will have trouble with the line.\n\n{staff2}"
+          },
+          {
+            "name": "catalogue.txt",
+            "sizeGb": [
+              1,
+              1
+            ],
+            "access": "guest",
+            "folder": "public",
+            "text": "{company}, {city}.\n\nViewing is the three days before each sale. Estimates do not include the buyer's premium. The identity of sellers is confidential."
+          }
+        ],
+        "installers": [
+          {
+            "name": "gavel_unroll.mod",
+            "sizeGb": [
+              1,
+              2
+            ],
+            "chance": 0.35,
+            "part": {
+              "id": "swift",
+              "grade": 1
+            }
+          },
+          {
+            "name": "bid_relay.bin",
+            "sizeGb": [
+              2,
+              3
+            ],
+            "chance": 0.25,
+            "program": {
+              "modules": [
+                {
+                  "id": "quiet",
+                  "grade": 1
+                },
+                {
+                  "id": "compact",
+                  "grade": 1
+                }
+              ]
+            }
+          }
+        ],
+        "records": {
+          "title": "Lots",
+          "columns": [
+            "Lot",
+            "Status"
+          ],
+          "key": "LOT-{n}",
+          "values": [
+            "sold",
+            "unsold",
+            "withdrawn",
+            "sold after the sale"
+          ]
+        }
+      }
+    ]
+  },
   "jobs": {
     "clients": [
       "A competitor",
@@ -1349,6 +2095,214 @@
           "Bonus of {bonus} credits if you never use more than {relays} relays on the way in."
         ]
       }
-    }
+    },
+    "trades": {
+      "hotel": {
+        "steal": {
+          "titles": [
+            "Who stayed where",
+            "The guest book"
+          ],
+          "briefs": [
+            "Somebody stayed at {company} in {city} under a name that was not theirs, and I am paying to find out which one. The answer is in {file}.\n\nCopy it and bring it to me. The front desk does not need to know anyone looked."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "Never checked in",
+            "A stay that did not happen"
+          ],
+          "briefs": [
+            "I spent two nights at {company} in {city} that I would like never to have spent. It is all in {file}.\n\nDelete it. Do not read it first. Their security is {tier}."
+          ]
+        },
+        "record": {
+          "titles": [
+            "A room after all",
+            "Change of booking"
+          ],
+          "briefs": [
+            "{company} in {city} keeps its {records} on the server. Booking {key} needs to say \"{value}\" before the morning shift looks at it.\n\nChange the {column} and leave the rest alone."
+          ]
+        }
+      },
+      "broadcast": {
+        "steal": {
+          "titles": [
+            "Before it airs",
+            "Off the cutting-room floor"
+          ],
+          "briefs": [
+            "{company} in {city} is sitting on something it has not broadcast. I want to see {file} before the rest of the country does.\n\nCopy it. Their security is {tier}."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "Dead air",
+            "Pulled from the schedule"
+          ],
+          "briefs": [
+            "{company} has a file called {file}, and my name is in it. If it goes out, I am finished in {city}.\n\nDelete it before anyone in the newsroom makes another copy."
+          ]
+        },
+        "record": {
+          "titles": [
+            "A change to the schedule",
+            "Running late"
+          ],
+          "briefs": [
+            "The {records} at {company} in {city} decides what goes out and when. Slot {key} should read \"{value}\".\n\nChange the {column}. By the time anyone asks who moved it, it will have aired."
+          ]
+        }
+      },
+      "lab": {
+        "steal": {
+          "titles": [
+            "The real numbers",
+            "Results, unedited"
+          ],
+          "briefs": [
+            "{company} in {city} tested something for a firm I have money in, and the summary they published is too tidy. The working is in {file}.\n\nCopy it for me. I would like to know what I own."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "An inconclusive test",
+            "Lost sample"
+          ],
+          "briefs": [
+            "{company} ran a test that came back the wrong way for my client. The result is in {file} and it has not been sent out yet.\n\nDelete it. A laboratory loses things now and then. Their security is {tier}."
+          ]
+        },
+        "record": {
+          "titles": [
+            "A second reading",
+            "Retested"
+          ],
+          "briefs": [
+            "{company} in {city} keeps a table of {records}. Sample {key} came back with a {column} my client cannot live with.\n\nMake it read \"{value}\". Nothing else in the table needs to change."
+          ]
+        }
+      },
+      "council": {
+        "steal": {
+          "titles": [
+            "Behind closed doors",
+            "What the committee saw"
+          ],
+          "briefs": [
+            "{company} in {city} decided something last month in a room with the door shut. What they had in front of them is in {file}.\n\nCopy it. People who live there have a right to read it, and I intend to help them."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "Lost in the filing",
+            "Never received"
+          ],
+          "briefs": [
+            "There is a file at {company} called {file}. As long as it exists, a building of mine in {city} does not.\n\nDelete it. Councils lose paperwork every day of the week."
+          ]
+        },
+        "record": {
+          "titles": [
+            "Permission granted",
+            "A decision reversed"
+          ],
+          "briefs": [
+            "{company} in {city} keeps its {records} on the server. Application {key} has been given the wrong {column}.\n\nIt should say \"{value}\". Their security is {tier}, which for a council is saying something."
+          ]
+        }
+      },
+      "bank": {
+        "steal": {
+          "titles": [
+            "Whose money",
+            "A look at the books"
+          ],
+          "briefs": [
+            "{company} in {city} looks after money for people who would rather not be asked about it. One of them owes me. The proof is in {file}.\n\nCopy it and bring it back. Their security is {tier}, as you would expect."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "No such account",
+            "Off the books"
+          ],
+          "briefs": [
+            "{company} holds a file called {file} that ties me to money I have told three governments I do not have.\n\nDelete it. Be careful in there: a private bank in {city} watches its own door."
+          ]
+        },
+        "record": {
+          "titles": [
+            "An account in good standing",
+            "Unfrozen"
+          ],
+          "briefs": [
+            "The {records} table at {company} in {city} has account {key} down wrongly, and while it does, nothing moves.\n\nMake the {column} read \"{value}\". Then leave quietly."
+          ]
+        }
+      },
+      "auction": {
+        "steal": {
+          "titles": [
+            "Who is selling",
+            "The reserve"
+          ],
+          "briefs": [
+            "{company} in {city} is putting something under the hammer that I mean to buy. I would bid better if I had read {file} first.\n\nCopy it. Nobody in the saleroom needs to know I have seen it."
+          ]
+        },
+        "destroy": {
+          "titles": [
+            "Doubtful provenance",
+            "A gap in the record"
+          ],
+          "briefs": [
+            "{company} has a file called {file} that says where a piece of mine has been. I would rather it had been nowhere.\n\nDelete it before the catalogue goes to print. Their security is {tier}."
+          ]
+        },
+        "record": {
+          "titles": [
+            "Withdrawn from sale",
+            "A lot changes hands"
+          ],
+          "briefs": [
+            "{company} in {city} lists its {records} on the server. Lot {key} should not go the way it is going.\n\nChange its {column} to \"{value}\" before the sale opens."
+          ]
+        }
+      }
+    },
+    "regulars": [
+      {
+        "id": "marrow",
+        "name": "Odile Marrow",
+        "blurb": "An insurance investigator who checks claims the hard way.",
+        "minRating": 10,
+        "intros": [
+          "My name is Odile Marrow. I look into insurance claims, and {company} has made one I do not believe. I was told you are careful.",
+          "Odile Marrow, claims investigator. I have a file on {company} in {city} with a hole in the middle of it. You are going to help me fill it."
+        ],
+        "again": [
+          "Marrow again. This is the {times} time I have come to you, which should tell you what I thought of the last one. {company} this time.",
+          "Odile Marrow. Another claim that does not add up, another company that hopes I will not look: {company}. You know how I like it done."
+        ],
+        "signoff": "O. Marrow"
+      },
+      {
+        "id": "pike",
+        "name": "Tobias Pike",
+        "blurb": "A debt collector with a long list and a short temper.",
+        "minRating": 18,
+        "intros": [
+          "Tobias Pike. People owe my clients money and say they have none. {company} in {city} knows otherwise. I am told you can ask them without knocking.",
+          "Pike. I collect debts. I have not used you before, so do this one properly and there will be more."
+        ],
+        "again": [
+          "Pike. The {times} job I have sent you, and I do not send work twice to people who waste my time. {company} is next on the list.",
+          "Tobias Pike again. Same sort of thing as before, different door: {company} in {city}. I have put the rate up a little, since you have not let me down."
+        ],
+        "signoff": "T. Pike"
+      }
+    ]
   }
 }

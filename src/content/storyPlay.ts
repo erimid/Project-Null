@@ -5,9 +5,9 @@
  */
 import { createGame, postJobs, syncWithContent, worldFor, type Content, type GameState } from '../core';
 import { advanceStory, storyOffered } from '../core/story';
-import { events, assets, chorus, companies, contracts, data, endings, gameInfo, hardware, ladder, mail, models, modules, news, patrons, people, programs, rivals, servers, skills, story, tuning } from './index';
+import { events, series, assets, chorus, companies, contracts, data, endings, gameInfo, hardware, ladder, mail, models, modules, news, patrons, people, programs, rivals, servers, skills, story, tuning } from './index';
 
-const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, events, data, assets, rules: tuning, chorus, endings };
+const written: Content = { servers, startingServers: gameInfo.startingServers, programs, startingPrograms: gameInfo.startingPrograms, contracts, mail, people, models, hardware, companies, skills, modules, rivals, story, news, patrons, ladder, events, series, data, assets, rules: tuning, chorus, endings };
 
 export const HOUR = 3_600_000;
 export const content = worldFor(written, 31);

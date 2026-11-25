@@ -158,7 +158,7 @@
       "oldAccounts": ["Account {years} years old. {jobs} jobs closed, none disputed", "Member for {years} years. {jobs} jobs closed"],
       "newClients": ["A new client", "A generous stranger", "Someone in a hurry"],
       "oldClients": ["A private client", "A long-standing account", "A client who pays well"],
-      "trades": ["freight=a haulage firm", "clinic=a private clinic", "law=a law practice", "retail=a shop chain", "energy=an energy supplier", "credit=a credit union", "engineering=an engineering firm", "school=a school"]
+      "trades": ["freight=a haulage firm", "clinic=a private clinic", "law=a law practice", "retail=a shop chain", "energy=an energy supplier", "credit=a credit union", "engineering=an engineering firm", "school=a school", "hotel=a hotel group", "broadcast=a broadcaster", "lab=a testing laboratory", "council=a local council", "bank=a private bank", "auction=an auction house"]
     }
   }
 }
