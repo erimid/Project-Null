@@ -73,6 +73,18 @@ export interface Rules {
   readonly ringToleranceDegrees: number;
   /** Seconds a missed lock adds to the task. */
   readonly ringMissSeconds: number;
+  /** Seconds a flashing letter of a password stays lit for the catch. */
+  readonly catchLitSeconds: number;
+  /** Seconds a press on the wrong letter adds. */
+  readonly catchMissSeconds: number;
+  /** Naming the proxy's real address takes this fraction off the time left. */
+  readonly pickCutFactor: number;
+  /** Seconds a decoy named by mistake adds. */
+  readonly pickMissSeconds: number;
+  /** Turning the key where it fits takes this fraction off the time left. */
+  readonly keyCutFactor: number;
+  /** Seconds a key turned where it does not fit adds. */
+  readonly keyMissSeconds: number;
   /** Seconds a Monitor Bypass as strong as the monitor keeps it blind. */
   readonly monitorBlindSeconds: number;
   /** Seconds a version 1 Trace Jammer freezes a trace. */

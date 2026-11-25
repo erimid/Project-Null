@@ -365,6 +365,35 @@ export function uiSound(name: UiSound): void {
   UI_SOUNDS[name]();
 }
 
+/**
+ * Sounds for the program on the stage (see desktop/windows/Stage.tsx): each
+ * show has its own small voice. `n` is a count that pitches some of them.
+ */
+const STAGE_SOUNDS = {
+  // A letter or a ring locking: a tick that climbs as the code fills in.
+  letter: (n: number) => play([{ freq: 520 + 70 * Math.min(n, 9), seconds: 0.07, wave: 'square', level: 0.05 }]),
+  // A mirror peeled off the proxy: a short falling slip.
+  peel: (n: number) => play([{ freq: 980 - 60 * Math.min(n, 8), seconds: 0.12, wave: 'triangle', level: 0.05, to: 420 }]),
+  // A run of blocks landing on the drive.
+  block: (n: number) => play([{ freq: n % 8 === 0 ? 392 : 330, seconds: 0.04, wave: 'triangle', level: 0.03 }]),
+  // Something rubbed out.
+  wipe: () => play([{ freq: 300, seconds: 0.09, wave: 'sawtooth', level: 0.03, to: 140 }]),
+  // The hands-on part done right: two bright notes.
+  caught: () =>
+    play([
+      { freq: 880, seconds: 0.07, wave: 'triangle', level: 0.07 },
+      { freq: 1320, at: 0.06, seconds: 0.16, wave: 'triangle', level: 0.07 },
+    ]),
+  // And done wrong: a low buzz.
+  miss: () => play([{ freq: 150, seconds: 0.16, wave: 'sawtooth', level: 0.06, to: 110 }]),
+} as const;
+
+export type StageSound = keyof typeof STAGE_SOUNDS;
+
+export function stageSound(name: StageSound, n = 0): void {
+  STAGE_SOUNDS[name](n);
+}
+
 /** Starts the sound effects. Call once, after the game has loaded. */
 export function startSfx(): void {
   session.subscribeEvents((event) => EFFECTS[event.type](event));

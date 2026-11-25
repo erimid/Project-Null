@@ -41,6 +41,7 @@ import './globe.css';
 import './story.css';
 import './feedback.css';
 import './record.css';
+import './breakin.css';
 import './comfort.css';
 import './designs.css';
 import { DockFrame, DockNav } from './DockFrame';

@@ -53,6 +53,7 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
     points: [
       'Security shows what stands in your way. Break the password, then log in.',
       'Bypass a proxy before changing records or logs, and a firewall before touching files.',
+      'A running program shows on a strip of its own. Some have a shortcut to do by hand. All of them finish without it.',
       'Before you leave, open Logs and scrub the lines that show you were there.',
       'Each connection gets its own tab along the top of the screen.',
     ],

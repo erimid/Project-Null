@@ -16,8 +16,6 @@ import {
   folderOf,
   securityOf,
   stageView,
-  ringAngle,
-  ringTolerance,
   partTaken,
   shopOf,
   sellsOnly,
@@ -37,6 +35,7 @@ import { useGame, useWorld } from '../../hooks';
 import { content, session } from '../../session';
 import { activeConnection, deskStore, useDesk, type Section } from '../deskStore';
 import { TaskProgress, findTask } from '../TaskProgress';
+import { Stage, crackedSoFar, fakePassword, handsOnOpen } from './Stage';
 import { viewer } from '../viewerStore';
 import { FileName } from '../FileName';
 import { lit, useGuide } from '../guide';
@@ -103,28 +102,11 @@ function sectionsFor(server: ServerDef, connection: Connection): Section[] {
   return sections;
 }
 
-const GLYPHS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-/** A made-up password for show. Always the same for the same account. */
-function fakePassword(seed: string): string {
-  let hash = 2166136261;
-  let out = '';
-  for (let i = 0; i < 8; i++) {
-    for (const char of seed) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
-    hash = Math.imul(hash ^ i, 16777619);
-    out += GLYPHS[(hash >>> 0) % GLYPHS.length];
-  }
-  return out;
-}
-
 /** The password being worked out: found characters stay, the rest keep spinning. */
 function Cracking({ taskId, secret }: { taskId: string; secret: string }) {
   const shown = useGame((game) => {
     const task = game.tasks.find((item) => item.id === taskId);
-    if (!task) return secret;
-    const found = Math.floor((secret.length * task.progressMs) / task.durationMs);
-    const spin = Math.floor(task.progressMs / 70);
-    return [...secret].map((char, i) => (i < found ? char : GLYPHS[(spin * 7 + i * 13) % GLYPHS.length])).join('');
+    return task ? crackedSoFar(task, secret) : secret;
   });
   const percent = useGame((game) => {
     const task = game.tasks.find((item) => item.id === taskId);
@@ -220,13 +202,22 @@ function LoginScreen({ game, server, state, connection, run }: View) {
 /** The server's defences, and the buttons that get past them. */
 function Security({ game, server, connection, run }: View) {
   const { password, proxy, firewall, monitor } = server.security;
-  const lineup = findTask(game, connection, { kind: 'firewall' });
-  // Hands-on games stay in the order they turned up, so a new one never pushes aside the one being played.
-  const order = useRef<{ connectionId: string; games: ('echo' | 'rings')[] }>({ connectionId: connection.id, games: [] });
+  const running = game.tasks.filter((task) => task.connectionId === connection.id);
+  // The stage and the handshake stay in the order they turned up, so a new one never pushes aside the one being played.
+  const order = useRef<{ connectionId: string; games: ('echo' | 'stage')[] }>({ connectionId: connection.id, games: [] });
   if (order.current.connectionId !== connection.id) order.current = { connectionId: connection.id, games: [] };
-  const showing = [connection.monitor.echo ? ('echo' as const) : null, lineup?.puzzle ? ('rings' as const) : null].filter((game) => game !== null);
+  const showing = [connection.monitor.echo ? ('echo' as const) : null, running.length > 0 ? ('stage' as const) : null].filter((game) => game !== null);
   order.current.games = [...order.current.games.filter((game) => showing.includes(game)), ...showing.filter((game) => !order.current.games.includes(game))];
   const games = order.current.games;
+  const played = games.map((game) =>
+    game === 'echo' ? (
+      connection.monitor.echo && (
+        <Handshake key={`echo-${connection.id}`} connectionId={connection.id} echo={connection.monitor.echo} waits={games[0] !== 'echo' && running.some(handsOnOpen)} />
+      )
+    ) : (
+      <Stage key={`stage-${connection.id}`} connectionId={connection.id} />
+    ),
+  );
   const holds = holding(game, content, connection);
   const holdNote = holds.length > 0 && (
     <p class="board__note link-note">
@@ -238,7 +229,14 @@ function Security({ game, server, connection, run }: View) {
       ))}
     </p>
   );
-  if (password + proxy + firewall + monitor === 0) return holdNote || null;
+  if (password + proxy + firewall + monitor === 0) {
+    return (
+      <>
+        {holdNote}
+        {played}
+      </>
+    );
+  }
   const link = server.link;
   const linkedFrom = link && findServer(content, link.serverId)?.name;
   const firewallHeld = !!heldBy(game, content, server.id, 'firewall');
@@ -336,13 +334,7 @@ function Security({ game, server, connection, run }: View) {
       </p>
     )}
     {holdNote}
-    {games.map((game) =>
-      game === 'echo'
-        ? connection.monitor.echo && (
-            <Handshake key={`echo-${connection.id}`} connectionId={connection.id} echo={connection.monitor.echo} waits={games[0] !== 'echo'} />
-          )
-        : lineup?.puzzle && <PortLineup key={lineup.id} taskId={lineup.id} rings={lineup.puzzle.locked.length} />,
-    )}
+    {played}
     </>
   );
 }
@@ -509,89 +501,6 @@ function Handshake({ connectionId, echo, waits }: { connectionId: string; echo: 
             Show it again
           </button>
         )}
-      </div>
-    </div>
-  );
-}
-
-const LINEUP_SIZE = 240;
-/** The innermost ring's radius, and how far apart the rings sit. Each ring's whole band takes a click. */
-const RING_INNER = 24;
-const RING_GAP = 18;
-const LINEUP_CENTRE = LINEUP_SIZE / 2;
-
-/**
- * The hands-on shortcut for a firewall bypass: rings turn, each carrying
- * one port. Click a ring as its port crosses the marker at the top.
- */
-function PortLineup({ taskId, rings }: { taskId: string; rings: number }) {
-  // One short text per frame, so the rings redraw as they turn.
-  const frame = useGame((game) => {
-    const task = game.tasks.find((item) => item.id === taskId);
-    if (!task?.puzzle) return '';
-    const angles = task.puzzle.locked.map((locked, ring) => (locked ? 'L' : ringAngle(task, ring).toFixed(1)));
-    return `${angles.join(',')}|${Math.max(0, Math.ceil((task.durationMs - task.progressMs) / 1000))}`;
-  });
-  if (!frame) return null;
-  const [anglesText = '', secondsLeft = '0'] = frame.split('|');
-  const angles = anglesText.split(',');
-  const tolerance = ringTolerance(session.getState(), content);
-  const lockedCount = angles.filter((angle) => angle === 'L').length;
-  const lock = (ring: number) => session.dispatch({ type: 'lockRing', taskId, ring });
-  const point = (radius: number, degrees: number) => {
-    const radians = ((degrees - 90) * Math.PI) / 180;
-    return { x: LINEUP_CENTRE + radius * Math.cos(radians), y: LINEUP_CENTRE + radius * Math.sin(radians) };
-  };
-  const outer = RING_INNER + (rings - 1) * RING_GAP + RING_GAP / 2 + 3;
-  const left = point(outer, -tolerance);
-  const right = point(outer, tolerance);
-
-  return (
-    <div class="lineup">
-      <svg class="lineup__dial" viewBox={`0 0 ${LINEUP_SIZE} ${LINEUP_SIZE}`} role="group" aria-label="Port line-up">
-        {/* The window the port has to be in. */}
-        <path
-          d={`M${LINEUP_CENTRE} ${LINEUP_CENTRE}L${left.x} ${left.y}A${outer} ${outer} 0 0 1 ${right.x} ${right.y}Z`}
-          class="lineup__window"
-        />
-        <path d={`M${LINEUP_CENTRE - 6} ${LINEUP_CENTRE - outer - 12}h12l-6 9z`} class="lineup__marker" />
-        {angles.map((angle, ring) => {
-          const radius = RING_INNER + ring * RING_GAP;
-          const locked = angle === 'L';
-          const port = point(radius, locked ? 0 : Number(angle));
-          return (
-            <g
-              key={ring}
-              class={`lineup__ring${locked ? ' is-locked' : ''}`}
-              role="button"
-              tabIndex={locked ? -1 : 0}
-              aria-label={`Ring ${ring + 1}${locked ? ', locked' : ''}`}
-              aria-disabled={locked}
-              onPointerDown={() => !locked && lock(ring)}
-              onKeyDown={(event: KeyboardEvent) => {
-                if (!locked && (event.key === 'Enter' || event.key === ' ')) {
-                  event.preventDefault();
-                  lock(ring);
-                }
-              }}
-            >
-              <circle cx={LINEUP_CENTRE} cy={LINEUP_CENTRE} r={radius} class="lineup__hit" />
-              <circle cx={LINEUP_CENTRE} cy={LINEUP_CENTRE} r={radius} class="lineup__track" />
-              <circle cx={port.x} cy={port.y} r={6.5} class="lineup__port" />
-            </g>
-          );
-        })}
-      </svg>
-      <div class="lineup__text">
-        <h3 class="map__heading">Line up the ports</h3>
-        <p>
-          Click a ring as its port crosses the marker at the top. Each ring you lock shortens the bypass, and locking all {rings}{' '}
-          finishes it. A miss costs {content.rules.ringMissSeconds} seconds. Left alone, the program locks them itself, one at a time, as the ports come
-          round.
-        </p>
-        <p class="lineup__status data">
-          {lockedCount} / {rings} locked · {secondsLeft}s left
-        </p>
       </div>
     </div>
   );
