@@ -75,7 +75,7 @@ function PartCard({ part, fitted, scale, rare, view, onFitted }: { part: Hardwar
   );
 }
 
-const ASSET_ICONS: Readonly<Record<AssetDef['effect'], IconName>> = { relay: 'route', safeHouse: 'shield', secondGateway: 'twin' };
+const ASSET_ICONS: Readonly<Record<AssetDef['effect'], IconName>> = { relay: 'route', safeHouse: 'shield', secondGateway: 'twin', spareHands: 'chip', nightDesk: 'brush', cutOut: 'ghost' };
 
 /** One property on the broker's list: bought once, kept for good. */
 function AssetCard({ asset, view }: { asset: AssetDef; view: View }) {

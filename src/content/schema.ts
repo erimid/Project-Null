@@ -458,7 +458,7 @@ export interface MailDef {
 }
 
 /** Messages the rules send by name. Every one must exist in mail.json. */
-export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes', 'stages', 'stageNote', 'contractLate', 'defence', 'raid', 'raidWon', 'raidLost', 'raidFled', 'shops', 'gear', 'news', 'memory', 'property', 'legend'] as const;
+export const MAIL_KEYS = ['welcome', 'firstAccept', 'firstDelivery', 'paid', 'contractFailed', 'caught', 'review', 'harderSecurity', 'phishing', 'phishRefused', 'phishReported', 'models', 'modelExpired', 'hardware', 'hardwareLost', 'jobs', 'links', 'skills', 'workbench', 'decompiling', 'routes', 'stages', 'stageNote', 'contractLate', 'defence', 'raid', 'raidWon', 'raidLost', 'raidFled', 'shops', 'gear', 'news', 'memory', 'property', 'legend', 'loan', 'loanSquare', 'propertyMore', 'cutOut'] as const;
 export type MailKey = (typeof MAIL_KEYS)[number];
 
 export interface RatingDef {
@@ -612,6 +612,7 @@ export interface Tuning {
   readonly ringToleranceDegrees: number;
   /** Port line-up: seconds a missed lock adds to the bypass. */
   readonly ringMissSeconds: number;
+  readonly loan: { readonly below: number; readonly base: number; readonly perRating: number; readonly repayShare: number; readonly titles: readonly number[] };
   readonly catchLitSeconds: number;
   readonly catchMissSeconds: number;
   readonly pickCutFactor: number;
@@ -1470,6 +1471,22 @@ function fractions(file: string, data: Obj, key: string): number[] {
   });
 }
 
+/** The fixer's loan (see core/loan.ts). */
+function parseLoan(file: string, raw: unknown): Tuning['loan'] {
+  if (!isObj(raw)) throw new ContentError(file, 'tuning needs an object "loan"');
+  const titles = list(file, 'tuning loan', raw, 'titles');
+  if (titles.length === 0 || !titles.every((min, i) => typeof min === 'number' && min >= 0 && (i === 0 || min > (titles[i - 1] as number)))) {
+    throw new ContentError(file, 'tuning loan "titles" must be a rising list of ratings');
+  }
+  return {
+    below: num(file, 'tuning loan', raw, 'below', 0, 1_000_000),
+    base: num(file, 'tuning loan', raw, 'base', 0, 1_000_000),
+    perRating: num(file, 'tuning loan', raw, 'perRating', 0, 100_000),
+    repayShare: num(file, 'tuning loan', raw, 'repayShare', 0.01, 1),
+    titles: titles as number[],
+  };
+}
+
 export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
   if (!isObj(data)) throw new ContentError(file, 'must be an object');
   const startDate = text(file, 'tuning', data, 'startDate');
@@ -1507,6 +1524,7 @@ export function parseTuning(data: unknown, file = 'tuning.json'): Tuning {
     reviewFineFactor: num(file, 'tuning', data, 'reviewFineFactor', 0, 10),
     ringToleranceDegrees: num(file, 'tuning', data, 'ringToleranceDegrees', 1, 90),
     ringMissSeconds: num(file, 'tuning', data, 'ringMissSeconds', 0, 60),
+    loan: parseLoan(file, data.loan),
     catchLitSeconds: num(file, 'tuning', data, 'catchLitSeconds', 0.1, 10),
     catchMissSeconds: num(file, 'tuning', data, 'catchMissSeconds', 0, 60),
     pickCutFactor: num(file, 'tuning', data, 'pickCutFactor', 0, 0.9),

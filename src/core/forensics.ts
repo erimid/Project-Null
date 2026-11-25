@@ -6,6 +6,8 @@ import type { GameState, LogEntry } from './state';
 import { effect } from './skills';
 import { findServer, sendMail, type Content } from './world';
 import { REVIEW_HEAT, raiseHeat, wanted } from './wanted';
+import { modeOf } from './difficulty';
+import { maybeLend } from './loan';
 
 /** Log lines that say someone logged in or changed something. A connection opening or closing proves nothing. */
 const EVIDENCE = /^(login |file copied|file deleted|file uploaded|record updated)/;
@@ -53,7 +55,7 @@ export function runReviews(state: GameState, content: Content): void {
   for (const review of due) {
     const found = evidenceCount(state, review.serverId);
     if (found > 0) {
-      const factor = content.rules.reviewFineFactor * (1 - effect(state, content, 'coldTrail')) * wanted(state).fines;
+      const factor = content.rules.reviewFineFactor * (1 - effect(state, content, 'coldTrail')) * wanted(state).fines * modeOf(state).fines;
       const fine = Math.min(state.player.balance, Math.round(baseFine(content, review.serverId) * factor));
       state.player.balance -= fine;
       sendMail(state, content, 'review', {
@@ -63,6 +65,7 @@ export function runReviews(state: GameState, content: Content): void {
       });
       // Logs left behind are attention drawn.
       raiseHeat(state, content, REVIEW_HEAT);
+      maybeLend(state, content);
     }
     closeCase(state, review.serverId);
   }

@@ -8,6 +8,8 @@
 import { OBJECTIVE_KINDS, ROLES } from '../content/schema';
 import { SPEEDS, STATE_VERSION, type GameState } from './state';
 import { newRecord } from './record';
+import { newLoan } from './loan';
+import { isDifficulty } from './difficulty';
 
 export const SAVE_FORMAT = 'project-null-save';
 
@@ -243,6 +245,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     record.lessons.lastJob = done;
     return { ...old, record };
   },
+  // 35 -> 36: difficulty modes and the fixer's loan. Every career so far was played on Standard and owes nothing.
+  35: (old) => ({ ...old, difficulty: 'standard', loan: newLoan() }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -577,6 +581,16 @@ function checkState(raw: Obj): GameState {
   }
   if (!isObj(raw.data) || !isList(raw.data.sold, isText)) throw damaged;
   if (!isRecord(raw.record)) throw damaged;
+  const loan = raw.loan;
+  if (
+    !isDifficulty(raw.difficulty) ||
+    !isObj(loan) ||
+    !isNum(loan.owed) ||
+    !isList(loan.given, isNum) ||
+    !isList(loan.marks, (m): m is Obj => isObj(m) && isNum(m.balance) && isNum(m.rating))
+  ) {
+    throw damaged;
+  }
   const events = raw.events;
   const current = isObj(events) ? events.current : undefined;
   if (

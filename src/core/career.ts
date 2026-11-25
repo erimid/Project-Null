@@ -7,6 +7,7 @@
  *
  * It is a tool for tests and tuning. The game itself never runs it.
  */
+import type { Difficulty } from './difficulty';
 import { MAX_LAYER_LEVEL, type ContractDef, type ProgramDef, type ProgramKind, type ServerDef, type StageDef } from '../content/schema';
 import type { HardwareDef } from '../content/hardware';
 import { applyAction, type Action } from './actions';
@@ -171,6 +172,8 @@ export interface CareerOptions {
   readonly shun?: (contract: ContractDef, state: GameState) => boolean;
   /** Stop as soon as this holds. */
   readonly until?: (state: GameState) => boolean;
+  /** The mode the career is played in. Standard if left out. */
+  readonly difficulty?: Difficulty;
 }
 
 /** Leaving a connection before the trace gets there. */
@@ -296,7 +299,7 @@ const moduleWish = (id: string): Fitted | undefined => {
 export function playCareer(base: Content, seed: number, profile: Profile, options: CareerOptions): CareerReport {
   const content = worldFor(base, seed);
   const state: GameState = syncWithContent(
-    createGame({ seed, handle: 'BOT', startDate: options.startDate, startingBalance: options.startingBalance }),
+    createGame({ seed, handle: 'BOT', startDate: options.startDate, startingBalance: options.startingBalance, ...(options.difficulty ? { difficulty: options.difficulty } : {}) }),
     content,
   );
   postJobs(state, content);

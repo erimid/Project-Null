@@ -26,5 +26,32 @@
     "price": 60000,
     "minRating": 79,
     "blurb": "A second rig racked beside the first and wired to share the load: one more connection at a time, two more programs running at once, and 16 GB more memory to load."
+  },
+  {
+    "id": "core-loft",
+    "name": "Core loft",
+    "where": "Krakow",
+    "effect": "spareHands",
+    "price": 75000,
+    "minRating": 79,
+    "blurb": "A loft of second-hand cores wired to watch your programs work. The shortcuts you do by hand play themselves: lit letters are caught, the proxy's real address is named and the decrypter's key is turned. A quick hand is still a little quicker."
+  },
+  {
+    "id": "night-desk",
+    "name": "Night desk",
+    "where": "Manila",
+    "effect": "nightDesk",
+    "price": 95000,
+    "minRating": 95,
+    "blurb": "Three people on a night shift who tidy up after you. When you walk out of a server, the lines that would give you away are scrubbed for you, and no log review finds anything."
+  },
+  {
+    "id": "cut-out",
+    "name": "Cut-out",
+    "where": "Valparaiso",
+    "effect": "cutOut",
+    "price": 140000,
+    "minRating": 111,
+    "blurb": "A paid name that stands between you and the world. Once a day, a trace that gets home finds the cut-out and not you: no fine, no heat, no lying low, no lost rating. The connection still drops, and that server changes its locks."
   }
 ]

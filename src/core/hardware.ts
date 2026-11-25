@@ -4,6 +4,7 @@
  * fast files move, how many connections can be open, and whether a model
  * runs at home.
  */
+import { modeOf } from './difficulty';
 import type { HardwareDef, HardwareSlot } from '../content/hardware';
 import type { ModelDef } from '../content/models';
 import type { GameState, HardwareState } from './state';
@@ -128,6 +129,8 @@ export function loseHardware(state: GameState, content: Content, serverId: strin
   if (!server) return undefined;
   // With a safe house the trace finds that address, not the gateway.
   if (hasAsset(state, content, 'safeHouse')) return undefined;
+  // On Story a trace costs money and time, never a part.
+  if (!modeOf(state).burns) return undefined;
   const strongest = Math.max(server.security.password, server.security.proxy, server.security.firewall, server.security.monitor);
   if (strongest < content.rules.hardwareLossLevel) return undefined;
   const slots = (Object.keys(state.player.hardware) as HardwareSlot[]).filter(
