@@ -365,7 +365,11 @@ export function advanceEvents(state: GameState, content: Content): void {
     return;
   }
   if (now < state.events.nextMs) return;
-  for (const kind of rng.shuffle(EVENT_KINDS.filter((item) => item !== state.events.last))) {
+  // Every kind has its turn before any comes round again. The ones that have had theirs stand in only if none of the rest can happen.
+  if (EVENT_KINDS.every((kind) => state.events.recent.includes(kind))) state.events.recent = state.events.last ? [state.events.last] : [];
+  const fresh = rng.shuffle(EVENT_KINDS.filter((kind) => !state.events.recent.includes(kind)));
+  const stale = rng.shuffle(EVENT_KINDS.filter((kind) => state.events.recent.includes(kind) && kind !== state.events.last));
+  for (const kind of [...fresh, ...stale]) {
     if (startEvent(state, content, kind)) return;
   }
   // Nothing could happen just now. Look again later.
@@ -382,6 +386,7 @@ export function startEvent(state: GameState, content: Content, kind: EventKind):
   if (!made) return false;
   state.events.current = made.event;
   state.events.last = kind;
+  if (!state.events.recent.includes(kind)) state.events.recent.push(kind);
   state.events.nextMs = now + rng.range(EVENT_GAP_HOURS[0], EVENT_GAP_HOURS[1]) * HOUR;
   sendLetter(state, def[kind].letter, made.values);
   return true;

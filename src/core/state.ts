@@ -624,6 +624,8 @@ export interface EventsState {
   nextMs: number;
   /** The kind of the last one, so the same never comes twice running. */
   last: EventKind | null;
+  /** The kinds there have been since every kind last had its turn: none comes round again until the rest have. */
+  recent: EventKind[];
   /** Ladder ids of runners who owe the player a favour. */
   owed: string[];
   /** True once a runner has warned of the attack that is waiting: the player is ready for it. */
@@ -805,7 +807,7 @@ export function createGame(options: NewGameOptions): GameState {
     news: { editions: [], pending: [], hits: {}, firms: [], marks: {} },
     patrons: { standing: {}, met: [], choices: {} },
     ladder: { day: -1, scores: {}, moves: [], outcomes: {}, beaten: [], above: [] },
-    events: { current: null, nextMs: 0, last: null, owed: [], warned: false },
+    events: { current: null, nextMs: 0, last: null, recent: [], owed: [], warned: false },
     data: { sold: [] },
     wanted: { heat: 0, level: 0, day: 0 },
     chorus: { taken: [], nextMs: 0, takes: 0, ignoredMs: 0, checkedMs: 0, warned: 0 },

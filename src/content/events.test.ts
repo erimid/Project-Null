@@ -86,7 +86,8 @@ describe('darknet events: when they come', () => {
       expect(starts[i]!.kind, `event ${i}`).not.toBe(starts[i - 1]!.kind);
       expect((starts[i]!.atMs - starts[i - 1]!.atMs) / HOUR).toBeGreaterThanOrEqual(EVENT_GAP_HOURS[0]);
     }
-    expect(new Set(starts.map((start) => start.kind)).size).toBe(EVENT_KINDS.length);
+    // Every kind has its turn before any comes round again.
+    expect(new Set(starts.slice(0, EVENT_KINDS.length).map((start) => start.kind)).size).toBe(EVENT_KINDS.length);
   });
 
   it.each(EVENT_KINDS)('%s: arrives as a letter, has a page on a darknet site, and nothing is left to fill in', (kind) => {
@@ -414,6 +415,6 @@ describe('saving', () => {
   it('a save from before them loads with nothing happening', () => {
     const old = JSON.parse(JSON.stringify(newGame(40))) as Record<string, unknown>;
     delete old['events'];
-    expect(MIGRATIONS[32]!(old)['events']).toEqual({ current: null, nextMs: 0, last: null, owed: [], warned: false });
+    expect(MIGRATIONS[32]!(old)['events']).toEqual({ current: null, nextMs: 0, last: null, recent: [], owed: [], warned: false });
   });
 });
