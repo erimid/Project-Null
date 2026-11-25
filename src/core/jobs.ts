@@ -85,21 +85,14 @@ function possibleObjectives(state: GameState, server: ServerDef): Objective[] {
 }
 
 /**
- * Makes one new job against a company of about the right tier, or against
- * `at` if given (then on `rng`, and with a first step only if `staged`). Undefined if
- * there is nothing to make.
+ * An ordinary one-step job against a company, with the values its wording
+ * was filled from: what every board job starts as. `only` keeps it to some
+ * kinds. Undefined if the company has nothing to ask for.
  */
-function makeJob(state: GameState, content: Content, at?: { server: ServerDef; rng: Rng; staged?: boolean }): Job | undefined {
+export function plainJob(state: GameState, content: Content, server: ServerDef, rng: Rng, only?: readonly Objective['kind'][]): { job: Job; values: Record<string, string> } | undefined {
   const pools = content.companies.jobs;
-  const rng = at?.rng ?? stream(state, 'jobs');
-  const tier = tierForRating(state.player.rating, content.rules.tierRatings);
-  const busy = touchedServers(state);
-  const companies = at
-    ? [at.server].filter((server) => server.generated && !busy.has(server.id))
-    : content.servers.filter((server) => server.generated && server.generated.tier <= tier && server.generated.tier >= tier - 1 && !busy.has(server.id));
-  if (companies.length === 0 || pools.clients.length === 0) return undefined;
-  const server = rng.pick(companies);
-  const goals = possibleObjectives(state, server);
+  if (!server.generated || pools.clients.length === 0) return undefined;
+  const goals = possibleObjectives(state, server).filter((goal) => !only || only.includes(goal.kind));
   if (goals.length === 0) return undefined;
   let objective = rng.pick(goals);
   if (objective.kind === 'record') {
@@ -132,6 +125,28 @@ function makeJob(state: GameState, content: Content, at?: { server: ServerDef; r
     objective,
     expiresMs: state.clock.gameTimeMs + content.rules.jobHours * 3_600_000,
   };
+  return { job, values };
+}
+
+/**
+ * Makes one new job against a company of about the right tier, or against
+ * `at` if given (then on `rng`, and with a first step only if `staged`). Undefined if
+ * there is nothing to make.
+ */
+function makeJob(state: GameState, content: Content, at?: { server: ServerDef; rng: Rng; staged?: boolean }): Job | undefined {
+  const pools = content.companies.jobs;
+  const rng = at?.rng ?? stream(state, 'jobs');
+  const tier = tierForRating(state.player.rating, content.rules.tierRatings);
+  const busy = touchedServers(state);
+  const companies = at
+    ? [at.server].filter((server) => server.generated && !busy.has(server.id))
+    : content.servers.filter((server) => server.generated && server.generated.tier <= tier && server.generated.tier >= tier - 1 && !busy.has(server.id));
+  if (companies.length === 0 || pools.clients.length === 0) return undefined;
+  const server = rng.pick(companies);
+  const plain = plainJob(state, content, server, rng);
+  if (!plain) return undefined;
+  const { job, values } = plain;
+  const serverTier = server.generated!.tier;
   // From the middle tiers up, some jobs gain a first step on another server.
   // Decided on a stream of its own, forked on where the jobs stream stands
   // (deterministic, and not on the job's id: an id would tie this to nextId,

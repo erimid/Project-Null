@@ -29,8 +29,22 @@ export function shopFor(state: GameState, content: Content, server: ServerDef): 
   const off = shopDiscount(state, content, server.id);
   // Someone who is wanted pays for the risk of being sold to.
   const risk = wanted(state).prices;
-  return off > 0 || risk !== 1 ? { ...shop, priceFactor: shop.priceFactor * (1 - off) * risk } : shop;
+  // While a crackdown has one market shut, the others charge more (see events.ts).
+  const scarce = shutMarket(state) !== undefined ? CRACKDOWN_PRICES : 1;
+  return off > 0 || risk !== 1 || scarce !== 1 ? { ...shop, priceFactor: shop.priceFactor * (1 - off) * risk * scarce } : shop;
 }
+
+/** While one market is shut, the others charge this many times their price. */
+export const CRACKDOWN_PRICES = 1.15;
+
+/** The market a crackdown has shut, if one is on (see events.ts). */
+export function shutMarket(state: GameState): string | undefined {
+  const event = state.events?.current;
+  return event?.kind === 'crackdown' ? event.serverId : undefined;
+}
+
+/** True while this shop is shut by a crackdown: it sells nothing. */
+export const isShut = (state: GameState, serverId: string): boolean => shutMarket(state) === serverId;
 
 /** Which day it is, counting from the start of game time. Rare stock turns over at each day's end. */
 export const marketDay = (state: GameState): number => Math.floor(state.clock.gameTimeMs / 86_400_000);
@@ -46,6 +60,7 @@ export function rareShown(serverId: string, day: number, line: RareStockDef): bo
 /** The rare lines of a shop that are on its shelf today. */
 export function rareToday(state: GameState, server: ServerDef): RareStockDef[] {
   const day = marketDay(state);
+  if (isShut(state, server.id)) return [];
   return (shopOf(server).rare ?? []).filter((line) => rareShown(server.id, day, line));
 }
 
@@ -54,6 +69,7 @@ export const shopPrice = (shop: ShopDef, base: number): number => Math.round(bas
 
 /** True if a shop sells this program today: a staple it carries, or a rare line shown today. */
 export function sellsProgram(state: GameState, server: ServerDef, program: ProgramDef): boolean {
+  if (isShut(state, server.id)) return false;
   const shop = shopOf(server);
   if (shop.programs && (!shop.programKinds || shop.programKinds.includes(program.kind)) && program.version <= (shop.maxVersion ?? Infinity) && !shop.excludePrograms?.includes(program.id)) return true;
   return rareToday(state, server).some((line) => line.kind === 'program' && line.id === program.id);
@@ -61,6 +77,7 @@ export function sellsProgram(state: GameState, server: ServerDef, program: Progr
 
 /** True if a shop sells this hardware part today. */
 export function sellsHardware(state: GameState, server: ServerDef, part: HardwareDef): boolean {
+  if (isShut(state, server.id)) return false;
   const shop = shopOf(server);
   if (shop.hardware && part.tier <= (shop.maxTier ?? Infinity) && (!shop.hardwareSlots || shop.hardwareSlots.includes(part.slot))) return true;
   return rareToday(state, server).some((line) => line.kind === 'hardware' && line.id === part.id);
@@ -68,6 +85,7 @@ export function sellsHardware(state: GameState, server: ServerDef, part: Hardwar
 
 /** True if a shop sells this module at this grade today. */
 export function sellsModule(state: GameState, server: ServerDef, module: ModuleDef, grade: number): boolean {
+  if (isShut(state, server.id)) return false;
   if (shopOf(server).modules && grade <= (shopOf(server).maxGrade ?? Infinity)) return true;
   return rareToday(state, server).some((line) => line.kind === 'module' && line.id === module.id && (line.grade ?? grade) === grade);
 }

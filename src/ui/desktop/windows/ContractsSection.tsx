@@ -62,6 +62,8 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
           <span class="row__tag row__tag--rare card__tag">story</span>
         ) : legend ? (
           <span class="row__tag row__tag--legend card__tag" data-tip="One a day, for those at the top: two steps against the hardest companies, three times the pay, and a condition that holds while the job is open.">legend</span>
+        ) : job && 'dark' in contract && contract.dark ? (
+          <span class="row__tag row__tag--warn card__tag" data-tip="This came through the darknet. Its page is in your Undertow browser, and the job is only up for a short while.">darknet</span>
         ) : job && 'news' in contract && contract.news ? (
           <span class="row__tag row__tag--warn card__tag" data-tip="The Wire carried a story about this company. The job is only up for a short while.">in the news</span>
         ) : job ? (

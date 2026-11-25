@@ -1,4 +1,4 @@
-import { rareToday, sellsOnly, shopOf, type GameState } from '../../../core';
+import { CRACKDOWN_PRICES, isShut, rareToday, sellsOnly, shopOf, shutMarket, type GameState } from '../../../core';
 import type { ServerDef } from '../../../core/content';
 import { formatMoney } from '../../format';
 import { content } from '../../session';
@@ -19,7 +19,9 @@ export const hoursLeftToday = (game: GameState): number =>
  * shelf for that instead).
  */
 export function ShopSign({ game, server, rare: showRare = true }: { game: GameState; server: ServerDef; rare?: boolean }) {
-  const shop = shopOf(server);
+  const shut = isShut(game, server.id);
+  // While a crackdown has another market shut, this one charges more.
+  const factor = shopOf(server).priceFactor * (shutMarket(game) !== undefined && !shut ? CRACKDOWN_PRICES : 1);
   const rare = rareToday(game, server);
   const hoursLeft = hoursLeftToday(game);
   const nameOf = (line: (typeof rare)[number]) =>
@@ -34,10 +36,10 @@ export function ShopSign({ game, server, rare: showRare = true }: { game: GameSt
         <span class="shopsign__place">
           {server.city} · {sellsOnly(server) ? 'sells only' : 'board and shop'}
         </span>
-        <span class={`shopsign__price${shop.priceFactor < 1 ? ' is-cheap' : shop.priceFactor > 1 ? ' is-dear' : ''}`}>{priceWord(shop.priceFactor)}</span>
+        <span class={`shopsign__price${factor < 1 ? ' is-cheap' : factor > 1 ? ' is-dear' : ''}`}>{shut ? 'shut' : priceWord(factor)}</span>
       </div>
-      <p class="shopsign__blurb">{server.blurb}</p>
-      {showRare && (
+      <p class="shopsign__blurb">{shut ? 'Shut. This market was raided and its shelf is empty until it reopens. The other sellers are open, at a price.' : server.blurb}</p>
+      {showRare && !shut && (
         <p class="shopsign__rare">
           {rare.length > 0 ? (
             <>

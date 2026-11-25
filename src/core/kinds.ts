@@ -20,6 +20,7 @@
 import type { ContractDef, ObjectiveDef, StageDef } from '../content/schema';
 import { ringTolerance } from './tasks';
 import { noteIntrusion } from './trace';
+import { standsDown } from './events';
 import type { Rng } from './rng';
 import { stream } from './streams';
 import { CLIENT_FILE, type Connection, type GameState, type GuardState, type RaidPort } from './state';
@@ -255,8 +256,10 @@ export function lockGuardRing(state: GameState, content: Content, ring: number):
 }
 
 /** Starts the race clock if the contract is a race. */
-export function beginRace(state: GameState, contract: ContractDef): void {
-  state.contracts.raceUntilMs = contract.race ? state.clock.gameTimeMs + contract.race.minutes * 60_000 : 0;
+export function beginRace(state: GameState, content: Content, contract: ContractDef): void {
+  // A rival who owes the player a favour stands down: no race. An open bounty's clock was running before it was taken.
+  const race = contract.race && (contract.race.byMs !== undefined || !standsDown(state, content, contract.race.rival)) ? contract.race : undefined;
+  state.contracts.raceUntilMs = race ? (race.byMs ?? state.clock.gameTimeMs + race.minutes * 60_000) : 0;
 }
 
 /** Loses a race the rival has won. True if the job was lost. */

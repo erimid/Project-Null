@@ -3,6 +3,8 @@ import { findPage, sites, type BlockDef, type Net } from '../../../content';
 import { useGame, useWorld } from '../../hooks';
 import { latestEdition } from '../../../core';
 import { WIRE, wirePage } from '../../news/wire';
+import { darkPage } from '../../news/dark';
+import { content, session } from '../../session';
 import { formatLongDay } from '../../format';
 import { Window } from '../Window';
 import { browserStore } from '../browserStore';
@@ -40,7 +42,9 @@ export function BrowserWindow() {
   // The Wire is printed from the game each morning; a new edition re-draws it.
   useGame((game) => latestEdition(game)?.day ?? -1);
   const wire = useWorld((game) => (net === 'web' ? wirePage(game, sites.find((site) => site.net === 'web' && site.address === WIRE), address) : undefined));
-  const found = wire ? { site: sites.find((site) => site.address === WIRE)!, page: wire } : findPage(sites, net, address);
+  // The darknet's pages carry whatever is happening there now.
+  const dark = useWorld((game) => (net === 'dark' ? darkPage(game, content, sites, address) : undefined));
+  const found = wire ? { site: sites.find((site) => site.address === WIRE)!, page: wire } : (dark ?? findPage(sites, net, address));
 
   const setAt = (next: number) => setTrails({ ...trails, [net]: { pages, at: next } });
   const go = (to: string) => {
@@ -121,6 +125,17 @@ function Block({ block, go, today }: { block: BlockDef; go: (to: string) => void
           <li key={item}>{item}</li>
         ))}
       </ul>
+    );
+  }
+  if ('button' in block) {
+    const { text, does, off } = block.button;
+    const action = does === 'bid' ? ({ type: 'eventBid' } as const) : does === 'buy' ? ({ type: 'eventBuy' } as const) : ({ type: 'eventReport' } as const);
+    return (
+      <p class="page__text">
+        <button type="button" class="btn" disabled={off !== undefined} data-tip={off} onClick={() => session.dispatch(action)}>
+          {text}
+        </button>
+      </p>
     );
   }
   return (

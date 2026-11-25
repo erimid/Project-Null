@@ -21,6 +21,7 @@ import { advanceChorus } from './chorus';
 import { reachEnding } from './endings';
 import { printEditions, reportContract } from './news';
 import { advanceLadder } from './ladder';
+import { advanceEvents } from './events';
 import { FAVOUR_CUT, hasFavour, noteDelivery, noteFailure } from './patrons';
 import { sellsOnly, sellsProgram, shopFor, shopPrice } from './market';
 import { advanceContract, clearClientFiles, currentStage, goalMet, goalPossible, stageIndex, stagesOf, stageView, startContract } from './stages';
@@ -48,6 +49,7 @@ export function postJobs(state: GameState, content: Content): void {
   advanceStory(state, content);
   advanceChorus(state, content);
   advanceLadder(state, content);
+  advanceEvents(state, content);
   printEditions(state, content);
   postHeist(state, content);
   postLegend(state, content);
@@ -179,6 +181,14 @@ export function abandonContract(state: GameState, content: Content): string | nu
   resetKinds(state);
   clearClientFiles(state);
   return null;
+}
+
+/** Takes the job being worked on off the player's hands and off the board, with nothing owed either way. */
+export function withdrawActive(state: GameState): void {
+  state.contracts.jobs = state.contracts.jobs.filter((job) => job.id !== state.contracts.activeId);
+  state.contracts.activeId = null;
+  resetKinds(state);
+  clearClientFiles(state);
 }
 
 /** Clears what the newer kinds of job keep while one is under way. */
