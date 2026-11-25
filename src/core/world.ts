@@ -19,6 +19,7 @@ import type { PatronDef } from '../content/patrons';
 import type { ChorusDef } from '../content/chorus';
 import type { EndingDef } from '../content/endings';
 import type { LadderDef } from '../content/ladder';
+import type { EventsDef } from '../content/events';
 import type { DataMarketDef } from '../content/data';
 import type { AssetDef } from '../content/assets';
 import { twistOn } from './legend';
@@ -191,6 +192,8 @@ export interface Content {
   readonly patrons?: readonly PatronDef[];
   /** The rivals ladder at the Backroom (see core/ladder.ts). Missing = no ladder. */
   readonly ladder?: LadderDef;
+  /** Wording for the darknet's events (see core/events.ts). Missing = nothing happens there. */
+  readonly events?: EventsDef;
   /** What the data market at Lowtide buys (see core/data.ts). Missing = it buys nothing. */
   readonly data?: DataMarketDef;
   /** Property for sale late in a career (see core/assets.ts). Missing = none. */

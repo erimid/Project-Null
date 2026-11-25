@@ -23,7 +23,7 @@ import {
   type GameState,
   type SaveSummary,
 } from '../core';
-import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, data, assets, chorus, endings } from '../content';
+import { companies, contracts, gameInfo, hardware, mail, models, people, programs, modules, rivals, servers, skills, story, tuning, news, patrons, ladder, data, assets, chorus, endings, events } from '../content';
 import { diff, snapshot, type GameEvent, type Snapshot } from './events';
 import { createMemoryStore, openSaveStore, type SaveStore } from './storage/saveStore';
 
@@ -48,6 +48,7 @@ const baseContent: Content = {
   news,
   patrons,
   ladder,
+  events,
   data,
   assets,
   rules: tuning,

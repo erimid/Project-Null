@@ -3,9 +3,10 @@
  * functions, no class instances), so it can be saved as JSON as it is.
  */
 import type { ContractDef, Role } from '../content/schema';
+import type { EventKind } from '../content/events';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 32;
+export const STATE_VERSION = 33;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -202,6 +203,8 @@ export interface Job extends ContractDef {
   readonly news?: string;
   /** For a legend contract (see legend.ts): the twist it carries and the game week it was posted in. */
   readonly legend?: { readonly twist: 'shortFuse' | 'onGuard' | 'travelLight' | 'blindRun'; readonly week: number };
+  /** True for a job a darknet event brought (see events.ts). It also carries `news`, the line it came with. */
+  readonly dark?: boolean;
 }
 
 export interface StoredFile {
@@ -556,6 +559,79 @@ export interface PatronsState {
 /** What the player did with a raider they beat: sold their address, kept their rig as a relay, or called a truce. */
 export type LadderOutcome = 'sold' | 'relay' | 'truce';
 
+/** One runner in an auction or after a bounty. */
+export interface EventRunner {
+  who: string;
+  /** Auction: the most they will bid. */
+  cap?: number;
+  /** Bounty: game time they began, and the game time they would finish. */
+  fromMs?: number;
+  doneMs?: number;
+}
+
+/** What is up for auction. */
+export interface EventLot {
+  kind: 'module' | 'hardware';
+  id: string;
+  /** Module grade. */
+  grade?: number;
+  name: string;
+  /** Its list price. */
+  list: number;
+}
+
+/**
+ * Something happening on the darknet right now (see core/events.ts). One
+ * shape for every kind; each uses the fields it needs.
+ */
+export interface DarkEvent {
+  kind: EventKind;
+  id: string;
+  startMs: number;
+  untilMs: number;
+  /** The board job it carries, if any. */
+  jobId?: string;
+  /** dump: the company whose logins are out. crackdown: the market that is shut. */
+  serverId?: string;
+  /** crackdown: the company holding the list of what was seized. */
+  holderId?: string;
+  /** dump: the logins the player was handed, to be taken back when the passwords are reset. */
+  granted?: string[];
+  /** runner: the rival asking, by ladder id. */
+  rivalId?: string;
+  /** offer: true if it is a trap, what gives it away, and the lines its posting shows. */
+  sting?: boolean;
+  tells?: string[];
+  account?: string;
+  trade?: string;
+  /** offer, bounty: what the job pays, for the page. */
+  pay?: number;
+  /** auction. `top` is the handle of the highest bidder: '' = nobody yet, YOU (see events.ts) = the player. */
+  lot?: EventLot;
+  price?: number;
+  top?: string;
+  /** auction: true once the player has bid. */
+  mine?: boolean;
+  /** auction: the others bidding. bounty: the others after the file. */
+  runners?: EventRunner[];
+  /** auction: moments still to come at which a runner looks at the lot again. */
+  moments?: { atMs: number; who: string }[];
+}
+
+export interface EventsState {
+  current: DarkEvent | null;
+  /** Game time the next one may begin. 0 = not yet decided. */
+  nextMs: number;
+  /** The kind of the last one, so the same never comes twice running. */
+  last: EventKind | null;
+  /** The kinds there have been since every kind last had its turn: none comes round again until the rest have. */
+  recent: EventKind[];
+  /** Ladder ids of runners who owe the player a favour. */
+  owed: string[];
+  /** True once a runner has warned of the attack that is waiting: the player is ready for it. */
+  warned: boolean;
+}
+
 /** The rivals ladder (see core/ladder.ts). */
 export interface LadderState {
   /** The paper's day the ladder last moved on. -1 = never. */
@@ -619,6 +695,8 @@ export interface GameState {
   news: NewsState;
   patrons: PatronsState;
   ladder: LadderState;
+  /** What is happening on the darknet (see core/events.ts). */
+  events: EventsState;
   /** The data market at Lowtide: files it has already bought, as "server:name". */
   data: { sold: string[] };
   /** How badly the player is wanted (see core/wanted.ts). */
@@ -729,6 +807,7 @@ export function createGame(options: NewGameOptions): GameState {
     news: { editions: [], pending: [], hits: {}, firms: [], marks: {} },
     patrons: { standing: {}, met: [], choices: {} },
     ladder: { day: -1, scores: {}, moves: [], outcomes: {}, beaten: [], above: [] },
+    events: { current: null, nextMs: 0, last: null, recent: [], owed: [], warned: false },
     data: { sold: [] },
     wanted: { heat: 0, level: 0, day: 0 },
     chorus: { taken: [], nextMs: 0, takes: 0, ignoredMs: 0, checkedMs: 0, warned: 0 },

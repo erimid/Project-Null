@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { HARDWARE_SLOT_LABELS, assetPrice, findPart, freeStorageGb, rackStorageGb, rareToday, sellsHardware, shopFor, shopPrice } from '../../../core';
+import { isShut, HARDWARE_SLOT_LABELS, assetPrice, findPart, freeStorageGb, rackStorageGb, rareToday, sellsHardware, shopFor, shopPrice } from '../../../core';
 import type { AssetDef, HardwareDef, HardwareSlot } from '../../../core/content';
 import { content } from '../../session';
 import { GatewayBoard, SLOT_BLURBS, partStats, slotLabel, type SlotMark } from '../GatewayBoard';
@@ -194,6 +194,13 @@ export function Hardware(view: View) {
   const scale = partStats(slot, fitted).map((stat, index) => Math.max(stat.value, ...upgrades.map((part) => partStats(slot, part)[index]?.value ?? 0)));
   const now = partStats(slot, fitted);
 
+  if (isShut(game, server.id)) {
+    return (
+      <div class="hardware">
+        <ShopSign game={game} server={server} rare={false} />
+      </div>
+    );
+  }
   return (
     <div class="hardware">
       <ShopSign game={game} server={server} rare={false} />

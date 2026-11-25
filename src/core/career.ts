@@ -938,6 +938,8 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     // Outside the story it never races, and takes none of the newer kinds of job.
     const newer = contract.heist !== undefined || stagesOf(contract).some((stage) => ['guard', 'hold', 'hunt', 'swap'].includes(stage.objective.kind));
     if (contract.race || (newer && !contract.story)) return null;
+    // Nor anything the darknet brings: it keeps to the board it knows.
+    if (isJob(contract) && contract.dark) return null;
     // Nor a legend contract that holds memory down: it packs by habit, not to a budget.
     if (isJob(contract) && contract.legend?.twist === 'travelLight') return null;
     if (contract.heist) {

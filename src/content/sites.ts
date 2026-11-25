@@ -20,7 +20,9 @@ export type BlockDef =
   | { readonly p: string }
   | { readonly list: readonly string[] }
   | { readonly quote: string; readonly by: string }
-  | { readonly links: readonly LinkDef[] };
+  | { readonly links: readonly LinkDef[] }
+  /** Only on pages the game builds as it goes (see core/events.ts): something to press. `off` is why it cannot be pressed now. */
+  | { readonly button: { readonly text: string; readonly does: string; readonly off?: string } };
 
 export interface PageDef {
   /** Starts with "/". The site's front page is "/". */

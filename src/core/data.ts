@@ -18,6 +18,7 @@ import type { DataKindDef } from '../content/data';
 import { activeContract } from './contracts';
 import { burnHeist } from './heists';
 import { editionDay, inTheNews } from './news';
+import { isShut } from './market';
 import { noteFailure, shiftStanding } from './patrons';
 import { createRng, hashSeed } from './rng';
 import { stagesOf } from './stages';
@@ -129,6 +130,7 @@ const soldKey = (file: { from: string; name: string }) => `${file.from}:${file.n
 export function sellData(state: GameState, content: Content, connectionId: string, name: string, from: string): string | null {
   const connection = findConnection(state, connectionId);
   if (!connection || connection.user === null || connection.serverId !== DATA_BOARD) return 'Log in at Lowtide to sell data.';
+  if (isShut(state, DATA_BOARD)) return 'Lowtide is shut. Nobody there is buying until it reopens.';
   const file = state.player.files.find((item) => item.name === name && item.from === from);
   if (!file) return 'That file is not on your gateway.';
   const offer = quote(state, content, file);

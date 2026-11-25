@@ -226,6 +226,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
     const contracts = old.contracts as Record<string, unknown>;
     return { ...old, contracts: { ...contracts, takenMs: 0, windowUntilMs: 0, termsBroken: false } };
   },
+  // 32 -> 33: darknet events. None is under way in an old save; the first is decided on the next clock check.
+  32: (old) => ({ ...old, events: { current: null, nextMs: 0, last: null, recent: [], owed: [], warned: false } }),
 };
 
 export function summarize(state: GameState, savedAt: string): SaveSummary {
@@ -536,6 +538,19 @@ function checkState(raw: Obj): GameState {
     throw damaged;
   }
   if (!isObj(raw.data) || !isList(raw.data.sold, isText)) throw damaged;
+  const events = raw.events;
+  const current = isObj(events) ? events.current : undefined;
+  if (
+    !isObj(events) ||
+    !isNum(events.nextMs) ||
+    !(events.last === null || isText(events.last)) ||
+    !isList(events.owed, isText) ||
+    !isList(events.recent, isText) ||
+    typeof events.warned !== 'boolean' ||
+    !(current === null || (isObj(current) && isText(current.kind) && isText(current.id) && isNum(current.startMs) && isNum(current.untilMs)))
+  ) {
+    throw damaged;
+  }
   const patrons = raw.patrons;
   if (
     !isObj(patrons) ||
