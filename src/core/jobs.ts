@@ -13,6 +13,7 @@ import type { Rng } from './rng';
 import { stream } from './streams';
 import type { Content } from './world';
 import { legendDay, legendWeek, twistOfWeek } from './legend';
+import { maybeTerms, sideJob } from './sideJobs';
 
 /** The tier of company the board offers work against at this rating. `tierRatings` is the lowest rating for each tier. */
 export function tierForRating(rating: number, tierRatings: readonly number[]): number {
@@ -39,6 +40,9 @@ export const isJob = (contract: ContractDef): contract is Job => 'expiresMs' in 
 
 // The board makes only these three kinds of one-step job.
 type Objective = Extract<ContractDef['objective'], { kind: 'steal' | 'destroy' | 'record' }>;
+
+/** Every one-step job that could be posted against a company right now. */
+export const boardObjectives = (state: GameState, server: ServerDef) => possibleObjectives(state, server);
 
 /** Every job that could be posted against a company right now. */
 function possibleObjectives(state: GameState, server: ServerDef): Objective[] {
@@ -118,9 +122,14 @@ function makeJob(state: GameState, content: Content, at?: { server: ServerDef; r
   // so any new message or entity made elsewhere would reshuffle the board).
   const own = rng.fork(`staged:${server.id}:${rng.getState().state}`);
   // Some become one of the newer kinds of job, and some become a race (see kinds.ts). Forked the same way.
+  // Some become one of the side kinds (see sideJobs.ts). Forked the same way, and asked first.
+  const side = at ? undefined : sideJob(state, content, job, server, values, rng.fork(`side:${server.id}:${rng.getState().state}`));
+  if (side) return assignPatron(state, content, side, content.servers.find((item) => item.id === side.targetId) ?? server, rng.fork(`patron:${server.id}:${rng.getState().state}`));
   const other = at ? undefined : newKind(state, content, job, server, values, rng.fork(`kind:${server.id}:${rng.getState().state}`));
   const made = other ?? (pools.staged && (at ? at.staged === true : serverTier >= 5 && own.chance(0.5)) ? addFirstStep(state, content, job, server, values, own) : job);
-  const raced = at ? made : maybeRace(content, made, serverTier, rng.fork(`race:${server.id}:${rng.getState().state}`));
+  const racing = at ? made : maybeRace(content, made, serverTier, rng.fork(`race:${server.id}:${rng.getState().state}`));
+  // Some ordinary jobs carry optional terms: a bonus for doing it a particular way.
+  const raced = at ? racing : maybeTerms(state, content, racing, server, rng.fork(`terms:${server.id}:${rng.getState().state}`));
   // Some jobs are a patron's, under their own name (see patrons.ts). Forked the same way, so the board's draws stay as they were.
   return assignPatron(state, content, raced, server, rng.fork(`patron:${server.id}:${rng.getState().state}`));
 }

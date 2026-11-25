@@ -142,9 +142,13 @@ export function reportContract(state: GameState, content: Content, contract: Con
     seen.add(stage.targetId);
     const server = findServer(content, stage.targetId);
     if (!server || server.kind !== 'company') continue;
-    report(state, content, server, stage.objective.kind);
+    const kind = stage.objective.kind;
+    // A trail wiped from a log is the one job nobody ever hears about.
+    if (kind === 'wipe') continue;
+    // Notes read to find a leak make the paper as any file read does.
+    report(state, content, server, kind === 'leak' ? 'read' : kind);
     // A company the player guarded, sat in or only passed through has nothing to put its guard up about.
-    if (!['guard', 'hold', 'hunt'].includes(stage.objective.kind)) react(state, content, server);
+    if (!['guard', 'hold', 'hunt'].includes(kind)) react(state, content, server);
   }
 }
 

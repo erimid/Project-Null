@@ -5,7 +5,7 @@
 import type { ContractDef, Role } from '../content/schema';
 
 /** Increase this when the shape of GameState changes, and add a migration in save.ts. */
-export const STATE_VERSION = 31;
+export const STATE_VERSION = 32;
 
 /** 0 = paused. */
 export const SPEEDS = [0, 1, 2, 4] as const;
@@ -139,6 +139,12 @@ export interface ContractsState {
   heistDay: number;
   /** The game day the board last posted a legend contract (see legend.ts). */
   legendDay: number;
+  /** Game time the active contract was taken. 0 = none. */
+  takenMs: number;
+  /** Game time a job with one clock for all its steps runs out (see side.ts). 0 = no such clock. */
+  windowUntilMs: number;
+  /** True once the active job's optional terms have been broken (see side.ts). */
+  termsBroken: boolean;
 }
 
 /** A heist being worked on: the vault and who holds which of its layers. */
@@ -468,6 +474,8 @@ export interface LogEntry {
   framed?: string;
   /** Set on a line in a hacker's trail: the server it leads to (see kinds.ts). */
   points?: string;
+  /** Set on a line another runner left behind, for a wipe job: their handle (see side.ts). */
+  left?: string;
 }
 
 /**
@@ -709,7 +717,7 @@ export function createGame(options: NewGameOptions): GameState {
     connections: [],
     tasks: [],
     messages: [],
-    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0, heldMs: 0, guard: null, raceUntilMs: 0, heist: null, burned: [], heistDay: -1, legendDay: -1 },
+    contracts: { activeId: null, completed: [], jobs: [], stage: 0, stageStartMs: 0, heldMs: 0, guard: null, raceUntilMs: 0, heist: null, burned: [], heistDay: -1, legendDay: -1, takenMs: 0, windowUntilMs: 0, termsBroken: false },
     story: { lines: {}, offered: [] },
     phish: { sent: [], strikes: {}, waryUntilMs: {}, done: [] },
     reviews: [],

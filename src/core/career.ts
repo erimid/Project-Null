@@ -20,6 +20,7 @@ import { isJob } from './jobs';
 import { sellsHardware, sellsModule, sellsOnly, sellsProgram, shopFor, shopPrice } from './market';
 import { heldBy, monitorHeld } from './link';
 import { canRead, judge, knownFacts, knownPeople, standing } from './phish';
+import { leakOf, nameChoice } from './side';
 import { skillRank } from './skills';
 import { createGame, isConnected, MAX_HOPS, type Connection, type Fitted, type GameState, type TaskTarget } from './state';
 import { checkTask, freeStorageGb, layerSeconds, MAX_LEVEL_GAP, ringAngle, ringTolerance } from './tasks';
@@ -580,6 +581,17 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       act({ type: 'readFile', serverId: server.id, name: goal.file });
       return;
     }
+    if (goal.kind === 'leak') {
+      if (fileBlocked(server, connection)) run(connection, { kind: 'firewall' });
+      for (const name of goal.files) act({ type: 'readFile', serverId: server.id, name });
+      return;
+    }
+    if (goal.kind === 'wipe') {
+      if (securityOf(state, server).proxy > 0 && !connection.bypassed.proxy) run(connection, { kind: 'proxy' });
+      const lines = (state.servers[server.id]?.logs ?? []).filter((entry) => entry.left === goal.who).map((entry) => entry.id);
+      if (lines.length > 0) run(connection, { kind: 'deleteLog', logIds: lines });
+      return;
+    }
     // A false trail already laid on an earlier visit stays: what is left is the cleaning up.
     if (goal.kind === 'frame' && state.servers[server.id]?.logs.some((entry) => entry.framed === goal.who)) return;
     if (goal.kind === 'record' || goal.kind === 'frame') {
@@ -656,9 +668,10 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     const holder = linkOf(state, server);
     const held = holder && findServer(content, holder.serverId);
     if (held && adminOf(held) && securityOf(state, held).password > 0 && !kinds.includes('breakPassword')) kinds.push('breakPassword');
-    if (goal.kind === 'record' || goal.kind === 'frame') {
+    if (goal.kind === 'wipe') kinds.push('deleteLog');
+    if (goal.kind === 'record' || goal.kind === 'frame' || goal.kind === 'wipe') {
       if (sec.proxy > 0) kinds.push('bypassProxy');
-    } else if (['steal', 'destroy', 'plant', 'read', 'swap'].includes(goal.kind) && sec.firewall > 0 && !(holder?.layer === 'firewall' && maxConnections(state, content) >= 2)) kinds.push('bypassFirewall');
+    } else if (['steal', 'destroy', 'plant', 'read', 'swap', 'leak'].includes(goal.kind) && sec.firewall > 0 && !(holder?.layer === 'firewall' && maxConnections(state, content) >= 2)) kinds.push('bypassFirewall');
     if (goal.kind === 'steal' || goal.kind === 'plant' || goal.kind === 'swap') kinds.push('copyFile');
     if (goal.kind === 'destroy' || goal.kind === 'swap') kinds.push('deleteFile');
     // Someone who cleans up carries what cleaning takes, on every server the job touches.
@@ -956,9 +969,10 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
       if (admin && sec.password > 0 && needsAdmin && !state.player.passwords[server.id]?.includes(admin.user)) {
         if (!want('breakPassword', sec.password)) return null;
       }
-      if (goal.kind === 'record' || goal.kind === 'frame') {
+      if (goal.kind === 'wipe' && !best('deleteLog')) return null;
+      if (goal.kind === 'record' || goal.kind === 'frame' || goal.kind === 'wipe') {
         if (sec.proxy > 0 && !want('bypassProxy', sec.proxy)) return null;
-      } else if ((goal.kind === 'steal' || goal.kind === 'destroy' || goal.kind === 'plant' || goal.kind === 'read' || goal.kind === 'swap') && sec.firewall > 0) {
+      } else if ((goal.kind === 'steal' || goal.kind === 'destroy' || goal.kind === 'plant' || goal.kind === 'read' || goal.kind === 'swap' || goal.kind === 'leak') && sec.firewall > 0) {
         const linked = linkOf(state, server)?.layer === 'firewall';
         const own = best('bypassFirewall');
         const reachable = cheapest('bypassFirewall', sec.firewall) !== null;
@@ -1170,9 +1184,13 @@ export function playCareer(base: Content, seed: number, profile: Profile, option
     }
     read();
     think();
-    const choiceId = options.choices?.[contract.id];
+    // It reads the notes on a leak job as carefully as a person would, and names the right one.
+    const leak = leakOf(contract);
+    const choiceId = leak ? nameChoice(leak.suspects.indexOf(leak.culprit)) : options.choices?.[contract.id];
+    const before = state.player.balance;
     must(choiceId === undefined ? { type: 'deliverContract' } : { type: 'deliverContract', choiceId });
-    earned += contract.choices?.find((choice) => choice.id === choiceId)?.pay ?? contract.pay;
+    // What it was paid, a round's earlier stops included (they were paid as they were done).
+    earned += state.player.balance - before + (contract.round ? contract.round.each * (contract.stages?.length ?? 0) : 0);
     return { paid: true, caught, visits };
   };
 

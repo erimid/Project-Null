@@ -170,6 +170,8 @@ const OBJECTIVE_ICONS: Record<string, IconName> = {
   hold: 'clock',
   hunt: 'radar',
   swap: 'twin',
+  leak: 'person',
+  wipe: 'trash',
 };
 
 const FILE_ICONS: Record<string, IconName> = {

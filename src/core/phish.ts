@@ -7,12 +7,14 @@ import type { AskDef, FactDef, FileRef, PersonDef } from '../content/people';
 import type { GameState } from './state';
 import { currentStage, readFlag } from './stages';
 import { noteClue } from './story';
+import { peopleOf } from './side';
 import { findServer, securityOf, sendMail, type Content } from './world';
 
-export const findPerson = (content: Content, id: string): PersonDef | undefined =>
-  content.people.people.find((person) => person.id === id);
+/** With a `state`, the people a job under way has put within reach count too (see side.ts). */
+export const findPerson = (content: Content, id: string, state?: GameState): PersonDef | undefined =>
+  peopleOf(content, state).people.find((person) => person.id === id);
 
-export const findAsk = (content: Content, id: string): AskDef | undefined => content.people.asks.find((ask) => ask.id === id);
+export const findAsk = (content: Content, id: string, state?: GameState): AskDef | undefined => peopleOf(content, state).asks.find((ask) => ask.id === id);
 
 /** True if the player has come across this person. */
 export function knowsPerson(state: GameState, person: PersonDef): boolean {
@@ -20,11 +22,11 @@ export function knowsPerson(state: GameState, person: PersonDef): boolean {
 }
 
 export function knownPeople(state: GameState, content: Content): PersonDef[] {
-  return content.people.people.filter((person) => knowsPerson(state, person));
+  return peopleOf(content, state).people.filter((person) => knowsPerson(state, person));
 }
 
 export function knownFacts(state: GameState, content: Content): FactDef[] {
-  return content.people.facts.filter((fact) => state.player.facts.includes(fact.id));
+  return peopleOf(content, state).facts.filter((fact) => state.player.facts.includes(fact.id));
 }
 
 const sameFile = (a: FileRef, serverId: string, name: string) => a.serverId === serverId && a.file === name;
@@ -42,16 +44,17 @@ export function canRead(state: GameState, content: Content, serverId: string, na
 }
 
 /** What one file has to teach: the people it names and the details in it. */
-export function fileNotes(content: Content, serverId: string, name: string): { people: PersonDef[]; facts: FactDef[] } {
+export function fileNotes(content: Content, serverId: string, name: string, state?: GameState): { people: PersonDef[]; facts: FactDef[] } {
+  const all = peopleOf(content, state);
   return {
-    people: content.people.people.filter((person) => person.source && sameFile(person.source, serverId, name)),
-    facts: content.people.facts.filter((fact) => sameFile(fact.source, serverId, name)),
+    people: all.people.filter((person) => person.source && sameFile(person.source, serverId, name)),
+    facts: all.facts.filter((fact) => sameFile(fact.source, serverId, name)),
   };
 }
 
 /** Notes what a file has to teach. Returns how many new things were learned. */
 function learnFrom(state: GameState, content: Content, serverId: string, name: string): number {
-  const notes = fileNotes(content, serverId, name);
+  const notes = fileNotes(content, serverId, name, state);
   let learned = 0;
   for (const person of notes.people) {
     if (!state.player.contacts.includes(person.id)) {
@@ -74,7 +77,8 @@ function noteRead(state: GameState, content: Content, serverId: string, name: st
   const contract = id === null ? undefined : (content.contracts.find((item) => item.id === id) ?? state.contracts.jobs.find((job) => job.id === id));
   if (!contract) return;
   const stage = currentStage(state, contract);
-  if (stage.targetId !== serverId || stage.objective.kind !== 'read' || stage.objective.file !== name) return;
+  const goal = stage.objective;
+  if (stage.targetId !== serverId || !((goal.kind === 'read' && goal.file === name) || (goal.kind === 'leak' && goal.files.includes(name)))) return;
   const flag = readFlag(serverId, name);
   if (!state.flags.includes(flag)) state.flags.push(flag);
 }
@@ -108,14 +112,14 @@ export type Standing = 'open' | 'waiting' | 'wary' | 'burned';
 
 export function standing(state: GameState, content: Content, markId: string): Standing {
   if ((state.phish.strikes[markId] ?? 0) >= content.rules.phishStrikes) return 'burned';
-  if (state.phish.sent.some((attempt) => findAsk(content, attempt.askId)?.markId === markId)) return 'waiting';
+  if (state.phish.sent.some((attempt) => findAsk(content, attempt.askId, state)?.markId === markId)) return 'waiting';
   if (state.clock.gameTimeMs < (state.phish.waryUntilMs[markId] ?? 0)) return 'wary';
   return 'open';
 }
 
 /** The things the player could still ask this person for. */
 export function openAsks(state: GameState, content: Content, markId: string): AskDef[] {
-  return content.people.asks.filter((ask) => ask.markId === markId && !state.phish.done.includes(ask.id));
+  return peopleOf(content, state).asks.filter((ask) => ask.markId === markId && !state.phish.done.includes(ask.id));
 }
 
 /** People the player knows of who still have something to give. */
@@ -132,17 +136,17 @@ export interface Draft {
 /** What is wrong with a message, if anything. Only a rented model tells the player this. */
 export type Verdict = 'good' | 'sender' | 'details';
 
-export function judge(content: Content, draft: Draft): Verdict {
-  const ask = findAsk(content, draft.askId);
+export function judge(content: Content, draft: Draft, state?: GameState): Verdict {
+  const ask = findAsk(content, draft.askId, state);
   if (!ask || ask.senderId !== draft.senderId) return 'sender';
   return ask.needs.every((need) => draft.factIds.includes(need)) ? 'good' : 'details';
 }
 
 /** Sends a message. The answer comes later. Returns a reason if it can't be sent. */
 export function sendPhish(state: GameState, content: Content, draft: Draft): string | null {
-  const ask = findAsk(content, draft.askId);
-  const mark = ask && findPerson(content, ask.markId);
-  const sender = findPerson(content, draft.senderId);
+  const ask = findAsk(content, draft.askId, state);
+  const mark = ask && findPerson(content, ask.markId, state);
+  const sender = findPerson(content, draft.senderId, state);
   if (!ask || !mark || !knowsPerson(state, mark) || state.phish.done.includes(ask.id)) return 'There is nothing to ask for there.';
   if (!sender || !knowsPerson(state, sender) || sender.id === mark.id) return 'You cannot write as that person.';
   const facts = [...new Set(draft.factIds)];
@@ -160,7 +164,7 @@ export function sendPhish(state: GameState, content: Content, draft: Draft): str
   state.phish.sent.push({
     askId: ask.id,
     dueMs: state.clock.gameTimeMs + content.rules.phishReplyMinutes * 60_000,
-    ok: judge(content, { ...draft, factIds: facts }) === 'good',
+    ok: judge(content, { ...draft, factIds: facts }, state) === 'good',
   });
   return null;
 }
@@ -190,8 +194,8 @@ export function runPhish(state: GameState, content: Content): void {
   if (due.length === 0) return;
   state.phish.sent = state.phish.sent.filter((attempt) => !due.includes(attempt));
   for (const attempt of due) {
-    const ask = findAsk(content, attempt.askId);
-    const mark = ask && findPerson(content, ask.markId);
+    const ask = findAsk(content, attempt.askId, state);
+    const mark = ask && findPerson(content, ask.markId, state);
     if (!ask || !mark) continue;
     if (attempt.ok) {
       deliver(state, ask, mark);
@@ -221,12 +225,12 @@ export interface Leads {
 
 export function leads(state: GameState, content: Content): Leads {
   const known = (ask: AskDef) => {
-    const mark = findPerson(content, ask.markId);
+    const mark = findPerson(content, ask.markId, state);
     return mark !== undefined && knowsPerson(state, mark);
   };
   return {
-    open: content.people.asks.filter((ask) => known(ask) && !state.phish.done.includes(ask.id)),
-    done: content.people.asks.filter((ask) => state.phish.done.includes(ask.id)),
+    open: peopleOf(content, state).asks.filter((ask) => known(ask) && !state.phish.done.includes(ask.id)),
+    done: peopleOf(content, state).asks.filter((ask) => state.phish.done.includes(ask.id)),
   };
 }
 
@@ -257,7 +261,7 @@ export function factsByFile(state: GameState, content: Content): Group<FactDef>[
  * come last.
  */
 export function sendersFor(state: GameState, content: Content, markId: string): Group<PersonDef>[] {
-  const mark = findPerson(content, markId);
+  const mark = findPerson(content, markId, state);
   const groups: Group<PersonDef>[] = [];
   for (const person of knownPeople(state, content)) {
     if (person.id === markId) continue;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { GUIDED_JOB, TWISTS, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, openPatron, storyWaits, standingName, standingWith, stagesOf } from '../../../core';
+import { GUIDED_JOB, TERMS_NAMES, TWISTS, roundTotal, termsLine, activeContract, availableContracts, contractRisk, findModule, isJob, isLyingLow, nextContractRating, openPatron, storyWaits, standingName, standingWith, stagesOf } from '../../../core';
 import { findServer, type ContractDef } from '../../../core/content';
 import { formatGameTime, formatMoney, formatRating } from '../../format';
 import { useGame } from '../../hooks';
@@ -75,6 +75,12 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
           {TWISTS[legend.twist].line}
         </p>
       )}
+      {contract.terms && (
+        <p class="jobcard__twist" data-tip="Optional. Keep to it and the bonus is paid on top. Break it and the job pays as usual.">
+          <strong>{TERMS_NAMES[contract.terms.kind]}</strong>
+          {termsLine(content, contract.terms)}
+        </p>
+      )}
       <p class="card__blurb">{contract.summary}</p>
       {contract.heist && <HeistPlan contract={contract} live={false} />}
       {staged ? (
@@ -108,6 +114,11 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
             <Icon name="clock" size={14} /> {minutes} min
           </span>
         )}
+        {contract.window && (
+          <span class="jobcard__fact is-warn" data-tip="Every step has to be done within this many game hours of taking the job.">
+            <Icon name="clock" size={14} /> {Math.round(contract.window.minutes / 60)} h for all of it
+          </span>
+        )}
         {job && (
           <span class="jobcard__fact" data-tip="When this job comes off the board">
             <Icon name="clock" size={14} /> until {formatGameTime(contract.expiresMs)}
@@ -121,7 +132,7 @@ function JobCard({ contract, risk, blocked, onAccept }: { contract: ContractDef;
       </div>
       <div class="card__foot">
         <span class="jobcard__reward">
-          <span class="data jobcard__pay">{formatMoney(contract.pay)}</span>
+          <span class="data jobcard__pay">{formatMoney(roundTotal(contract))}</span>
           {contract.rating > 0 && (
             <span class="contract__rating" title="What delivering it adds to your rating">
               +<span class="data">{contract.rating}</span> rating

@@ -29,7 +29,7 @@ export function ViewerWindow() {
   }, [shown]);
   const noted = useGame((game) => {
     if (!file) return '';
-    const notes = fileNotes(content, file.serverId, file.name);
+    const notes = fileNotes(content, file.serverId, file.name, game);
     return [
       ...notes.people.filter((person) => game.player.contacts.includes(person.id)).map((person) => `${person.name}, ${person.title}`),
       ...notes.facts.filter((fact) => game.player.facts.includes(fact.id)).map((fact) => fact.text),

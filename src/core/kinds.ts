@@ -32,6 +32,8 @@ export const GUARD_SETBACK_SECONDS = 14;
 export const GUARD_FADE = 0.75;
 /** Rings on a guard job's port line-up. */
 export const GUARD_RINGS = 3;
+/** Lines another runner leaves in a log for a wipe job: one more at the best-defended companies. */
+export const WIPE_LINES = 2;
 
 type Goal<K extends ObjectiveDef['kind']> = Extract<ObjectiveDef, { kind: K }>;
 
@@ -64,6 +66,9 @@ export function kindMet(state: GameState, targetId: string, goal: ObjectiveDef, 
       return state.flags.includes(foundFlag(goal.trail[goal.trail.length - 1]!));
     case 'swap':
       return state.servers[targetId]?.files.some((file) => file.name === goal.file && file.doctored) ?? false;
+    case 'wipe':
+      // Their lines are written as the step begins, so only the step under way can be done.
+      return active && !(state.servers[targetId]?.logs.some((entry) => entry.left === goal.who) ?? false);
     default:
       return undefined;
   }
@@ -76,7 +81,7 @@ export function kindPossible(state: GameState, targetId: string, goal: Objective
     return active ? state.player.files.some((file) => file.name === goal.file && file.from === CLIENT_FILE) : (state.servers[targetId]?.files.some((file) => file.name === goal.file && !file.doctored) ?? false);
   }
   if (goal.kind === 'guard') return !state.contracts.guard || state.contracts.guard.breachMs < state.contracts.guard.totalMs || !active;
-  return goal.kind === 'hold' || goal.kind === 'hunt' ? true : undefined;
+  return goal.kind === 'hold' || goal.kind === 'hunt' || goal.kind === 'wipe' ? true : undefined;
 }
 
 /** The flag that says the player has found a hacker's machine. */
@@ -105,6 +110,19 @@ export function beginKind(state: GameState, content: Content, stage: StageDef): 
   if (goal.kind === 'swap' && !state.player.files.some((file) => file.name === goal.file && file.from === CLIENT_FILE)) {
     const real = live.files.find((file) => file.name === goal.file);
     state.player.files.push({ name: goal.file, sizeGq: real?.sizeGq ?? 1, from: CLIENT_FILE, doctored: true });
+  }
+  if (goal.kind === 'wipe' && !live.logs.some((entry) => entry.left === goal.who)) {
+    // The lines the other runner left: a few, spread over the hours before the job came in.
+    const rng = stream(state, 'wipe');
+    const lines = content.companies.jobs.side?.wipe.lines ?? [];
+    const count = WIPE_LINES + (server.generated && server.generated.tier >= 4 ? 1 : 0);
+    const ip = `${rng.int(11, 223)}.${rng.int(1, 254)}.${rng.int(1, 254)}.${rng.int(2, 254)}`;
+    for (let i = 0; i < count; i++) {
+      const template = lines.length > 0 ? lines[(rng.int(0, lines.length - 1) + i) % lines.length]! : 'session {who} from {ip}';
+      const text = template.replace('{who}', goal.who).replace('{ip}', ip);
+      live.logs.push({ id: state.nextId++, timeMs: state.clock.gameTimeMs - rng.int(40, 340) * 60_000, text, byPlayer: false, left: goal.who });
+    }
+    live.logs.sort((a, b) => a.timeMs - b.timeMs);
   }
   if (goal.kind === 'hunt') {
     // Each server on the trail holds one line that points on to the next, a little before the job came in.
