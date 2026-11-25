@@ -9,7 +9,7 @@ export function GuideCard({ bar = false }: { bar?: boolean }) {
   const guide = useGuide();
   if (!guide) return null;
   return (
-    <div class={`guide${bar ? ' guide--bar' : ''}`} role="status" aria-live="polite">
+    <div class={`guide${bar ? ' guide--bar' : ''}`} data-step={guide.id} role="status" aria-live="polite">
       <span class="guide__who">Wren</span>
       <span class="guide__text">{guide.text}</span>
     </div>
