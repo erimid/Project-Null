@@ -343,6 +343,15 @@ export function Title() {
   const { panel } = useFront();
   const status = useSaveStatus();
   // Only a career that has read the name sees all of it here.
+  // Esc steps back from a sheet to the menu.
+  useEffect(() => {
+    if (panel === 'menu') return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') front.show('menu');
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [panel]);
   const known = useWorld((game) => status.begun && caseFile(game, content).name?.full === true);
   return (
     <div class={`title title--${panel}`}>

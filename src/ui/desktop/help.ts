@@ -28,7 +28,7 @@ export const WINDOW_HELP: Readonly<Record<WindowId, WindowHelp>> = {
       'Rating goes up with every job delivered. A higher rating opens better work on the Backroom board.',
       'Storage fills with programs and copied files. Free some room in Programs when it runs out.',
       'Hardware is bought from the Backroom and makes everything faster. Click a slot on the board to see what is fitted.',
-      'Late in a career a broker lists property under the parts on a Hardware shelf: a relay of your own, a safe house, a second gateway. Each is bought once.',
+      'Late in a career a broker lists property under the parts on a Hardware shelf: a relay of your own, a safe house, a second gateway, and later places that play the shortcuts for you, scrub behind you or take a trace in your name. Each is bought once.',
     ],
   },
   map: {
