@@ -1,3 +1,4 @@
+import { front } from '../../title/front';
 import { useEffect, useRef } from 'preact/hooks';
 import { backUp } from '../../backup';
 import { backups, useBackups } from '../../storage/backupStore';
@@ -84,13 +85,9 @@ export function SavesWindow() {
                       Export
                     </button>
                     {active ? (
-                      <ConfirmButton
-                        class="btn btn--danger"
-                        confirmLabel="Erase it?"
-                        onConfirm={() => void session.newGameIn(slot)}
-                      >
+                      <button type="button" class="btn" data-tip="Pick a handle, a difficulty and a world on the title screen. Nothing is erased until you begin." onClick={() => front.toTitle('new', slot)}>
                         New game
-                      </ConfirmButton>
+                      </button>
                     ) : (
                       <ConfirmButton
                         class="btn btn--danger"
@@ -106,7 +103,7 @@ export function SavesWindow() {
                     <button type="button" class="btn" onClick={() => void session.saveTo(slot)}>
                       Save here
                     </button>
-                    <button type="button" class="btn" onClick={() => void session.newGameIn(slot)}>
+                    <button type="button" class="btn" onClick={() => front.toTitle('new', slot)}>
                       New game
                     </button>
                     <button type="button" class="btn" onClick={() => pickFile(slot)}>

@@ -56,6 +56,8 @@ test('the game keeps its files for offline play', async ({ page }) => {
   // With no connection the game still opens.
   await page.context().setOffline(true);
   await page.reload();
+  await expect(page.locator('.title')).toBeVisible();
+  await page.locator('[data-title="continue"]').click();
   await expect(page.locator('.desktop')).toBeVisible();
   await page.context().setOffline(false);
 });

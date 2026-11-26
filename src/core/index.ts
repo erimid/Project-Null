@@ -71,6 +71,7 @@ export { effectiveSpeed, gameDate, tick } from './clock';
 export { REFERENCE_FILE_GB, bestPace, compareProgram, programPace, speedShare, topVersion } from './compare';
 export type { ProgramComparison } from './compare';
 export type { GameDate } from './clock';
+export { handleAt } from './handles';
 export { DIFFICULTIES, MODES, isDifficulty, modeOf } from './difficulty';
 export type { Difficulty, Mode } from './difficulty';
 export { QUIET_HOURS, loanAmount, quietTarget } from './loan';

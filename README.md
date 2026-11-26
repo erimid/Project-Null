@@ -13,6 +13,7 @@ trace lands. All point-and-click.
 | `src/core/` | The game simulation. Plain TypeScript with no browser code, driven by a seeded random number generator so the same seed always plays out the same way. Unit tested. |
 | `src/content/` | Game data as JSON, loaded and checked through `src/content/index.ts`. One file per server in `servers/`. `schema.ts` describes every field. |
 | `src/ui/` | Glue between the simulation and the browser: `session.ts` runs the game loop and saving, `hooks.ts` lets screens read game values, `storage/` keeps saves in the browser. |
+| `src/ui/title/` | The front door: the title screen over the turning globe, the new-game setup (handle, difficulty, world number), a new career's opening, and `front.ts`, which says whether the title or the desk is up. |
 | `src/ui/globe/` | The wireframe globe: projection maths (tested) and the SVG drawing. |
 | `src/ui/desktop/` | The desktop layout: server tabs on top (with the contract drop-down), floating windows, bottom bar. `desks.ts` holds the three ready-made desk layouts (Plan, Run, Home). A mobile layout can be added later over the same `core`. |
 

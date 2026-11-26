@@ -20,6 +20,7 @@ import {
   type Action,
   type ActionResult,
   type Content,
+  type Difficulty,
   type GameState,
   type SaveSummary,
 } from '../core';
@@ -84,6 +85,7 @@ const slotKey = (slot: number) => `slot-${slot}`;
 const EXIT_SAVE_KEY = 'project-null.exit-save.v1';
 
 function writeExitSave(): void {
+  if (!begun) return;
   try {
     const text = serializeGame(state, new Date().toISOString());
     localStorage.setItem(EXIT_SAVE_KEY, JSON.stringify({ slot: saveStatus.activeSlot, text }));
@@ -122,11 +124,26 @@ export interface SaveStatus {
   readonly notice: string;
   /** True when `notice` reports a failure. */
   readonly noticeIsError: boolean;
+  /** True once the active slot holds a career that can be continued. */
+  readonly begun: boolean;
+}
+
+/** What the player picks before a new career starts. */
+export interface NewCareer {
+  readonly slot: number;
+  readonly handle: string;
+  readonly difficulty: Difficulty;
+  /** The world number: the same number builds the same companies. */
+  readonly world: number;
 }
 
 type Listener = () => void;
 
 let state: GameState;
+/** The title screen is up: the clock stands still. */
+let held = true;
+/** A career has been started or loaded, so it is worth saving. */
+let begun = false;
 let store: SaveStore = createMemoryStore();
 let saveStatus: SaveStatus = {
   slots: Array.from({ length: SLOT_COUNT }, () => null),
@@ -134,6 +151,7 @@ let saveStatus: SaveStatus = {
   persistent: false,
   notice: '',
   noticeIsError: false,
+  begun: false,
 };
 
 /** Told about every change, including each tick of the clock. */
@@ -173,16 +191,22 @@ function report(notice: string, noticeIsError = false): void {
   setSaveStatus({ notice, noticeIsError });
 }
 
-function freshGame(): GameState {
-  const seed = crypto.getRandomValues(new Uint32Array(1))[0] ?? Date.now();
+function freshGame(career?: Omit<NewCareer, 'slot'>): GameState {
+  const seed = career?.world ?? crypto.getRandomValues(new Uint32Array(1))[0] ?? Date.now();
   return prepare(
     createGame({
       seed,
-      handle: gameInfo.defaultHandle,
+      handle: career?.handle ?? gameInfo.defaultHandle,
       startDate: tuning.startDate,
       startingBalance: tuning.startingBalance,
+      ...(career ? { difficulty: career.difficulty } : {}),
     }),
   );
+}
+
+function setBegun(): void {
+  begun = true;
+  if (!saveStatus.begun) setSaveStatus({ begun: true });
 }
 
 /** Reads save text into a game that matches the current data files. */
@@ -227,6 +251,7 @@ async function attempt(done: string, work: () => Promise<void>): Promise<boolean
 }
 
 function autosave(): void {
+  if (!begun) return;
   void writeSlot(saveStatus.activeSlot).catch((error) => report(`Autosave failed: ${message(error)}`, true));
 }
 
@@ -252,7 +277,7 @@ function startLoop(): void {
     const elapsed = Math.min(now - last, 250);
     last = now;
     const before = shape();
-    if (tick(state, elapsed, content) > 0) {
+    if (!held && tick(state, elapsed, content) > 0) {
       // A program finishing or a trace moving on changes what screens show, not just the clock.
       if (shape() !== before) {
         announce(true);
@@ -298,9 +323,19 @@ export const session = {
     state = loaded ?? freshGame();
     lastSnapshot = snapshot(state, content);
     await refreshSlots();
-    // Only write a brand-new game if the slot is really empty, never over a save that failed to load.
-    if (text === null) await writeSlot(activeSlot).catch(() => undefined);
+    // A game nobody has started is not written anywhere: the title screen offers New game instead.
+    if (loaded) setBegun();
     startLoop();
+  },
+
+  /** The player is at the desk: the clock runs. */
+  enter(): void {
+    held = false;
+  },
+  /** Back to the title screen: the game is saved and the clock stops. */
+  leave(): void {
+    if (!held) autosave();
+    held = true;
   },
 
   getState: (): GameState => state,
@@ -344,14 +379,17 @@ export const session = {
       const text = await store.read(slotKey(slot));
       if (text === null) throw new Error(`Slot ${slot} is empty.`);
       replaceGame(loadGame(text));
+      setBegun();
       await store.write(ACTIVE_SLOT_KEY, String(slot));
       setSaveStatus({ activeSlot: slot });
     }),
 
-  newGameIn: (slot: number) =>
-    attempt(`New game started in slot ${slot}.`, async () => {
-      replaceGame(freshGame());
-      await writeSlot(slot);
+  /** Starts a new career in a slot, replacing whatever was there. */
+  newGame: (career: NewCareer) =>
+    attempt(`New game started in slot ${career.slot}.`, async () => {
+      replaceGame(freshGame(career));
+      setBegun();
+      await writeSlot(career.slot);
     }),
 
   deleteSlot: (slot: number) =>
@@ -370,6 +408,7 @@ export const session = {
   importInto: (slot: number, text: string) =>
     attempt(`Imported into slot ${slot}.`, async () => {
       replaceGame(loadGame(text));
+      setBegun();
       await writeSlot(slot);
     }),
 };

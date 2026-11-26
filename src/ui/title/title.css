@@ -1,0 +1,558 @@
+/*
+ * The title screen and a new career's opening. Colours come from the
+ * theme, so every colour theme has its own front door.
+ */
+
+.title,
+.opening {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 70% 45%, var(--bg-glow), var(--bg) 62%);
+  color: var(--text);
+  font-family: var(--font-ui);
+}
+
+/* The globe sits to the right, a little off the edge, behind everything. */
+.title__sky {
+  position: absolute;
+  top: 50%;
+  right: -6vmin;
+  width: min(118vh, 82vw);
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.title__globe {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.title__column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 26px;
+  box-sizing: border-box;
+  width: min(560px, 100%);
+  height: 100%;
+  padding: 32px clamp(20px, 6vw, 72px);
+  overflow-y: auto;
+}
+
+/* A sheet (new game, load, settings, credits) needs the room more than the name does. */
+.title:not(.title--menu) .title__column {
+  justify-content: flex-start;
+  gap: 16px;
+}
+
+.title__name {
+  margin: 0;
+  font-size: calc(clamp(40px, 7vw, 76px) * var(--text-scale, 1));
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 0.14em;
+  color: var(--text-bright);
+  text-shadow: 0 0 28px rgb(var(--cyan-rgb) / 0.35);
+}
+
+.title:not(.title--menu) .title__name {
+  font-size: calc(clamp(24px, 4vw, 34px) * var(--text-scale, 1));
+}
+
+.title__word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.title__word--last {
+  color: var(--cyan-hi);
+}
+
+/* A letter nobody has read yet. */
+.title__block {
+  display: inline-block;
+  width: 0.56em;
+  height: 0.7em;
+  margin-right: 0.14em;
+  background: var(--cyan-hi);
+  box-shadow: 0 0 14px rgb(var(--cyan-rgb) / 0.5);
+  opacity: 0.85;
+}
+
+.title__endings {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.title:not(.title--menu) .title__endings {
+  display: none;
+}
+
+.title__mark {
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--line-strong);
+  transform: rotate(45deg);
+}
+
+.title__mark.is-lit {
+  border-color: var(--mint);
+  background: var(--mint);
+  box-shadow: 0 0 10px rgb(var(--mint-rgb) / 0.6);
+}
+
+.title__endings-note {
+  margin-left: 8px;
+  font-size: calc(13px * var(--text-scale, 1));
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.title__menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(380px, 100%);
+}
+
+.title__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgb(var(--panel-rgb) / 0.72);
+  color: var(--text-bright);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.title__item:not(:disabled):hover,
+.title__item:focus-visible {
+  border-color: var(--cyan);
+  background: rgb(var(--cyan-rgb) / 0.12);
+}
+
+.title__item.is-first {
+  border-color: var(--mint);
+  box-shadow: 0 0 18px rgb(var(--mint-rgb) / 0.18);
+}
+
+.title__item:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.title__item-label {
+  font-size: calc(21px * var(--text-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.title__item-note,
+.title__note {
+  font-size: calc(14px * var(--text-scale, 1));
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.title__note {
+  margin: 0;
+}
+
+.title__note--warn {
+  color: var(--amber-text);
+}
+
+.title__sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-window);
+  background: rgb(var(--panel-rgb) / 0.86);
+}
+
+.title__sheet-head,
+.title__sheet-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.title__sheet-head h2 {
+  margin: 0;
+  font-size: calc(22px * var(--text-scale, 1));
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.title__sheet-foot {
+  justify-content: flex-end;
+}
+
+.title__label {
+  margin: 0 0 6px;
+  font-size: calc(12px * var(--text-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.title__begin {
+  padding: 10px 22px;
+  font-size: calc(17px * var(--text-scale, 1));
+}
+
+/* The choice that is made, on any sheet. */
+.title .btn[aria-pressed='true'] {
+  border-color: var(--mint);
+  background: rgb(var(--mint-rgb) / 0.16);
+  color: var(--mint-text);
+  box-shadow: 0 0 12px rgb(var(--mint-rgb) / 0.22);
+}
+
+/* New game */
+
+.newgame {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.newgame__part {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.newgame__part:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.newgame__row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.newgame__handle {
+  margin: 0 0 8px;
+  font-size: calc(30px * var(--text-scale, 1));
+  line-height: 1.1;
+  color: var(--mint-text);
+  text-shadow: 0 0 16px rgb(var(--mint-rgb) / 0.35);
+}
+
+.newgame__handle.is-spinning {
+  color: var(--text-muted);
+  text-shadow: none;
+}
+
+.newgame__world {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.newgame__digit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgb(var(--bg-rgb) / 0.6);
+  font-size: calc(24px * var(--text-scale, 1));
+  color: var(--text-bright);
+}
+
+.newgame__step {
+  width: 100%;
+  height: 26px;
+  border: 0;
+  background: none;
+  color: var(--cyan);
+  font-size: calc(11px * var(--text-scale, 1));
+  cursor: pointer;
+}
+
+.newgame__step:hover,
+.newgame__step:focus-visible {
+  background: rgb(var(--cyan-rgb) / 0.14);
+}
+
+.newgame__world > .btn {
+  margin-left: 8px;
+}
+
+.newgame__slot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 10px;
+}
+
+.newgame__slot-note {
+  font-family: var(--font-data);
+  font-size: calc(12px * var(--text-scale, 1));
+  opacity: 0.8;
+}
+
+/* Load */
+
+.title__slots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.title__slot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+}
+
+.title__slot-name {
+  flex: none;
+  width: 52px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.title__slot-who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--text-bright);
+}
+
+/* Settings and credits */
+
+.title__settings .title__label {
+  margin-top: 12px;
+}
+
+.title__settings .title__label:first-child {
+  margin-top: 0;
+}
+
+.title__settings input[type='range'] {
+  flex: 1;
+  min-width: 120px;
+}
+
+.title__settings .title__note {
+  flex: 1;
+  min-width: 180px;
+}
+
+.title__credits {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+}
+
+.title__credit dd {
+  margin: 0;
+  font-size: calc(16px * var(--text-scale, 1));
+  font-weight: 500;
+  color: var(--text-bright);
+}
+
+/* A narrow screen: the globe goes behind the column, dimmed. */
+@media (max-width: 720px) {
+  .title__sky {
+    top: 0;
+    right: 50%;
+    width: min(120vw, 70vh);
+    transform: translate(50%, -22%);
+    opacity: 0.5;
+  }
+
+  .title__column {
+    width: 100%;
+    justify-content: flex-end;
+    padding-bottom: 40px;
+  }
+
+  .title__menu {
+    width: 100%;
+  }
+
+  .title__sheet-foot .btn {
+    flex: 1;
+  }
+}
+
+/* The opening */
+
+.opening {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.opening__stage {
+  box-sizing: border-box;
+  width: min(520px, 100%);
+  padding: 24px;
+}
+
+.opening__invite,
+.opening__boot {
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-window);
+  background: rgb(var(--panel-rgb) / 0.8);
+  box-shadow: 0 0 40px rgb(var(--cyan-rgb) / 0.08);
+}
+
+.opening__invite {
+  min-height: calc(190px * var(--text-scale, 1));
+}
+
+.opening__line {
+  margin: 0 0 10px;
+  font-size: calc(18px * var(--text-scale, 1));
+  color: var(--text);
+  animation: opening-in 0.4s ease-out;
+}
+
+.opening__line:first-child {
+  margin-bottom: 18px;
+  font-size: calc(24px * var(--text-scale, 1));
+  color: var(--text-bright);
+}
+
+.opening__line--good {
+  color: var(--mint);
+}
+
+.opening__head {
+  margin: 0 0 12px;
+  font-size: calc(13px * var(--text-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.opening__parts {
+  min-height: calc(7 * 30px * var(--text-scale, 1));
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.opening__part {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: calc(17px * var(--text-scale, 1));
+  font-weight: 500;
+  color: var(--text-bright);
+  animation: opening-in 0.3s ease-out;
+}
+
+.opening__ok {
+  color: var(--mint);
+}
+
+.opening__bar {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: rgb(var(--cyan-rgb) / 0.14);
+  overflow: hidden;
+}
+
+.opening__bar span {
+  display: block;
+  height: 100%;
+  background: var(--cyan);
+  box-shadow: 0 0 12px rgb(var(--cyan-rgb) / 0.6);
+  transition: width 0.5s ease-out;
+}
+
+.opening__welcome {
+  text-align: center;
+  animation: opening-in 0.8s ease-out;
+}
+
+.opening__hello {
+  margin: 0 0 8px;
+  font-size: calc(30px * var(--text-scale, 1));
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.opening__hello .data {
+  color: var(--mint-text);
+}
+
+.opening__sub {
+  margin: 0;
+  font-size: calc(17px * var(--text-scale, 1));
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.opening__skip {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+}
+
+@keyframes opening-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.is-calm .opening__line,
+.is-calm .opening__part,
+.is-calm .opening__welcome {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opening__line,
+  .opening__part,
+  .opening__welcome {
+    animation: none;
+  }
+
+  .opening__bar span {
+    transition: none;
+  }
+}
