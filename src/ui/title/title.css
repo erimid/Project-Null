@@ -34,7 +34,6 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 26px;
   box-sizing: border-box;
   width: min(560px, 100%);
@@ -43,9 +42,17 @@
   overflow-y: auto;
 }
 
+/* Centred when there is room, and scrolled from the top when there is not (a phone on its side). */
+.title--menu .title__head {
+  margin-top: auto;
+}
+
+.title--menu .title__menu {
+  margin-bottom: auto;
+}
+
 /* A sheet (new game, load, settings, credits) needs the room more than the name does. */
 .title:not(.title--menu) .title__column {
-  justify-content: flex-start;
   gap: 16px;
 }
 
@@ -398,8 +405,11 @@
 
   .title__column {
     width: 100%;
-    justify-content: flex-end;
     padding-bottom: 40px;
+  }
+
+  .title--menu .title__menu {
+    margin-bottom: 0;
   }
 
   .title__menu {
