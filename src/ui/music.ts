@@ -48,7 +48,7 @@ function readScene(): Scene {
 }
 
 function build(): Rig | null {
-  const sink = output();
+  const sink = output('music');
   if (!sink) return null;
   const { ctx, out } = sink;
   const bus = ctx.createGain();
