@@ -13,8 +13,9 @@ export type GameEvent =
   /** `traced` is true when the trace cut the connection; `pulled` when a watching model cut it just in time. */
   | { readonly type: 'disconnected'; readonly server: string; readonly traced: boolean; readonly pulled: boolean }
   | { readonly type: 'traceStarted'; readonly server: string }
-  | { readonly type: 'programStarted' }
-  | { readonly type: 'programFinished' }
+  /** `kind` is what the program is working on: 'password', 'proxy', 'copyFile' and so on (a task's target kind). */
+  | { readonly type: 'programStarted'; readonly kind: string }
+  | { readonly type: 'programFinished'; readonly kind: string }
   | { readonly type: 'loggedIn' }
   | { readonly type: 'message' }
   | { readonly type: 'paid' }
@@ -57,7 +58,8 @@ export type GameEvent =
 /** The parts of the game that events are worked out from. */
 export interface Snapshot {
   readonly connections: ReadonlyMap<string, { serverId: string; tracing: boolean; user: string | null }>;
-  readonly tasks: ReadonlySet<string>;
+  /** Running programs by task id, each with what it is working on. */
+  readonly tasks: ReadonlyMap<string, string>;
   readonly messages: number;
   readonly balance: number;
   /** Changes when the player is caught. */
@@ -129,7 +131,7 @@ export function snapshot(state: GameState, content?: Content): Snapshot {
     connections: new Map(
       state.connections.map((c) => [c.id, { serverId: c.serverId, tracing: c.trace.status === 'active', user: c.user }]),
     ),
-    tasks: new Set(state.tasks.map((task) => task.id)),
+    tasks: new Map(state.tasks.map((task) => [task.id, task.target.kind])),
     messages: state.messages.length,
     balance: state.player.balance,
     lieLowUntilMs: state.player.lieLowUntilMs,
@@ -166,13 +168,15 @@ export function diff(before: Snapshot, after: Snapshot, content: Content, byCloc
     if (!before.connections.has(id)) events.push({ type: 'connected', server: name(now.serverId) });
   }
 
-  if ([...after.tasks].some((id) => !before.tasks.has(id))) events.push({ type: 'programStarted' });
+  const started = [...after.tasks].find(([id]) => !before.tasks.has(id));
+  if (started) events.push({ type: 'programStarted', kind: started[1] });
   // A program that stops while the clock runs has finished; the player stopping one is not news.
   const built = [...after.builds].some((id) => !before.builds.has(id));
   const scrapped = [...before.builds].some((id) => !after.builds.has(id));
   if (built) events.push({ type: 'built' });
-  else if (byClock && [...before.tasks].some((id) => !after.tasks.has(id)) && after.connections.size >= before.connections.size) {
-    events.push({ type: 'programFinished' });
+  else if (byClock && after.connections.size >= before.connections.size) {
+    const finished = [...before.tasks].find(([id]) => !after.tasks.has(id));
+    if (finished) events.push({ type: 'programFinished', kind: finished[1] });
   }
   if (scrapped) events.push({ type: 'scrapped' });
 

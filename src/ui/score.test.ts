@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHORDS, REST, STEPS_PER_BAR, BARS_PER_CHORD, chordAt, notesAt, runBrightness, runFreq, stepSeconds, tempoFor, type Scene } from './score';
+import { CHORDS, REST, STEPS_PER_BAR, BARS_PER_CHORD, chordAt, notesAt, runBrightness, runFreq, serverAir, stepSeconds, tempoFor, traceStage, type Scene } from './score';
 
 const trace = (progress: number, held = false): Scene => ({ mood: 'trace', progress, held });
 const connected: Scene = { mood: 'connected', progress: 0, held: false };
@@ -79,5 +79,28 @@ describe('the soundtrack', () => {
         }
       }
     }
+  });
+});
+
+describe('the trace beep', () => {
+  it('steps up as the trace closes in', () => {
+    expect(traceStage(0.1, 50)).toBe('far');
+    expect(traceStage(0.6, 30)).toBe('near');
+    expect(traceStage(0.6, 10)).toBe('close');
+    expect(traceStage(0.99, 3)).toBe('last');
+  });
+
+  it('goes by the seconds left on a short trace, however little of it has run', () => {
+    expect(traceStage(0.1, 8)).toBe('close');
+    expect(traceStage(0, 2)).toBe('last');
+  });
+});
+
+describe('the background', () => {
+  it('gives a server the same note every visit, and a colder air the better it is guarded', () => {
+    expect(serverAir('a', 2, 0.4)).toEqual(serverAir('a', 2, 0.4));
+    expect(serverAir('a', 5, 0.4).guard).toBeGreaterThan(serverAir('a', 1, 0.4).guard);
+    expect(serverAir('a', 9, 0.999).guard).toBe(1);
+    expect(serverAir('a', 0, 0).hum).toBeLessThan(serverAir('a', 0, 0.999).hum);
   });
 });

@@ -133,3 +133,35 @@ export function notesAt(step: number, scene: Scene, chance: number): Note[] {
 
 /** How bright the run's filter is: it opens as the trace closes in. In hertz. */
 export const runBrightness = (progress: number): number => 700 + 3800 * Math.max(0, Math.min(1, progress));
+
+/** How close a trace is, as the countdown beep hears it. */
+export type TraceStage = 'far' | 'near' | 'close' | 'last';
+
+/** `progress` is how far the trace has run (0 to 1); `second` is whole seconds left. */
+export const traceStage = (progress: number, second: number): TraceStage =>
+  second <= 3 ? 'last' : second <= 10 ? 'close' : progress >= 0.5 ? 'near' : 'far';
+
+/** What the background should sound like: nothing, the room at home, or the machine at the far end. */
+export interface Air {
+  /** Changes when the background should change. */
+  readonly key: string;
+  /** The hum's lowest note, in hertz. */
+  readonly hum: number;
+  /** 0 to 1: how hard the place is guarded. Colder, higher and tighter as it rises. */
+  readonly guard: number;
+}
+
+/** The player's own room: one low, warm note. */
+export const HOME_AIR: Air = { key: 'home', hum: 55, guard: 0 };
+
+/**
+ * The air of a server. Each machine hums on a note of its own, picked
+ * from its id so it is the same every visit, and a well guarded one
+ * sounds colder. `chance` is a number from 0 to 1 drawn from the id.
+ */
+export function serverAir(id: string, strongestLayer: number, chance: number): Air {
+  // Six notes that sit well under the music's chords (A minor, low).
+  const notes = [41.2, 49, 55, 61.7, 65.4, 73.4];
+  const hum = notes[Math.min(notes.length - 1, Math.floor(chance * notes.length))]!;
+  return { key: `server:${id}`, hum, guard: Math.max(0, Math.min(1, strongestLayer / 5)) };
+}
