@@ -3,7 +3,7 @@
  * happens in the game (see events.ts) or when a button is pressed.
  */
 import { mostUrgentTrace, traceReport } from '../core';
-import { noiseBuffer, output } from './audio';
+import { duckMusic, noiseBuffer, output } from './audio';
 import type { GameEvent } from './events';
 import { content, session } from './session';
 
@@ -23,18 +23,40 @@ interface Tone {
 /** How loud an ordinary tone is. The trace alarm is louder; ticks and the trace's own beeps are quieter. */
 const LEVEL = 0.09;
 
+/**
+ * No two plays of an effect are quite the same: each is a hair sharp or
+ * flat, a touch louder or softer, and a little to one side. Small enough
+ * that a tune stays a tune, enough that a run of beeps doesn't sound stamped.
+ */
+const PITCH_DRIFT = 0.012;
+const LEVEL_DRIFT = 0.16;
+const PAN_DRIFT = 0.3;
+const drift = (width: number): number => (Math.random() - 0.5) * width;
+
+/** Where one effect plays: the effects bus, by way of its own spot between left and right. */
+function spot(ctx: AudioContext, out: AudioNode): AudioNode {
+  if (typeof ctx.createStereoPanner !== 'function') return out;
+  const pan = ctx.createStereoPanner();
+  pan.pan.value = drift(PAN_DRIFT);
+  pan.connect(out);
+  return pan;
+}
+
 function play(tones: readonly Tone[]): void {
   const sink = output();
   if (!sink) return;
-  const { ctx, out } = sink;
+  const { ctx } = sink;
+  const out = spot(ctx, sink.out);
+  const tune = 1 + drift(PITCH_DRIFT);
+  const push = 1 + drift(LEVEL_DRIFT);
   for (const tone of tones) {
     const when = ctx.currentTime + (tone.at ?? 0);
     const osc = ctx.createOscillator();
     osc.type = tone.wave ?? 'sine';
-    osc.frequency.setValueAtTime(tone.freq, when);
-    if (tone.to) osc.frequency.exponentialRampToValueAtTime(tone.to, when + tone.seconds);
+    osc.frequency.setValueAtTime(tone.freq * tune, when);
+    if (tone.to) osc.frequency.exponentialRampToValueAtTime(tone.to * tune, when + tone.seconds);
     const gain = ctx.createGain();
-    const level = tone.level ?? LEVEL;
+    const level = (tone.level ?? LEVEL) * push;
     gain.gain.setValueAtTime(0, when);
     gain.gain.linearRampToValueAtTime(level, when + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, when + tone.seconds);
@@ -51,13 +73,30 @@ function burst(seconds: number, level: number): void {
   const { ctx, out } = sink;
   const source = ctx.createBufferSource();
   source.buffer = noiseBuffer(ctx);
+  // Start somewhere new in the hiss each time.
+  const from = Math.random() * Math.max(0, source.buffer.duration - seconds);
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(level, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + seconds);
   source.connect(gain).connect(out);
-  source.start();
+  source.start(ctx.currentTime, from);
   source.stop(ctx.currentTime + seconds);
 }
+
+/**
+ * The moments that should be heard over the music: how much of the
+ * music is left under each, and for how long.
+ */
+const DUCKS: Partial<Record<GameEvent['type'], readonly [depth: number, seconds: number]>> = {
+  traceStarted: [0.45, 0.9],
+  paid: [0.6, 0.5],
+  promoted: [0.35, 1],
+  raidStarted: [0.35, 1.4],
+  raidEnded: [0.4, 1.3],
+  barrierFell: [0.5, 0.6],
+  feat: [0.6, 1.1],
+  serverTaken: [0.4, 1.6],
+};
 
 const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
   connected: () =>
@@ -394,9 +433,28 @@ export function stageSound(name: StageSound, n = 0): void {
   STAGE_SOUNDS[name](n);
 }
 
+/** A soft tick for a button going down. */
+function buttonTick(): void {
+  play([{ freq: 1500, seconds: 0.03, wave: 'square', level: 0.025 }]);
+}
+
+/** The trace counting down: one beep a second, higher and doubled when it is `close`. */
+function traceBeep(close: boolean): void {
+  if (close) {
+    play([
+      { freq: 1320, seconds: 0.07, wave: 'square', level: 0.07 },
+      { freq: 1320, at: 0.14, seconds: 0.07, wave: 'square', level: 0.07 },
+    ]);
+  } else play([{ freq: 990, seconds: 0.06, wave: 'square', level: 0.045 }]);
+}
+
 /** Starts the sound effects. Call once, after the game has loaded. */
 export function startSfx(): void {
-  session.subscribeEvents((event) => EFFECTS[event.type](event));
+  session.subscribeEvents((event) => {
+    const duck = DUCKS[event.type];
+    if (duck) duckMusic(duck[0], duck[1]);
+    EFFECTS[event.type](event);
+  });
 
   // Buttons that ask for a sound of their own get it when they are pressed.
   document.addEventListener(
@@ -414,7 +472,7 @@ export function startSfx(): void {
     'pointerdown',
     (event) => {
       const button = (event.target as HTMLElement | null)?.closest?.('button');
-      if (button && !button.disabled) play([{ freq: 1500, seconds: 0.03, wave: 'square', level: 0.025 }]);
+      if (button && !button.disabled) buttonTick();
     },
     true,
   );
@@ -431,12 +489,7 @@ export function startSfx(): void {
     const second = Math.ceil(traceReport(connection.trace).remainingMs / 1000);
     if (second === lastSecond) return;
     lastSecond = second;
-    if (second <= 10) {
-      play([
-        { freq: 1320, seconds: 0.07, wave: 'square', level: 0.07 },
-        { freq: 1320, at: 0.14, seconds: 0.07, wave: 'square', level: 0.07 },
-      ]);
-    } else play([{ freq: 990, seconds: 0.06, wave: 'square', level: 0.045 }]);
+    traceBeep(second <= 10);
   });
 }
 
@@ -466,3 +519,67 @@ export function tourChime(): void {
     { freq: 1175, at: 0.07, seconds: 0.22, wave: 'triangle', level: 0.05 },
   ]);
 }
+
+/** One sound the player can ask to hear, by name. */
+export interface NamedSound {
+  readonly group: string;
+  readonly label: string;
+  readonly play: () => void;
+}
+
+const heard = (event: GameEvent) => () => EFFECTS[event.type](event);
+
+/**
+ * Every sound in the game with a name a player would know it by, for the
+ * sound test in the settings. Add a line here with each new sound.
+ */
+export const SOUND_TEST: readonly NamedSound[] = [
+  { group: 'Connections', label: 'Connected', play: heard({ type: 'connected', server: '' }) },
+  { group: 'Connections', label: 'Logged in', play: heard({ type: 'loggedIn' }) },
+  { group: 'Connections', label: 'Disconnected', play: heard({ type: 'disconnected', server: '', traced: false, pulled: false }) },
+  { group: 'Connections', label: 'Line cut by a trace', play: heard({ type: 'disconnected', server: '', traced: true, pulled: false }) },
+  { group: 'Trace', label: 'Trace started', play: heard({ type: 'traceStarted', server: '' }) },
+  { group: 'Trace', label: 'Trace beep', play: () => traceBeep(false) },
+  { group: 'Trace', label: 'Last ten seconds', play: () => traceBeep(true) },
+  { group: 'Trace', label: 'Caught: one hop back', play: () => caughtFall(2, 5) },
+  { group: 'Trace', label: 'Caught', play: caughtHit },
+  { group: 'Programs', label: 'Program started', play: heard({ type: 'programStarted' }) },
+  { group: 'Programs', label: 'Program finished', play: heard({ type: 'programFinished' }) },
+  { group: 'Programs', label: 'Letter found', play: () => stageSound('letter', 4) },
+  { group: 'Programs', label: 'Mirror peeled', play: () => stageSound('peel', 3) },
+  { group: 'Programs', label: 'Blocks copied', play: () => stageSound('block', 8) },
+  { group: 'Programs', label: 'Line wiped', play: () => stageSound('wipe') },
+  { group: 'Programs', label: 'Hands-on: right', play: () => stageSound('caught') },
+  { group: 'Programs', label: 'Hands-on: wrong', play: () => stageSound('miss') },
+  { group: 'Programs', label: 'Skill move fired', play: () => uiSound('move') },
+  { group: 'Work', label: 'Job taken', play: () => uiSound('accepted') },
+  { group: 'Work', label: 'Step done', play: heard({ type: 'stepDone', step: 1, of: 3 }) },
+  { group: 'Work', label: 'Paid', play: heard({ type: 'paid' }) },
+  { group: 'Work', label: 'Money spent', play: heard({ type: 'spent' }) },
+  { group: 'Work', label: 'New message', play: heard({ type: 'message' }) },
+  { group: 'Work', label: 'New title', play: heard({ type: 'promoted', title: '' }) },
+  { group: 'Work', label: 'Feat earned', play: heard({ type: 'feat', name: '', text: '' }) },
+  { group: 'Skills and parts', label: 'Skill point', play: heard({ type: 'pointEarned', free: 1 }) },
+  { group: 'Skills and parts', label: 'Skill learned', play: heard({ type: 'skillLearned' }) },
+  { group: 'Skills and parts', label: 'Skills reset', play: heard({ type: 'skillsUnlearned' }) },
+  { group: 'Skills and parts', label: 'Build finished', play: heard({ type: 'built' }) },
+  { group: 'Skills and parts', label: 'Scrapped', play: heard({ type: 'scrapped' }) },
+  { group: 'Skills and parts', label: 'Refined', play: heard({ type: 'refined' }) },
+  { group: 'Skills and parts', label: 'Module found', play: heard({ type: 'moduleGained', name: '', bought: false }) },
+  { group: 'Skills and parts', label: 'Module fitted', play: () => uiSound('socket') },
+  { group: 'Skills and parts', label: 'Module pulled', play: () => uiSound('unsocket') },
+  { group: 'Skills and parts', label: 'Hardware fitted', play: () => uiSound('fitted') },
+  { group: 'Skills and parts', label: 'Program loaded', play: () => uiSound('load') },
+  { group: 'Skills and parts', label: 'Program unloaded', play: () => uiSound('unload') },
+  { group: 'Your gateway', label: 'Break-in alarm', play: heard({ type: 'raidStarted', who: '' }) },
+  { group: 'Your gateway', label: 'Barrier down', play: heard({ type: 'barrierFell', left: 1 }) },
+  { group: 'Your gateway', label: 'Ring locked', play: heard({ type: 'ringLocked' }) },
+  { group: 'Your gateway', label: 'Port shut', play: heard({ type: 'portShut' }) },
+  { group: 'Your gateway', label: 'Intruder traced', play: heard({ type: 'raidEnded', who: '', result: 'won' }) },
+  { group: 'Your gateway', label: 'Intruder got in', play: heard({ type: 'raidEnded', who: '', result: 'lost' }) },
+  { group: 'Your gateway', label: 'Plug pulled', play: heard({ type: 'raidEnded', who: '', result: 'fled' }) },
+  { group: 'Desk', label: 'Button', play: buttonTick },
+  { group: 'Desk', label: 'Pick', play: () => uiSound('pick') },
+  { group: 'Desk', label: 'Tab', play: () => uiSound('tab') },
+  { group: 'Desk', label: 'Tour step', play: tourChime },
+];

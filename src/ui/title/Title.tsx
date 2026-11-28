@@ -11,6 +11,7 @@ import { reducedMotion } from '../desktop/calm';
 import { comfort, TEXT_SIZES, useComfort } from '../desktop/comfortStore';
 import { useRecordStore } from '../desktop/recordStore';
 import { uiSound } from '../sfx';
+import { EffectsLevel, SoundTest } from '../SoundDesk';
 import { front, useFront, type Panel } from './front';
 import { TitleGlobe } from './TitleGlobe';
 import { CREDITS } from './words';
@@ -315,6 +316,8 @@ function Settings() {
           </button>
           <input type="range" min="0" max="100" aria-label="Music volume" value={Math.round(heard.musicVolume * 100)} disabled={!heard.on || !heard.music} onInput={(event) => sound.set({ musicVolume: Number((event.currentTarget as HTMLInputElement).value) / 100 })} />
         </div>
+        <EffectsLevel />
+        <SoundTest />
         <p class="title__note">The rest (hints, job reports, the look of the desk) is in the game menu, at the desk.</p>
       </div>
     </Sheet>
