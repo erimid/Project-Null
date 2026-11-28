@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { sound, useSound } from '../audio';
-import { EffectsLevel, SoundTest } from '../SoundDesk';
+import { SoundLevels, SoundTest } from '../SoundDesk';
 import { DIFFICULTIES, MODES } from '../../core';
 import { useGame } from '../hooks';
 import { session } from '../session';
@@ -260,7 +260,7 @@ export function GameMenu() {
               onInput={(event) => sound.set({ musicVolume: Number((event.currentTarget as HTMLInputElement).value) / 100 })}
             />
           </div>
-          <EffectsLevel />
+          <SoundLevels />
           <SoundTest />
           <h3 class="menu__heading">Keys</h3>
           <dl class="menu__keys">

@@ -5,6 +5,7 @@
 import { mostUrgentTrace, traceReport } from '../core';
 import { duckMusic, noiseBuffer, output } from './audio';
 import type { GameEvent } from './events';
+import { traceStage, type TraceStage } from './score';
 import { content, session } from './session';
 
 interface Tone {
@@ -83,6 +84,225 @@ function burst(seconds: number, level: number): void {
   source.stop(ctx.currentTime + seconds);
 }
 
+/** A shaped rush of air: hiss through a filter that can sweep, for whooshes, wipes and static. */
+interface Rush {
+  readonly at?: number;
+  readonly seconds: number;
+  readonly level: number;
+  /** Where the filter sits, in hertz, and where it ends up. */
+  readonly freq: number;
+  readonly to?: number;
+  /** How narrow the band is: 1 is broad, 8 whistles. */
+  readonly q?: number;
+  readonly kind?: BiquadFilterType;
+  /** Swell in over this share of the length instead of starting at full. */
+  readonly swell?: number;
+}
+
+function rush(parts: readonly Rush[]): void {
+  const sink = output();
+  if (!sink) return;
+  const { ctx } = sink;
+  const out = spot(ctx, sink.out);
+  const push = 1 + drift(LEVEL_DRIFT);
+  for (const part of parts) {
+    const when = ctx.currentTime + (part.at ?? 0);
+    const source = ctx.createBufferSource();
+    source.buffer = noiseBuffer(ctx);
+    source.loop = true;
+    const filter = ctx.createBiquadFilter();
+    filter.type = part.kind ?? 'bandpass';
+    filter.Q.value = part.q ?? 1.5;
+    filter.frequency.setValueAtTime(part.freq, when);
+    if (part.to) filter.frequency.exponentialRampToValueAtTime(part.to, when + part.seconds);
+    const gain = ctx.createGain();
+    const peak = part.level * push;
+    if (part.swell) {
+      gain.gain.setValueAtTime(0.0001, when);
+      gain.gain.exponentialRampToValueAtTime(peak, when + part.seconds * part.swell);
+    } else gain.gain.setValueAtTime(peak, when);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + part.seconds);
+    source.connect(filter).connect(gain).connect(out);
+    source.start(when, Math.random() * 0.5);
+    source.stop(when + part.seconds + 0.02);
+  }
+}
+
+/** A run of quick ticks, like keys or a ratchet: `count` of them from `from` hertz to `to`. */
+const ticks = (count: number, from: number, to: number, gap: number, level: number, wave: OscillatorType = 'square', at = 0): Tone[] =>
+  Array.from({ length: count }, (_, i) => ({ freq: from + ((to - from) * i) / Math.max(1, count - 1), at: at + i * gap, seconds: 0.03, wave, level }));
+
+/**
+ * Every program has a voice of its own: how it sounds setting to work,
+ * and how it sounds when the thing gives. The kind is what it works on
+ * (a task's target), so two password breakers sound alike and a
+ * password never sounds like a firewall.
+ */
+interface Voice {
+  readonly label: string;
+  readonly start: () => void;
+  readonly finish: () => void;
+}
+
+const PLAIN_VOICE: Voice = {
+  label: 'Any other program',
+  start: () => play([{ freq: 300, seconds: 0.08, wave: 'square', level: 0.05, to: 600 }]),
+  finish: () =>
+    play([
+      { freq: 784, seconds: 0.1 },
+      { freq: 1175, at: 0.09, seconds: 0.22 },
+    ]),
+};
+
+export const PROGRAM_VOICES: Readonly<Record<string, Voice>> = {
+  // Keys hammered, then a bolt drawn back and the door's two notes.
+  password: {
+    label: 'Password',
+    start: () => play(ticks(6, 700, 1250, 0.035, 0.04)),
+    finish: () => {
+      play([
+        { freq: 150, seconds: 0.09, wave: 'square', level: 0.09, to: 95 },
+        { freq: 659, at: 0.09, seconds: 0.1, wave: 'triangle', level: 0.07 },
+        { freq: 988, at: 0.18, seconds: 0.28, wave: 'triangle', level: 0.07 },
+      ]);
+    },
+  },
+  // Air drawn in, then slipping past: a breath out and one glassy note.
+  proxy: {
+    label: 'Proxy',
+    start: () => rush([{ seconds: 0.28, level: 0.2, freq: 500, to: 2600, q: 3, swell: 0.7 }]),
+    finish: () => {
+      rush([{ seconds: 0.4, level: 0.17, freq: 3200, to: 500, q: 2.5 }]);
+      play([
+        { freq: 1568, at: 0.16, seconds: 0.4, level: 0.05 },
+        { freq: 2349, at: 0.2, seconds: 0.3, level: 0.025 },
+      ]);
+    },
+  },
+  // A low engine pushing, then the wall cracking and falling in.
+  firewall: {
+    label: 'Firewall',
+    start: () =>
+      play([
+        { freq: 82, seconds: 0.3, wave: 'sawtooth', level: 0.08, to: 110 },
+        { freq: 164, at: 0.04, seconds: 0.22, wave: 'square', level: 0.03, to: 220 },
+      ]),
+    finish: () => {
+      rush([
+        { seconds: 0.07, level: 0.12, freq: 2400, q: 0.8, kind: 'highpass' },
+        { at: 0.05, seconds: 0.5, level: 0.08, freq: 900, to: 140, q: 0.9, kind: 'lowpass' },
+      ]);
+      play([
+        { freq: 98, seconds: 0.45, wave: 'sawtooth', level: 0.085, to: 49 },
+        { freq: 740, at: 0.2, seconds: 0.12, wave: 'triangle', level: 0.06 },
+        { freq: 1109, at: 0.3, seconds: 0.3, wave: 'triangle', level: 0.06 },
+      ]);
+    },
+  },
+  // A sonar ping going out, then the eye closing: the ping falling away to nothing.
+  monitor: {
+    label: 'Monitor',
+    start: () =>
+      play([
+        { freq: 1175, seconds: 0.35, level: 0.06 },
+        { freq: 1175, at: 0.22, seconds: 0.3, level: 0.025 },
+      ]),
+    finish: () =>
+      play([
+        { freq: 1175, seconds: 0.5, level: 0.06, to: 294 },
+        { freq: 587, at: 0.3, seconds: 0.5, wave: 'triangle', level: 0.05, to: 147 },
+        { freq: 73, at: 0.5, seconds: 0.25, level: 0.1 },
+      ]),
+  },
+  // Scrambled notes, then the same notes falling into order.
+  decrypt: {
+    label: 'Decrypter',
+    start: () => play([831, 554, 932, 622, 740].map((freq, i) => ({ freq, at: i * 0.045, seconds: 0.05, wave: 'square' as const, level: 0.035 }))),
+    finish: () =>
+      play([
+        ...[554, 622, 740, 831, 932].map((freq, i) => ({ freq, at: i * 0.05, seconds: 0.07, wave: 'triangle' as const, level: 0.05 })),
+        { freq: 1109, at: 0.26, seconds: 0.45, wave: 'triangle', level: 0.06 },
+        { freq: 554, at: 0.26, seconds: 0.45, level: 0.04 },
+      ]),
+  },
+  // A drive spinning up, then two blocks dropping home.
+  copyFile: {
+    label: 'File copier',
+    start: () => play([{ freq: 180, seconds: 0.3, wave: 'triangle', level: 0.06, to: 540 }]),
+    finish: () =>
+      play([
+        { freq: 196, seconds: 0.06, wave: 'square', level: 0.07 },
+        { freq: 196, at: 0.09, seconds: 0.06, wave: 'square', level: 0.07 },
+        { freq: 784, at: 0.18, seconds: 0.1, wave: 'triangle', level: 0.06 },
+        { freq: 1047, at: 0.27, seconds: 0.26, wave: 'triangle', level: 0.06 },
+      ]),
+  },
+  // The same drive, the other way: something sent up the line.
+  uploadFile: {
+    label: 'Upload',
+    start: () => play([{ freq: 540, seconds: 0.3, wave: 'triangle', level: 0.06, to: 180 }]),
+    finish: () => {
+      rush([{ seconds: 0.3, level: 0.07, freq: 600, to: 4000, q: 2, swell: 0.6 }]);
+      play([
+        { freq: 1047, at: 0.22, seconds: 0.1, wave: 'triangle', level: 0.06 },
+        { freq: 784, at: 0.31, seconds: 0.26, wave: 'triangle', level: 0.06 },
+      ]);
+    },
+  },
+  // A blade drawn, then the file shredded.
+  deleteFile: {
+    label: 'File deleter',
+    start: () => play([{ freq: 900, seconds: 0.16, wave: 'sawtooth', level: 0.04, to: 300 }]),
+    finish: () => {
+      rush([{ seconds: 0.32, level: 0.16, freq: 2600, to: 220, q: 1.2 }]);
+      play([
+        ...ticks(5, 520, 180, 0.04, 0.04, 'sawtooth'),
+        { freq: 110, at: 0.24, seconds: 0.25, wave: 'triangle', level: 0.09, to: 70 },
+      ]);
+    },
+  },
+  // A cloth across glass, twice: the lines gone.
+  deleteLog: {
+    label: 'Log deleter',
+    start: () => rush([{ seconds: 0.14, level: 0.16, freq: 1800, to: 3600, q: 4 }]),
+    finish: () => {
+      rush([
+        { seconds: 0.16, level: 0.17, freq: 1200, to: 4200, q: 3 },
+        { at: 0.16, seconds: 0.2, level: 0.17, freq: 4200, to: 900, q: 3 },
+      ]);
+      play([{ freq: 1319, at: 0.34, seconds: 0.3, level: 0.05 }]);
+    },
+  },
+  // A ratchet winding back, then the casing opening out.
+  decompile: {
+    label: 'Decompiler',
+    start: () => play(ticks(6, 620, 260, 0.045, 0.04)),
+    finish: () =>
+      play([
+        ...[262, 330, 392, 494, 587].map((freq, i) => ({ freq, at: i * 0.07, seconds: 0.2, wave: 'triangle' as const, level: 0.05 })),
+        { freq: 784, at: 0.36, seconds: 0.4, level: 0.05 },
+      ]),
+  },
+  // A sweep out across the network, and three echoes back.
+  scan: {
+    label: 'Scanner',
+    start: () => play([{ freq: 400, seconds: 0.4, level: 0.05, to: 1600 }]),
+    finish: () => play([0, 0.12, 0.24].map((at, i) => ({ freq: 1397, at, seconds: 0.18, level: 0.06 - i * 0.015 }))),
+  },
+  // The Workbench warming up. It has its own sound for the finished build.
+  build: {
+    label: 'Workbench',
+    start: () =>
+      play([
+        { freq: 110, seconds: 0.4, wave: 'sawtooth', level: 0.04, to: 220 },
+        ...ticks(3, 440, 660, 0.09, 0.035, 'square', 0.1),
+      ]),
+    finish: () => {},
+  },
+};
+
+const voiceOf = (kind: string): Voice => PROGRAM_VOICES[kind] ?? PLAIN_VOICE;
+
 /**
  * The moments that should be heard over the music: how much of the
  * music is left under each, and for how long.
@@ -121,12 +341,8 @@ const EFFECTS: Record<GameEvent['type'], (event: GameEvent) => void> = {
       { freq: 880, at: 0.2, seconds: 0.14, wave: 'square', level: 0.08 },
       { freq: 880, at: 0.4, seconds: 0.3, wave: 'square', level: 0.08 },
     ]),
-  programStarted: () => play([{ freq: 300, seconds: 0.08, wave: 'square', level: 0.05, to: 600 }]),
-  programFinished: () =>
-    play([
-      { freq: 784, seconds: 0.1 },
-      { freq: 1175, at: 0.09, seconds: 0.22 },
-    ]),
+  programStarted: (event) => event.type === 'programStarted' && voiceOf(event.kind).start(),
+  programFinished: (event) => event.type === 'programFinished' && voiceOf(event.kind).finish(),
   loggedIn: () =>
     play([
       { freq: 523, seconds: 0.08, wave: 'triangle' },
@@ -438,14 +654,66 @@ function buttonTick(): void {
   play([{ freq: 1500, seconds: 0.03, wave: 'square', level: 0.025 }]);
 }
 
-/** The trace counting down: one beep a second, higher and doubled when it is `close`. */
-function traceBeep(close: boolean): void {
-  if (close) {
+/**
+ * The trace counting down, in four stages. The closer it gets the
+ * higher, harder and busier the beep, so the stage can be told by ear
+ * with the eyes on something else.
+ */
+function traceBeep(stage: TraceStage): void {
+  if (stage === 'far') play([{ freq: 880, seconds: 0.06, level: 0.04 }]);
+  else if (stage === 'near') play([{ freq: 990, seconds: 0.06, wave: 'square', level: 0.045 }]);
+  else if (stage === 'close') {
     play([
       { freq: 1320, seconds: 0.07, wave: 'square', level: 0.07 },
       { freq: 1320, at: 0.14, seconds: 0.07, wave: 'square', level: 0.07 },
     ]);
-  } else play([{ freq: 990, seconds: 0.06, wave: 'square', level: 0.045 }]);
+  } else {
+    play([
+      { freq: 1568, seconds: 0.06, wave: 'square', level: 0.075 },
+      { freq: 1568, at: 0.11, seconds: 0.06, wave: 'square', level: 0.075 },
+      { freq: 1568, at: 0.22, seconds: 0.06, wave: 'square', level: 0.075 },
+      { freq: 65, seconds: 0.3, level: 0.14, to: 49 },
+    ]);
+  }
+}
+
+/** The moment the trace steps up a stage: one low push under the beeps. */
+function traceStep(stage: TraceStage): void {
+  if (stage === 'far') return;
+  const freq = stage === 'near' ? 147 : stage === 'close' ? 196 : 262;
+  play([
+    { freq, seconds: 0.35, wave: 'sawtooth', level: 0.07, to: freq * 1.5 },
+    { freq: freq * 2, at: 0.05, seconds: 0.25, wave: 'square', level: 0.03, to: freq * 3 },
+  ]);
+}
+
+/**
+ * What a press sounds like depends on what was pressed: a go button is
+ * fuller than a plain one, a window's close is a small fall, and a tab
+ * on the bar is a card flicked.
+ */
+type Press = 'plain' | 'go' | 'close' | 'bar';
+
+function pressOf(button: Element): Press {
+  if (button.classList.contains('window__close')) return 'close';
+  if (button.closest('.dock__tabs, .pdock__tabs, .window__tabs')) return 'bar';
+  if (button.classList.contains('btn--go')) return 'go';
+  return 'plain';
+}
+
+function pressTick(press: Press): void {
+  if (press === 'go') {
+    play([
+      { freq: 1100, seconds: 0.035, wave: 'square', level: 0.028 },
+      { freq: 330, seconds: 0.05, wave: 'triangle', level: 0.026 },
+    ]);
+  } else if (press === 'close') play([{ freq: 900, seconds: 0.07, wave: 'triangle', level: 0.035, to: 450 }]);
+  else if (press === 'bar') {
+    play([
+      { freq: 700, seconds: 0.03, wave: 'triangle', level: 0.035 },
+      { freq: 1050, at: 0.03, seconds: 0.05, wave: 'triangle', level: 0.03 },
+    ]);
+  } else buttonTick();
 }
 
 /** Starts the sound effects. Call once, after the game has loaded. */
@@ -471,25 +739,32 @@ export function startSfx(): void {
   document.addEventListener(
     'pointerdown',
     (event) => {
-      const button = (event.target as HTMLElement | null)?.closest?.('button');
-      if (button && !button.disabled) buttonTick();
+      const button = (event.target as HTMLElement | null)?.closest?.<HTMLButtonElement>('button');
+      // A button with a sound of its own (data-sfx) plays that when it is let go; it gets no tick as well.
+      if (button && !button.disabled && !button.dataset.sfx) pressTick(pressOf(button));
     },
     true,
   );
 
-  // While a trace runs: one beep a second, higher and doubled in the last ten.
+  // While a trace runs: one beep a second, stepping up as it closes in.
   let lastSecond = -1;
+  let lastStage: TraceStage | null = null;
   session.subscribeGame(() => {
     const connection = mostUrgentTrace(session.getState(), content);
     // A held trace is silent: the quiet is how you know the monitor is blind.
     if (!connection || connection.monitor.blindMs > 0) {
       lastSecond = -1;
+      if (!connection) lastStage = null;
       return;
     }
-    const second = Math.ceil(traceReport(connection.trace).remainingMs / 1000);
+    const report = traceReport(connection.trace);
+    const second = Math.ceil(report.remainingMs / 1000);
     if (second === lastSecond) return;
     lastSecond = second;
-    traceBeep(second <= 10);
+    const stage = traceStage(report.progress, second);
+    if (lastStage !== null && stage !== lastStage) traceStep(stage);
+    lastStage = stage;
+    traceBeep(stage);
   });
 }
 
@@ -539,19 +814,24 @@ export const SOUND_TEST: readonly NamedSound[] = [
   { group: 'Connections', label: 'Disconnected', play: heard({ type: 'disconnected', server: '', traced: false, pulled: false }) },
   { group: 'Connections', label: 'Line cut by a trace', play: heard({ type: 'disconnected', server: '', traced: true, pulled: false }) },
   { group: 'Trace', label: 'Trace started', play: heard({ type: 'traceStarted', server: '' }) },
-  { group: 'Trace', label: 'Trace beep', play: () => traceBeep(false) },
-  { group: 'Trace', label: 'Last ten seconds', play: () => traceBeep(true) },
+  { group: 'Trace', label: 'Beep: far off', play: () => traceBeep('far') },
+  { group: 'Trace', label: 'Beep: half way', play: () => traceBeep('near') },
+  { group: 'Trace', label: 'Beep: last ten seconds', play: () => traceBeep('close') },
+  { group: 'Trace', label: 'Beep: last three seconds', play: () => traceBeep('last') },
+  { group: 'Trace', label: 'Stepping up', play: () => traceStep('close') },
   { group: 'Trace', label: 'Caught: one hop back', play: () => caughtFall(2, 5) },
   { group: 'Trace', label: 'Caught', play: caughtHit },
-  { group: 'Programs', label: 'Program started', play: heard({ type: 'programStarted' }) },
-  { group: 'Programs', label: 'Program finished', play: heard({ type: 'programFinished' }) },
-  { group: 'Programs', label: 'Letter found', play: () => stageSound('letter', 4) },
-  { group: 'Programs', label: 'Mirror peeled', play: () => stageSound('peel', 3) },
-  { group: 'Programs', label: 'Blocks copied', play: () => stageSound('block', 8) },
-  { group: 'Programs', label: 'Line wiped', play: () => stageSound('wipe') },
-  { group: 'Programs', label: 'Hands-on: right', play: () => stageSound('caught') },
-  { group: 'Programs', label: 'Hands-on: wrong', play: () => stageSound('miss') },
-  { group: 'Programs', label: 'Skill move fired', play: () => uiSound('move') },
+  ...[...Object.values(PROGRAM_VOICES), PLAIN_VOICE].flatMap((voice) => [
+    { group: 'Programs at work', label: `${voice.label}: start`, play: voice.start },
+    ...(voice.label === 'Workbench' ? [] : [{ group: 'Programs at work', label: `${voice.label}: done`, play: voice.finish }]),
+  ]),
+  { group: 'Hands-on', label: 'Letter found', play: () => stageSound('letter', 4) },
+  { group: 'Hands-on', label: 'Mirror peeled', play: () => stageSound('peel', 3) },
+  { group: 'Hands-on', label: 'Blocks copied', play: () => stageSound('block', 8) },
+  { group: 'Hands-on', label: 'Line wiped', play: () => stageSound('wipe') },
+  { group: 'Hands-on', label: 'Right', play: () => stageSound('caught') },
+  { group: 'Hands-on', label: 'Wrong', play: () => stageSound('miss') },
+  { group: 'Hands-on', label: 'Skill move fired', play: () => uiSound('move') },
   { group: 'Work', label: 'Job taken', play: () => uiSound('accepted') },
   { group: 'Work', label: 'Step done', play: heard({ type: 'stepDone', step: 1, of: 3 }) },
   { group: 'Work', label: 'Paid', play: heard({ type: 'paid' }) },
@@ -579,6 +859,9 @@ export const SOUND_TEST: readonly NamedSound[] = [
   { group: 'Your gateway', label: 'Intruder got in', play: heard({ type: 'raidEnded', who: '', result: 'lost' }) },
   { group: 'Your gateway', label: 'Plug pulled', play: heard({ type: 'raidEnded', who: '', result: 'fled' }) },
   { group: 'Desk', label: 'Button', play: buttonTick },
+  { group: 'Desk', label: 'Go button', play: () => pressTick('go') },
+  { group: 'Desk', label: 'Window closed', play: () => pressTick('close') },
+  { group: 'Desk', label: 'Bar tab', play: () => pressTick('bar') },
   { group: 'Desk', label: 'Pick', play: () => uiSound('pick') },
   { group: 'Desk', label: 'Tab', play: () => uiSound('tab') },
   { group: 'Desk', label: 'Tour step', play: tourChime },

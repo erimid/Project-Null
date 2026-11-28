@@ -15,6 +15,7 @@ import { session } from './ui/session';
 import { front } from './ui/title/front';
 import { backups } from './ui/storage/backupStore';
 import { install } from './ui/installStore';
+import { startAmbient } from './ui/ambient';
 import { startMusic } from './ui/music';
 import { startSfx } from './ui/sfx';
 
@@ -33,5 +34,6 @@ void session.start().then(() => {
   void backups.check();
   startSfx();
   startMusic();
+  startAmbient();
   render(<App />, document.getElementById('app')!);
 });

@@ -52,3 +52,18 @@ describe('attack events', () => {
     expect(wonEvents.find((event) => event.type === 'raidEnded')).toMatchObject({ result: 'won' });
   });
 });
+
+describe('program events', () => {
+  it('a program starting and finishing says what it was working on', () => {
+    const state = game();
+    const task = { id: 't1', programId: 'x', connectionId: null, target: { kind: 'proxy' }, progressMs: 0, durationMs: 1000 };
+    expect(eventsOf(state, () => state.tasks.push(task as never))).toContainEqual({ type: 'programStarted', kind: 'proxy' });
+    expect(eventsOf(state, () => state.tasks.splice(0), true)).toContainEqual({ type: 'programFinished', kind: 'proxy' });
+  });
+
+  it('a program the player stops is not news', () => {
+    const state = game();
+    state.tasks.push({ id: 't1', programId: 'x', connectionId: null, target: { kind: 'proxy' }, progressMs: 0, durationMs: 1000 } as never);
+    expect(eventsOf(state, () => state.tasks.splice(0)).some((event) => event.type === 'programFinished')).toBe(false);
+  });
+});

@@ -13,7 +13,7 @@
 }
 
 .sounddesk__name {
-  min-width: 56px;
+  min-width: 84px;
   font-size: 13px;
   color: var(--text-muted);
 }
