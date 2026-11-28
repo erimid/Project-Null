@@ -2,6 +2,7 @@
 
 export const CREDITS: readonly (readonly [string, readonly string[]])[] = [
   ['The game', ['A hacker story told with a globe, a gateway and other people’s servers.', 'In the spirit of the hacker sims of the early 2000s.']],
+  ['Created by', ['Erimid']],
   ['Written and built with', ['Claude, by Anthropic']],
   ['Typefaces', ['Rajdhani, by Indian Type Foundry', 'Share Tech Mono, by Carrois Apostrophe', 'Both under the SIL Open Font License']],
   ['The globe', ['Coastlines and borders drawn from Natural Earth, which is in the public domain']],
